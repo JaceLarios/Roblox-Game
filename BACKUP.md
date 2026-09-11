@@ -1,14 +1,7 @@
 # Junkyard Fusion backup
 
-Snapshot of all five script sources from Roblox Studio on 2026-09-11.
-Place ID: 94136201094216
-Experience ID: 10765869706
-Studio reported place version: 12
+Eight current Studio scripts are backed up, including the gamepass integration. See HANDOFF.md for changes, verification, setup steps and limitations.
 
-The src directory mirrors the Studio instance paths. .server.luau files are Scripts, .client.luau files are LocalScripts, and .luau files are ModuleScripts.
+This is a script-only backup. A full .rbxl/.rbxlx place export is still needed for the map, terrain, objects and settings. Live player DataStore records are not included. The scripts mirror their Studio hierarchy; .server.luau = Script, .client.luau = LocalScript, .luau = ModuleScript.
 
-This is currently a SCRIPT-ONLY backup. The full .rbxl or .rbxlx place file is still needed to preserve the map, terrain, objects, and settings. Do not treat these scripts as a complete restorable game. Player DataStore records are not included.
-
-To complete the backup, use Studio File > Save to File or Download a Copy and add the exported place file. Existing Studio content has not been changed by this export.
-
-Future Studio edits are not automatically synced to this repository; export and commit new snapshots to update the backup.
+Gamepass IDs are intentionally zero until the owner creates passes. The gamepass changes are not published to Roblox. Future Studio edits do not automatically sync to GitHub.

@@ -17,6 +17,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local DataManager   = require(script.Parent:WaitForChild("DataManager"))
+local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
+Gamepasses.Start()
 
 -- ---------- Tuning ----------
 local PLOT_COUNT  = 8
@@ -337,6 +339,19 @@ end
 -- Per-player helpers
 ------------------------------------------------------------------
 
+local function capacity(player, s)
+	return Gamepasses.Capacity(player, s.upgrades.carry)
+end
+
+local function rewardInfo(player, reward)
+	local copy = table.clone(reward)
+	if copy.amount then
+		copy.amount = Gamepasses.Coins(player, copy.amount)
+		if copy.kind == "coins" then copy.label = string.format("%d Coins", copy.amount) end
+	end
+	return copy
+end
+
 local function pushUI(player)
 	local s = state[player]
 	if not s then return end
@@ -370,9 +385,18 @@ local function pushUI(player)
 		end
 	end
 
+	local plot = plots[s.plotIndex]
+	if plot and plot.display then
+		local payout = math.floor(plot.displayValue * (1 + (s.upgrades.value - 1) * 0.15) * boostMult(s, "value"))
+		plot.pedestalLabel.Text = string.format("%s\nSell: %d coins", plot.display.Name, Gamepasses.Coins(player, payout))
+	end
+
+	local dailyRewards = {}
+	for _, reward in ipairs(DAILY_REWARDS) do table.insert(dailyRewards, rewardInfo(player, reward)) end
+
 	remote:FireClient(player, {
 		slots = s.slots,
-		maxSlots = s.maxSlots,
+		maxSlots = capacity(player, s),
 		discoveredCount = s.count,
 		total = FusionRecipes.GetTotalDiscoveries(),
 		list = s.discoveredList,
@@ -380,7 +404,7 @@ local function pushUI(player)
 		secretsFound = secretsFound,
 		secretTotal = secretTotal,
 		goalText = goal and goal.text or "All objectives complete",
-		goalReward = goal and goal.reward or 0,
+		goalReward = goal and Gamepasses.Coins(player, goal.reward) or 0,
 		goalNumber = math.min(s.goalIndex, #GOALS),
 		goalTotal = #GOALS,
 		luck = s.upgrades.luck,
@@ -388,10 +412,14 @@ local function pushUI(player)
 		dailyAvailable = dailyAvailable,
 		dailyNext = dailyNext,
 		dailyClaimed = dailyClaimed,
-		dailyRewards = DAILY_REWARDS,
+		dailyRewards = dailyRewards,
 		boosts = activeBoosts,
 	})
 end
+
+Gamepasses.Changed:Connect(function(player)
+	if state[player] then pushUI(player) end
+end)
 
 local function toast(player, message, isBig)
 	remote:FireClient(player, { toast = message, big = isBig or false })
@@ -475,7 +503,9 @@ local function addCoins(player, amount)
 	if not stats then return end
 	local coins = stats:FindFirstChild("Coins")
 	if coins then
+		amount = Gamepasses.Coins(player, amount)
 		coins.Value = coins.Value + amount
+		return amount
 	end
 end
 
@@ -488,8 +518,8 @@ local function checkGoals(player)
 		local goal = GOALS[s.goalIndex]
 		if not goal.check(s) then break end
 
-		addCoins(player, goal.reward)
-		toast(player, string.format("OBJECTIVE COMPLETE\n%s\n+%d coins", goal.text, goal.reward), true)
+		local awarded = addCoins(player, goal.reward) or 0
+		toast(player, string.format("OBJECTIVE COMPLETE\n%s\n+%d coins", goal.text, awarded), true)
 		s.goalIndex = s.goalIndex + 1
 	end
 end
@@ -558,7 +588,7 @@ local function attemptFusion(player)
 	s.slots[1], s.slots[2] = nil, nil
 	-- Shift any extra carried items down into the empty slots.
 	local remaining = {}
-	for i = 3, s.maxSlots do
+	for i = 3, capacity(player, s) do
 		if s.slots[i] then table.insert(remaining, s.slots[i]) end
 	end
 	s.slots = remaining
@@ -607,7 +637,7 @@ local function grabItem(player, part)
 	local s = state[player]
 	if not s then return false end
 	if not part or not part.Parent then return false end
-	if #s.slots >= s.maxSlots then return false end
+	if #s.slots >= capacity(player, s) then return false end
 
 	local grabbed = part:GetAttribute("ItemName") or part.Name
 	local isGolden = part:GetAttribute("Golden")
@@ -686,7 +716,7 @@ for i, plot in ipairs(plots) do
 		if s then mult = mult * boostMult(s, "value") end
 		local payout = math.floor(plot.displayValue * mult)
 
-		addCoins(player, payout)
+		payout = addCoins(player, payout) or 0
 		playSound(plot.pedestal, "sell")
 		toast(player, string.format("Sold for %d coins.", payout))
 
@@ -738,7 +768,7 @@ buyRemote.OnServerEvent:Connect(function(player, key)
 	s.upgrades[key] = level + 1
 
 	if key == "carry" then
-		s.maxSlots = s.upgrades.carry + 1
+		-- Capacity is derived from earned upgrades plus pass ownership.
 	end
 
 	playSound(playerRoot(player), "big")
@@ -756,10 +786,10 @@ task.spawn(function()
 
 		for _, player in ipairs(Players:GetPlayers()) do
 			local s = state[player]
-			if s and s.upgrades.magnet > 0 and #s.slots < s.maxSlots then
+			if s and Gamepasses.Radius(player, s.upgrades.magnet) > 0 and #s.slots < capacity(player, s) then
 				local root = playerRoot(player)
 				if root then
-					local radius = 10 + s.upgrades.magnet * 10
+					local radius = Gamepasses.Radius(player, s.upgrades.magnet)
 					local nearest, nearestDist = nil, radius
 
 					for _, part in ipairs(getScrapFolder():GetChildren()) do
@@ -790,7 +820,7 @@ local function giveItem(player, itemName)
 	local s = state[player]
 	if not s then return end
 
-	if #s.slots < s.maxSlots then
+	if #s.slots < capacity(player, s) then
 		table.insert(s.slots, itemName)
 		refreshPad(player)
 	else
@@ -839,13 +869,14 @@ claimRemote.OnServerEvent:Connect(function(player)
 
 	local reward = DAILY_REWARDS[nextDay]
 	grantReward(player, reward)
+	local displayReward = rewardInfo(player, reward)
 	playSound(playerRoot(player), "big")
 
 	if nextDay == DAILY_MAX_STREAK then
 		broadcast(string.format("%s completed a 7-day streak and hit the JACKPOT!", player.Name))
-		toast(player, "DAY 7 JACKPOT\n7,500 coins + 3x Luck + Jet Engine", true)
+		toast(player, string.format("DAY 7 JACKPOT\n%d coins + 3x Luck + Jet Engine", displayReward.amount), true)
 	else
-		toast(player, string.format("DAY %d CLAIMED\n%s", nextDay, reward.label), true)
+		toast(player, string.format("DAY %d CLAIMED\n%s", nextDay, displayReward.label), true)
 	end
 
 	pushUI(player)
@@ -864,8 +895,8 @@ task.spawn(function()
 					local step = math.floor(s.playMinutes / PLAYTIME_INTERVAL)
 					local reward = PLAYTIME_REWARDS[math.min(step, #PLAYTIME_REWARDS)]
 
-					addCoins(player, reward)
-					toast(player, string.format("%d MINUTES PLAYED\n+%d coins", s.playMinutes, reward), true)
+					local awarded = addCoins(player, reward) or 0
+					toast(player, string.format("%d MINUTES PLAYED\n+%d coins", s.playMinutes, awarded), true)
 					pushUI(player)
 				end
 			end
@@ -889,6 +920,7 @@ local function assignPlot(player)
 end
 
 local function onPlayerAdded(player)
+	Gamepasses.Init(player)
 	-- Load BEFORE anything else, so a slow DataStore can't be beaten
 	-- by the player picking something up.
 	local data = DataManager.Load(player)
