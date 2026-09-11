@@ -1,7 +1,5 @@
-# Junkyard Fusion backup
+# Backup status
 
-Eight current Studio scripts are backed up, including the gamepass integration. See HANDOFF.md for changes, verification, setup steps and limitations.
+All twelve current scripts are backed up, including the original map geometry snapshot and the deterministic Foundry District builder. Read [map reconstruction and verification](docs/map-refresh.md) and [latest handoff](HANDOFF.md).
 
-This is a script-only backup. A full .rbxl/.rbxlx place export is still needed for the map, terrain, objects and settings. Live player DataStore records are not included. The scripts mirror their Studio hierarchy; .server.luau = Script, .client.luau = LocalScript, .luau = ModuleScript.
-
-Gamepass IDs are intentionally zero until the owner creates passes. The gamepass changes are not published to Roblox. Future Studio edits do not automatically sync to GitHub.
+The map now has a tested source reconstruction path. This is not a native place-file export; live DataStore records and Creator Hub settings are not included. Future Studio edits do not automatically sync to GitHub. The latest map and gamepass changes have not been published to Roblox.

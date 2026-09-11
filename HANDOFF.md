@@ -1,3 +1,17 @@
+# Latest handoff — map refresh (2026-09-11)
+
+The Foundry District map refresh is applied in Studio and backed up in this repository. Read [docs/map-refresh.md](docs/map-refresh.md) first for the exact files, verification, reconstruction steps, and remaining limitations.
+
+**Map geometry is now backed up as reconstructable source.** MapBaseline contains the original authored parts/spawn/lighting and MapRevamp creates the new map. This supersedes the older statement below that only gameplay scripts were backed up. A native place-file export is still useful for additional settings and future content outside the builder.
+
+Studio is in Edit mode. No Roblox publish was performed. All eight previous gameplay/gamepass scripts are unchanged. The map adds four scripts, bringing the total to twelve. The gameplay economy and player records were preserved.
+
+Next work: create/configure the three gamepasses and their prices, test real purchases, publish when ready, and finish the earlier earn-leave-rejoin coin-persistence verification. Do not assume any of those steps was completed by the map task.
+
+---
+
+## Previous gamepass handoff (historical detail)
+
 # Claude handoff — gamepasses (2026-09-11)
 
 ## Current state
@@ -44,3 +58,4 @@ Read current Studio sources before future edits; repository snapshots are not au
 Official references:
 - https://create.roblox.com/docs/production/monetization/passes
 - https://create.roblox.com/docs/reference/engine/classes/MarketplaceService
+
