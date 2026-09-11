@@ -7,7 +7,10 @@
 	  1. Scrap spawns in the shared yard at the centre of the map.
 	  2. Anyone can press E on scrap to carry it (2 slots per player).
 	  3. You carry it back to YOUR OWN plot and fuse it there.
-	  4. The result sits on your pedestal until you sell it for coins.
+	  4. The result auto-places into a zone (Garage/Workshop/Trophy Case)
+	     matching its tier, where it earns coins every few seconds for as
+	     long as it stays there — sell it anytime for an instant payout
+	     instead of waiting on the passive income.
 
 	Everything below is per-player. No shared slots, no shared discoveries.
 --]]
@@ -160,7 +163,7 @@ local function dailyInfo(s)
 	return true, nextDay, nextDay - 1
 end
 
-local plots = {}   -- [index] = { model, owner, padPrompt, pedestal, display, sign }
+local plots = {}   -- [index] = { model, owner, padPrompt, zones, sign }
 local state = {}   -- [player] = { slots, discovered, count, plotIndex }
 
 -- Boosts are timed multipliers stored as an expiry timestamp, so they
@@ -173,6 +176,13 @@ local function boostMult(s, stat)
 		return b.mult
 	end
 	return 1
+end
+
+-- Shared by manual sells and passive income — the Haggler upgrade and any
+-- timed sell boost apply to everything a player's builds earn, not just
+-- the moment you press Sell.
+local function valueMultiplier(s)
+	return (1 + (s.upgrades.value - 1) * 0.15) * boostMult(s, "value")
 end
 
 ------------------------------------------------------------------
@@ -244,6 +254,43 @@ local function playerRoot(player)
 end
 
 ------------------------------------------------------------------
+-- Placement zones
+-- Fused results auto-place here instead of an immediate one-time sale.
+-- Which zone accepts a result depends on its tier, so higher zones are
+-- both a status symbol and a reason to keep grinding for rarer fuses.
+------------------------------------------------------------------
+
+-- Roughly how long passive income takes to match a manual sell of the
+-- same item — after that it's pure profit for as long as it stays placed.
+local PLACEMENT_PAYBACK_SECONDS = 90
+local INCOME_TICK_SECONDS = 3
+
+local ZONES = {
+	{
+		key = "garage", label = "GARAGE — Tier 2", capacity = 4,
+		offset = Vector3.new(-22, 0, 20),
+		accepts = function(info) return info.tier == 2 and not info.isSecret end,
+	},
+	{
+		key = "workshop", label = "WORKSHOP — Tier 3", capacity = 3,
+		offset = Vector3.new(0, 0, 20),
+		accepts = function(info) return info.tier == 3 and not info.isSecret end,
+	},
+	{
+		key = "trophy", label = "TROPHY CASE — Tier 4+ / Secrets", capacity = 2,
+		offset = Vector3.new(22, 0, 20),
+		accepts = function(info) return info.tier >= 4 or info.isSecret end,
+	},
+}
+
+local function zoneForInfo(info)
+	for _, zoneDef in ipairs(ZONES) do
+		if zoneDef.accepts(info) then return zoneDef end
+	end
+	return nil
+end
+
+------------------------------------------------------------------
 -- Build the eight plots in a ring around the yard
 ------------------------------------------------------------------
 
@@ -300,25 +347,56 @@ for i = 1, PLOT_COUNT do
 	padPrompt.RequiresLineOfSight = false
 	padPrompt.Parent = pad
 
-	-- Where finished builds sit until sold.
-	local pedestal = makePart({
-		Name = "Pedestal",
-		Size = Vector3.new(12, 3, 12),
-		Position = centre + Vector3.new(0, 2, 24),
-		Material = Enum.Material.Slate,
-		Color = Color3.fromRGB(50, 50, 55),
-		Parent = model,
-	})
-	local pedestalLabel = makeLabel(pedestal, "empty", 4, 300, Color3.fromRGB(180, 180, 190))
+	-- Placement zones: each fused result auto-places into the zone that
+	-- accepts its tier, where it earns coins every few seconds.
+	local zones = {}
+	for _, zoneDef in ipairs(ZONES) do
+		local zoneCentre = centre + zoneDef.offset
 
-	local sellPrompt = Instance.new("ProximityPrompt")
-	sellPrompt.ActionText = "Sell"
-	sellPrompt.ObjectText = "Pedestal"
-	sellPrompt.HoldDuration = 0.4
-	sellPrompt.MaxActivationDistance = 14
-	sellPrompt.RequiresLineOfSight = false
-	sellPrompt.Enabled = false
-	sellPrompt.Parent = pedestal
+		local signPost2 = makePart({
+			Name = zoneDef.key .. "Sign",
+			Size = Vector3.new(1, 6, 1),
+			Position = zoneCentre + Vector3.new(0, 3, -4),
+			Material = Enum.Material.Metal,
+			Color = Color3.fromRGB(60, 60, 65),
+			Parent = model,
+		})
+		makeLabel(signPost2, zoneDef.label, 4, 280, Color3.fromRGB(180, 220, 255))
+
+		local slots = {}
+		for slotIndex = 1, zoneDef.capacity do
+			local localX = (slotIndex - (zoneDef.capacity + 1) / 2) * 5
+			local base = makePart({
+				Name = zoneDef.key .. "Slot" .. slotIndex,
+				Size = Vector3.new(4, 1, 4),
+				Position = zoneCentre + Vector3.new(localX, 1, 0),
+				Material = Enum.Material.Metal,
+				Color = Color3.fromRGB(70, 70, 78),
+				Parent = model,
+			})
+			local slotLabel = makeLabel(base, "empty", 2.2, 220, Color3.fromRGB(170, 170, 180))
+
+			local sellPrompt = Instance.new("ProximityPrompt")
+			sellPrompt.ActionText = "Sell"
+			sellPrompt.ObjectText = "Placed item"
+			sellPrompt.HoldDuration = 0.4
+			sellPrompt.MaxActivationDistance = 12
+			sellPrompt.RequiresLineOfSight = false
+			sellPrompt.Enabled = false
+			sellPrompt.Parent = base
+
+			slots[slotIndex] = {
+				base = base,
+				label = slotLabel,
+				sellPrompt = sellPrompt,
+				itemPart = nil,
+				itemName = nil,
+				value = nil,
+			}
+		end
+
+		zones[zoneDef.key] = { def = zoneDef, slots = slots }
+	end
 
 	plots[i] = {
 		model = model,
@@ -327,12 +405,8 @@ for i = 1, PLOT_COUNT do
 		pad = pad,
 		padLabel = padLabel,
 		padPrompt = padPrompt,
-		pedestal = pedestal,
-		pedestalLabel = pedestalLabel,
-		sellPrompt = sellPrompt,
+		zones = zones,
 		signLabel = signLabel,
-		display = nil,
-		displayValue = 0,
 	}
 end
 
@@ -384,12 +458,6 @@ local function pushUI(player)
 		if remaining > 0 then
 			table.insert(activeBoosts, { stat = stat, mult = b.mult, remaining = remaining })
 		end
-	end
-
-	local plot = plots[s.plotIndex]
-	if plot and plot.display then
-		local payout = math.floor(plot.displayValue * (1 + (s.upgrades.value - 1) * 0.15) * boostMult(s, "value"))
-		plot.pedestalLabel.Text = string.format("%s\nSell: %d coins", plot.display.Name, Gamepasses.Coins(player, payout))
 	end
 
 	local dailyRewards = {}
@@ -542,33 +610,84 @@ end
 -- Fusion
 ------------------------------------------------------------------
 
-local function showOnPedestal(plot, resultName, info)
-	if plot.display then plot.display:Destroy() end
-
-	local pedestalPosition = plot.pedestal.Position + Vector3.new(0, 4, 0)
+-- Builds the physical item sitting in a zone slot and marks the slot
+-- filled. Shared by a fresh fuse-and-place and restoring a save on join.
+local function renderInSlot(plot, slot, itemName, value, isSecret)
+	local position = slot.base.Position + Vector3.new(0, 2.5, 0)
 	local part
-	if ItemVisuals.HasModel(resultName) then
-		part = ItemVisuals.Create(resultName, pedestalPosition, 2)
+	if ItemVisuals.HasModel(itemName) then
+		part = ItemVisuals.Create(itemName, position, 1)
 	else
-		-- No detailed model for this result yet — keep the neon indicator,
+		-- No detailed model for this result yet — keep a neon placeholder,
 		-- with a distinct color for secret discoveries.
 		part = makePart({
-			Name = resultName,
-			Size = Vector3.new(8, 4, 12),
-			Position = pedestalPosition,
+			Name = itemName,
+			Size = Vector3.new(3.5, 2, 3.5),
+			Position = position,
 			Material = Enum.Material.Neon,
-			Color = info.isSecret and Color3.fromRGB(255, 90, 200) or Color3.fromRGB(90, 200, 255),
+			Color = isSecret and Color3.fromRGB(255, 90, 200) or Color3.fromRGB(90, 200, 255),
 		})
 	end
 	part.Parent = plot.model
-	part:SetAttribute("ItemName", resultName)
-	part:SetAttribute("Tier", info.tier)
-	makeLabel(part, resultName, 3, 260)
+	part:SetAttribute("ItemName", itemName)
 
-	plot.display = part
-	plot.displayValue = info.value
-	plot.pedestalLabel.Text = string.format("%s\nSell: %d coins", resultName, info.value)
-	plot.sellPrompt.Enabled = true
+	slot.itemPart = part
+	slot.itemName = itemName
+	slot.value = value
+	slot.label.Text = string.format("%s\n+%.1f coins/sec", itemName, value / PLACEMENT_PAYBACK_SECONDS)
+	slot.sellPrompt.Enabled = true
+end
+
+-- Finds the first empty slot in the zone matching this result's tier and
+-- places it there. Returns false (zone full) if nothing was available.
+local function placeFusedItem(plot, resultName, info)
+	local zoneDef = zoneForInfo(info)
+	if not zoneDef then
+		warn("[PlotManager] No zone accepts tier " .. tostring(info.tier) .. " results")
+		return false
+	end
+
+	local zone = plot.zones[zoneDef.key]
+	for _, slot in ipairs(zone.slots) do
+		if not slot.itemName then
+			renderInSlot(plot, slot, resultName, info.value, info.isSecret)
+			return true
+		end
+	end
+
+	return false
+end
+
+-- Cashes out one placed item for an instant payout instead of letting it
+-- keep earning passively.
+local function sellSlot(plot, zoneKey, slotIndex, player)
+	if plot.owner ~= player then
+		toast(player, "That's not your plot.")
+		return
+	end
+
+	local slot = plot.zones[zoneKey].slots[slotIndex]
+	if not slot.itemName then return end
+
+	local s = state[player]
+	local mult = s and valueMultiplier(s) or 1
+	local payout = addCoins(player, math.floor(slot.value * mult)) or 0
+
+	playSound(slot.base, "sell")
+	toast(player, string.format("Sold %s for %d coins.", slot.itemName, payout))
+
+	slot.itemPart:Destroy()
+	slot.itemPart = nil
+	slot.itemName = nil
+	slot.value = nil
+	slot.label.Text = "empty"
+	slot.sellPrompt.Enabled = false
+
+	if s then
+		s.sales = s.sales + 1
+		checkGoals(player)
+		pushUI(player)
+	end
 end
 
 local function attemptFusion(player)
@@ -622,7 +741,12 @@ local function attemptFusion(player)
 		toast(player, string.format("SECRET RECIPE\n%s", result), true)
 	end
 
-	showOnPedestal(plot, result, info)
+	local placed = placeFusedItem(plot, result, info)
+	if not placed then
+		dropItemNearYard(result)
+		toast(player, string.format("Your zone for %s is full — sell something there first. It was returned to the yard.", result))
+	end
+
 	playSound(plot.pad, (info.isSecret or info.tier >= 4) and "big" or "fuse")
 	checkGoals(player)
 	pushUI(player)
@@ -703,34 +827,13 @@ for i, plot in ipairs(plots) do
 		attemptFusion(player)
 	end)
 
-	plot.sellPrompt.Triggered:Connect(function(player)
-		if plot.owner ~= player then
-			toast(player, "That's not your plot.")
-			return
+	for _, zoneDef in ipairs(ZONES) do
+		for slotIndex, slot in ipairs(plot.zones[zoneDef.key].slots) do
+			slot.sellPrompt.Triggered:Connect(function(player)
+				sellSlot(plot, zoneDef.key, slotIndex, player)
+			end)
 		end
-		if not plot.display then return end
-
-		local s = state[player]
-		local mult = s and (1 + (s.upgrades.value - 1) * 0.15) or 1
-		if s then mult = mult * boostMult(s, "value") end
-		local payout = math.floor(plot.displayValue * mult)
-
-		payout = addCoins(player, payout) or 0
-		playSound(plot.pedestal, "sell")
-		toast(player, string.format("Sold for %d coins.", payout))
-
-		if s then
-			s.sales = s.sales + 1
-			checkGoals(player)
-			pushUI(player)
-		end
-
-		plot.display:Destroy()
-		plot.display = nil
-		plot.displayValue = 0
-		plot.pedestalLabel.Text = "empty"
-		plot.sellPrompt.Enabled = false
-	end)
+	end
 end
 
 ------------------------------------------------------------------
@@ -803,6 +906,37 @@ task.spawn(function()
 					if nearest then
 						grabItem(player, nearest)
 					end
+				end
+			end
+		end
+	end
+end)
+
+------------------------------------------------------------------
+-- Passive income from placed items
+------------------------------------------------------------------
+
+task.spawn(function()
+	while true do
+		task.wait(INCOME_TICK_SECONDS)
+
+		for _, player in ipairs(Players:GetPlayers()) do
+			local s = state[player]
+			local plot = s and plots[s.plotIndex]
+			if s and plot then
+				local mult = valueMultiplier(s)
+				local perSecond = 0
+
+				for _, zoneDef in ipairs(ZONES) do
+					for _, slot in ipairs(plot.zones[zoneDef.key].slots) do
+						if slot.value then
+							perSecond = perSecond + (slot.value / PLACEMENT_PAYBACK_SECONDS) * mult
+						end
+					end
+				end
+
+				if perSecond > 0 then
+					addCoins(player, math.floor(perSecond * INCOME_TICK_SECONDS))
 				end
 			end
 		end
@@ -968,6 +1102,16 @@ local function onPlayerAdded(player)
 
 	refreshPad(player)
 
+	-- Restore whatever was placed in this plot's zones last session.
+	local plot = plots[index]
+	for _, saved in ipairs(data.placed or {}) do
+		local zone = plot.zones[saved.zone]
+		local slot = zone and zone.slots[saved.slot]
+		if slot and not slot.itemName and saved.itemName and saved.value then
+			renderInSlot(plot, slot, saved.itemName, saved.value, false)
+		end
+	end
+
 	-- Drop them on their own plot when they spawn.
 	player.CharacterAdded:Connect(function(character)
 		task.wait(0.2)
@@ -1000,6 +1144,24 @@ end
 -- Saving
 ------------------------------------------------------------------
 
+-- Every currently-filled slot across a plot's zones, in save-file form.
+local function snapshotPlaced(plot)
+	local placed = {}
+	for _, zoneDef in ipairs(ZONES) do
+		for slotIndex, slot in ipairs(plot.zones[zoneDef.key].slots) do
+			if slot.itemName then
+				table.insert(placed, {
+					zone = zoneDef.key,
+					slot = slotIndex,
+					itemName = slot.itemName,
+					value = slot.value,
+				})
+			end
+		end
+	end
+	return placed
+end
+
 -- Turns live state back into the plain table DataManager stores.
 local function snapshot(player)
 	local s = state[player]
@@ -1007,6 +1169,7 @@ local function snapshot(player)
 
 	local stats = player:FindFirstChild("leaderstats")
 	local coins = stats and stats:FindFirstChild("Coins")
+	local plot = plots[s.plotIndex]
 
 	return {
 		coins = coins and coins.Value or 0,
@@ -1015,6 +1178,7 @@ local function snapshot(player)
 		bestTier = s.bestTier,
 		secrets = s.secrets,
 		sales = s.sales,
+		placed = plot and snapshotPlaced(plot) or {},
 		upgrades = s.upgrades,
 		lastDailyDay = s.lastDailyDay,
 		dailyStreak = s.dailyStreak,
@@ -1064,11 +1228,17 @@ Players.PlayerRemoving:Connect(function(player)
 			plot.owner = nil
 			plot.signLabel.Text = "UNCLAIMED PLOT"
 			plot.padLabel.Text = "FUSION PAD"
-			plot.pedestalLabel.Text = "empty"
-			plot.sellPrompt.Enabled = false
-			if plot.display then
-				plot.display:Destroy()
-				plot.display = nil
+			for _, zoneDef in ipairs(ZONES) do
+				for _, slot in ipairs(plot.zones[zoneDef.key].slots) do
+					if slot.itemPart then
+						slot.itemPart:Destroy()
+						slot.itemPart = nil
+					end
+					slot.itemName = nil
+					slot.value = nil
+					slot.label.Text = "empty"
+					slot.sellPrompt.Enabled = false
+				end
 			end
 		end
 	end

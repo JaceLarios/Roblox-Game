@@ -1,4 +1,22 @@
-# Latest handoff — detailed item models, all 34 (2026-09-11)
+# Latest handoff — placement economy: passive income + tiered zones (2026-09-11)
+
+The core loop changed: fusing no longer puts the result on a single pedestal for one manual sell. Instead it **auto-places into one of three zones on your plot**, based on tier, where it earns coins every few seconds for as long as it stays — sell it anytime instead for an instant (smaller) payout. This replaces the "fuse → sell → repeat" loop with "fuse → build a collection → passive income scales with how many rare things you've placed."
+
+**Zones** (physically built into each of the 8 plots, behind the fusion pad): `GARAGE` (Tier 2, 4 slots), `WORKSHOP` (Tier 3 non-secret, 3 slots), `TROPHY CASE` (Tier 4+ and all secrets regardless of tier, 2 slots). A result auto-places into the first empty slot of its zone; if that zone is full, the result drops back into the shared yard instead of being lost, with a toast telling the player to clear a slot.
+
+**Income formula:** each placed item earns `value / 90` coins/sec (a `PLACEMENT_PAYBACK_SECONDS` constant — roughly how long it takes passive income to match a manual sell, after which it's pure profit for as long as it's placed). The Haggler upgrade and the timed 2x-sell boost both apply to this rate too, not just manual sells (see `valueMultiplier` in PlotManager). Income is credited server-side every 3 seconds (`INCOME_TICK_SECONDS`) by summing all filled slots across a player's zones.
+
+**Persistence:** `DataManager`'s default save data gained a `placed` field — a list of `{zone, slot, itemName, value}` records, written by `snapshotPlaced` (in the same autosave/leave/shutdown paths as everything else) and restored on join by re-rendering each saved slot. Old saves without this field default to `{}` via the existing "fill in any field a newer version added" merge, so no migration was needed.
+
+**Regression caught and fixed:** removing the single "Pedestal" part broke `MapRevamp.DressPlot`'s `plot:WaitForChild("Pedestal", 10)` dependency (a 10s no-op wait, not a crash, but per-plot cosmetic dressing — pad color, trim — silently stopped applying). Fixed: `DressPlot` now trims the three zone sign posts instead of the old pedestal, and `MapBootstrap` waits on `garageSign` instead of `Pedestal`. Worth remembering: MapRevamp/MapBootstrap look up PlotManager's part names by string, so future PlotManager renames should grep MapRevamp for the old name first.
+
+**Verified in Studio Play**, end to end, via actual ProximityPrompt-triggered gameplay (not just command-bar calls): grabbed real items, fused a valid Tier 2 recipe, confirmed it rendered in the correct zone slot with the correct coins/sec label, watched the coin count actually increase over several seconds from passive income alone, sold a placed item via its own prompt and confirmed the slot cleared, then **stopped and restarted Play** and confirmed the placed item was restored from the save data into the same slot. No console errors at any point. Not tested: multiple concurrent players, a zone actually filling up (the "returned to the yard" full-zone path), and the live published game.
+
+Tuning knobs if the economy feels off: `PLACEMENT_PAYBACK_SECONDS`, `INCOME_TICK_SECONDS`, and each zone's `capacity` are all in the `ZONES` table / constants near the top of `PlotManager.server.luau`.
+
+---
+
+# Previous handoff — detailed item models, all 34 (2026-09-11)
 
 All 34 items — the 12 Tier 1 base items plus all 22 fused results (10 Tier 2, 6 Tier 3, 3 Tier 4, and the 3 secrets) — now have real AI-generated detailed meshes instead of the plain gray/neon placeholder. Tier 2-3 mostly read as literal mashups of their two ingredients (e.g. Boosted Beater is a sedan with a nitrous tank bolted in); Tier 4 and the two same-item secrets (Cone Sentinel, Cartpocalypse) came out as creative robot/creature interpretations rather than more vehicles, which reads well for "boss" tier content. Scrapyard God (the Tier 5 ultimate secret) is a large mech design.
 

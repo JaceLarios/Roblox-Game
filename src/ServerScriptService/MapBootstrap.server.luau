@@ -9,7 +9,7 @@ if plots then
  local function dress(plot)
   if not plot:IsA("Model") then return end
   task.spawn(function()
-   plot:WaitForChild("Pedestal",10)
+   plot:WaitForChild("garageSign",10)
    Map.DressPlot(plot)
   end)
  end

@@ -349,16 +349,19 @@ function Map.DressPlot(plot)
  local index=tonumber(plot.Name:match("%d+")) or 1
  local ground=plot:FindFirstChild("Ground")
  local pad=plot:FindFirstChild("FusionPad")
- local pedestal=plot:FindFirstChild("Pedestal")
- if not (ground and pad and pedestal) then return end
+ if not (ground and pad) then return end
  local col=plotColors[index] or C.teal
  ground.Color=RGB(70,86,94) ground.Material=Enum.Material.Concrete
  pad.Color=col
- pedestal.Color=C.navy pedestal.Material=Enum.Material.Metal
  local f=folder("WorkshopFinish",plot)
  for _,x in {-7,7} do
   part("FusionPadRail",V(0.35,0.2,14),pad.CFrame*CF(x,0.6,0),C.pale,Enum.Material.Neon,f)
  end
- for _,x in {-5,5} do part("PedestalTrim",V(0.4,0.2,10),pedestal.CFrame*CF(x,1.6,0),col,Enum.Material.Neon,f) end
+ -- Placement zones replaced the single pedestal; trim their sign posts
+ -- with the same per-plot accent color instead of PlotManager's old pedestal.
+ for _, zoneKey in {"garage","workshop","trophy"} do
+  local sign=plot:FindFirstChild(zoneKey.."Sign")
+  if sign then part(zoneKey.."SignTrim",V(0.4,0.2,1.2),sign.CFrame*CF(0,2.6,0),col,Enum.Material.Neon,f) end
+ end
 end
 return Map
