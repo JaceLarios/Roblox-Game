@@ -9,7 +9,7 @@ local C = {
  cream=RGB(233,223,192), steel=RGB(76,91,97), dark=RGB(37,48,55),
  yellow=RGB(255,206,80), green=RGB(78,139,104), pale=RGB(162,209,198),
 }
-local plotColors={C.orange,C.teal,RGB(112,153,218),RGB(195,120,124),C.green,RGB(185,153,88),RGB(143,125,181),RGB(93,169,166)}
+local plotColors={RGB(255,120,0),RGB(0,210,210),RGB(60,140,255),RGB(255,70,110),RGB(40,220,120),RGB(255,190,40),RGB(170,80,255),RGB(0,225,200)}
 local root
 local function folder(name,parent)
  local f=Instance.new("Folder") f.Name=name f.Parent=parent or root return f
@@ -351,7 +351,7 @@ function Map.DressPlot(plot)
  local pad=plot:FindFirstChild("FusionPad")
  if not (ground and pad) then return end
  local col=plotColors[index] or C.teal
- ground.Color=RGB(70,86,94) ground.Material=Enum.Material.Concrete
+ ground.Color=col:Lerp(RGB(255,255,255),0.7) ground.Material=Enum.Material.SmoothPlastic
  pad.Color=col
  local f=folder("WorkshopFinish",plot)
  for _,x in {-7,7} do

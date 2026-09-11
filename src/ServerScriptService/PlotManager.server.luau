@@ -269,16 +269,19 @@ local ZONES = {
 	{
 		key = "garage", label = "GARAGE — Tier 2", capacity = 4,
 		offset = Vector3.new(-22, 0, 20),
+		color = Color3.fromRGB(0, 200, 255),
 		accepts = function(info) return info.tier == 2 and not info.isSecret end,
 	},
 	{
 		key = "workshop", label = "WORKSHOP — Tier 3", capacity = 3,
 		offset = Vector3.new(0, 0, 20),
+		color = Color3.fromRGB(200, 80, 255),
 		accepts = function(info) return info.tier == 3 and not info.isSecret end,
 	},
 	{
 		key = "trophy", label = "TROPHY CASE — Tier 4+ / Secrets", capacity = 2,
 		offset = Vector3.new(22, 0, 20),
+		color = Color3.fromRGB(255, 210, 0),
 		accepts = function(info) return info.tier >= 4 or info.isSecret end,
 	},
 }
@@ -312,8 +315,8 @@ for i = 1, PLOT_COUNT do
 		Name = "Ground",
 		Size = Vector3.new(PLOT_SIZE, 1, PLOT_SIZE),
 		Position = centre,
-		Material = Enum.Material.Concrete,
-		Color = Color3.fromRGB(85, 85, 90),
+		Material = Enum.Material.SmoothPlastic,
+		Color = Color3.fromRGB(235, 240, 245),
 		Parent = model,
 	})
 
@@ -322,8 +325,8 @@ for i = 1, PLOT_COUNT do
 		Name = "Sign",
 		Size = Vector3.new(2, 10, 2),
 		Position = centre + Vector3.new(0, 5, -PLOT_SIZE / 2 + 3),
-		Material = Enum.Material.Metal,
-		Color = Color3.fromRGB(60, 60, 65),
+		Material = Enum.Material.SmoothPlastic,
+		Color = Color3.fromRGB(255, 214, 0),
 		Parent = model,
 	})
 	local signLabel = makeLabel(signPost, "UNCLAIMED PLOT", 6, 320, Color3.fromRGB(255, 200, 80))
@@ -333,8 +336,8 @@ for i = 1, PLOT_COUNT do
 		Name = "FusionPad",
 		Size = Vector3.new(16, 1, 16),
 		Position = centre + Vector3.new(0, 1, 0),
-		Material = Enum.Material.DiamondPlate,
-		Color = Color3.fromRGB(200, 140, 40),
+		Material = Enum.Material.Neon,
+		Color = Color3.fromRGB(255, 110, 0),
 		Parent = model,
 	})
 	local padLabel = makeLabel(pad, "FUSION PAD", 7, 340)
@@ -357,11 +360,11 @@ for i = 1, PLOT_COUNT do
 			Name = zoneDef.key .. "Sign",
 			Size = Vector3.new(1, 6, 1),
 			Position = zoneCentre + Vector3.new(0, 3, -4),
-			Material = Enum.Material.Metal,
-			Color = Color3.fromRGB(60, 60, 65),
+			Material = Enum.Material.Neon,
+			Color = zoneDef.color,
 			Parent = model,
 		})
-		makeLabel(signPost2, zoneDef.label, 4, 280, Color3.fromRGB(180, 220, 255))
+		makeLabel(signPost2, zoneDef.label, 4, 280, Color3.fromRGB(255, 255, 255))
 
 		local slots = {}
 		for slotIndex = 1, zoneDef.capacity do
@@ -370,11 +373,11 @@ for i = 1, PLOT_COUNT do
 				Name = zoneDef.key .. "Slot" .. slotIndex,
 				Size = Vector3.new(4, 1, 4),
 				Position = zoneCentre + Vector3.new(localX, 1, 0),
-				Material = Enum.Material.Metal,
-				Color = Color3.fromRGB(70, 70, 78),
+				Material = Enum.Material.SmoothPlastic,
+				Color = zoneDef.color:Lerp(Color3.new(1, 1, 1), 0.6),
 				Parent = model,
 			})
-			local slotLabel = makeLabel(base, "empty", 2.2, 220, Color3.fromRGB(170, 170, 180))
+			local slotLabel = makeLabel(base, "empty", 2.2, 220, zoneDef.color)
 
 			local sellPrompt = Instance.new("ProximityPrompt")
 			sellPrompt.ActionText = "Sell"

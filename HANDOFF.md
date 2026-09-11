@@ -1,4 +1,14 @@
-# Latest handoff — placement economy: passive income + tiered zones (2026-09-11)
+# Latest handoff — brighter color pass on plots and zones (2026-09-11)
+
+Follow-up polish request: "no dull colors, only bright." The plot/zone geometry built by `PlotManager.server.luau` was industrial gray (ground, sign posts, zone slot bases all muted grays); brightened all of it. Each zone now has its own vivid signature color carried through consistently — `garage`=cyan, `workshop`=magenta, `trophy`=gold — used for its sign post (Neon), its slot bases (a lighter tint via `Color3:Lerp`), and its "empty" label text, so the color-coding doubles as a reminder of which tier goes where. Plot ground went from dark gray to a bright near-white; the fusion pad and plot sign post are now Neon orange/yellow instead of muted metal tones. `ItemVisuals`'s fallback color (used only if a future item has no mesh) went from gray to bright cyan neon too.
+
+Also brightened `MapRevamp.luau`'s `plotColors` palette (the 8 per-plot accent colors used for each plot's `FusionPad`, ground tint, and zone sign trim, and reused by the shared "BAY" canopy dressing) from muted/pastel tones to fully saturated ones. Fixed `DressPlot`'s ground recolor, which was unconditionally repainting the ground a dull blue-gray right after PlotManager built it bright — it now tints the ground a light version of the plot's own accent color instead, so the brightening actually sticks.
+
+Did NOT touch the base `C` palette used throughout the rest of the Foundry District map generator (buildings, trees, etc.) — that's a much larger, unreviewed surface and a full rebuild; this pass was scoped to the plot/zone elements the color complaint was actually about. Verified in Studio Play: no console errors, all three zones render in their bright colors with visible per-plot ground/pad/canopy tinting, existing placed item (Lifted Cart) still renders correctly in its now-bright garage slot.
+
+---
+
+# Previous handoff — placement economy: passive income + tiered zones (2026-09-11)
 
 The core loop changed: fusing no longer puts the result on a single pedestal for one manual sell. Instead it **auto-places into one of three zones on your plot**, based on tier, where it earns coins every few seconds for as long as it stays — sell it anytime instead for an instant (smaller) payout. This replaces the "fuse → sell → repeat" loop with "fuse → build a collection → passive income scales with how many rare things you've placed."
 

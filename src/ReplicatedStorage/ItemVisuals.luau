@@ -30,8 +30,8 @@ function ItemVisuals.Create(itemName, position, sizeScale)
 	part.Size = Vector3.new(4, 2, 6) * sizeScale
 	part.Position = position
 	part.Anchored = true
-	part.Material = Enum.Material.Metal
-	part.Color = Color3.fromRGB(120, 120, 125)
+	part.Material = Enum.Material.Neon
+	part.Color = Color3.fromRGB(0, 220, 255)
 	return part
 end
 
