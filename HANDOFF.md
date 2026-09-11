@@ -1,4 +1,18 @@
-# Latest handoff — map refresh (2026-09-11)
+# Latest handoff — detailed item models (2026-09-11)
+
+The 12 Tier 1 base items (Rusted Sedan through Jet Engine) now have real AI-generated detailed meshes instead of the plain gray placeholder block. Fused results (Tier 2+) and secrets are NOT modeled yet — they still show the old neon indicator box on the pedestal until someone models them too.
+
+**How it works:** each mesh is a single textured `MeshPart`, stored as a template in `ReplicatedStorage.ItemModels`, named exactly after its item (e.g. `ItemModels.Jet Engine`). A new module, `ReplicatedStorage.ItemVisuals`, exposes `Create(itemName, position, sizeScale)` (clones the template if one exists, else builds the old gray box) and `HasModel(itemName)`. `ScrapSpawner` (yard drops), `PlotManager.dropItemNearYard` (dead-end fusion returns) and `PlotManager.refreshPad` (carried-item slot display on the pad) all call `ItemVisuals.Create` now. `PlotManager.showOnPedestal` calls it only when `HasModel` is true, so unmodeled fusion results keep their original neon/secret-color look — nothing regresses for content that hasn't been modeled yet.
+
+Golden Scrap is intentionally unchanged (still the glowing neon slab + light beam) since it isn't one of the 34 named items.
+
+Verified in Studio Play: all 12 base items were observed spawning in the yard, carrying correctly into pad slots, and `ItemVisuals.HasModel`/`Create` were exercised directly in the command bar for both a modeled and an unmodeled name. No console errors. Not tested: an actual fusion completing on the pedestal with a modeled result (none exist yet), and the live published game (this was Edit/Play-mode Studio only, not published).
+
+Next work on this: model the remaining 22 items (10 Tier 2, 6 Tier 3, 3 Tier 4, 3 secrets) the same way, then `showOnPedestal` will automatically start showing them instead of the neon box — no code changes needed for that part.
+
+---
+
+# Previous handoff — map refresh (2026-09-11)
 
 The Foundry District map refresh is applied in Studio and backed up in this repository. Read [docs/map-refresh.md](docs/map-refresh.md) first for the exact files, verification, reconstruction steps, and remaining limitations.
 

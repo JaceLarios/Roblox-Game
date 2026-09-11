@@ -6,6 +6,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
+local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 
 -- Shared with PlotManager and the client UI.
 local remote = ReplicatedStorage:FindFirstChild("GameUpdate")
@@ -71,14 +72,21 @@ local function spawnScrap()
 
 	local isGolden = math.random() < GOLDEN_CHANCE
 	local itemName = isGolden and "GOLDEN SCRAP" or FusionRecipes.RollBaseItem()
+	local position = randomSpawnPosition()
 
-	local part = Instance.new("Part")
-	part.Name = itemName
-	part.Size = isGolden and Vector3.new(6, 3, 8) or Vector3.new(4, 2, 6)
-	part.Position = randomSpawnPosition()
-	part.Anchored = true          -- v1: no physics. Simpler and cheaper.
-	part.Material = isGolden and Enum.Material.Neon or Enum.Material.Metal
-	part.Color = isGolden and Color3.fromRGB(255, 205, 60) or Color3.fromRGB(120, 120, 125)
+	local part
+	if isGolden then
+		part = Instance.new("Part")
+		part.Name = itemName
+		part.Size = Vector3.new(6, 3, 8)
+		part.Position = position
+		part.Anchored = true          -- v1: no physics. Simpler and cheaper.
+		part.Material = Enum.Material.Neon
+		part.Color = Color3.fromRGB(255, 205, 60)
+	else
+		-- Detailed mesh when one exists in ItemModels, else the old block.
+		part = ItemVisuals.Create(itemName, position, 1)
+	end
 
 	-- Stores the item's identity as data, not just a display name.
 	-- The fusion pad will read this attribute later, so renaming

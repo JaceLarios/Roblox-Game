@@ -16,6 +16,7 @@ local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
+local ItemVisuals   = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local DataManager   = require(script.Parent:WaitForChild("DataManager"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 Gamepasses.Start()
@@ -484,14 +485,9 @@ local function refreshPad(player)
 		local itemName = s.slots[i]
 		if itemName then
 			local offset = (i == 1) and -4.6 or 4.6
-			local slotPart = makePart({
-				Name = "Slot" .. i,
-				Size = Vector3.new(3.6, 1.8, 5.2),
-				Position = plot.pad.Position + Vector3.new(offset, 2.4, 0),
-				Material = Enum.Material.Metal,
-				Color = Color3.fromRGB(152, 154, 160),
-				Parent = plot.model,
-			})
+			local slotPart = ItemVisuals.Create(itemName, plot.pad.Position + Vector3.new(offset, 2.4, 0), 0.85)
+			slotPart.Name = "Slot" .. i
+			slotPart.Parent = plot.model
 			makeLabel(slotPart, itemName, 1.8, 190, Color3.fromRGB(255, 235, 190))
 			plot.slotParts[i] = slotPart
 		end
@@ -535,13 +531,8 @@ local function getScrapFolder()
 end
 
 local function dropItemNearYard(itemName)
-	local part = makePart({
-		Name = itemName,
-		Size = Vector3.new(4, 2, 6),
-		Position = Vector3.new(math.random(-40, 40), 3, math.random(-40, 40)),
-		Material = Enum.Material.Metal,
-		Color = Color3.fromRGB(120, 120, 125),
-	})
+	local position = Vector3.new(math.random(-40, 40), 3, math.random(-40, 40))
+	local part = ItemVisuals.Create(itemName, position, 1)
 	part:SetAttribute("ItemName", itemName)
 	makeLabel(part, itemName, 2, 200)
 	part.Parent = getScrapFolder()
@@ -554,14 +545,22 @@ end
 local function showOnPedestal(plot, resultName, info)
 	if plot.display then plot.display:Destroy() end
 
-	local part = makePart({
-		Name = resultName,
-		Size = Vector3.new(8, 4, 12),
-		Position = plot.pedestal.Position + Vector3.new(0, 4, 0),
-		Material = Enum.Material.Neon,
-		Color = info.isSecret and Color3.fromRGB(255, 90, 200) or Color3.fromRGB(90, 200, 255),
-		Parent = plot.model,
-	})
+	local pedestalPosition = plot.pedestal.Position + Vector3.new(0, 4, 0)
+	local part
+	if ItemVisuals.HasModel(resultName) then
+		part = ItemVisuals.Create(resultName, pedestalPosition, 2)
+	else
+		-- No detailed model for this result yet — keep the neon indicator,
+		-- with a distinct color for secret discoveries.
+		part = makePart({
+			Name = resultName,
+			Size = Vector3.new(8, 4, 12),
+			Position = pedestalPosition,
+			Material = Enum.Material.Neon,
+			Color = info.isSecret and Color3.fromRGB(255, 90, 200) or Color3.fromRGB(90, 200, 255),
+		})
+	end
+	part.Parent = plot.model
 	part:SetAttribute("ItemName", resultName)
 	part:SetAttribute("Tier", info.tier)
 	makeLabel(part, resultName, 3, 260)
