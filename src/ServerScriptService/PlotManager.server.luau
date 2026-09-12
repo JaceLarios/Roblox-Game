@@ -22,6 +22,7 @@ local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local ItemVisuals   = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local DataManager   = require(script.Parent:WaitForChild("DataManager"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
+local Brainrot = require(script.Parent:WaitForChild("BrainrotService"))
 Gamepasses.Start()
 
 -- ---------- Tuning ----------
@@ -183,6 +184,26 @@ end
 -- the moment you press Sell.
 local function valueMultiplier(s)
 	return (1 + (s.upgrades.value - 1) * 0.15) * boostMult(s, "value")
+end
+
+-- Cars as transportation: every fused vehicle sitting in your Garage zone
+-- (not sold) makes you faster, on top of everything else you're carrying
+-- around. Recomputed from scratch each time so it never drifts.
+local BASE_WALK_SPEED = 16
+local GARAGE_SPEED_PER_ITEM = 2
+
+local function updateWalkSpeed(player)
+	local s = state[player]
+	local plot = s and plots[s.plotIndex]
+	local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+	if not (plot and humanoid) then return end
+
+	local filled = 0
+	for _, slot in ipairs(plot.zones.garage.slots) do
+		if slot.itemName then filled = filled + 1 end
+	end
+
+	humanoid.WalkSpeed = BASE_WALK_SPEED + filled * GARAGE_SPEED_PER_ITEM
 end
 
 ------------------------------------------------------------------
@@ -685,6 +706,7 @@ local function sellSlot(plot, zoneKey, slotIndex, player)
 	slot.value = nil
 	slot.label.Text = "empty"
 	slot.sellPrompt.Enabled = false
+	updateWalkSpeed(player)
 
 	if s then
 		s.sales = s.sales + 1
@@ -749,6 +771,7 @@ local function attemptFusion(player)
 		dropItemNearYard(result)
 		toast(player, string.format("Your zone for %s is full — sell something there first. It was returned to the yard.", result))
 	end
+	updateWalkSpeed(player)
 
 	playSound(plot.pad, (info.isSecret or info.tier >= 4) and "big" or "fuse")
 	checkGoals(player)
@@ -1060,6 +1083,7 @@ local function onPlayerAdded(player)
 	-- Load BEFORE anything else, so a slow DataStore can't be beaten
 	-- by the player picking something up.
 	local data = DataManager.Load(player)
+	Brainrot.Init(player, data.brainrotDiscovered)
 
 	local stats = Instance.new("Folder")
 	stats.Name = "leaderstats"
@@ -1114,6 +1138,7 @@ local function onPlayerAdded(player)
 			renderInSlot(plot, slot, saved.itemName, saved.value, false)
 		end
 	end
+	updateWalkSpeed(player)
 
 	-- Drop them on their own plot when they spawn.
 	player.CharacterAdded:Connect(function(character)
@@ -1122,6 +1147,7 @@ local function onPlayerAdded(player)
 		if plot and character.PrimaryPart then
 			character:PivotTo(CFrame.new(plot.centre + Vector3.new(0, 5, -20)))
 		end
+		updateWalkSpeed(player)
 		task.wait(1)
 		pushUI(player)
 		toast(player, "Plot " .. index .. " is yours. Scrap spawns in the centre.")
@@ -1182,6 +1208,7 @@ local function snapshot(player)
 		secrets = s.secrets,
 		sales = s.sales,
 		placed = plot and snapshotPlaced(plot) or {},
+		brainrotDiscovered = Brainrot.Snapshot(player),
 		upgrades = s.upgrades,
 		lastDailyDay = s.lastDailyDay,
 		dailyStreak = s.dailyStreak,
@@ -1246,6 +1273,7 @@ Players.PlayerRemoving:Connect(function(player)
 		end
 	end
 	state[player] = nil
+	Brainrot.Cleanup(player)
 	DataManager.Forget(player)
 end)
 

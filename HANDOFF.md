@@ -1,4 +1,24 @@
-# Latest handoff — brighter color pass on plots and zones (2026-09-11)
+# Latest handoff — Brainrot Island + cars-as-transportation (2026-09-11)
+
+First gameplay-expansion milestone (of three options offered — the other two were "vehicles/driving first" and "small taste of both"; this one was picked): a new, mostly-independent content line plus a small, low-risk hook into the existing economy.
+
+**Cars as transportation:** each fused vehicle sitting in your Garage zone (not sold) now gives +2 WalkSpeed, on top of the base 16 — full 4-slot Garage = 24 WalkSpeed. Selling a Garage item removes its bonus immediately. This is a **speed-boost abstraction, not real driving** — that trade-off was explicit (the alternative considered was full vehicle-seat physics). See `updateWalkSpeed` in `PlotManager.server.luau`; called after every placement/sale/join/respawn so it never drifts from the actual Garage contents.
+
+**Brainrot Island:** a new area at `(0, 0, 900)` — far from the Foundry District ring — reachable via a teleport pad at the edge of the main map (`ToBrainrotIsland`, near `(0,1,320)`) and back (`ToMainland` on the island). It has its own spawner, its own shared (not per-player) fusion pad, and its own 8-item base + 4 Tier2 + 1 Tier3 + 1 secret recipe tree (`ReplicatedStorage.BrainrotRecipes`) — **original creatures**, not the viral "Italian brainrot" characters (Tralalero Tralala, Bombardiro Crocodilo, etc. belong to other creators; the brief was explicit about this). All 14 got real AI-generated meshes the same way the vehicle line did.
+
+Two deliberate simplifications vs. the Junkyard system, both to keep this a contained first pass rather than doubling PlotManager's complexity:
+- **Fusing pays out immediately** instead of placing into passive-income zones. If this milestone lands well, upgrading it to placement zones (mirroring Garage/Workshop/Trophy Case) is the natural next step.
+- **The fusion pad is shared**, first-come-first-served, not per-player — there's only one, so contention is possible with several players fusing brainrot at once.
+
+**Architecture note for whoever touches this next:** `BrainrotService.luau` (ModuleScript, ServerScriptService) is deliberately self-contained — its own carry slots, never touches `PlotManager`'s Junkyard slots, so the two item lines can't cross. But it does NOT call `DataManager.Load`/`Save` itself: PlotManager owns the entire save-file lifecycle (autosave, `BindToClose`, `PlayerRemoving`), and a second independent save-caller would risk one overwriting the other's fields since `DataManager.Save` is a full overwrite, not a merge. Instead `BrainrotService` exposes `Init(player, discoveredList)` / `Snapshot(player)` / `Cleanup(player)`, which `PlotManager` calls at the right lifecycle points. `DataManager`'s default save data gained `brainrotDiscovered = {}`; old saves fill it in automatically via the existing "merge with defaults" load path — no migration needed.
+
+**Regression caught while wiring this up:** none this time, but note for later — `randomSpawnPosition()` on the island originally had no exclusion zone around the fusion pad, so creatures could spawn close enough that their "Grab" prompt competed with the pad's "Fuse" prompt for focus. Fixed with an 18-stud `PAD_EXCLUSION_RADIUS`. Worth remembering if the Junkyard yard's spawn area is ever shrunk relative to the plots.
+
+**Verified in Studio Play:** full loop tested through real ProximityPrompt-triggered gameplay — grabbed real creatures, hit a dead-end fuse (both items correctly returned to the island), and a successful Tier 2 discovery (pad cleared, coins increased by the expected amount, confirmed the payout math). Recipe logic (all tiers + secret + dead-end) additionally verified directly via command bar. Teleporter tested in the island→mainland direction (island→main and main→island use identical code, not independently re-tested). WalkSpeed boost confirmed exact (16 + 2×filled-Garage-slots). No console errors throughout. **Not tested:** the shared-pad-contention case with multiple simultaneous players, and the live published game.
+
+---
+
+# Previous handoff — brighter color pass on plots and zones (2026-09-11)
 
 Follow-up polish request: "no dull colors, only bright." The plot/zone geometry built by `PlotManager.server.luau` was industrial gray (ground, sign posts, zone slot bases all muted grays); brightened all of it. Each zone now has its own vivid signature color carried through consistently — `garage`=cyan, `workshop`=magenta, `trophy`=gold — used for its sign post (Neon), its slot bases (a lighter tint via `Color3:Lerp`), and its "empty" label text, so the color-coding doubles as a reminder of which tier goes where. Plot ground went from dark gray to a bright near-white; the fusion pad and plot sign post are now Neon orange/yellow instead of muted metal tones. `ItemVisuals`'s fallback color (used only if a future item has no mesh) went from gray to bright cyan neon too.
 

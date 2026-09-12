@@ -41,6 +41,7 @@ local function defaultData()
 		secrets = 0,
 		sales = 0,
 		placed = {},
+		brainrotDiscovered = {},
 		upgrades = { luck = 1, carry = 1, magnet = 0, value = 1 },
 		lastDailyDay = 0,
 		dailyStreak = 0,
