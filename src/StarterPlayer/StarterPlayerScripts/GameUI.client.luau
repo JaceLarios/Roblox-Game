@@ -1116,58 +1116,37 @@ remote.OnClientEvent:Connect(function(data)
 end)
 
 ------------------------------------------------------------------
--- Travel menu — a single button opens a big picker with a live
--- turntable preview of each destination, stacked in rows.
+-- Travel menu — a single button opens a big picker listing each
+-- destination as a bold color-gradient card with a giant emoji.
 ------------------------------------------------------------------
 
 local travelRemote = ReplicatedStorage:WaitForChild("TravelTo")
-local itemModelsForPreview = ReplicatedStorage:WaitForChild("ItemModels")
 
 local WORLDS = {
 	{
-		key = "junkyard", name = "JUNKYARD", color = GOLD,
+		key = "junkyard", name = "JUNKYARD", emoji = "🚗",
 		blurb = "Your plot, the fusion pad, and the shared scrap yard.",
-		groundColor = Color3.fromRGB(235, 240, 245),
-		groundSize = Vector3.new(70, 1, 60),
-		cameraPos = Vector3.new(0, 6, 15),
-		cameraLookAt = Vector3.new(0, -3, -2),
-		previewItems = {
-			{ name = "Rusted Sedan", pos = Vector3.new(-12, 0, 0.5), rot = 25 },
-			{ name = "Cop Cruiser", pos = Vector3.new(-3.5, 0, -1.5), rot = -15 },
-			{ name = "Golf Cart", pos = Vector3.new(5, 0, 1.5), rot = 40 },
-			{ name = "Traffic Cone", pos = Vector3.new(11, 0, -0.5), rot = 0 },
-			{ name = "Traffic Cone", pos = Vector3.new(13, 0, 1.2), rot = 10 },
-		},
+		gradientColors = { Color3.fromRGB(255, 214, 80), Color3.fromRGB(255, 130, 40) },
 	},
 	{
-		key = "brainrot", name = "BRAINROT ISLAND", color = Color3.fromRGB(255, 90, 200),
+		key = "brainrot", name = "BRAINROT ISLAND", emoji = "🧠",
 		blurb = "A separate island with its own creatures to fuse.",
-		groundColor = Color3.fromRGB(60, 220, 90),
-		groundSize = Vector3.new(70, 1, 60),
-		cameraPos = Vector3.new(0, 6, 15),
-		cameraLookAt = Vector3.new(0, -3, -2),
-		previewItems = {
-			{ name = "Waffronio Pigeonelli", pos = Vector3.new(-12, 0, 0.5), rot = 15 },
-			{ name = "Croissantino Batusso", pos = Vector3.new(-4, 0, -1.5), rot = -20 },
-			{ name = "Turbowaffle Espressoni", pos = Vector3.new(3.5, 0, 1.5), rot = 10 },
-			{ name = "Spagmeato Chaosini", pos = Vector3.new(9, 0, -1), rot = -8 },
-			{ name = "Meatballzilla Supremo", pos = Vector3.new(15, 0, 0), rot = -10 },
-		},
+		gradientColors = { Color3.fromRGB(255, 110, 210), Color3.fromRGB(170, 80, 255) },
 	},
 }
 
 -- Compact trigger button (right side, vertically centered).
 local travelBtn = Instance.new("TextButton")
-travelBtn.Size = UDim2.new(0, 130, 0, 44)
-travelBtn.Position = UDim2.new(1, -150, 0.5, -22)
+travelBtn.Size = UDim2.new(0, 150, 0, 46)
+travelBtn.Position = UDim2.new(1, -170, 0.5, -23)
 travelBtn.BackgroundColor3 = Color3.fromRGB(60, 230, 170)
-travelBtn.Text = "TRAVEL"
+travelBtn.Text = "🚀  TRAVEL"
 travelBtn.TextColor3 = DARK
 travelBtn.Font = Enum.Font.GothamBlack
-travelBtn.TextSize = 16
+travelBtn.TextSize = 18
 travelBtn.BorderSizePixel = 0
 travelBtn.Parent = gui
-rounded(travelBtn, 10)
+rounded(travelBtn, 12)
 
 -- Big picker modal — nearly fullscreen, scale-sized so it stays "almost
 -- the whole screen" on any resolution instead of a fixed pixel box.
@@ -1220,104 +1199,59 @@ end
 travelBtn.MouseButton1Click:Connect(toggleTravel)
 travelClose.MouseButton1Click:Connect(toggleTravel)
 
--- A hand-arranged, static "photo" of a world's signature items — a
--- staged shot, not a live camera feed of the real (and often far away)
--- place. Fills the whole row; the row itself dims it with a gradient so
--- the name/blurb text stays readable on top.
-local function buildPreview(parent, world)
-	local viewport = Instance.new("ViewportFrame")
-	viewport.Size = UDim2.new(1, 0, 1, 0)
-	viewport.BackgroundTransparency = 1
-	viewport.ZIndex = 1
-	viewport.Parent = parent
-
-	local camera = Instance.new("Camera")
-	camera.Parent = viewport
-	viewport.CurrentCamera = camera
-	camera.FieldOfView = 60
-	camera.CFrame = CFrame.new(world.cameraPos, world.cameraLookAt)
-
-	local stage = Instance.new("Model")
-	stage.Name = "Stage"
-	stage.Parent = viewport
-
-	local groundTop = -1.5 + world.groundSize.Y / 2
-	local ground = Instance.new("Part")
-	ground.Name = "Ground"
-	ground.Size = world.groundSize
-	ground.CFrame = CFrame.new(0, -1.5, 0)
-	ground.Anchored = true
-	ground.CanCollide = false
-	ground.Material = Enum.Material.SmoothPlastic
-	ground.Color = world.groundColor
-	ground.Parent = stage
-
-	for _, item in ipairs(world.previewItems) do
-		local template = itemModelsForPreview:FindFirstChild(item.name)
-		if template then
-			local clone = template:Clone()
-			clone.Anchored = true
-			clone.CanCollide = false
-			clone.CFrame = CFrame.new(item.pos + Vector3.new(0, groundTop + clone.Size.Y / 2, 0))
-				* CFrame.Angles(0, math.rad(item.rot), 0)
-			clone.Parent = stage
-		end
-	end
-end
-
+-- Bold color-gradient cards with a giant emoji badge — reliably bright
+-- and fun on every screen, unlike a hand-lit 3D scene, which fought us
+-- on camera angles for three rounds before we gave up on it here.
 local function buildWorldRow(world)
 	local row = Instance.new("TextButton")
-	row.Size = UDim2.new(1, -6, 0, 300)
-	row.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+	row.Size = UDim2.new(1, -6, 0, 220)
+	row.BackgroundColor3 = world.gradientColors[1]
 	row.AutoButtonColor = false
 	row.Text = ""
 	row.BorderSizePixel = 0
 	row.ClipsDescendants = true
 	row.Parent = travelScroll
-	rounded(row, 16)
-
-	-- The preview photo, filling the card, then a bottom-heavy dark
-	-- gradient so it reads as "blended in behind the name" rather than
-	-- a stark cutout — bright and clear up top, dimmed where the text sits.
-	buildPreview(row, world)
-
-	local overlay = Instance.new("Frame")
-	overlay.Size = UDim2.new(1, 0, 1, 0)
-	overlay.BackgroundColor3 = Color3.fromRGB(6, 6, 10)
-	overlay.BorderSizePixel = 0
-	overlay.ZIndex = 2
-	overlay.Parent = row
+	rounded(row, 20)
 
 	local gradient = Instance.new("UIGradient")
-	gradient.Rotation = 90
-	gradient.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 1),
-		NumberSequenceKeypoint.new(0.5, 0.8),
-		NumberSequenceKeypoint.new(0.75, 0.35),
-		NumberSequenceKeypoint.new(1, 0.05),
-	})
-	gradient.Parent = overlay
+	gradient.Color = ColorSequence.new(world.gradientColors[1], world.gradientColors[2])
+	gradient.Rotation = 20
+	gradient.Parent = row
 
-	local stripe = Instance.new("Frame")
-	stripe.Size = UDim2.new(0, 8, 1, 0)
-	stripe.BackgroundColor3 = world.color
-	stripe.BorderSizePixel = 0
-	stripe.ZIndex = 3
-	stripe.Parent = row
+	-- Giant emoji badge, oversized and cropped by the card so it reads as
+	-- a bold graphic rather than a tiny icon.
+	local emojiBadge = Instance.new("TextLabel")
+	emojiBadge.Size = UDim2.new(0, 260, 0, 260)
+	emojiBadge.Position = UDim2.new(0, -40, 0.5, -130)
+	emojiBadge.BackgroundTransparency = 1
+	emojiBadge.Text = world.emoji
+	emojiBadge.Font = Enum.Font.GothamBlack
+	emojiBadge.TextSize = 150
+	emojiBadge.TextTransparency = 0.06
+	emojiBadge.TextStrokeTransparency = 0.75
+	emojiBadge.Rotation = -8
+	emojiBadge.Parent = row
 
-	local nameLabel = label(row, world.name, UDim2.new(1, -280, 0, 46), world.color, Enum.Font.GothamBlack, 36)
-	nameLabel.Position = UDim2.new(0, 30, 1, -112)
-	nameLabel.ZIndex = 3
+	local nameLabel = label(row, world.name, UDim2.new(1, -280, 0, 44), Color3.fromRGB(255, 255, 255), Enum.Font.GothamBlack, 34)
+	nameLabel.Position = UDim2.new(0, 200, 0, 34)
+	nameLabel.TextStrokeTransparency = 0.55
 
-	local blurbLabel = label(row, world.blurb, UDim2.new(1, -280, 0, 44), LIGHT, Enum.Font.GothamMedium, 16)
-	blurbLabel.Position = UDim2.new(0, 30, 1, -62)
+	local blurbLabel = label(row, world.blurb, UDim2.new(1, -300, 0, 40), Color3.fromRGB(255, 255, 255), Enum.Font.GothamMedium, 16)
+	blurbLabel.Position = UDim2.new(0, 200, 0, 82)
 	blurbLabel.TextWrapped = true
-	blurbLabel.ZIndex = 3
+	blurbLabel.TextTransparency = 0.05
+	blurbLabel.TextStrokeTransparency = 0.65
 
-	local goLabel = label(row, "TAP TO TRAVEL  →", UDim2.new(0, 240, 0, 30), Color3.fromRGB(255, 255, 255), Enum.Font.GothamBlack, 16)
-	goLabel.Position = UDim2.new(1, -270, 1, -56)
-	goLabel.TextXAlignment = Enum.TextXAlignment.Right
-	goLabel.ZIndex = 3
+	local goPill = Instance.new("Frame")
+	goPill.Size = UDim2.new(0, 200, 0, 42)
+	goPill.Position = UDim2.new(0, 200, 1, -62)
+	goPill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	goPill.BorderSizePixel = 0
+	goPill.Parent = row
+	rounded(goPill, 21)
+
+	local goLabel = label(goPill, "TAP TO TRAVEL  →", UDim2.new(1, 0, 1, 0), world.gradientColors[2], Enum.Font.GothamBlack, 15)
+	goLabel.TextXAlignment = Enum.TextXAlignment.Center
 
 	row.MouseButton1Click:Connect(function()
 		travelRemote:FireServer(world.key)

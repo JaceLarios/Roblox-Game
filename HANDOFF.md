@@ -1,4 +1,18 @@
-# Latest handoff — travel menu: fullscreen + hero-photo rows (2026-09-11)
+# Latest handoff — travel menu: dropped the 3D preview for gradient + emoji cards (2026-09-11)
+
+Fourth pass on the travel menu in one day, and the one that actually landed. Direct feedback on the hero-photo version: "the artwork... looks very terrible," wanted it to look "fun" instead, plus an emoji on the TRAVEL button.
+
+**Decision: abandon the ViewportFrame 3D scene entirely.** Three rounds of camera/ground tuning (see the previous handoff entry) never got it past "acceptable" — a flat ground plate viewed at an angle inherently shows either dead black space above the horizon or, once you fix that by pulling the camera back, tiny distant-looking items. Rather than a fourth round of geometry tuning, replaced it with something structurally simpler and much harder to make look bad: each row is now a bold two-color `UIGradient` (`Junkyard` = gold→orange, `Brainrot Island` = pink→purple) with one giant emoji as an oversized, slightly-rotated badge (🚗 and 🧠), white text with a stroke for contrast, and a white pill button reading "TAP TO TRAVEL". The `TRAVEL` trigger button itself now reads "🚀  TRAVEL". No 3D content, no camera math, no `ItemModels` dependency for this feature anymore.
+
+**Why this is the more reliable choice going forward:** a color gradient and an emoji glyph render identically regardless of camera angle, item mesh proportions, or lighting — there's no equivalent to the "dead black space" failure mode. If a third destination gets added, its card only needs a name, blurb, two gradient colors, and one emoji — no scene composition required. Worth remembering if there's ever a temptation to add a "live preview" back: it's a real design cost, not just a tuning problem.
+
+**Verified in Studio Play:** confirmed via screenshot that both emoji render correctly at large size (Roblox's font rendering does support color emoji glyphs here — worth knowing since it was untested before this), confirmed a row click still travels to the right place and closes the modal, no console errors.
+
+**Tooling note, worth remembering (came up twice today):** editing this file in Studio via `multi_edit` failed silently — reported success while leaving old content in place — twice in this session, both times because the `old_string` I sent didn't actually match what was live in Studio (once from a `replace_all` matching two identical blocks, once from drift left over by an earlier edit whose `old_string` had targeted a narrower range than I assumed). Both times, `script_read`/`script_grep` on the *current* Studio content — not trusting the success message or an earlier read — found the actual text and fixed it. Always re-read Studio content immediately before a precise multi-line `multi_edit`, especially several edits into the same file in one session.
+
+---
+
+# Previous handoff — travel menu: fullscreen + hero-photo rows (2026-09-11)
 
 Third pass on the travel menu in one day. The request: much bigger UI, image behind the name instead of beside it, image dimmed to blend with the text, and a better-composed preview scene.
 
