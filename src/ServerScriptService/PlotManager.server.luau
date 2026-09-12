@@ -226,11 +226,15 @@ end
 -- Small builders
 ------------------------------------------------------------------
 
-local function makeLabel(parent, text, offsetY, size, color)
+local function makeLabel(parent, text, offsetY, size, color, maxDistance)
 	local gui = Instance.new("BillboardGui")
 	gui.Size = UDim2.new(0, size or 280, 0, 60)
 	gui.StudsOffset = Vector3.new(0, offsetY or 4, 0)
 	gui.AlwaysOnTop = true
+	-- Billboards hold a constant SCREEN size regardless of distance, so
+	-- without a cutoff every plot's labels stay fully legible from
+	-- clear across the map and pile into an unreadable wall of text.
+	gui.MaxDistance = maxDistance or 45
 	gui.Parent = parent
 
 	local label = Instance.new("TextLabel")
@@ -366,7 +370,7 @@ for i = 1, PLOT_COUNT do
 		Color = Color3.fromRGB(255, 214, 0),
 		Parent = model,
 	})
-	local signLabel = makeLabel(signPost, "UNCLAIMED PLOT", 6, 320, Color3.fromRGB(255, 200, 80))
+	local signLabel = makeLabel(signPost, "UNCLAIMED PLOT", 6, 260, Color3.fromRGB(255, 200, 80), 90)
 
 	-- The fusion pad: only its owner can use it.
 	local pad = makePart({
@@ -377,7 +381,7 @@ for i = 1, PLOT_COUNT do
 		Color = Color3.fromRGB(255, 110, 0),
 		Parent = model,
 	})
-	local padLabel = makeLabel(pad, "FUSION PAD", 7, 340)
+	local padLabel = makeLabel(pad, "FUSION PAD", 7, 260, nil, 55)
 
 	local padPrompt = Instance.new("ProximityPrompt")
 	padPrompt.ActionText = "Fuse"
@@ -401,7 +405,7 @@ for i = 1, PLOT_COUNT do
 			Color = zoneDef.color,
 			Parent = model,
 		})
-		makeLabel(signPost2, zoneDef.label, 4, 280, Color3.fromRGB(255, 255, 255))
+		makeLabel(signPost2, zoneDef.label, 4, 190, Color3.fromRGB(255, 255, 255), 60)
 
 		local slots = {}
 		for slotIndex = 1, zoneDef.capacity do
@@ -414,7 +418,7 @@ for i = 1, PLOT_COUNT do
 				Color = zoneDef.color:Lerp(Color3.new(1, 1, 1), 0.6),
 				Parent = model,
 			})
-			local slotLabel = makeLabel(base, "empty", 2.2, 220, zoneDef.color)
+			local slotLabel = makeLabel(base, "empty", 2.2, 130, zoneDef.color, 50)
 
 			local sellPrompt = Instance.new("ProximityPrompt")
 			sellPrompt.ActionText = "Sell"
@@ -596,7 +600,7 @@ local function refreshPad(player)
 			local slotPart = ItemVisuals.Create(itemName, plot.pad.Position + Vector3.new(offset, 2.4, 0), 0.85)
 			slotPart.Name = "Slot" .. i
 			slotPart.Parent = plot.model
-			makeLabel(slotPart, itemName, 1.8, 190, Color3.fromRGB(255, 235, 190))
+			makeLabel(slotPart, itemName, 1.8, 140, Color3.fromRGB(255, 235, 190), 45)
 			plot.slotParts[i] = slotPart
 		end
 	end
@@ -642,7 +646,7 @@ local function dropItemNearYard(itemName)
 	local position = Vector3.new(math.random(-40, 40), 3, math.random(-40, 40))
 	local part = ItemVisuals.Create(itemName, position, 1)
 	part:SetAttribute("ItemName", itemName)
-	makeLabel(part, itemName, 2, 200)
+	makeLabel(part, itemName, 2, 150, nil, 45)
 	part.Parent = getScrapFolder()
 end
 

@@ -49,9 +49,13 @@ end
 -- Floating name tag so you can tell items apart while testing.
 local function addLabel(part, itemName)
 	local billboard = Instance.new("BillboardGui")
-	billboard.Size = UDim2.new(0, 200, 0, 40)
+	billboard.Size = UDim2.new(0, 150, 0, 32)
 	billboard.StudsOffset = Vector3.new(0, 2, 0)
 	billboard.AlwaysOnTop = true
+	-- Billboards hold a constant SCREEN size regardless of distance, so
+	-- without a cutoff every drop across the whole yard stays fully
+	-- legible at once and piles into an unreadable wall of text.
+	billboard.MaxDistance = 45
 	billboard.Parent = part
 
 	local label = Instance.new("TextLabel")

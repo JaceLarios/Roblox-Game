@@ -59,11 +59,15 @@ local function part(props)
 	return p
 end
 
-local function label(parent, text, offsetY, size, color)
+local function label(parent, text, offsetY, size, color, maxDistance)
 	local gui = Instance.new("BillboardGui")
 	gui.Size = UDim2.new(0, size or 280, 0, 60)
 	gui.StudsOffset = Vector3.new(0, offsetY or 4, 0)
 	gui.AlwaysOnTop = true
+	-- Billboards hold a constant SCREEN size regardless of distance, so
+	-- without a cutoff every label on the island stays fully legible
+	-- from clear across it and piles into an unreadable wall of text.
+	gui.MaxDistance = maxDistance or 45
 	gui.Parent = parent
 
 	local lbl = Instance.new("TextLabel")
@@ -106,7 +110,7 @@ local islandSign = part({
 	Color = Color3.fromRGB(255, 0, 170),
 	Parent = islandFolder,
 })
-label(islandSign, "BRAINROT ISLAND", 9, 420, Color3.fromRGB(255, 255, 255))
+label(islandSign, "BRAINROT ISLAND", 9, 340, Color3.fromRGB(255, 255, 255), 90)
 
 -- Shared fusion pad — first come, first served, unlike the personal pads
 -- back at the Junkyard plots.
@@ -118,7 +122,7 @@ local pad = part({
 	Color = Color3.fromRGB(255, 0, 170),
 	Parent = islandFolder,
 })
-local padLabel = label(pad, "FUSION PAD", 6, 320)
+local padLabel = label(pad, "FUSION PAD", 6, 260, nil, 55)
 
 local padPrompt = Instance.new("ProximityPrompt")
 padPrompt.ActionText = "Fuse"
@@ -137,7 +141,7 @@ local mainGate = part({
 	Color = Color3.fromRGB(255, 0, 170),
 	Parent = workspace,
 })
-label(mainGate, "To Brainrot Island", 4, 260, Color3.fromRGB(255, 255, 255))
+label(mainGate, "To Brainrot Island", 4, 220, Color3.fromRGB(255, 255, 255), 70)
 
 local islandGate = part({
 	Name = "ToMainland",
@@ -147,7 +151,7 @@ local islandGate = part({
 	Color = Color3.fromRGB(0, 200, 255),
 	Parent = islandFolder,
 })
-label(islandGate, "To the Junkyard", 4, 260, Color3.fromRGB(255, 255, 255))
+label(islandGate, "To the Junkyard", 4, 220, Color3.fromRGB(255, 255, 255), 70)
 
 local function attachTeleport(gatePart, destination)
 	local prompt = Instance.new("ProximityPrompt")
@@ -234,7 +238,7 @@ collectionFolder.ChildAdded:Connect(attachPickup)
 local function dropNearIsland(itemName)
 	local itemPart = ItemVisuals.Create(itemName, randomSpawnPosition(), 1)
 	itemPart:SetAttribute("ItemName", itemName)
-	label(itemPart, itemName, 2, 200, Color3.fromRGB(255, 220, 255))
+	label(itemPart, itemName, 2, 150, Color3.fromRGB(255, 220, 255), 45)
 	itemPart.Parent = collectionFolder
 end
 
@@ -244,7 +248,7 @@ local function spawnCreature()
 	local itemName = BrainrotRecipes.RollBaseItem()
 	local itemPart = ItemVisuals.Create(itemName, randomSpawnPosition(), 1)
 	itemPart:SetAttribute("ItemName", itemName)
-	label(itemPart, itemName, 2, 200, Color3.fromRGB(255, 220, 255))
+	label(itemPart, itemName, 2, 150, Color3.fromRGB(255, 220, 255), 45)
 	itemPart.Parent = collectionFolder
 
 	task.delay(DESPAWN_AFTER, function()
