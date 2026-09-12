@@ -1114,3 +1114,45 @@ remote.OnClientEvent:Connect(function(data)
 		redrawBook(data.book)
 	end
 end)
+
+------------------------------------------------------------------
+-- Travel menu (left side, vertically centered) — pick a destination
+-- instead of walking to its physical gate.
+------------------------------------------------------------------
+
+local travelRemote = ReplicatedStorage:WaitForChild("TravelTo")
+
+local travelPanel = Instance.new("Frame")
+travelPanel.Size = UDim2.new(0, 190, 0, 116)
+travelPanel.Position = UDim2.new(1, -210, 0.5, -58)
+travelPanel.BackgroundColor3 = DARK
+travelPanel.BackgroundTransparency = GLASS_HUD
+travelPanel.BorderSizePixel = 0
+travelPanel.Parent = gui
+rounded(travelPanel)
+
+local travelHeader = label(travelPanel, "TRAVEL", UDim2.new(1, -20, 0, 20), GOLD, Enum.Font.GothamBold, 12)
+travelHeader.Position = UDim2.new(0, 12, 0, 8)
+
+local function travelButton(text, color, yPos, destination)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1, -20, 0, 34)
+	btn.Position = UDim2.new(0, 10, 0, yPos)
+	btn.BackgroundColor3 = color
+	btn.Text = text
+	btn.TextColor3 = DARK
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 13
+	btn.BorderSizePixel = 0
+	btn.Parent = travelPanel
+	rounded(btn)
+
+	btn.MouseButton1Click:Connect(function()
+		travelRemote:FireServer(destination)
+	end)
+
+	return btn
+end
+
+travelButton("Junkyard", GOLD, 32, "junkyard")
+travelButton("Brainrot Island", Color3.fromRGB(255, 90, 200), 74, "brainrot")

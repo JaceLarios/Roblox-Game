@@ -25,6 +25,13 @@ local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Brainrot = require(script.Parent:WaitForChild("BrainrotService"))
 Gamepasses.Start()
 
+-- We position each character ourselves (their assigned plot, or wherever
+-- they travel to) via RespawnLocation, so the default auto-spawn — which
+-- would otherwise drop them at the world origin for a frame before our
+-- code can move them — is turned off in favor of an explicit LoadCharacter
+-- once we know where they belong.
+Players.CharacterAutoLoads = false
+
 -- ---------- Tuning ----------
 local PLOT_COUNT  = 8
 local RING_RADIUS = 190    -- how far each plot sits from the centre yard
@@ -118,6 +125,15 @@ if not claimRemote then
 	claimRemote = Instance.new("RemoteEvent")
 	claimRemote.Name = "ClaimDaily"
 	claimRemote.Parent = ReplicatedStorage
+end
+
+-- The side travel menu asks for a destination key; the server decides
+-- where that actually is.
+local travelRemote = ReplicatedStorage:FindFirstChild("TravelTo")
+if not travelRemote then
+	travelRemote = Instance.new("RemoteEvent")
+	travelRemote.Name = "TravelTo"
+	travelRemote.Parent = ReplicatedStorage
 end
 
 -- Retention rewards.
@@ -905,6 +921,25 @@ buyRemote.OnServerEvent:Connect(function(player, key)
 end)
 
 ------------------------------------------------------------------
+-- Travel menu — the side panel's teleport buttons
+------------------------------------------------------------------
+
+travelRemote.OnServerEvent:Connect(function(player, destination)
+	local character = player.Character
+	if not character then return end
+
+	if destination == "junkyard" then
+		local s = state[player]
+		local plot = s and plots[s.plotIndex]
+		if plot then
+			character:PivotTo(CFrame.new(plot.centre + Vector3.new(0, 5, -20)))
+		end
+	elseif destination == "brainrot" then
+		character:PivotTo(CFrame.new(Brainrot.GetArrivalPosition()))
+	end
+end)
+
+------------------------------------------------------------------
 -- Scrap magnet
 ------------------------------------------------------------------
 
@@ -1101,6 +1136,8 @@ local function onPlayerAdded(player)
 		return
 	end
 
+	local plot = plots[index]
+
 	-- Rebuild the discovered lookup from the saved list.
 	local discovered = {}
 	for _, name in ipairs(data.discoveredList) do
@@ -1130,7 +1167,6 @@ local function onPlayerAdded(player)
 	refreshPad(player)
 
 	-- Restore whatever was placed in this plot's zones last session.
-	local plot = plots[index]
 	for _, saved in ipairs(data.placed or {}) do
 		local zone = plot.zones[saved.zone]
 		local slot = zone and zone.slots[saved.slot]
@@ -1140,23 +1176,34 @@ local function onPlayerAdded(player)
 	end
 	updateWalkSpeed(player)
 
-	-- Drop them on their own plot when they spawn.
+	-- A dedicated, invisible spawn point right on their plot, so the
+	-- character appears there from frame one instead of flashing at the
+	-- world origin first and getting teleported a moment later.
+	if not plot.spawnPoint then
+		local spawnPoint = Instance.new("SpawnLocation")
+		spawnPoint.Name = "PlotSpawn"
+		spawnPoint.Size = Vector3.new(6, 1, 6)
+		spawnPoint.Position = plot.centre + Vector3.new(0, 3, -20)
+		spawnPoint.Anchored = true
+		spawnPoint.CanCollide = false
+		spawnPoint.Transparency = 1
+		spawnPoint.Neutral = true
+		spawnPoint.Parent = plot.model
+		plot.spawnPoint = spawnPoint
+	end
+	player.RespawnLocation = plot.spawnPoint
+
 	player.CharacterAdded:Connect(function(character)
-		task.wait(0.2)
-		local plot = plots[index]
-		if plot and character.PrimaryPart then
-			character:PivotTo(CFrame.new(plot.centre + Vector3.new(0, 5, -20)))
-		end
+		character:WaitForChild("Humanoid")
 		updateWalkSpeed(player)
 		task.wait(1)
 		pushUI(player)
 		toast(player, "Plot " .. index .. " is yours. Scrap spawns in the centre.")
 	end)
 
-	-- If the character already exists (Studio joins fast), draw the UI now.
-	if player.Character then
-		task.delay(1, function() pushUI(player) end)
-	end
+	-- CharacterAutoLoads is off, so this is what actually spawns them —
+	-- right at plot.spawnPoint, since RespawnLocation is already set.
+	player:LoadCharacter()
 end
 
 Players.PlayerAdded:Connect(onPlayerAdded)

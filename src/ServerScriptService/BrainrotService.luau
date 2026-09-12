@@ -166,8 +166,15 @@ local function attachTeleport(gatePart, destination)
 	end)
 end
 
-attachTeleport(mainGate, ISLAND_CENTER + Vector3.new(0, 5, -AREA_SIZE / 2 + 12))
+-- Where the travel menu (and the physical gate) actually drop you.
+local ARRIVAL_POSITION = ISLAND_CENTER + Vector3.new(0, 5, -AREA_SIZE / 2 + 12)
+
+attachTeleport(mainGate, ARRIVAL_POSITION)
 attachTeleport(islandGate, Vector3.new(0, 5, 305))
+
+function Brainrot.GetArrivalPosition()
+	return ARRIVAL_POSITION
+end
 
 ------------------------------------------------------------------
 -- Spawning

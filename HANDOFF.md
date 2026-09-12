@@ -1,4 +1,16 @@
-# Latest handoff — Brainrot Island + cars-as-transportation (2026-09-11)
+# Latest handoff — travel menu + fixed spawn point (2026-09-11)
+
+Follow-up to the Brainrot Island work: a side-screen menu to jump between destinations, and a fix for a real spawn-flow issue the new island exposed.
+
+**Travel menu:** a small panel on the right side of the screen, vertically centered (`GameUI.client.luau`), with one button per destination — currently "Junkyard" and "Brainrot Island". Clicking fires a new `TravelTo` RemoteEvent with a destination key; the server (`PlotManager.server.luau`) decides the actual position and calls `character:PivotTo(...)` — the client never sends a position, only a key, same trust model as `BuyUpgrade`. Adding a third destination later is just one more `travelButton(...)` call plus a branch in the server handler; there's no dynamic list machinery since two destinations doesn't warrant it yet. First attempt at wiring the button up placed it at a bad screen position (overlapping the existing daily-rewards button, both anchored left-center) — moved the whole panel to the right-center instead, which is clear on every corner of the HUD.
+
+**Spawn point fix:** players used to visibly spawn at the default Roblox `SpawnLocation` (world origin) for a brief moment before `CharacterAdded` teleported them to their assigned plot — harmless before, but now that a second destination (the island) exists, "spawn at the origin, then teleport" reads more like a bug. Fixed properly rather than papered over: `Players.CharacterAutoLoads` is now `false`, and each plot gets its own invisible per-plot `SpawnLocation` the moment a player is assigned it; `player.RespawnLocation` is set to it and `player:LoadCharacter()` is called explicitly once we actually know where they belong. The character now appears directly on their plot from frame one — confirmed by reading back `HumanoidRootPart.Position` immediately after spawn in Play mode, which landed exactly on `plot.centre`, no intermediate position observed. This also means any future death/reset respawns land in the right place automatically, for free.
+
+**Verified in Studio Play:** spawn position confirmed exact (no origin flash), both travel buttons clicked through the real UI (not simulated via script) and confirmed the server moved the character to the exact expected position each time, no console errors. Note for whoever tests this next: `user_mouse_input`'s coordinates did NOT match the coordinates a screenshot image appeared to show (the screenshot was scaled down from the actual viewport) — read `GuiObject.AbsolutePosition`/`AbsoluteSize` directly instead of estimating from a screenshot when clicking something precisely. **Not tested:** the live published game, and whether `CharacterAutoLoads = false` has any interaction with Studio's "player already in-game before script runs" quirk beyond the existing catch-up loop (which now also triggers a `LoadCharacter()`, so it should self-correct, but wasn't separately verified).
+
+---
+
+# Previous handoff — Brainrot Island + cars-as-transportation (2026-09-11)
 
 First gameplay-expansion milestone (of three options offered — the other two were "vehicles/driving first" and "small taste of both"; this one was picked): a new, mostly-independent content line plus a small, low-risk hook into the existing economy.
 
