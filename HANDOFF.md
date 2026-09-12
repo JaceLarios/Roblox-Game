@@ -1,4 +1,20 @@
-# Latest handoff — travel menu redesign: picker modal with live previews (2026-09-11)
+# Latest handoff — travel menu: fullscreen + hero-photo rows (2026-09-11)
+
+Third pass on the travel menu in one day. The request: much bigger UI, image behind the name instead of beside it, image dimmed to blend with the text, and a better-composed preview scene.
+
+**Modal size:** `travelFrame` is now scale-sized (`0.88 x 0.88` of the screen, not a fixed pixel box) so it stays "almost the whole screen" on any resolution. Title bumped to 40pt.
+
+**Layout flip:** the `ViewportFrame` now fills the entire row (`Size = UDim2.new(1,0,1,0)`, `ZIndex = 1`) as a background photo, with a `Frame` + `UIGradient` overlay on top (`ZIndex = 2`, transparent at the top fading to ~95% opaque at the bottom) so the name/blurb/CTA text (`ZIndex = 3`) sits in a naturally darkened band at the bottom — the standard "hero card" pattern. Row height went from 168px to 300px to give the photo room to breathe.
+
+**Preview composition — this took several iterations, worth reading before touching it again:** each world's preview is a hand-placed, static scene (`previewItems` now carry explicit `pos`/`rot` per item instead of an auto-spaced loop), 4-5 items per world instead of 2, framed by an angled-down camera over a large ground plate. The rotation/turntable animation from the previous version was dropped — a static "photo" reads more intentional at this size than a slowly-spinning wide arrangement (which looked odd swinging past the frame edges). Getting the framing right took 3 attempts: a moderate angle left too much dead black space above the ground; a steep near-top-down angle fixed the dead space but made everything tiny and distant; the setting that actually worked is a **large ground plate (70x60 studs) with a moderate angle** (`cameraPos = (0, 6, 15)`, `cameraLookAt = (0, -3, -2)`) — oversizing the ground was a more reliable fix than precisely solving the camera/FOV geometry. If a third world's preview looks off, adjust `groundSize` before fighting the camera angle.
+
+**Tooling note, worth remembering:** the Roblox Studio `multi_edit` tool's `old_string`/`new_string` replacement silently did nothing (while still reporting success) when the exact same block appeared twice in the file — the Junkyard and Brainrot preview settings started out identical. Splitting into two edits, each with enough unique surrounding context (the `groundColor` line, which differs per world) to disambiguate, fixed it. Always spot-check with `script_read`/`script_grep` after a multi_edit that might have matched more than once — a reported success is not proof the content actually changed.
+
+**Verified in Studio Play:** opened the modal, confirmed both rows render with the wider scene and gradient text overlay, and confirmed a row click still travels correctly and closes the modal (the click handler itself was untouched by this visual pass, but re-verified after all the ViewportFrame/camera changes anyway). No console errors. **Not tested:** the live published game, and how the fixed 300px row height reads on a much narrower (e.g. mobile portrait) screen — this game hasn't been checked for mobile layout at all yet.
+
+---
+
+# Previous handoff — travel menu redesign: picker modal with live previews (2026-09-11)
 
 Follow-up polish on the travel menu from the same day: replaced the always-visible 2-button side panel with a single compact "TRAVEL" trigger button (right side, vertically centered) that opens a big modal ("WHERE TO?") listing destinations as stacked rows, each with a live rotating 3D preview of that world.
 
