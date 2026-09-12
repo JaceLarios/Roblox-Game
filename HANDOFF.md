@@ -1,4 +1,16 @@
-# Latest handoff — travel menu + fixed spawn point (2026-09-11)
+# Latest handoff — travel menu redesign: picker modal with live previews (2026-09-11)
+
+Follow-up polish on the travel menu from the same day: replaced the always-visible 2-button side panel with a single compact "TRAVEL" trigger button (right side, vertically centered) that opens a big modal ("WHERE TO?") listing destinations as stacked rows, each with a live rotating 3D preview of that world.
+
+**How the preview works:** each row has a `ViewportFrame` (`BackgroundTransparency = 1`, so it reads as a floating preview rather than a screenshot) containing its own `Camera` and a small cloned "stage" — a tinted ground plate plus 1-2 signature items cloned live from `ReplicatedStorage.ItemModels` (Junkyard: Rusted Sedan + Cop Cruiser on white; Brainrot: Waffronio Pigeonelli + Meatballzilla Supremo on green). A `RunService.RenderStepped` connection per row slowly spins the stage for a turntable effect. This is a curated preview of each world's theme via its signature items, not a live camera feed of the actual place — much cheaper to build and keeps the modal clean at small size.
+
+Clicking anywhere on a row (the whole row is one `TextButton`, not just a small button in the corner) fires `TravelTo` and closes the modal immediately. The row list is data-driven (a `WORLDS` table), so adding a third destination later is one more table entry, not new layout code.
+
+**Verified in Studio Play:** clicked the real TRAVEL button and a real destination row (not simulated via script) and confirmed via screenshot that both previews render and spin correctly, and confirmed the character actually moved to the right position and the modal closed automatically afterward. No console errors. **Not tested:** the live published game, and ViewportFrame render cost with many players' menus open simultaneously (each open menu runs 2 RenderStepped connections client-side only, so this shouldn't affect other players, but wasn't load-tested).
+
+---
+
+# Previous handoff — travel menu + fixed spawn point (2026-09-11)
 
 Follow-up to the Brainrot Island work: a side-screen menu to jump between destinations, and a fix for a real spawn-flow issue the new island exposed.
 

@@ -15,6 +15,7 @@ local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService      = game:GetService("TweenService")
 local UserInputService  = game:GetService("UserInputService")
+local RunService        = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local remote = ReplicatedStorage:WaitForChild("GameUpdate")
@@ -1116,43 +1117,177 @@ remote.OnClientEvent:Connect(function(data)
 end)
 
 ------------------------------------------------------------------
--- Travel menu (left side, vertically centered) — pick a destination
--- instead of walking to its physical gate.
+-- Travel menu — a single button opens a big picker with a live
+-- turntable preview of each destination, stacked in rows.
 ------------------------------------------------------------------
 
 local travelRemote = ReplicatedStorage:WaitForChild("TravelTo")
+local itemModelsForPreview = ReplicatedStorage:WaitForChild("ItemModels")
 
-local travelPanel = Instance.new("Frame")
-travelPanel.Size = UDim2.new(0, 190, 0, 116)
-travelPanel.Position = UDim2.new(1, -210, 0.5, -58)
-travelPanel.BackgroundColor3 = DARK
-travelPanel.BackgroundTransparency = GLASS_HUD
-travelPanel.BorderSizePixel = 0
-travelPanel.Parent = gui
-rounded(travelPanel)
+local WORLDS = {
+	{
+		key = "junkyard", name = "JUNKYARD", color = GOLD,
+		blurb = "Your plot, the fusion pad, and the shared scrap yard.",
+		previewItems = { "Rusted Sedan", "Cop Cruiser" },
+		groundColor = Color3.fromRGB(235, 240, 245),
+	},
+	{
+		key = "brainrot", name = "BRAINROT ISLAND", color = Color3.fromRGB(255, 90, 200),
+		blurb = "A separate island with its own creatures to fuse.",
+		previewItems = { "Waffronio Pigeonelli", "Meatballzilla Supremo" },
+		groundColor = Color3.fromRGB(60, 220, 90),
+	},
+}
 
-local travelHeader = label(travelPanel, "TRAVEL", UDim2.new(1, -20, 0, 20), GOLD, Enum.Font.GothamBold, 12)
-travelHeader.Position = UDim2.new(0, 12, 0, 8)
+-- Compact trigger button (right side, vertically centered).
+local travelBtn = Instance.new("TextButton")
+travelBtn.Size = UDim2.new(0, 130, 0, 44)
+travelBtn.Position = UDim2.new(1, -150, 0.5, -22)
+travelBtn.BackgroundColor3 = Color3.fromRGB(60, 230, 170)
+travelBtn.Text = "TRAVEL"
+travelBtn.TextColor3 = DARK
+travelBtn.Font = Enum.Font.GothamBlack
+travelBtn.TextSize = 16
+travelBtn.BorderSizePixel = 0
+travelBtn.Parent = gui
+rounded(travelBtn, 10)
 
-local function travelButton(text, color, yPos, destination)
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1, -20, 0, 34)
-	btn.Position = UDim2.new(0, 10, 0, yPos)
-	btn.BackgroundColor3 = color
-	btn.Text = text
-	btn.TextColor3 = DARK
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 13
-	btn.BorderSizePixel = 0
-	btn.Parent = travelPanel
-	rounded(btn)
+-- Big picker modal.
+local travelFrame = Instance.new("Frame")
+travelFrame.Size = UDim2.new(0, 560, 0, 460)
+travelFrame.Position = UDim2.new(0.5, -280, 0.5, -230)
+travelFrame.BackgroundColor3 = DARK
+travelFrame.BackgroundTransparency = GLASS_PANEL
+travelFrame.BorderSizePixel = 0
+travelFrame.Visible = false
+travelFrame.Parent = gui
+rounded(travelFrame, 14)
 
-	btn.MouseButton1Click:Connect(function()
-		travelRemote:FireServer(destination)
-	end)
+local travelTitle = label(travelFrame, "WHERE TO?", UDim2.new(1, -30, 0, 34), GOLD, Enum.Font.GothamBlack, 26)
+travelTitle.Position = UDim2.new(0, 24, 0, 18)
 
-	return btn
+local travelSub = label(travelFrame, "Pick a destination.", UDim2.new(1, -40, 0, 20), DIM, Enum.Font.Gotham, 13)
+travelSub.Position = UDim2.new(0, 24, 0, 52)
+
+local travelClose = Instance.new("TextButton")
+travelClose.Size = UDim2.new(0, 34, 0, 34)
+travelClose.Position = UDim2.new(1, -50, 0, 16)
+travelClose.BackgroundTransparency = 1
+travelClose.Text = "X"
+travelClose.TextColor3 = DIM
+travelClose.Font = Enum.Font.GothamBold
+travelClose.TextSize = 20
+travelClose.Parent = travelFrame
+
+local travelScroll = Instance.new("ScrollingFrame")
+travelScroll.Size = UDim2.new(1, -40, 1, -100)
+travelScroll.Position = UDim2.new(0, 20, 0, 84)
+travelScroll.BackgroundTransparency = 1
+travelScroll.BorderSizePixel = 0
+travelScroll.ScrollBarThickness = 6
+travelScroll.Parent = travelFrame
+
+local travelLayout = Instance.new("UIListLayout")
+travelLayout.Padding = UDim.new(0, 14)
+travelLayout.Parent = travelScroll
+
+travelLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	travelScroll.CanvasSize = UDim2.new(0, 0, 0, travelLayout.AbsoluteContentSize.Y + 10)
+end)
+
+local function toggleTravel()
+	travelFrame.Visible = not travelFrame.Visible
 end
 
-travelButton("Junkyard", GOLD, 32, "junkyard")
-travelButton("Brainrot Island", Color3.fromRGB(255, 90, 200), 74, "brainrot")
+travelBtn.MouseButton1Click:Connect(toggleTravel)
+travelClose.MouseButton1Click:Connect(toggleTravel)
+
+-- A small live turntable of a world's signature items, rendered with a
+-- transparent background so it reads as a floating preview, not a photo.
+local function buildPreview(parent, world)
+	local viewport = Instance.new("ViewportFrame")
+	viewport.Size = UDim2.new(0, 140, 0, 140)
+	viewport.Position = UDim2.new(0, 14, 0.5, -70)
+	viewport.BackgroundTransparency = 1
+	viewport.Parent = parent
+
+	local camera = Instance.new("Camera")
+	camera.Parent = viewport
+	viewport.CurrentCamera = camera
+	camera.CFrame = CFrame.new(Vector3.new(0, 1.6, 9), Vector3.new(0, -0.6, 0))
+
+	local stage = Instance.new("Model")
+	stage.Name = "Stage"
+	stage.Parent = viewport
+
+	local ground = Instance.new("Part")
+	ground.Name = "Ground"
+	ground.Size = Vector3.new(10, 0.5, 10)
+	ground.CFrame = CFrame.new(0, -2, 0)
+	ground.Anchored = true
+	ground.CanCollide = false
+	ground.Material = Enum.Material.SmoothPlastic
+	ground.Color = world.groundColor
+	ground.Parent = stage
+
+	local offsets = { Vector3.new(-2.4, 0, 0), Vector3.new(2.4, 0.4, -0.5) }
+	for i, itemName in ipairs(world.previewItems) do
+		local template = itemModelsForPreview:FindFirstChild(itemName)
+		if template then
+			local clone = template:Clone()
+			clone.Anchored = true
+			clone.CanCollide = false
+			local offset = offsets[i] or Vector3.new(0, 0, 0)
+			clone.CFrame = CFrame.new(offset + Vector3.new(0, -1.75 + clone.Size.Y / 2, 0))
+			clone.Parent = stage
+		end
+	end
+
+	-- Slow turntable spin, forever, as long as this preview exists.
+	RunService.RenderStepped:Connect(function(dt)
+		if viewport.Parent then
+			stage:PivotTo(stage:GetPivot() * CFrame.Angles(0, dt * 0.5, 0))
+		end
+	end)
+end
+
+local function buildWorldRow(world)
+	local row = Instance.new("TextButton")
+	row.Size = UDim2.new(1, -6, 0, 168)
+	row.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+	row.BackgroundTransparency = 0.15
+	row.AutoButtonColor = false
+	row.Text = ""
+	row.BorderSizePixel = 0
+	row.Parent = travelScroll
+	rounded(row, 12)
+
+	local stripe = Instance.new("Frame")
+	stripe.Size = UDim2.new(0, 6, 1, -20)
+	stripe.Position = UDim2.new(0, 0, 0, 10)
+	stripe.BackgroundColor3 = world.color
+	stripe.BorderSizePixel = 0
+	stripe.Parent = row
+	rounded(stripe, 3)
+
+	buildPreview(row, world)
+
+	local nameLabel = label(row, world.name, UDim2.new(1, -180, 0, 30), world.color, Enum.Font.GothamBlack, 22)
+	nameLabel.Position = UDim2.new(0, 170, 0, 20)
+
+	local blurbLabel = label(row, world.blurb, UDim2.new(1, -190, 0, 40), LIGHT, Enum.Font.Gotham, 14)
+	blurbLabel.Position = UDim2.new(0, 170, 0, 54)
+	blurbLabel.TextWrapped = true
+
+	local goLabel = label(row, "TAP TO TRAVEL  →", UDim2.new(1, -190, 0, 20), DIM, Enum.Font.GothamBold, 12)
+	goLabel.Position = UDim2.new(0, 170, 0, 132)
+
+	row.MouseButton1Click:Connect(function()
+		travelRemote:FireServer(world.key)
+		toggleTravel()
+	end)
+end
+
+for _, world in ipairs(WORLDS) do
+	buildWorldRow(world)
+end
