@@ -1,4 +1,20 @@
-# Latest handoff — Color palette pass finished (2026-09-13)
+# Latest handoff — Seasonal events (2026-09-13)
+
+Eleventh pass, same day, the fourth of the five researched features. A developer-toggleable limited-time event window with one exclusive reward — deliberately no calendar automation or admin panel, since the smallest correct version of "recurring content cadence" is a config the developer flips on when they want to run a promo, not a scheduling engine nobody asked for.
+
+**New `ReplicatedStorage/EventConfig.luau`** — three fields (`ACTIVE`, `NAME`, `EXPIRES_AT`) both client and server read directly (no remote needed, since it's static config rather than per-player state). Set `EXPIRES_AT` to a `os.time()` timestamp for a countdown, or `nil` for "on until turned off."
+
+**The event's actual content is a 5th mutation tier — Frenzy, 25x value — that only becomes rollable while the event is active**, reusing all of Mutations.luau's existing machinery (wrapping, tagging, glow, value multiplier) rather than building a parallel reward system. The event also doubles every *regular* mutation's odds while it runs, so it's not just one exclusive drop — the whole grind gets more generous for the window. Frenzy stays registered in the module's lookup tables permanently (not just while active), so an item someone earned during a past event keeps rendering correctly forever after — the gate is only on whether a *new* one can be rolled, never on displaying one already owned.
+
+**A persistent banner, not a toast** — "🎉 Frenzy Weekend — ends in 2h 15m" sits below the leaderboard button, polling `EventConfig` every 5 seconds for a live countdown, visible only while `EventConfig.IsActive()` is true.
+
+**Verified for real, the hard way.** The first attempt to toggle the event via a live `execute_luau` mutation silently did nothing — same module-cache isolation already documented in an earlier handoff, except this time it was subtler: `EventConfig` holds no per-player state, so the *isolation* is real but a *source-level* edit sidesteps it (any fresh require reads the same file). Actually flipping it required editing the module's Source and restarting Play mode, same as any other source change. Once genuinely active: confirmed the banner rendered the correct name and live countdown, and rolled `Mutations.Roll` 500 times to check the actual distribution rather than trust a handful of tries — Frenzy landed at 4.2% against a 5% expected rate, and every regular tier's rate had visibly doubled versus its non-event baseline, both consistent with normal statistical variance at that sample size. Reverted `ACTIVE` to `false` before committing — this ships off by default, waiting for whenever a promo is wanted.
+
+**Not done:** the fifth and final item from the research list, trading — the most complex one, saved for last since it needs the most careful anti-exploit design (this is also the last item on that original list).
+
+---
+
+# Previous handoff — Color palette pass finished (2026-09-13)
 
 Tenth pass, closing out the last item from two passes ago's research list that wasn't its own system. The Upgrades shop, the Gamepasses panel, and the carry bar were the remaining flat gray-and-gold holdouts — everything else (HUD headers, the Index grid, Rebirth, the leaderboard) already got an accent color in earlier passes this session.
 

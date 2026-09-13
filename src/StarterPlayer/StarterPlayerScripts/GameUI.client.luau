@@ -27,6 +27,7 @@ local requestLeaderboardRemote = ReplicatedStorage:WaitForChild("RequestLeaderbo
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
+local EventConfig = require(ReplicatedStorage:WaitForChild("EventConfig"))
 local itemModels = ReplicatedStorage:WaitForChild("ItemModels")
 
 local DARK   = Color3.fromRGB(18, 18, 22)
@@ -1427,6 +1428,55 @@ end
 
 leaderboardBtn.MouseButton1Click:Connect(toggleLeaderboard)
 leaderboardClose.MouseButton1Click:Connect(toggleLeaderboard)
+
+------------------------------------------------------------------
+-- Event banner — reads EventConfig directly (no remote needed, both
+-- sides load the same module); purely cosmetic, the real gate on the
+-- exclusive Frenzy mutation lives server-side in Mutations.Roll.
+------------------------------------------------------------------
+
+local eventBanner = Instance.new("TextLabel")
+eventBanner.Size = UDim2.new(0, 460, 0, 28)
+eventBanner.Position = UDim2.new(0.5, -230, 0, 54)
+eventBanner.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+eventBanner.Text = ""
+eventBanner.TextColor3 = Color3.fromRGB(255, 255, 255)
+eventBanner.TextStrokeTransparency = 0.4
+eventBanner.Font = Enum.Font.LuckiestGuy
+eventBanner.TextSize = 15
+eventBanner.BorderSizePixel = 0
+eventBanner.Visible = false
+eventBanner.Parent = gui
+rounded(eventBanner)
+
+local eventBannerGradient = Instance.new("UIGradient")
+eventBannerGradient.Color = ColorSequence.new(Color3.fromRGB(255, 60, 60), Color3.fromRGB(255, 150, 60))
+eventBannerGradient.Parent = eventBanner
+
+local function formatEventDuration(seconds)
+	if seconds < 60 then return string.format("%ds", seconds) end
+	local h = math.floor(seconds / 3600)
+	local m = math.floor((seconds % 3600) / 60)
+	if h > 0 then return string.format("%dh %dm", h, m) end
+	return string.format("%dm", m)
+end
+
+task.spawn(function()
+	while true do
+		if EventConfig.IsActive() then
+			eventBanner.Visible = true
+			if EventConfig.EXPIRES_AT then
+				local remaining = math.max(0, EventConfig.EXPIRES_AT - os.time())
+				eventBanner.Text = string.format("🎉 %s — ends in %s", EventConfig.NAME, formatEventDuration(remaining))
+			else
+				eventBanner.Text = string.format("🎉 %s — live now!", EventConfig.NAME)
+			end
+		else
+			eventBanner.Visible = false
+		end
+		task.wait(5)
+	end
+end)
 
 ------------------------------------------------------------------
 -- Toasts

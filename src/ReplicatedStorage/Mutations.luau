@@ -14,6 +14,9 @@
 	run before calling into FusionRecipes/BrainrotRecipes/ItemVisuals.
 --]]
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local EventConfig = require(ReplicatedStorage:WaitForChild("EventConfig"))
+
 local Mutations = {}
 
 -- Checked in this (rarest-first) order, each an independent roll — cosmic
@@ -25,12 +28,20 @@ local TIERS = {
 	{ id = "shiny",  name = "Shiny",  color = Color3.fromRGB(220, 235, 245), chance = 1 / 20,    multiplier = 2 },
 }
 
+-- Only rollable while EventConfig.IsActive() — see Roll() below. Still
+-- registered in the same BY_ID/BY_NAME_LOWER lookup tables as the regular
+-- tiers so an already-fused Frenzy item keeps unwrapping/rendering
+-- correctly forever, even after the event that produced it has ended.
+local EVENT_TIER = { id = "frenzy", name = "Frenzy", color = Color3.fromRGB(255, 60, 60), chance = 1 / 40, multiplier = 25 }
+
 local BY_ID = {}
 local BY_NAME_LOWER = {}
 for _, tier in ipairs(TIERS) do
 	BY_ID[tier.id] = tier
 	BY_NAME_LOWER[tier.name:lower()] = tier
 end
+BY_ID[EVENT_TIER.id] = EVENT_TIER
+BY_NAME_LOWER[EVENT_TIER.name:lower()] = EVENT_TIER
 
 -- After this many fusions with no mutation at all, the next one is
 -- guaranteed at least Shiny. Resets to 0 the moment any mutation lands.
@@ -42,9 +53,15 @@ Mutations.PITY_LIMIT = 150
 -- about the base-scrap-upgrade roll it was originally bought for.
 function Mutations.Roll(luckLevel, pityCount)
 	local luckBonus = 1 + math.max(0, (luckLevel or 1) - 1) * 0.05
+	local eventActive = EventConfig.IsActive()
+	local eventMult = eventActive and EventConfig.MUTATION_CHANCE_MULT or 1
+
+	if eventActive and math.random() < EVENT_TIER.chance * luckBonus * eventMult then
+		return EVENT_TIER.id
+	end
 
 	for _, tier in ipairs(TIERS) do
-		if math.random() < tier.chance * luckBonus then
+		if math.random() < tier.chance * luckBonus * eventMult then
 			return tier.id
 		end
 	end
@@ -54,6 +71,10 @@ function Mutations.Roll(luckLevel, pityCount)
 	end
 
 	return nil
+end
+
+function Mutations.EventActive()
+	return EventConfig.IsActive()
 end
 
 -- "Rusted Sedan" + "shiny" -> "[Shiny] Rusted Sedan". Passing a nil/unknown
