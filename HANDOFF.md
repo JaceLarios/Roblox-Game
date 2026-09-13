@@ -1,4 +1,12 @@
-# Latest handoff — Global leaderboard (2026-09-13)
+# Latest handoff — Color palette pass finished (2026-09-13)
+
+Tenth pass, closing out the last item from two passes ago's research list that wasn't its own system. The Upgrades shop, the Gamepasses panel, and the carry bar were the remaining flat gray-and-gold holdouts — everything else (HUD headers, the Index grid, Rebirth, the leaderboard) already got an accent color in earlier passes this session.
+
+Each of the 4 upgrades and 3 gamepasses now has its own accent color (Lucky Wrench teal, Bigger Truck orange, Scrap Magnet purple, Haggler pink; DoubleCoins gold, ExtraCarry blue, AutoCollect green) applied to its row's title, a subtle tinted background, and a thin matching border — the same "tint toward dark + colored stroke" treatment the Index cards already used, so the whole game now shares one visual language for "this row is colored to tell them apart" instead of every panel inventing its own scheme. The carry bar got a plain teal border since it didn't have row-level content to color individually. Verified all 7 rows render their correct distinct color with zero console errors.
+
+---
+
+# Previous handoff — Global leaderboard (2026-09-13)
 
 Ninth pass, same day. A persistent, cross-server "Top Fusioneers" ranking by lifetime coins earned — not current balance, since Rebirth resets that and a player who just cashed in their multiplier shouldn't fall off the board for it. New `ServerScriptService/LeaderboardService.luau`, same shared-module shape as the others this session.
 

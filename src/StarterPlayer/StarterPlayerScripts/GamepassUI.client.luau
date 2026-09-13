@@ -81,16 +81,31 @@ close.Parent = panel
 local message = text(panel,"Message","",UDim2.fromOffset(22,440),UDim2.fromOffset(496,38),12,Color3.fromRGB(255,200,80))
 local refreshers = {}
 local pendingId = nil
+-- One accent per pass so the panel doesn't read as three identical gray
+-- boxes with a price sticker — each already has a distinct effect, now it
+-- has a distinct color to match.
+local ROW_COLORS = {
+	DoubleCoins = Color3.fromRGB(255, 205, 40),
+	ExtraCarry = Color3.fromRGB(90, 200, 255),
+	AutoCollect = Color3.fromRGB(120, 255, 120),
+}
+
 for i,key in ipairs({"DoubleCoins","ExtraCarry","AutoCollect"}) do
 	local item = Config[key]
+	local accent = ROW_COLORS[key]
 	local row = Instance.new("Frame")
 	row.Name = key
 	row.Position = UDim2.fromOffset(20,90+(i-1)*115)
 	row.Size = UDim2.fromOffset(500,105)
-	row.BackgroundColor3 = Color3.fromRGB(30,30,38)
+	row.BackgroundColor3 = accent:Lerp(Color3.fromRGB(20, 20, 26), 0.82)
 	row.Parent = panel
 	corner(row)
-	text(row,"Title",item.name,UDim2.fromOffset(14,10),UDim2.fromOffset(318,26),18,Color3.fromRGB(255,200,80))
+	local rowStroke = Instance.new("UIStroke")
+	rowStroke.Color = accent
+	rowStroke.Transparency = 0.55
+	rowStroke.Thickness = 1.5
+	rowStroke.Parent = row
+	text(row,"Title",item.name,UDim2.fromOffset(14,10),UDim2.fromOffset(318,26),18,accent)
 	text(row,"Description",item.description,UDim2.fromOffset(14,38),UDim2.fromOffset(318,58),13)
 	local buy = Instance.new("TextButton")
 	buy.Name = "Buy"

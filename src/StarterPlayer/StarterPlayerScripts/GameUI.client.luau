@@ -763,6 +763,12 @@ carrying.RichText = true
 carrying.Parent = gui
 rounded(carrying)
 
+local carryingStroke = Instance.new("UIStroke")
+carryingStroke.Color = TEAL
+carryingStroke.Transparency = 0.5
+carryingStroke.Thickness = 1.5
+carryingStroke.Parent = carrying
+
 ------------------------------------------------------------------
 -- Item index (press B) — every item in the game, colored by rarity,
 -- showing what you have and haven't found yet.
@@ -1179,23 +1185,39 @@ UserInputService.InputBegan:Connect(function(input, processed)
 	end
 end)
 
+-- One accent color per upgrade so the shop reads as four distinct things
+-- to work toward, not four identical gray rows with different words on them.
+local UPGRADE_COLORS = {
+	luck = TEAL,
+	carry = ORANGE,
+	magnet = PURPLE,
+	value = PINK,
+}
+
 local function redrawShop(shop)
 	for _, child in ipairs(shopScroll:GetChildren()) do
 		if not child:IsA("UIListLayout") then child:Destroy() end
 	end
 
 	for i, entry in ipairs(shop or {}) do
+		local accent = UPGRADE_COLORS[entry.key] or LIGHT
+
 		local row = Instance.new("Frame")
 		row.Size = UDim2.new(1, -6, 0, 78)
 		row.LayoutOrder = i
-		row.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
-		row.BackgroundTransparency = 0.2
+		row.BackgroundColor3 = accent:Lerp(Color3.fromRGB(20, 20, 26), 0.82)
 		row.BorderSizePixel = 0
 		row.Parent = shopScroll
 		rounded(row, 6)
 
+		local rowStroke = Instance.new("UIStroke")
+		rowStroke.Color = accent
+		rowStroke.Transparency = 0.55
+		rowStroke.Thickness = 1.5
+		rowStroke.Parent = row
+
 		local name = label(row, string.format("%s  —  Lv %d / %d", entry.name, entry.level, entry.max),
-			UDim2.new(1, -160, 0, 22), LIGHT, Enum.Font.FredokaOne, 15)
+			UDim2.new(1, -160, 0, 22), accent, Enum.Font.FredokaOne, 15)
 		name.Position = UDim2.new(0, 14, 0, 10)
 
 		local now = label(row, "Now: " .. entry.effect, UDim2.new(1, -160, 0, 18), DIM, Enum.Font.FredokaOne, 12)
