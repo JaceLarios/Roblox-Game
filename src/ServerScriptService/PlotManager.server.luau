@@ -562,7 +562,12 @@ do
 	local boardGui = Instance.new("BillboardGui")
 	boardGui.Size = UDim2.new(0, 480, 0, 360)
 	boardGui.AlwaysOnTop = false
-	boardGui.MaxDistance = 220
+	-- Deliberately short — this is a monument you walk up to and read, not
+	-- a second HUD element visible from your own plot 190 studs away. 220
+	-- covered nearly the whole map; players could read it from anywhere
+	-- just by looking toward the centre, which defeated the point of
+	-- moving it out of the top-of-screen popup in the first place.
+	boardGui.MaxDistance = 50
 	boardGui.Parent = board
 
 	local boardBg = Instance.new("Frame")

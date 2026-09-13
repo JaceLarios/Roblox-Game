@@ -29,17 +29,67 @@ local function text(parent, name, value, pos, size, fontSize, color)
 	t.Parent = parent
 	return t
 end
+-- Right rail, slot 3 (bottom) — matches GameUI.client.luau's nav-tile rail
+-- exactly (same NAV_BTN_SIZE/NAV_GAP/centering math) even though this is a
+-- separate script/ScreenGui, since GamepassUI predates the shared helper
+-- and is just the one button — not worth a cross-script module for that.
+local NAV_BTN_SIZE = 104
+local NAV_GAP = 18
+local RAIL_HEIGHT = 3 * NAV_BTN_SIZE + 2 * NAV_GAP
+local ACCENT = Color3.fromRGB(255, 90, 180)
+
 local open = Instance.new("TextButton")
 open.Name = "OpenPasses"
-open.Size = UDim2.fromOffset(150,34)
-open.Position = UDim2.new(1,-170,1,-154)
-open.Text = "GAMEPASSES"
-open.Font = Enum.Font.FredokaOne
-open.TextSize = 13
-open.BackgroundColor3 = Color3.fromRGB(255,90,180)
-open.TextColor3 = Color3.fromRGB(255,255,255)
+open.Size = UDim2.new(0, NAV_BTN_SIZE, 0, NAV_BTN_SIZE)
+open.Position = UDim2.new(1, -20 - NAV_BTN_SIZE, 0.5, 2 * (NAV_BTN_SIZE + NAV_GAP) - RAIL_HEIGHT / 2)
+open.Text = ""
+open.AutoButtonColor = false
+open.BackgroundColor3 = ACCENT:Lerp(Color3.new(0, 0, 0), 0.7)
 open.Parent = gui
-corner(open)
+corner(open, 20)
+
+local openGradient = Instance.new("UIGradient")
+openGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, ACCENT:Lerp(Color3.new(1, 1, 1), 0.15)),
+	ColorSequenceKeypoint.new(1, ACCENT:Lerp(Color3.new(0, 0, 0), 0.5)),
+})
+openGradient.Rotation = 90
+openGradient.Parent = open
+
+local openStroke = Instance.new("UIStroke")
+openStroke.Color = ACCENT
+openStroke.Thickness = 2
+openStroke.Transparency = 0.25
+openStroke.Parent = open
+
+text(open, "Icon", "💎", UDim2.fromOffset(0, 10), UDim2.new(1, 0, 0, 46), 38, Color3.fromRGB(255, 255, 255))
+	.TextXAlignment = Enum.TextXAlignment.Center
+local openCaption = text(open, "Caption", "PASSES", UDim2.fromOffset(4, 60), UDim2.new(1, -8, 0, 18), 13, Color3.fromRGB(255, 255, 255))
+openCaption.TextXAlignment = Enum.TextXAlignment.Center
+openCaption.TextScaled = true
+
+local TweenService = game:GetService("TweenService")
+local openBaseSize = open.Size
+local openHoverSize = UDim2.new(0, NAV_BTN_SIZE + 10, 0, NAV_BTN_SIZE + 10)
+local openPressSize = UDim2.new(0, NAV_BTN_SIZE - 6, 0, NAV_BTN_SIZE - 6)
+local openHovering = false
+
+open.MouseEnter:Connect(function()
+	openHovering = true
+	TweenService:Create(open, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = openHoverSize }):Play()
+	TweenService:Create(openStroke, TweenInfo.new(0.15), { Thickness = 3, Transparency = 0 }):Play()
+end)
+open.MouseLeave:Connect(function()
+	openHovering = false
+	TweenService:Create(open, TweenInfo.new(0.15), { Size = openBaseSize }):Play()
+	TweenService:Create(openStroke, TweenInfo.new(0.15), { Thickness = 2, Transparency = 0.25 }):Play()
+end)
+open.MouseButton1Down:Connect(function()
+	TweenService:Create(open, TweenInfo.new(0.08), { Size = openPressSize }):Play()
+end)
+open.MouseButton1Up:Connect(function()
+	TweenService:Create(open, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = openHovering and openHoverSize or openBaseSize }):Play()
+end)
 
 local overlay = Instance.new("Frame")
 overlay.Name = "Overlay"

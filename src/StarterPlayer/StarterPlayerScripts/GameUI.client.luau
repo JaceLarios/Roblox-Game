@@ -79,6 +79,88 @@ local function label(parent, text, size, color, font, textSize)
 	return l
 end
 
+-- Shared "icon tile" style for every main HUD nav button — a big square
+-- with an emoji icon over a caption, hovering grows it and a press dips
+-- it before springing back. The daily-rewards button pioneered this look
+-- on its own; every nav trigger uses the same one now instead of each
+-- button inventing its own flat rectangle.
+local NAV_BTN_SIZE = 104
+
+local function createIconButton(icon, caption, accentColor, position)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0, NAV_BTN_SIZE, 0, NAV_BTN_SIZE)
+	btn.Position = position
+	btn.BackgroundColor3 = accentColor:Lerp(Color3.new(0, 0, 0), 0.7)
+	btn.Text = ""
+	btn.AutoButtonColor = false
+	btn.BorderSizePixel = 0
+	btn.Parent = gui
+	rounded(btn, 20)
+
+	local gradient = Instance.new("UIGradient")
+	gradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, accentColor:Lerp(Color3.new(1, 1, 1), 0.15)),
+		ColorSequenceKeypoint.new(1, accentColor:Lerp(Color3.new(0, 0, 0), 0.5)),
+	})
+	gradient.Rotation = 90
+	gradient.Parent = btn
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = accentColor
+	stroke.Thickness = 2
+	stroke.Transparency = 0.25
+	stroke.Parent = btn
+
+	local iconLabel = label(btn, icon, UDim2.new(1, 0, 0, 46), Color3.fromRGB(255, 255, 255), Enum.Font.FredokaOne, 38)
+	iconLabel.Position = UDim2.new(0, 0, 0, 10)
+	iconLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+	local captionLabel = label(btn, caption, UDim2.new(1, -8, 0, 18), Color3.fromRGB(255, 255, 255), Enum.Font.FredokaOne, 13)
+	captionLabel.Position = UDim2.new(0, 4, 0, 60)
+	captionLabel.TextXAlignment = Enum.TextXAlignment.Center
+	captionLabel.TextScaled = true
+
+	local baseSize = btn.Size
+	local hoverSize = UDim2.new(0, NAV_BTN_SIZE + 10, 0, NAV_BTN_SIZE + 10)
+	local pressSize = UDim2.new(0, NAV_BTN_SIZE - 6, 0, NAV_BTN_SIZE - 6)
+	local hovering = false
+
+	btn.MouseEnter:Connect(function()
+		hovering = true
+		TweenService:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = hoverSize }):Play()
+		TweenService:Create(stroke, TweenInfo.new(0.15), { Thickness = 3, Transparency = 0 }):Play()
+	end)
+	btn.MouseLeave:Connect(function()
+		hovering = false
+		TweenService:Create(btn, TweenInfo.new(0.15), { Size = baseSize }):Play()
+		TweenService:Create(stroke, TweenInfo.new(0.15), { Thickness = 2, Transparency = 0.25 }):Play()
+	end)
+	btn.MouseButton1Down:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.08), { Size = pressSize }):Play()
+	end)
+	btn.MouseButton1Up:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = hovering and hoverSize or baseSize }):Play()
+	end)
+
+	return btn, iconLabel, captionLabel, stroke, gradient
+end
+
+-- The six main nav tiles split into a left rail ("your stuff": rewards,
+-- inventory, the collection index) and a right rail ("systems": travel,
+-- upgrades, gamepasses) — three a side, vertically centered as one group,
+-- so nothing sits at the very top or bottom of the screen anymore.
+local NAV_GAP = 18
+local RAIL_COUNT = 3
+local RAIL_HEIGHT = RAIL_COUNT * NAV_BTN_SIZE + (RAIL_COUNT - 1) * NAV_GAP
+
+local function railPosition(side, slot)
+	local yOffset = (slot - 1) * (NAV_BTN_SIZE + NAV_GAP) - RAIL_HEIGHT / 2
+	if side == "left" then
+		return UDim2.new(0, 20, 0.5, yOffset)
+	end
+	return UDim2.new(1, -20 - NAV_BTN_SIZE, 0.5, yOffset)
+end
+
 ------------------------------------------------------------------
 -- Objective card (top left) — the structure that was missing
 ------------------------------------------------------------------
@@ -266,67 +348,30 @@ end)
 -- on the HUD reopens it.
 ------------------------------------------------------------------
 
--- Always-present side tab. Sits on the left edge at mid-height so it
--- never collides with the objective stack up top.
-local dailyBtn = Instance.new("TextButton")
-dailyBtn.Size = UDim2.new(0, 82, 0, 82)
-dailyBtn.Position = UDim2.new(0, 20, 0.5, -41)
-dailyBtn.BackgroundColor3 = Color3.fromRGB(38, 38, 46)
-dailyBtn.Text = ""
-dailyBtn.AutoButtonColor = false
-dailyBtn.BorderSizePixel = 0
-dailyBtn.Parent = gui
-rounded(dailyBtn, 14)
+-- Left rail, slot 1 (top). Icon, hover/press animation, and position all
+-- come from the shared nav-tile helper now — only the badge and status
+-- line below the caption are unique to this button.
+local dailyBtn, dailyIcon, dailyCaption, dailyBtnStroke, dailyBtnGradient = createIconButton("🎁", "REWARDS", GOLD, railPosition("left", 1))
 
-local dailyBtnGradient = Instance.new("UIGradient")
-dailyBtnGradient.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(56, 56, 68)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 38)),
-})
-dailyBtnGradient.Rotation = 90
-dailyBtnGradient.Parent = dailyBtn
-
-local dailyBtnStroke = Instance.new("UIStroke")
-dailyBtnStroke.Color = Color3.fromRGB(90, 90, 108)
-dailyBtnStroke.Thickness = 2
-dailyBtnStroke.Transparency = 0.4
-dailyBtnStroke.Parent = dailyBtn
-
-local dailyIcon = label(dailyBtn, "🎁", UDim2.new(1, 0, 0, 32), Color3.fromRGB(255, 255, 255), Enum.Font.FredokaOne, 28)
-dailyIcon.Position = UDim2.new(0, 0, 0, 10)
-dailyIcon.TextXAlignment = Enum.TextXAlignment.Center
-
-local dailyCaption = label(dailyBtn, "REWARDS", UDim2.new(1, 0, 0, 16), Color3.fromRGB(150, 150, 170), Enum.Font.FredokaOne, 13)
-dailyCaption.Position = UDim2.new(0, 0, 0, 44)
-dailyCaption.TextXAlignment = Enum.TextXAlignment.Center
-
-local dailyStatus = label(dailyBtn, "", UDim2.new(1, -6, 0, 14), Color3.fromRGB(120, 120, 140), Enum.Font.FredokaOne, 10)
-dailyStatus.Position = UDim2.new(0, 3, 0, 60)
+local dailyStatus = label(dailyBtn, "", UDim2.new(1, -8, 0, 16), Color3.fromRGB(230, 230, 235), Enum.Font.FredokaOne, 10)
+dailyStatus.Position = UDim2.new(0, 4, 0, 82)
 dailyStatus.TextXAlignment = Enum.TextXAlignment.Center
 dailyStatus.TextScaled = true
 
 -- Red dot, only when there's something to collect.
 local dailyBadge = Instance.new("Frame")
-dailyBadge.Size = UDim2.new(0, 20, 0, 20)
-dailyBadge.Position = UDim2.new(1, -9, 0, -9)
+dailyBadge.Size = UDim2.new(0, 24, 0, 24)
+dailyBadge.Position = UDim2.new(1, -12, 0, -12)
 dailyBadge.BackgroundColor3 = Color3.fromRGB(235, 70, 70)
 dailyBadge.BorderSizePixel = 0
 dailyBadge.Visible = false
 dailyBadge.ZIndex = 3
 dailyBadge.Parent = dailyBtn
-rounded(dailyBadge, 10)
+rounded(dailyBadge, 12)
 
-local badgeMark = label(dailyBadge, "!", UDim2.new(1, 0, 1, 0), Color3.fromRGB(255, 255, 255), Enum.Font.LuckiestGuy, 13)
+local badgeMark = label(dailyBadge, "!", UDim2.new(1, 0, 1, 0), Color3.fromRGB(255, 255, 255), Enum.Font.LuckiestGuy, 15)
 badgeMark.TextXAlignment = Enum.TextXAlignment.Center
 badgeMark.ZIndex = 4
-
-dailyBtn.MouseEnter:Connect(function()
-	TweenService:Create(dailyBtn, TweenInfo.new(0.12), { Size = UDim2.new(0, 88, 0, 88) }):Play()
-end)
-
-dailyBtn.MouseLeave:Connect(function()
-	TweenService:Create(dailyBtn, TweenInfo.new(0.12), { Size = UDim2.new(0, 82, 0, 82) }):Play()
-end)
 
 -- Dimmed backdrop
 local dimmer = Instance.new("TextButton")
@@ -792,17 +837,7 @@ carryingStroke.Parent = carrying
 -- showing what you have and haven't found yet.
 ------------------------------------------------------------------
 
-local bookBtn = Instance.new("TextButton")
-bookBtn.Size = UDim2.new(0, 150, 0, 34)
-bookBtn.Position = UDim2.new(1, -170, 1, -74)
-bookBtn.BackgroundColor3 = PURPLE
-bookBtn.Text = "📖  INDEX"
-bookBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-bookBtn.Font = Enum.Font.LuckiestGuy
-bookBtn.TextSize = 15
-bookBtn.BorderSizePixel = 0
-bookBtn.Parent = gui
-rounded(bookBtn, 12)
+local bookBtn = createIconButton("📖", "INDEX", PURPLE, railPosition("left", 3))
 
 -- Big picker modal — nearly fullscreen like the travel menu, same scale
 -- trick so it stays "almost the whole screen" on any resolution.
@@ -1128,17 +1163,7 @@ redrawIndex()
 -- Upgrade shop (press U)
 ------------------------------------------------------------------
 
-local shopBtn = Instance.new("TextButton")
-shopBtn.Size = UDim2.new(0, 150, 0, 34)
-shopBtn.Position = UDim2.new(1, -170, 1, -114)
-shopBtn.BackgroundColor3 = Color3.fromRGB(90, 200, 255)
-shopBtn.Text = "UPGRADES  [U]"
-shopBtn.TextColor3 = DARK
-shopBtn.Font = Enum.Font.FredokaOne
-shopBtn.TextSize = 13
-shopBtn.BorderSizePixel = 0
-shopBtn.Parent = gui
-rounded(shopBtn)
+local shopBtn = createIconButton("🔧", "UPGRADES", Color3.fromRGB(90, 200, 255), railPosition("right", 2))
 
 local shopFrame = Instance.new("Frame")
 shopFrame.Size = UDim2.new(0, 520, 0, 510)
@@ -1368,17 +1393,7 @@ end)
 local currentInventory = {}
 local currentInventoryCapacity = 15
 
-local inventoryBtn = Instance.new("TextButton")
-inventoryBtn.Size = UDim2.new(0, 160, 0, 34)
-inventoryBtn.Position = UDim2.new(0.5, -80, 0, 16)
-inventoryBtn.BackgroundColor3 = ORANGE
-inventoryBtn.Text = "📦 INVENTORY"
-inventoryBtn.TextColor3 = DARK
-inventoryBtn.Font = Enum.Font.FredokaOne
-inventoryBtn.TextSize = 13
-inventoryBtn.BorderSizePixel = 0
-inventoryBtn.Parent = gui
-rounded(inventoryBtn)
+local inventoryBtn = createIconButton("📦", "INVENTORY", ORANGE, railPosition("left", 2))
 
 local inventoryFrame = Instance.new("Frame")
 inventoryFrame.Size = UDim2.new(0, 620, 0, 460)
@@ -2066,18 +2081,8 @@ local WORLDS = {
 	},
 }
 
--- Compact trigger button (right side, vertically centered).
-local travelBtn = Instance.new("TextButton")
-travelBtn.Size = UDim2.new(0, 150, 0, 46)
-travelBtn.Position = UDim2.new(1, -170, 0.5, -23)
-travelBtn.BackgroundColor3 = Color3.fromRGB(60, 230, 170)
-travelBtn.Text = "🚀  TRAVEL"
-travelBtn.TextColor3 = DARK
-travelBtn.Font = Enum.Font.LuckiestGuy
-travelBtn.TextSize = 18
-travelBtn.BorderSizePixel = 0
-travelBtn.Parent = gui
-rounded(travelBtn, 12)
+-- Right rail, slot 1 (top).
+local travelBtn = createIconButton("🚀", "TRAVEL", Color3.fromRGB(60, 230, 170), railPosition("right", 1))
 
 -- Big picker modal — nearly fullscreen, scale-sized so it stays "almost
 -- the whole screen" on any resolution instead of a fixed pixel box.
