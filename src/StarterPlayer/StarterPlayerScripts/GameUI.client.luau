@@ -23,6 +23,9 @@ local claimRemote = ReplicatedStorage:WaitForChild("ClaimDaily")
 local rebirthRemote = ReplicatedStorage:WaitForChild("RebirthPlayer")
 local equipCompanionRemote = ReplicatedStorage:WaitForChild("EquipCompanion")
 local requestLeaderboardRemote = ReplicatedStorage:WaitForChild("RequestLeaderboard")
+local selectTradeOfferRemote = ReplicatedStorage:WaitForChild("SelectTradeOffer")
+local confirmTradeRemote = ReplicatedStorage:WaitForChild("ConfirmTrade")
+local cancelTradeRemote = ReplicatedStorage:WaitForChild("CancelTrade")
 
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
@@ -1479,6 +1482,231 @@ task.spawn(function()
 end)
 
 ------------------------------------------------------------------
+-- Trading — walk up to another player and press E on them to open this
+-- for both sides at once. Nothing happens to either player's items until
+-- both click CONFIRM, so opening it (even unintentionally) is harmless.
+------------------------------------------------------------------
+
+local myTradeItems = {}
+
+local tradeFrame = Instance.new("Frame")
+tradeFrame.Size = UDim2.new(0, 480, 0, 360)
+tradeFrame.Position = UDim2.new(0.5, -240, 0.5, -180)
+tradeFrame.BackgroundColor3 = DARK
+tradeFrame.BackgroundTransparency = GLASS_PANEL
+tradeFrame.BorderSizePixel = 0
+tradeFrame.Visible = false
+tradeFrame.Parent = gui
+rounded(tradeFrame, 10)
+
+local tradeTitle = label(tradeFrame, "TRADING", UDim2.new(1, -30, 0, 30), TEAL, Enum.Font.LuckiestGuy, 20)
+tradeTitle.Position = UDim2.new(0, 20, 0, 14)
+
+local tradeStatus = label(tradeFrame, "", UDim2.new(1, -40, 0, 18), DIM, Enum.Font.FredokaOne, 13)
+tradeStatus.Position = UDim2.new(0, 20, 0, 46)
+
+local function buildOfferBox(titleText, xPos)
+	local box = Instance.new("Frame")
+	box.Size = UDim2.new(0, 208, 0, 170)
+	box.Position = UDim2.new(0, xPos, 0, 74)
+	box.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+	box.BorderSizePixel = 0
+	box.Parent = tradeFrame
+	rounded(box, 8)
+
+	local titleLbl = label(box, titleText, UDim2.new(1, -20, 0, 20), DIM, Enum.Font.FredokaOne, 13)
+	titleLbl.Position = UDim2.new(0, 10, 0, 8)
+
+	local itemLbl = label(box, "Nothing selected", UDim2.new(1, -20, 0, 90), LIGHT, Enum.Font.FredokaOne, 15)
+	itemLbl.Position = UDim2.new(0, 10, 0, 32)
+	itemLbl.TextWrapped = true
+	itemLbl.RichText = true
+
+	local statusLbl = label(box, "", UDim2.new(1, -20, 0, 20), Color3.fromRGB(120, 220, 140), Enum.Font.FredokaOne, 13)
+	statusLbl.Position = UDim2.new(0, 10, 1, -26)
+
+	return box, itemLbl, statusLbl
+end
+
+local myBox, myItemLbl, myStatusLbl = buildOfferBox("YOUR OFFER", 20)
+local theirBox, theirItemLbl, theirStatusLbl = buildOfferBox("THEIR OFFER", 252)
+
+local chooseItemBtn = Instance.new("TextButton")
+chooseItemBtn.Size = UDim2.new(0, 208, 0, 34)
+chooseItemBtn.Position = UDim2.new(0, 20, 0, 252)
+chooseItemBtn.BackgroundColor3 = TEAL
+chooseItemBtn.Text = "CHOOSE ITEM"
+chooseItemBtn.TextColor3 = DARK
+chooseItemBtn.Font = Enum.Font.FredokaOne
+chooseItemBtn.TextSize = 13
+chooseItemBtn.BorderSizePixel = 0
+chooseItemBtn.Parent = tradeFrame
+rounded(chooseItemBtn)
+
+local confirmTradeBtn = Instance.new("TextButton")
+confirmTradeBtn.Size = UDim2.new(0, 208, 0, 40)
+confirmTradeBtn.Position = UDim2.new(0, 20, 0, 300)
+confirmTradeBtn.BackgroundColor3 = Color3.fromRGB(120, 220, 140)
+confirmTradeBtn.Text = "CONFIRM"
+confirmTradeBtn.TextColor3 = DARK
+confirmTradeBtn.Font = Enum.Font.LuckiestGuy
+confirmTradeBtn.TextSize = 16
+confirmTradeBtn.BorderSizePixel = 0
+confirmTradeBtn.Parent = tradeFrame
+rounded(confirmTradeBtn)
+
+local cancelTradeBtn = Instance.new("TextButton")
+cancelTradeBtn.Size = UDim2.new(0, 208, 0, 34)
+cancelTradeBtn.Position = UDim2.new(0, 252, 0, 300)
+cancelTradeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 68)
+cancelTradeBtn.Text = "CANCEL TRADE"
+cancelTradeBtn.TextColor3 = LIGHT
+cancelTradeBtn.Font = Enum.Font.FredokaOne
+cancelTradeBtn.TextSize = 13
+cancelTradeBtn.BorderSizePixel = 0
+cancelTradeBtn.Parent = tradeFrame
+rounded(cancelTradeBtn)
+
+-- Item picker: a secondary overlay listing everything SelectTradeOffer
+-- will accept — everything currently in myTradeItems, sent fresh by the
+-- server on every trade update, never guessed client-side.
+local tradePickerFrame = Instance.new("Frame")
+tradePickerFrame.Size = UDim2.new(0, 380, 0, 400)
+tradePickerFrame.Position = UDim2.new(0.5, -190, 0.5, -200)
+tradePickerFrame.BackgroundColor3 = DARK
+tradePickerFrame.BackgroundTransparency = GLASS_PANEL
+tradePickerFrame.BorderSizePixel = 0
+tradePickerFrame.Visible = false
+tradePickerFrame.ZIndex = 5
+tradePickerFrame.Parent = gui
+rounded(tradePickerFrame, 10)
+
+local tradePickerTitle = label(tradePickerFrame, "CHOOSE AN ITEM", UDim2.new(1, -30, 0, 30), TEAL, Enum.Font.LuckiestGuy, 18)
+tradePickerTitle.Position = UDim2.new(0, 20, 0, 14)
+tradePickerTitle.ZIndex = 5
+
+local tradePickerClose = Instance.new("TextButton")
+tradePickerClose.Size = UDim2.new(0, 30, 0, 30)
+tradePickerClose.Position = UDim2.new(1, -44, 0, 14)
+tradePickerClose.BackgroundTransparency = 1
+tradePickerClose.Text = "X"
+tradePickerClose.TextColor3 = DIM
+tradePickerClose.Font = Enum.Font.FredokaOne
+tradePickerClose.TextSize = 18
+tradePickerClose.ZIndex = 5
+tradePickerClose.Parent = tradePickerFrame
+
+local tradePickerScroll = Instance.new("ScrollingFrame")
+tradePickerScroll.Size = UDim2.new(1, -40, 1, -70)
+tradePickerScroll.Position = UDim2.new(0, 20, 0, 54)
+tradePickerScroll.BackgroundTransparency = 1
+tradePickerScroll.BorderSizePixel = 0
+tradePickerScroll.ScrollBarThickness = 5
+tradePickerScroll.ZIndex = 5
+tradePickerScroll.Parent = tradePickerFrame
+
+local tradePickerLayout = Instance.new("UIListLayout")
+tradePickerLayout.Padding = UDim.new(0, 6)
+tradePickerLayout.Parent = tradePickerScroll
+
+local function redrawTradePicker()
+	for _, child in ipairs(tradePickerScroll:GetChildren()) do
+		if not child:IsA("UIListLayout") then child:Destroy() end
+	end
+
+	if #myTradeItems == 0 then
+		local empty = Instance.new("TextLabel")
+		empty.Size = UDim2.new(1, 0, 0, 40)
+		empty.BackgroundTransparency = 1
+		empty.Text = "You have nothing to offer right now."
+		empty.TextColor3 = DIM
+		empty.Font = Enum.Font.FredokaOne
+		empty.TextSize = 14
+		empty.ZIndex = 5
+		empty.Parent = tradePickerScroll
+	end
+
+	for i, ref in ipairs(myTradeItems) do
+		local row = Instance.new("TextButton")
+		row.Size = UDim2.new(1, -6, 0, 40)
+		row.LayoutOrder = i
+		row.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+		row.Text = ""
+		row.AutoButtonColor = false
+		row.BorderSizePixel = 0
+		row.ZIndex = 5
+		row.Parent = tradePickerScroll
+		rounded(row, 6)
+
+		local tag = ItemRarity.Tag(ref.itemName, FusionRecipes.GetTier(ref.itemName), FusionRecipes.IsSecretResult(ref.itemName))
+		local rowLabel = label(row, tag, UDim2.new(1, -20, 1, 0), LIGHT, Enum.Font.FredokaOne, 14)
+		rowLabel.Position = UDim2.new(0, 10, 0, 0)
+		rowLabel.RichText = true
+		rowLabel.ZIndex = 5
+
+		row.MouseButton1Click:Connect(function()
+			selectTradeOfferRemote:FireServer(ref)
+			tradePickerFrame.Visible = false
+		end)
+	end
+
+	tradePickerScroll.CanvasSize = UDim2.new(0, 0, 0, tradePickerLayout.AbsoluteContentSize.Y + 10)
+end
+
+chooseItemBtn.MouseButton1Click:Connect(function()
+	redrawTradePicker()
+	tradePickerFrame.Visible = true
+end)
+tradePickerClose.MouseButton1Click:Connect(function()
+	tradePickerFrame.Visible = false
+end)
+
+confirmTradeBtn.MouseButton1Click:Connect(function()
+	confirmTradeRemote:FireServer()
+end)
+cancelTradeBtn.MouseButton1Click:Connect(function()
+	cancelTradeRemote:FireServer()
+	tradeFrame.Visible = false
+	tradePickerFrame.Visible = false
+end)
+
+local function redrawTrade(trade)
+	if not trade then
+		tradeFrame.Visible = false
+		tradePickerFrame.Visible = false
+		return
+	end
+
+	tradeFrame.Visible = true
+	tradeTitle.Text = "TRADING WITH " .. string.upper(trade.partnerName)
+
+	local function fillOffer(offer, itemLbl, statusLbl, confirmed, whoseConfirmedText)
+		if offer then
+			itemLbl.Text = ItemRarity.Tag(offer.itemName, FusionRecipes.GetTier(offer.itemName), FusionRecipes.IsSecretResult(offer.itemName))
+		else
+			itemLbl.Text = "Nothing selected"
+		end
+		statusLbl.Text = confirmed and whoseConfirmedText or ""
+	end
+
+	fillOffer(trade.myOffer, myItemLbl, myStatusLbl, trade.myConfirmed, "✓ You confirmed")
+	fillOffer(trade.partnerOffer, theirItemLbl, theirStatusLbl, trade.partnerConfirmed, "✓ They confirmed")
+
+	if trade.myConfirmed and trade.partnerConfirmed then
+		tradeStatus.Text = "Finalizing trade..."
+	elseif trade.myConfirmed then
+		tradeStatus.Text = "Waiting for " .. trade.partnerName .. " to confirm..."
+	elseif trade.partnerConfirmed then
+		tradeStatus.Text = trade.partnerName .. " has confirmed — your move."
+	else
+		tradeStatus.Text = "Pick an item, then confirm when you're both ready."
+	end
+
+	confirmTradeBtn.Text = trade.myConfirmed and "WAITING..." or "CONFIRM"
+	confirmTradeBtn.BackgroundColor3 = trade.myConfirmed and Color3.fromRGB(60, 60, 68) or Color3.fromRGB(120, 220, 140)
+end
+
+------------------------------------------------------------------
 -- Toasts
 ------------------------------------------------------------------
 
@@ -1621,6 +1849,11 @@ remote.OnClientEvent:Connect(function(data)
 
 	if data.leaderboard then
 		redrawLeaderboard(data.leaderboard)
+	end
+
+	if data.trade ~= nil then
+		if data.myTradeItems then myTradeItems = data.myTradeItems end
+		redrawTrade(data.trade or nil)
 	end
 
 	if data.goalText then

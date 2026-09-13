@@ -29,6 +29,7 @@ local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
 local Companions = require(script.Parent:WaitForChild("CompanionService"))
 local Leaderboard = require(script.Parent:WaitForChild("LeaderboardService"))
+local Trade = require(script.Parent:WaitForChild("TradeService"))
 local Brainrot = require(script.Parent:WaitForChild("BrainrotService"))
 Gamepasses.Start()
 
@@ -187,6 +188,27 @@ if not requestLeaderboardRemote then
 	requestLeaderboardRemote = Instance.new("RemoteEvent")
 	requestLeaderboardRemote.Name = "RequestLeaderboard"
 	requestLeaderboardRemote.Parent = ReplicatedStorage
+end
+
+local selectTradeOfferRemote = ReplicatedStorage:FindFirstChild("SelectTradeOffer")
+if not selectTradeOfferRemote then
+	selectTradeOfferRemote = Instance.new("RemoteEvent")
+	selectTradeOfferRemote.Name = "SelectTradeOffer"
+	selectTradeOfferRemote.Parent = ReplicatedStorage
+end
+
+local confirmTradeRemote = ReplicatedStorage:FindFirstChild("ConfirmTrade")
+if not confirmTradeRemote then
+	confirmTradeRemote = Instance.new("RemoteEvent")
+	confirmTradeRemote.Name = "ConfirmTrade"
+	confirmTradeRemote.Parent = ReplicatedStorage
+end
+
+local cancelTradeRemote = ReplicatedStorage:FindFirstChild("CancelTrade")
+if not cancelTradeRemote then
+	cancelTradeRemote = Instance.new("RemoteEvent")
+	cancelTradeRemote.Name = "CancelTrade"
+	cancelTradeRemote.Parent = ReplicatedStorage
 end
 
 -- The side travel menu asks for a destination key; the server decides
@@ -1279,6 +1301,254 @@ requestLeaderboardRemote.OnServerEvent:Connect(function(player)
 end)
 
 ------------------------------------------------------------------
+-- Trading — 1-for-1, same server, proximity-triggered. Junkyard items
+-- only: Brainrot creatures never sit in a carry slot or a placement zone
+-- (that island pays out immediately), so there's nothing there to trade.
+------------------------------------------------------------------
+
+-- Tier/secret/value for any item name PlotManager could be holding —
+-- always a Junkyard name, but may carry a mutation prefix.
+local function itemTierInfo(itemName)
+	local baseName, mutationId = Mutations.Unwrap(itemName)
+	return {
+		tier = FusionRecipes.GetTier(baseName),
+		isSecret = FusionRecipes.IsSecretResult(baseName),
+		value = FusionRecipes.GetValue(baseName) * Mutations.ValueMultiplier(mutationId),
+	}
+end
+
+-- True only if `player` really currently holds exactly this item where the
+-- ref claims — re-run at both offer time and execute time, since a client
+-- claim is never trusted and state can change between the two.
+local function resolveItemRef(player, ref)
+	local s = state[player]
+	if not s then return false end
+	if type(ref) ~= "table" or type(ref.index) ~= "number" or type(ref.itemName) ~= "string" then
+		return false
+	end
+
+	if ref.source == "carry" then
+		return s.slots[ref.index] == ref.itemName
+	end
+
+	local plot = plots[s.plotIndex]
+	local zone = plot and plot.zones[ref.source]
+	local slot = zone and zone.slots[ref.index]
+	return slot ~= nil and slot.itemName == ref.itemName
+end
+
+-- Every item `player` currently holds, carry and placed, in the same
+-- itemRef shape resolveItemRef expects — sent to the client so it can
+-- offer a real list of things to trade, not a guess.
+local function getMyTradeItems(player)
+	local s = state[player]
+	if not s then return {} end
+	local items = {}
+
+	for i, name in ipairs(s.slots) do
+		table.insert(items, { source = "carry", index = i, itemName = name })
+	end
+
+	local plot = plots[s.plotIndex]
+	if plot then
+		for _, zoneDef in ipairs(ZONES) do
+			for i, slot in ipairs(plot.zones[zoneDef.key].slots) do
+				if slot.itemName then
+					table.insert(items, { source = zoneDef.key, index = i, itemName = slot.itemName })
+				end
+			end
+		end
+	end
+
+	return items
+end
+
+-- `outgoingRef` is the item this same player is about to give away in the
+-- same trade — counted as an already-free slot if it shares a source with
+-- the incoming item, since removeTradedItem/giveTradedItem always run for
+-- both sides before either side's item lands. Without this, a player
+-- whose zone is completely full could never trade an item in that zone
+-- for another of the same kind, even a plain 1-for-1 swap that nets to no
+-- change in how many slots they're using.
+local function canReceiveTradedItem(player, itemName, source, outgoingRef)
+	local s = state[player]
+	if not s then return false end
+
+	if source == "carry" then
+		local freeSlots = capacity(player, s) - #s.slots
+		if outgoingRef and outgoingRef.source == "carry" then
+			freeSlots = freeSlots + 1
+		end
+		return freeSlots > 0
+	end
+
+	local plot = plots[s.plotIndex]
+	if not plot then return false end
+	local zoneDef = zoneForInfo(itemTierInfo(itemName))
+	if not zoneDef then return false end
+
+	local freeSlots = 0
+	for _, slot in ipairs(plot.zones[zoneDef.key].slots) do
+		if not slot.itemName then freeSlots = freeSlots + 1 end
+	end
+	if outgoingRef and outgoingRef.source == zoneDef.key then
+		freeSlots = freeSlots + 1
+	end
+	return freeSlots > 0
+end
+
+local function removeTradedItem(player, ref)
+	local s = state[player]
+	if ref.source == "carry" then
+		table.remove(s.slots, ref.index)
+		refreshPad(player)
+		return
+	end
+
+	local plot = plots[s.plotIndex]
+	local zoneDef = plot.zones[ref.source]
+	local slot = zoneDef.slots[ref.index]
+	if slot.itemPart then slot.itemPart:Destroy() end
+	slot.itemPart = nil
+	slot.itemName = nil
+	slot.value = nil
+	slot.label.Text = "empty"
+	slot.label.TextColor3 = zoneDef.def.color
+	slot.sellPrompt.Enabled = false
+	updateWalkSpeed(player)
+end
+
+local function giveTradedItem(player, itemName, source)
+	if source == "carry" then
+		table.insert(state[player].slots, itemName)
+		refreshPad(player)
+		return
+	end
+
+	local plot = plots[state[player].plotIndex]
+	placeFusedItem(plot, itemName, itemTierInfo(itemName))
+	updateWalkSpeed(player)
+end
+
+local function pushTradeUpdate(player)
+	local snapshot = Trade.Snapshot(player)
+	remote:FireClient(player, {
+		trade = snapshot or false, -- false, not nil: see the same note on `companion` above
+		myTradeItems = snapshot and getMyTradeItems(player) or nil,
+	})
+end
+
+local function endTrade(player, reason)
+	local partner = Trade.Partner(player)
+	Trade.End(player)
+	if reason then
+		toast(player, reason)
+		if partner then toast(partner, reason) end
+	end
+	pushTradeUpdate(player)
+	if partner then pushTradeUpdate(partner) end
+end
+
+-- Re-checks everything before moving anything. No yield happens between
+-- the checks and the swap below, so nothing else can run in between and
+-- invalidate what was just verified — that's what keeps this atomic on a
+-- single-threaded script without needing an explicit lock.
+local function executeTrade(playerA, playerB)
+	local trade = Trade.Get(playerA)
+	if not trade then return end
+
+	local offerA, offerB = trade.offers[playerA], trade.offers[playerB]
+	if not (offerA and offerB) then
+		endTrade(playerA)
+		return
+	end
+
+	if not resolveItemRef(playerA, offerA) or not resolveItemRef(playerB, offerB) then
+		endTrade(playerA, "Trade cancelled — an offered item is no longer available.")
+		return
+	end
+	if not canReceiveTradedItem(playerB, offerA.itemName, offerA.source, offerB)
+		or not canReceiveTradedItem(playerA, offerB.itemName, offerB.source, offerA) then
+		endTrade(playerA, "Trade cancelled — one side has no room for the incoming item.")
+		return
+	end
+
+	removeTradedItem(playerA, offerA)
+	removeTradedItem(playerB, offerB)
+	giveTradedItem(playerA, offerB.itemName, offerB.source)
+	giveTradedItem(playerB, offerA.itemName, offerA.source)
+
+	toast(playerA, string.format("Trade complete! You received %s.", instanceTag(offerB.itemName)), true)
+	toast(playerB, string.format("Trade complete! You received %s.", instanceTag(offerA.itemName)), true)
+
+	Trade.End(playerA)
+	pushTradeUpdate(playerA)
+	pushTradeUpdate(playerB)
+	pushUI(playerA)
+	pushUI(playerB)
+end
+
+local function attachTradePrompt(player, character)
+	local root = character:WaitForChild("HumanoidRootPart")
+	local existing = root:FindFirstChild("TradePrompt")
+	if existing then existing:Destroy() end
+
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "TradePrompt"
+	prompt.ActionText = "Trade"
+	prompt.ObjectText = player.Name
+	prompt.HoldDuration = 0.3
+	prompt.MaxActivationDistance = 10
+	prompt.RequiresLineOfSight = false
+	prompt.Parent = root
+
+	prompt.Triggered:Connect(function(triggeringPlayer)
+		if triggeringPlayer == player then return end
+		local id = Trade.Start(triggeringPlayer, player)
+		if not id then
+			toast(triggeringPlayer, "Can't start a trade right now — one of you is already trading.")
+			return
+		end
+		toast(triggeringPlayer, "Trade started with " .. player.Name .. ".")
+		toast(player, triggeringPlayer.Name .. " wants to trade with you!")
+		pushTradeUpdate(triggeringPlayer)
+		pushTradeUpdate(player)
+	end)
+end
+
+selectTradeOfferRemote.OnServerEvent:Connect(function(player, ref)
+	if not Trade.Get(player) then return end
+	if not resolveItemRef(player, ref) then
+		toast(player, "You don't have that item.")
+		return
+	end
+	Trade.SetOffer(player, ref)
+	pushTradeUpdate(player)
+	local partner = Trade.Partner(player)
+	if partner then pushTradeUpdate(partner) end
+end)
+
+confirmTradeRemote.OnServerEvent:Connect(function(player)
+	if not Trade.Get(player) then return end
+	if not Trade.Confirm(player) then
+		toast(player, "Select an item to offer first.")
+		return
+	end
+	local partner = Trade.Partner(player)
+	pushTradeUpdate(player)
+	if partner then pushTradeUpdate(partner) end
+
+	if partner and Trade.BothConfirmed(player) then
+		executeTrade(player, partner)
+	end
+end)
+
+cancelTradeRemote.OnServerEvent:Connect(function(player)
+	if not Trade.Get(player) then return end
+	endTrade(player)
+end)
+
+------------------------------------------------------------------
 -- Scrap magnet
 ------------------------------------------------------------------
 
@@ -1540,6 +1810,7 @@ local function onPlayerAdded(player)
 		character:WaitForChild("Humanoid")
 		updateWalkSpeed(player)
 		updateCompanionVisual(player)
+		attachTradePrompt(player, character)
 		task.wait(1)
 		pushUI(player)
 		toast(player, "Plot " .. index .. " is yours. Scrap spawns in the centre.")
@@ -1649,6 +1920,13 @@ Players.PlayerRemoving:Connect(function(player)
 		DataManager.Save(player, data)
 	end
 	Leaderboard.PushToStore(player)
+
+	local tradePartner = Trade.Partner(player)
+	Trade.Cleanup(player)
+	if tradePartner then
+		toast(tradePartner, player.Name .. " left — trade cancelled.")
+		pushTradeUpdate(tradePartner)
+	end
 
 	local s = state[player]
 	if s then
