@@ -40,7 +40,8 @@ local function defaultData()
 		bestTier = 1,
 		secrets = 0,
 		sales = 0,
-		placed = {},
+		placed = {}, -- legacy: the old physical placement system. No longer written; kept so an old save still loads.
+		inventory = {},
 		brainrotDiscovered = {},
 		upgrades = { luck = 1, carry = 1, magnet = 0, value = 1 },
 		lastDailyDay = 0,

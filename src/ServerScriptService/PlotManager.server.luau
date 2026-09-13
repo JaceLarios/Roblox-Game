@@ -5,12 +5,13 @@
 
 	The loop, for up to 8 players:
 	  1. Scrap spawns in the shared yard at the centre of the map.
-	  2. Anyone can press E on scrap to carry it (2 slots per player).
+	  2. Anyone can press E on scrap to carry it (2+ slots per player).
 	  3. You carry it back to YOUR OWN plot and fuse it there.
-	  4. The result auto-places into a zone (Garage/Workshop/Trophy Case)
-	     matching its tier, where it earns coins every few seconds for as
-	     long as it stays there — sell it anytime for an instant payout
-	     instead of waiting on the passive income.
+	  4. The result goes straight into your Inventory, where it earns coins
+	     every few seconds for as long as you keep it — sell it anytime from
+	     the Inventory popup for an instant payout instead of waiting on the
+	     passive income, or send it back to carry to fuse into something
+	     bigger.
 
 	Everything below is per-player. No shared slots, no shared discoveries.
 --]]
@@ -183,13 +184,6 @@ if not equipCompanionRemote then
 	equipCompanionRemote.Parent = ReplicatedStorage
 end
 
-local requestLeaderboardRemote = ReplicatedStorage:FindFirstChild("RequestLeaderboard")
-if not requestLeaderboardRemote then
-	requestLeaderboardRemote = Instance.new("RemoteEvent")
-	requestLeaderboardRemote.Name = "RequestLeaderboard"
-	requestLeaderboardRemote.Parent = ReplicatedStorage
-end
-
 local selectTradeOfferRemote = ReplicatedStorage:FindFirstChild("SelectTradeOffer")
 if not selectTradeOfferRemote then
 	selectTradeOfferRemote = Instance.new("RemoteEvent")
@@ -209,6 +203,20 @@ if not cancelTradeRemote then
 	cancelTradeRemote = Instance.new("RemoteEvent")
 	cancelTradeRemote.Name = "CancelTrade"
 	cancelTradeRemote.Parent = ReplicatedStorage
+end
+
+local sellInventoryRemote = ReplicatedStorage:FindFirstChild("SellInventoryItem")
+if not sellInventoryRemote then
+	sellInventoryRemote = Instance.new("RemoteEvent")
+	sellInventoryRemote.Name = "SellInventoryItem"
+	sellInventoryRemote.Parent = ReplicatedStorage
+end
+
+local moveToCarryRemote = ReplicatedStorage:FindFirstChild("MoveToCarry")
+if not moveToCarryRemote then
+	moveToCarryRemote = Instance.new("RemoteEvent")
+	moveToCarryRemote.Name = "MoveToCarry"
+	moveToCarryRemote.Parent = ReplicatedStorage
 end
 
 -- The side travel menu asks for a destination key; the server decides
@@ -264,7 +272,7 @@ local function dailyInfo(s)
 	return true, nextDay, nextDay - 1
 end
 
-local plots = {}   -- [index] = { model, owner, padPrompt, zones, sign }
+local plots = {}   -- [index] = { model, owner, centre, pad, padLabel, padPrompt, signLabel }
 local state = {}   -- [player] = { slots, discovered, count, plotIndex }
 
 -- Boosts are timed multipliers stored as an expiry timestamp, so they
@@ -306,24 +314,34 @@ local function islandTag(itemName, island)
 	return ItemRarity.Tag(itemName, Recipes.GetTier(itemName), Recipes.IsSecretResult(itemName))
 end
 
--- Cars as transportation: every fused vehicle sitting in your Garage zone
--- (not sold) makes you faster, on top of everything else you're carrying
--- around. Recomputed from scratch each time so it never drifts.
+-- Tier/secret/value for any item name PlotManager could be holding —
+-- always a Junkyard name, but may carry a mutation prefix. Defined early
+-- since pushUI needs it for inventory stats, well before Trading (which
+-- also uses it) is defined.
+local function itemTierInfo(itemName)
+	local baseName, mutationId = Mutations.Unwrap(itemName)
+	return {
+		tier = FusionRecipes.GetTier(baseName),
+		isSecret = FusionRecipes.IsSecretResult(baseName),
+		value = FusionRecipes.GetValue(baseName) * Mutations.ValueMultiplier(mutationId),
+	}
+end
+
+-- Cars as transportation: every fused vehicle in your inventory (not sold)
+-- makes you faster, on top of everything else. Used to be keyed off
+-- physical Garage placement; inventory only ever holds fusion results
+-- (never raw scrap), so a plain count does the same job with no zones.
 local BASE_WALK_SPEED = 16
-local GARAGE_SPEED_PER_ITEM = 2
+local INVENTORY_SPEED_PER_ITEM = 1
+local INVENTORY_SPEED_CAP = 10
 
 local function updateWalkSpeed(player)
 	local s = state[player]
-	local plot = s and plots[s.plotIndex]
 	local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-	if not (plot and humanoid) then return end
+	if not (s and humanoid) then return end
 
-	local filled = 0
-	for _, slot in ipairs(plot.zones.garage.slots) do
-		if slot.itemName then filled = filled + 1 end
-	end
-
-	humanoid.WalkSpeed = BASE_WALK_SPEED + filled * GARAGE_SPEED_PER_ITEM
+	local bonus = math.min(#s.inventory * INVENTORY_SPEED_PER_ITEM, INVENTORY_SPEED_CAP)
+	humanoid.WalkSpeed = BASE_WALK_SPEED + bonus
 end
 
 ------------------------------------------------------------------
@@ -403,64 +421,23 @@ local function playerRoot(player)
 end
 
 ------------------------------------------------------------------
--- Placement zones
--- Fused results auto-place here instead of an immediate one-time sale.
--- Which zone accepts a result depends on its tier, so higher zones are
--- both a status symbol and a reason to keep grinding for rarer fuses.
+-- Inventory — where a fusion result actually goes. No more physical
+-- display zones: the pad is the only place a new item enters a player's
+-- hands (grabbed scrap into carry, or a fusion result into here), and
+-- selling / sending something back to carry to re-fuse both happen from
+-- the Inventory popup instead of walking to a physical slot.
 ------------------------------------------------------------------
 
 -- Roughly how long passive income takes to match a manual sell of the
--- same item — after that it's pure profit for as long as it stays placed.
+-- same item — after that it's pure profit for as long as it's held.
 local PLACEMENT_PAYBACK_SECONDS = 90
 local INCOME_TICK_SECONDS = 3
 
-local ZONES = {
-	{
-		key = "garage", label = "GARAGE — Tier 2", capacity = 4,
-		offset = Vector3.new(-22, 0, 20),
-		color = Color3.fromRGB(0, 200, 255),
-		accepts = function(info) return info.tier == 2 and not info.isSecret end,
-	},
-	{
-		key = "workshop", label = "WORKSHOP — Tier 3", capacity = 3,
-		offset = Vector3.new(0, 0, 20),
-		color = Color3.fromRGB(200, 80, 255),
-		accepts = function(info) return info.tier == 3 and not info.isSecret end,
-	},
-	{
-		key = "trophy", label = "TROPHY CASE — Tier 4+ / Secrets", capacity = 2,
-		offset = Vector3.new(22, 0, 20),
-		color = Color3.fromRGB(255, 210, 0),
-		accepts = function(info) return info.tier >= 4 or info.isSecret end,
-	},
-}
-
-local function zoneForInfo(info)
-	for _, zoneDef in ipairs(ZONES) do
-		if zoneDef.accepts(info) then return zoneDef end
-	end
-	return nil
-end
-
--- Empties every slot in every zone of a plot with no payout — used when a
--- player leaves (so the next owner starts clean) and when a player
--- rebirths (clearing placed items is deliberately part of the sacrifice).
-local function clearZones(plot)
-	for _, zoneDef in ipairs(ZONES) do
-		for _, slot in ipairs(plot.zones[zoneDef.key].slots) do
-			if slot.itemPart then
-				slot.itemPart:Destroy()
-				slot.itemPart = nil
-			end
-			slot.itemName = nil
-			slot.value = nil
-			slot.label.Text = "empty"
-			slot.label.TextColor3 = zoneDef.color
-			slot.sellPrompt.Enabled = false
-			slot.retrievePrompt.Enabled = false
-		end
-	end
-end
+-- A flat cap rather than three tier-gated zone capacities (4+3+2=9 before)
+-- — a little more generous since nothing about it is tier-specific
+-- anymore, but still a real limit: sell or send things back to carry to
+-- make room, same "make a choice" pressure the old zones created.
+local INVENTORY_CAPACITY = 15
 
 ------------------------------------------------------------------
 -- Build the eight plots in a ring around the yard
@@ -519,76 +496,11 @@ for i = 1, PLOT_COUNT do
 	padPrompt.RequiresLineOfSight = false
 	padPrompt.Parent = pad
 
-	-- Placement zones: each fused result auto-places into the zone that
-	-- accepts its tier, where it earns coins every few seconds.
-	local zones = {}
-	for _, zoneDef in ipairs(ZONES) do
-		local zoneCentre = centre + zoneDef.offset
-
-		local signPost2 = makePart({
-			Name = zoneDef.key .. "Sign",
-			Size = Vector3.new(1, 6, 1),
-			Position = zoneCentre + Vector3.new(0, 3, -4),
-			Material = Enum.Material.Neon,
-			Color = zoneDef.color,
-			Parent = model,
-		})
-		makeLabel(signPost2, zoneDef.label, 4, 190, Color3.fromRGB(255, 255, 255), 60)
-
-		local slots = {}
-		for slotIndex = 1, zoneDef.capacity do
-			local localX = (slotIndex - (zoneDef.capacity + 1) / 2) * 5
-			local base = makePart({
-				Name = zoneDef.key .. "Slot" .. slotIndex,
-				Size = Vector3.new(4, 1, 4),
-				Position = zoneCentre + Vector3.new(localX, 1, 0),
-				Material = Enum.Material.SmoothPlastic,
-				Color = zoneDef.color:Lerp(Color3.new(1, 1, 1), 0.6),
-				Parent = model,
-			})
-			local slotLabel = makeLabel(base, "empty", 2.2, 130, zoneDef.color, 50)
-
-			local sellPrompt = Instance.new("ProximityPrompt")
-			sellPrompt.ActionText = "Sell"
-			sellPrompt.ObjectText = "Placed item"
-			sellPrompt.HoldDuration = 0.4
-			sellPrompt.MaxActivationDistance = 12
-			sellPrompt.RequiresLineOfSight = false
-			sellPrompt.Enabled = false
-			sellPrompt.Parent = base
-
-			-- Lets a placed item be pulled back into carry slots instead of
-			-- only sold — without this, nothing above Tier 2 was actually
-			-- reachable, since every curated Tier 3+ recipe fuses two
-			-- *placed results* together (see FusionRecipes' Tier 3 list),
-			-- and there was previously no way to un-place one. A separate
-			-- key (R, not E) so it can sit on the same part as Sell without
-			-- the two competing over the same prompt.
-			local retrievePrompt = Instance.new("ProximityPrompt")
-			retrievePrompt.ActionText = "Pick Up"
-			retrievePrompt.ObjectText = "Placed item"
-			retrievePrompt.HoldDuration = 0.4
-			retrievePrompt.MaxActivationDistance = 12
-			retrievePrompt.RequiresLineOfSight = false
-			retrievePrompt.KeyboardKeyCode = Enum.KeyCode.R
-			retrievePrompt.GamepadKeyCode = Enum.KeyCode.ButtonY -- Sell defaults to ButtonX; keep them apart on gamepad too
-			retrievePrompt.Enabled = false
-			retrievePrompt.Parent = base
-
-			slots[slotIndex] = {
-				base = base,
-				label = slotLabel,
-				sellPrompt = sellPrompt,
-				retrievePrompt = retrievePrompt,
-				itemPart = nil,
-				itemName = nil,
-				value = nil,
-			}
-		end
-
-		zones[zoneDef.key] = { def = zoneDef, slots = slots }
-	end
-
+	-- No physical display zones anymore — a fused result goes straight
+	-- into the player's inventory (see Inventory below), sold or sent
+	-- back to the pad from the Inventory popup instead of walking to a
+	-- physical slot. The pad is now the only place a new item (grabbed
+	-- scrap or a fusion result) actually enters a player's hands.
 	plots[i] = {
 		model = model,
 		owner = nil,
@@ -596,9 +508,136 @@ for i = 1, PLOT_COUNT do
 		pad = pad,
 		padLabel = padLabel,
 		padPrompt = padPrompt,
-		zones = zones,
 		signLabel = signLabel,
 	}
+end
+
+------------------------------------------------------------------
+-- Public leaderboard monument — a physical board in the middle of the
+-- yard everyone can walk up and read, instead of a private top-of-screen
+-- popup. A BillboardGui (not a SurfaceGui) so it reads correctly from
+-- any approach angle, same as every name-tag label in this game.
+------------------------------------------------------------------
+
+local function commas(n)
+	local formatted = tostring(n)
+	while true do
+		local replaced
+		formatted, replaced = formatted:gsub("^(-?%d+)(%d%d%d)", "%1,%2")
+		if replaced == 0 then break end
+	end
+	return formatted
+end
+
+do
+	local base = Vector3.new(0, 1.2, 0)
+
+	makePart({
+		Name = "LeaderboardBase",
+		Size = Vector3.new(6, 2, 6),
+		Position = base + Vector3.new(0, 1, 0),
+		Material = Enum.Material.SmoothPlastic,
+		Color = Color3.fromRGB(40, 40, 48),
+		Parent = workspace,
+	})
+
+	makePart({
+		Name = "LeaderboardPole",
+		Size = Vector3.new(2, 16, 2),
+		Position = base + Vector3.new(0, 10, 0),
+		Material = Enum.Material.Metal,
+		Color = Color3.fromRGB(90, 90, 100),
+		Parent = workspace,
+	})
+
+	local board = makePart({
+		Name = "LeaderboardBoard",
+		Size = Vector3.new(1, 1, 1),
+		Position = base + Vector3.new(0, 22, 0),
+		Transparency = 1,
+		CanCollide = false,
+		Parent = workspace,
+	})
+
+	local boardGui = Instance.new("BillboardGui")
+	boardGui.Size = UDim2.new(0, 480, 0, 360)
+	boardGui.AlwaysOnTop = false
+	boardGui.MaxDistance = 220
+	boardGui.Parent = board
+
+	local boardBg = Instance.new("Frame")
+	boardBg.Size = UDim2.new(1, 0, 1, 0)
+	boardBg.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+	boardBg.BackgroundTransparency = 0.05
+	boardBg.BorderSizePixel = 0
+	boardBg.Parent = boardGui
+
+	local boardCorner = Instance.new("UICorner")
+	boardCorner.CornerRadius = UDim.new(0, 14)
+	boardCorner.Parent = boardBg
+
+	local boardStroke = Instance.new("UIStroke")
+	boardStroke.Color = Color3.fromRGB(255, 205, 40)
+	boardStroke.Thickness = 3
+	boardStroke.Parent = boardBg
+
+	local boardTitle = Instance.new("TextLabel")
+	boardTitle.Size = UDim2.new(1, -20, 0, 50)
+	boardTitle.Position = UDim2.new(0, 10, 0, 8)
+	boardTitle.BackgroundTransparency = 1
+	boardTitle.Text = "🏆 TOP FUSIONEERS"
+	boardTitle.TextColor3 = Color3.fromRGB(255, 205, 40)
+	boardTitle.TextStrokeTransparency = 0.4
+	boardTitle.Font = Enum.Font.LuckiestGuy
+	boardTitle.TextScaled = true
+	boardTitle.Parent = boardBg
+
+	local boardSub = Instance.new("TextLabel")
+	boardSub.Size = UDim2.new(1, -20, 0, 20)
+	boardSub.Position = UDim2.new(0, 10, 0, 54)
+	boardSub.BackgroundTransparency = 1
+	boardSub.Text = "Ranked by lifetime coins earned"
+	boardSub.TextColor3 = Color3.fromRGB(180, 180, 190)
+	boardSub.Font = Enum.Font.FredokaOne
+	boardSub.TextScaled = true
+	boardSub.Parent = boardBg
+
+	local RANK_COLORS = {
+		[1] = Color3.fromRGB(255, 215, 60),
+		[2] = Color3.fromRGB(210, 215, 220),
+		[3] = Color3.fromRGB(210, 140, 80),
+	}
+
+	local boardRows = {}
+	for i = 1, 10 do
+		local row = Instance.new("TextLabel")
+		row.Size = UDim2.new(1, -24, 0, 26)
+		row.Position = UDim2.new(0, 14, 0, 78 + (i - 1) * 27)
+		row.BackgroundTransparency = 1
+		row.Text = string.format("#%d  ---", i)
+		row.TextColor3 = RANK_COLORS[i] or Color3.fromRGB(220, 220, 230)
+		row.Font = Enum.Font.FredokaOne
+		row.TextScaled = true
+		row.TextXAlignment = Enum.TextXAlignment.Left
+		row.Parent = boardBg
+		boardRows[i] = row
+	end
+
+	task.spawn(function()
+		while true do
+			Leaderboard.RefreshIfStale()
+			local top = Leaderboard.GetTopCached()
+			for i = 1, 10 do
+				local entry = top[i]
+				if entry then
+					boardRows[i].Text = string.format("#%d  %s — %s coins", i, entry.name, commas(entry.coins))
+				else
+					boardRows[i].Text = string.format("#%d  ---", i)
+				end
+			end
+			task.wait(15)
+		end
+	end)
 end
 
 ------------------------------------------------------------------
@@ -659,6 +698,21 @@ local function pushUI(player)
 		brainrotDiscovered[name] = true
 	end
 
+	-- Full stats per item, computed here rather than on the client, since
+	-- value/tier/mutation logic already lives entirely server-side.
+	local inventoryInfo = {}
+	for i, itemName in ipairs(s.inventory) do
+		local info = itemTierInfo(itemName)
+		table.insert(inventoryInfo, {
+			index = i,
+			name = itemName,
+			tier = info.tier,
+			isSecret = info.isSecret,
+			value = info.value,
+			perSecond = info.value / PLACEMENT_PAYBACK_SECONDS,
+		})
+	end
+
 	-- `false`, never nil: RemoteEvent args drop nil-valued table keys, and
 	-- the client needs to tell "no companion" apart from "field absent"
 	-- (e.g. on a toast-only message) to know when to clear a stale display.
@@ -699,6 +753,8 @@ local function pushUI(player)
 			maxed = Rebirth.IsMaxed(player),
 		},
 		companion = companionInfo,
+		inventory = inventoryInfo,
+		inventoryCapacity = INVENTORY_CAPACITY,
 	})
 end
 
@@ -764,9 +820,9 @@ local function refreshPad(player)
 	)
 
 	-- Physical items sitting in the two slots on the pad. A carried item
-	-- can now carry a mutation prefix (retrieved back off a placement —
-	-- see Retrieving below), so this needs the same unwrap-for-lookup,
-	-- tint-the-mesh handling renderInSlot already does.
+	-- can carry a mutation prefix (sent back from Inventory to re-fuse),
+	-- so this unwraps for the mesh/tier lookup and tints the mesh itself,
+	-- same as everywhere else a possibly-mutated name gets rendered.
 	plot.slotParts = plot.slotParts or {}
 	for i = 1, 2 do
 		if plot.slotParts[i] then
@@ -844,124 +900,10 @@ end
 -- Fusion
 ------------------------------------------------------------------
 
--- Builds the physical item sitting in a zone slot and marks the slot
--- filled. Shared by a fresh fuse-and-place and restoring a save on join.
-local function renderInSlot(plot, slot, itemName, value)
-	-- Recomputed from the name rather than threaded through every caller
-	-- (including the save-file restore path, which used to hardcode
-	-- isSecret = false and lose a restored secret's color on rejoin).
-	-- itemName may carry a "[Mutation] " prefix (see Mutations.luau) — every
-	-- recipe/visual lookup below needs the unwrapped base name instead.
-	local baseName, mutationId = Mutations.Unwrap(itemName)
-	local isSecret = FusionRecipes.IsSecretResult(baseName)
-	local isFallback = FusionRecipes.IsFallbackResult(baseName)
-	local tier = FusionRecipes.GetTier(baseName)
-	local mutationColor = Mutations.Color(mutationId)
-
-	-- The slot's top surface, not its center — renderInSlot places items of
-	-- very different heights (a raw Rusted Sedan vs. a curated Tier 4
-	-- monster), and a fixed offset either floats or buries one of them.
-	local surfaceY = slot.base.Position.Y + slot.base.Size.Y / 2
-	local position = Vector3.new(slot.base.Position.X, surfaceY, slot.base.Position.Z)
-	local part
-	if ItemVisuals.HasModel(baseName) then
-		part = ItemVisuals.Create(baseName, position, 1)
-	else
-		-- No detailed model for this result — keep a neon placeholder,
-		-- colored distinctly for secrets and for generic hybrid fusions.
-		-- Doesn't go through ItemVisuals.Create, so it needs the same
-		-- surface-to-center offset applied by hand.
-		local phSize = Vector3.new(3.5, 2, 3.5) * ItemVisuals.GLOBAL_SCALE
-		part = makePart({
-			Name = baseName,
-			Size = phSize,
-			Position = Vector3.new(position.X, surfaceY + phSize.Y / 2, position.Z),
-			Material = Enum.Material.Neon,
-			Color = isSecret and Color3.fromRGB(255, 90, 200)
-				or isFallback and Color3.fromRGB(190, 100, 255)
-				or Color3.fromRGB(90, 200, 255),
-		})
-	end
-	if mutationColor then
-		part.Color = mutationColor
-	end
-	part.Parent = plot.model
-	part:SetAttribute("ItemName", itemName)
-
-	-- Showcase glow on anything trophy-case-worthy, so the rarer tiers
-	-- read as more special than just "a bigger mesh in the same lighting".
-	-- A mutation always earns the glow too — that's the whole point of it.
-	if isSecret or mutationId or value >= 2000 then
-		local light = Instance.new("PointLight")
-		light.Color = mutationColor or (isSecret and Color3.fromRGB(255, 210, 90) or Color3.fromRGB(255, 235, 180))
-		light.Range = mutationId and 20 or (isSecret and 18 or 13)
-		light.Brightness = mutationId and 5 or (isSecret and 4 or 2.2)
-		light.Parent = part
-	end
-
-	slot.itemPart = part
-	slot.itemName = itemName
-	slot.value = value
-	slot.label.Text = string.format("%s\n+%.1f coins/sec", itemName, value / PLACEMENT_PAYBACK_SECONDS)
-	slot.label.TextColor3 = mutationColor or ItemRarity.Color(tier, isSecret)
-	slot.sellPrompt.Enabled = true
-	slot.retrievePrompt.Enabled = true
-end
-
--- Finds the first empty slot in the zone matching this result's tier and
--- places it there. Returns false (zone full) if nothing was available.
-local function placeFusedItem(plot, resultName, info)
-	local zoneDef = zoneForInfo(info)
-	if not zoneDef then
-		warn("[PlotManager] No zone accepts tier " .. tostring(info.tier) .. " results")
-		return false
-	end
-
-	local zone = plot.zones[zoneDef.key]
-	for _, slot in ipairs(zone.slots) do
-		if not slot.itemName then
-			renderInSlot(plot, slot, resultName, info.value)
-			return true
-		end
-	end
-
-	return false
-end
-
--- Cashes out one placed item for an instant payout instead of letting it
--- keep earning passively.
-local function sellSlot(plot, zoneKey, slotIndex, player)
-	if plot.owner ~= player then
-		toast(player, "That's not your plot.")
-		return
-	end
-
-	local slot = plot.zones[zoneKey].slots[slotIndex]
-	if not slot.itemName then return end
-
-	local s = state[player]
-	local mult = s and valueMultiplier(player, s) or 1
-	local payout = addCoins(player, math.floor(slot.value * mult)) or 0
-
-	playSound(slot.base, "sell")
-	toast(player, string.format("Sold %s for %d coins.", instanceTag(slot.itemName), payout))
-
-	slot.itemPart:Destroy()
-	slot.itemPart = nil
-	slot.itemName = nil
-	slot.value = nil
-	slot.label.Text = "empty"
-	slot.label.TextColor3 = plot.zones[zoneKey].def.color
-	slot.sellPrompt.Enabled = false
-	slot.retrievePrompt.Enabled = false
-	updateWalkSpeed(player)
-
-	if s then
-		s.sales = s.sales + 1
-		checkGoals(player)
-		pushUI(player)
-	end
-end
+-- Selling and sending an item back to carry both live down in the
+-- Inventory section below, next to the remotes that trigger them —
+-- there's no more physical placement step for a fusion result to go
+-- through here.
 
 local function attemptFusion(player)
 	local s = state[player]
@@ -976,12 +918,12 @@ local function attemptFusion(player)
 		return
 	end
 
-	-- A retrieved item can still carry its mutation prefix (see Retrieving
-	-- below) — recipe lookups need the bare name, or a retrieved "[Shiny]
-	-- Trail Blazer" would never match the curated recipe for "Trail
-	-- Blazer" and would silently fall back to a worse, wrong-tier hybrid.
-	-- The ingredient's own mutation isn't carried forward either way —
-	-- the result gets its own independent roll below, same as always.
+	-- An item sent back from Inventory can still carry its mutation prefix
+	-- — recipe lookups need the bare name, or a "[Shiny] Trail Blazer"
+	-- would never match the curated recipe for "Trail Blazer" and would
+	-- silently fall back to a worse, wrong-tier hybrid. The ingredient's
+	-- own mutation isn't carried forward either way — the result gets its
+	-- own independent roll below, same as always.
 	local baseA = Mutations.Unwrap(a)
 	local baseB = Mutations.Unwrap(b)
 
@@ -1043,16 +985,17 @@ local function attemptFusion(player)
 		toast(player, string.format("MUTATION!\n%s", resultTag), true)
 	end
 
-	local placedInfo = { tier = info.tier, isSecret = info.isSecret, value = instanceValue }
-	local placed = placeFusedItem(plot, instanceName, placedInfo)
-	if not placed then
-		-- Zone's full: auto-sell instead of bouncing it to the shared yard,
-		-- where another player could grab a mutated result before its
-		-- owner does and its mutation bonus would be lost the moment it's
-		-- fused again (the yard/carry system only ever deals in bare names).
+	-- Straight into inventory — the pad is the only place a new item
+	-- enters a player's hands now. Fusing always nets -1 slot overall
+	-- (2 ingredients consumed, 1 result produced), so this can only ever
+	-- fail to fit if the inventory was already completely full before
+	-- this fusion even started; auto-sell instead of losing it.
+	if #s.inventory < INVENTORY_CAPACITY then
+		table.insert(s.inventory, instanceName)
+	else
 		local mult = valueMultiplier(player, s)
 		local payout = addCoins(player, math.floor(instanceValue * mult)) or 0
-		toast(player, string.format("Your zone for %s is full — auto-sold for %d coins instead.", resultTag, payout))
+		toast(player, string.format("Inventory's full — %s auto-sold for %d coins instead.", resultTag, payout))
 	end
 	updateWalkSpeed(player)
 
@@ -1138,14 +1081,6 @@ for i, plot in ipairs(plots) do
 		end
 		attemptFusion(player)
 	end)
-
-	for _, zoneDef in ipairs(ZONES) do
-		for slotIndex, slot in ipairs(plot.zones[zoneDef.key].slots) do
-			slot.sellPrompt.Triggered:Connect(function(player)
-				sellSlot(plot, zoneDef.key, slotIndex, player)
-			end)
-		end
-	end
 end
 
 ------------------------------------------------------------------
@@ -1192,15 +1127,14 @@ end)
 
 ------------------------------------------------------------------
 -- Rebirth — a permanent coin multiplier, paid for with a full reset of
--- coins, upgrades, and everything currently placed. Discoveries, the
--- Index, gamepasses, daily streak and boosts are untouched: those are
--- earned records, not part of the grind this resets.
+-- coins, upgrades, and everything currently in inventory. Discoveries,
+-- the Index, gamepasses, daily streak and boosts are untouched: those
+-- are earned records, not part of the grind this resets.
 ------------------------------------------------------------------
 
 rebirthRemote.OnServerEvent:Connect(function(player)
 	local s = state[player]
-	local plot = s and plots[s.plotIndex]
-	if not (s and plot) then return end
+	if not s then return end
 
 	local cost = Rebirth.NextCost(player)
 	if not cost then
@@ -1219,7 +1153,7 @@ rebirthRemote.OnServerEvent:Connect(function(player)
 
 	coins.Value = 0
 	s.upgrades = { luck = 1, carry = 1, magnet = 0, value = 1 }
-	clearZones(plot)
+	s.inventory = {}
 	updateWalkSpeed(player)
 	Rebirth.Increment(player)
 
@@ -1324,35 +1258,10 @@ equipCompanionRemote.OnServerEvent:Connect(function(player, itemName, island)
 end)
 
 ------------------------------------------------------------------
--- Leaderboard — top 10 by lifetime coins earned, cached server-side so
--- several players opening it at once only ever costs one DataStore read.
-------------------------------------------------------------------
-
-requestLeaderboardRemote.OnServerEvent:Connect(function(player)
-	task.spawn(function()
-		Leaderboard.RefreshIfStale()
-		if player.Parent then
-			remote:FireClient(player, { leaderboard = Leaderboard.GetTopCached() })
-		end
-	end)
-end)
-
-------------------------------------------------------------------
 -- Trading — 1-for-1, same server, proximity-triggered. Junkyard items
 -- only: Brainrot creatures never sit in a carry slot or a placement zone
 -- (that island pays out immediately), so there's nothing there to trade.
 ------------------------------------------------------------------
-
--- Tier/secret/value for any item name PlotManager could be holding —
--- always a Junkyard name, but may carry a mutation prefix.
-local function itemTierInfo(itemName)
-	local baseName, mutationId = Mutations.Unwrap(itemName)
-	return {
-		tier = FusionRecipes.GetTier(baseName),
-		isSecret = FusionRecipes.IsSecretResult(baseName),
-		value = FusionRecipes.GetValue(baseName) * Mutations.ValueMultiplier(mutationId),
-	}
-end
 
 -- True only if `player` really currently holds exactly this item where the
 -- ref claims — re-run at both offer time and execute time, since a client
@@ -1366,15 +1275,13 @@ local function resolveItemRef(player, ref)
 
 	if ref.source == "carry" then
 		return s.slots[ref.index] == ref.itemName
+	elseif ref.source == "inventory" then
+		return s.inventory[ref.index] == ref.itemName
 	end
-
-	local plot = plots[s.plotIndex]
-	local zone = plot and plot.zones[ref.source]
-	local slot = zone and zone.slots[ref.index]
-	return slot ~= nil and slot.itemName == ref.itemName
+	return false
 end
 
--- Every item `player` currently holds, carry and placed, in the same
+-- Every item `player` currently holds, carry and inventory, in the same
 -- itemRef shape resolveItemRef expects — sent to the client so it can
 -- offer a real list of things to trade, not a guess.
 local function getMyTradeItems(player)
@@ -1385,16 +1292,8 @@ local function getMyTradeItems(player)
 	for i, name in ipairs(s.slots) do
 		table.insert(items, { source = "carry", index = i, itemName = name })
 	end
-
-	local plot = plots[s.plotIndex]
-	if plot then
-		for _, zoneDef in ipairs(ZONES) do
-			for i, slot in ipairs(plot.zones[zoneDef.key].slots) do
-				if slot.itemName then
-					table.insert(items, { source = zoneDef.key, index = i, itemName = slot.itemName })
-				end
-			end
-		end
+	for i, name in ipairs(s.inventory) do
+		table.insert(items, { source = "inventory", index = i, itemName = name })
 	end
 
 	return items
@@ -1404,9 +1303,9 @@ end
 -- same trade — counted as an already-free slot if it shares a source with
 -- the incoming item, since removeTradedItem/giveTradedItem always run for
 -- both sides before either side's item lands. Without this, a player
--- whose zone is completely full could never trade an item in that zone
--- for another of the same kind, even a plain 1-for-1 swap that nets to no
--- change in how many slots they're using.
+-- whose carry or inventory was already full could never trade an item
+-- there for another of the same kind, even a plain 1-for-1 swap that nets
+-- to no change in how many slots they're using.
 local function canReceiveTradedItem(player, itemName, source, outgoingRef)
 	local s = state[player]
 	if not s then return false end
@@ -1417,21 +1316,14 @@ local function canReceiveTradedItem(player, itemName, source, outgoingRef)
 			freeSlots = freeSlots + 1
 		end
 		return freeSlots > 0
+	elseif source == "inventory" then
+		local freeSlots = INVENTORY_CAPACITY - #s.inventory
+		if outgoingRef and outgoingRef.source == "inventory" then
+			freeSlots = freeSlots + 1
+		end
+		return freeSlots > 0
 	end
-
-	local plot = plots[s.plotIndex]
-	if not plot then return false end
-	local zoneDef = zoneForInfo(itemTierInfo(itemName))
-	if not zoneDef then return false end
-
-	local freeSlots = 0
-	for _, slot in ipairs(plot.zones[zoneDef.key].slots) do
-		if not slot.itemName then freeSlots = freeSlots + 1 end
-	end
-	if outgoingRef and outgoingRef.source == zoneDef.key then
-		freeSlots = freeSlots + 1
-	end
-	return freeSlots > 0
+	return false
 end
 
 local function removeTradedItem(player, ref)
@@ -1439,33 +1331,21 @@ local function removeTradedItem(player, ref)
 	if ref.source == "carry" then
 		table.remove(s.slots, ref.index)
 		refreshPad(player)
-		return
+	elseif ref.source == "inventory" then
+		table.remove(s.inventory, ref.index)
+		updateWalkSpeed(player)
 	end
-
-	local plot = plots[s.plotIndex]
-	local zoneDef = plot.zones[ref.source]
-	local slot = zoneDef.slots[ref.index]
-	if slot.itemPart then slot.itemPart:Destroy() end
-	slot.itemPart = nil
-	slot.itemName = nil
-	slot.value = nil
-	slot.label.Text = "empty"
-	slot.label.TextColor3 = zoneDef.def.color
-	slot.sellPrompt.Enabled = false
-	slot.retrievePrompt.Enabled = false
-	updateWalkSpeed(player)
 end
 
 local function giveTradedItem(player, itemName, source)
+	local s = state[player]
 	if source == "carry" then
-		table.insert(state[player].slots, itemName)
+		table.insert(s.slots, itemName)
 		refreshPad(player)
-		return
+	elseif source == "inventory" then
+		table.insert(s.inventory, itemName)
+		updateWalkSpeed(player)
 	end
-
-	local plot = plots[state[player].plotIndex]
-	placeFusedItem(plot, itemName, itemTierInfo(itemName))
-	updateWalkSpeed(player)
 end
 
 local function pushTradeUpdate(player)
@@ -1620,44 +1500,48 @@ cancelTradeRemote.OnServerEvent:Connect(function(player)
 end)
 
 ------------------------------------------------------------------
--- Retrieving a placed item — every curated Tier 3+ recipe fuses two
--- already-placed results together (see FusionRecipes' Tier 3/4 lists), so
--- without a way to un-place one, nothing past Tier 2 was actually
--- reachable except by the random fallback system. Reuses the same
--- remove/give helpers Trading already validated.
+-- Inventory — selling and sending an item back to carry (to re-fuse it
+-- into something bigger) both happen from the Inventory popup now,
+-- instead of walking to a physical slot. Reuses the same remove/give
+-- helpers Trading already validated, with "inventory" as just another
+-- itemRef source alongside "carry".
 ------------------------------------------------------------------
 
-local function retrieveItem(plot, zoneKey, slotIndex, player)
-	if plot.owner ~= player then
-		toast(player, "That's not your plot.")
-		return
-	end
+sellInventoryRemote.OnServerEvent:Connect(function(player, index)
+	local s = state[player]
+	if not s then return end
+	local itemName = type(index) == "number" and s.inventory[index]
+	if not itemName then return end
 
-	local slot = plot.zones[zoneKey].slots[slotIndex]
-	if not slot.itemName then return end
-	local itemName = slot.itemName
+	local mult = valueMultiplier(player, s)
+	local payout = addCoins(player, math.floor(itemTierInfo(itemName).value * mult)) or 0
+	removeTradedItem(player, { source = "inventory", index = index, itemName = itemName })
+
+	playSound(playerRoot(player), "sell")
+	toast(player, string.format("Sold %s for %d coins.", instanceTag(itemName), payout))
+
+	s.sales = s.sales + 1
+	checkGoals(player)
+	pushUI(player)
+end)
+
+moveToCarryRemote.OnServerEvent:Connect(function(player, index)
+	local s = state[player]
+	if not s then return end
+	local itemName = type(index) == "number" and s.inventory[index]
+	if not itemName then return end
 
 	if not canReceiveTradedItem(player, itemName, "carry") then
 		toast(player, "Hands full — fuse or sell something first.")
 		return
 	end
 
-	removeTradedItem(player, { source = zoneKey, index = slotIndex })
+	removeTradedItem(player, { source = "inventory", index = index, itemName = itemName })
 	giveTradedItem(player, itemName, "carry")
 
-	toast(player, string.format("Picked up %s — carry it to your pad to fuse into something bigger.", instanceTag(itemName)))
+	toast(player, string.format("%s is ready to fuse — head to your pad.", instanceTag(itemName)))
 	pushUI(player)
-end
-
-for _, plot in ipairs(plots) do
-	for _, zoneDef in ipairs(ZONES) do
-		for slotIndex, slot in ipairs(plot.zones[zoneDef.key].slots) do
-			slot.retrievePrompt.Triggered:Connect(function(player)
-				retrieveItem(plot, zoneDef.key, slotIndex, player)
-			end)
-		end
-	end
-end
+end)
 
 ------------------------------------------------------------------
 -- Scrap magnet
@@ -1694,7 +1578,9 @@ task.spawn(function()
 end)
 
 ------------------------------------------------------------------
--- Passive income from placed items
+-- Passive income from inventory — every fusion result you're holding
+-- (never raw scrap, since inventory only ever receives fusion results)
+-- keeps paying out for as long as you keep it instead of selling it.
 ------------------------------------------------------------------
 
 task.spawn(function()
@@ -1703,17 +1589,12 @@ task.spawn(function()
 
 		for _, player in ipairs(Players:GetPlayers()) do
 			local s = state[player]
-			local plot = s and plots[s.plotIndex]
-			if s and plot then
+			if s then
 				local mult = valueMultiplier(player, s)
 				local perSecond = 0
 
-				for _, zoneDef in ipairs(ZONES) do
-					for _, slot in ipairs(plot.zones[zoneDef.key].slots) do
-						if slot.value then
-							perSecond = perSecond + (slot.value / PLACEMENT_PAYBACK_SECONDS) * mult
-						end
-					end
+				for _, itemName in ipairs(s.inventory) do
+					perSecond = perSecond + (itemTierInfo(itemName).value / PLACEMENT_PAYBACK_SECONDS) * mult
 				end
 
 				if perSecond > 0 then
@@ -1871,6 +1752,7 @@ local function onPlayerAdded(player)
 
 	state[player] = {
 		slots = {},
+		inventory = data.inventory or {},
 		discovered = discovered,
 		discoveredList = data.discoveredList,
 		count = #data.discoveredList,
@@ -1889,15 +1771,6 @@ local function onPlayerAdded(player)
 	}
 
 	refreshPad(player)
-
-	-- Restore whatever was placed in this plot's zones last session.
-	for _, saved in ipairs(data.placed or {}) do
-		local zone = plot.zones[saved.zone]
-		local slot = zone and zone.slots[saved.slot]
-		if slot and not slot.itemName and saved.itemName and saved.value then
-			renderInSlot(plot, slot, saved.itemName, saved.value)
-		end
-	end
 	updateWalkSpeed(player)
 
 	-- A dedicated, invisible spawn point right on their plot, so the
@@ -1947,23 +1820,6 @@ end
 ------------------------------------------------------------------
 
 -- Every currently-filled slot across a plot's zones, in save-file form.
-local function snapshotPlaced(plot)
-	local placed = {}
-	for _, zoneDef in ipairs(ZONES) do
-		for slotIndex, slot in ipairs(plot.zones[zoneDef.key].slots) do
-			if slot.itemName then
-				table.insert(placed, {
-					zone = zoneDef.key,
-					slot = slotIndex,
-					itemName = slot.itemName,
-					value = slot.value,
-				})
-			end
-		end
-	end
-	return placed
-end
-
 -- Turns live state back into the plain table DataManager stores.
 local function snapshot(player)
 	local s = state[player]
@@ -1971,7 +1827,6 @@ local function snapshot(player)
 
 	local stats = player:FindFirstChild("leaderstats")
 	local coins = stats and stats:FindFirstChild("Coins")
-	local plot = plots[s.plotIndex]
 
 	return {
 		coins = coins and coins.Value or 0,
@@ -1980,7 +1835,7 @@ local function snapshot(player)
 		bestTier = s.bestTier,
 		secrets = s.secrets,
 		sales = s.sales,
-		placed = plot and snapshotPlaced(plot) or {},
+		inventory = s.inventory,
 		brainrotDiscovered = Brainrot.Snapshot(player),
 		upgrades = s.upgrades,
 		lastDailyDay = s.lastDailyDay,
@@ -2047,7 +1902,6 @@ Players.PlayerRemoving:Connect(function(player)
 			plot.owner = nil
 			plot.signLabel.Text = "UNCLAIMED PLOT"
 			plot.padLabel.Text = "FUSION PAD"
-			clearZones(plot)
 		end
 	end
 	state[player] = nil

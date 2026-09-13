@@ -22,7 +22,8 @@ local buyRemote = ReplicatedStorage:WaitForChild("BuyUpgrade")
 local claimRemote = ReplicatedStorage:WaitForChild("ClaimDaily")
 local rebirthRemote = ReplicatedStorage:WaitForChild("RebirthPlayer")
 local equipCompanionRemote = ReplicatedStorage:WaitForChild("EquipCompanion")
-local requestLeaderboardRemote = ReplicatedStorage:WaitForChild("RequestLeaderboard")
+local sellInventoryRemote = ReplicatedStorage:WaitForChild("SellInventoryItem")
+local moveToCarryRemote = ReplicatedStorage:WaitForChild("MoveToCarry")
 local selectTradeOfferRemote = ReplicatedStorage:WaitForChild("SelectTradeOffer")
 local confirmTradeRemote = ReplicatedStorage:WaitForChild("ConfirmTrade")
 local cancelTradeRemote = ReplicatedStorage:WaitForChild("CancelTrade")
@@ -31,6 +32,7 @@ local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local EventConfig = require(ReplicatedStorage:WaitForChild("EventConfig"))
+local Mutations = require(ReplicatedStorage:WaitForChild("Mutations"))
 local itemModels = ReplicatedStorage:WaitForChild("ItemModels")
 
 local DARK   = Color3.fromRGB(18, 18, 22)
@@ -147,6 +149,18 @@ local function commas(n)
 		if replaced == 0 then break end
 	end
 	return formatted
+end
+
+-- Mirrors PlotManager's server-side instanceTag: mutation color takes over
+-- from rarity color when a name carries a mutation prefix, since a carried
+-- or inventoried item can be either now (Move-to-Carry can put a mutated
+-- item back in carry, same as it can sit in inventory).
+local function instanceTag(name)
+	local baseName, mutationId = Mutations.Unwrap(name)
+	if mutationId then
+		return Mutations.Tag(name, mutationId)
+	end
+	return ItemRarity.Tag(baseName, FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName))
 end
 
 local function watchCoins()
@@ -910,7 +924,9 @@ bookLayout.Parent = bookScroll
 -- A small live 3D render of the actual mesh, framed generically by its
 -- own bounding size so a Rusted Sedan and a THE LAWNLORD both center
 -- nicely without per-item camera tuning.
-local function buildItemViewport(parent, itemName)
+-- tintColor is optional — used for a mutated inventory item's icon; the
+-- Index never passes it, since discovered-recipe icons are never mutated.
+local function buildItemViewport(parent, itemName, tintColor)
 	local viewport = Instance.new("ViewportFrame")
 	viewport.Size = UDim2.new(1, -16, 1, -46)
 	viewport.Position = UDim2.new(0, 8, 0, 8)
@@ -926,6 +942,7 @@ local function buildItemViewport(parent, itemName)
 		local clone = template:Clone()
 		clone.Anchored = true
 		clone.CFrame = CFrame.new(0, 0, 0)
+		if tintColor then clone.Color = tintColor end
 		clone.Parent = viewport
 
 		local size = clone.Size
@@ -1320,7 +1337,7 @@ local function redrawRebirth(info)
 		rebirthBtn.Active = false
 	else
 		rebirthNext.Text = string.format(
-			"Next: x%.2f — %d coins (clears zones/upgrades only)",
+			"Next: x%.2f — %d coins (clears inventory/upgrades only)",
 			info.nextMultiplier, info.nextCost)
 		rebirthBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 		rebirthBtn.Active = true
@@ -1342,117 +1359,239 @@ rebirthBtn.MouseButton1Click:Connect(function()
 end)
 
 ------------------------------------------------------------------
--- Leaderboard (top-center — every other trigger button lives bottom-right
--- or mid-left, so this is the one clearly free spot left on the HUD)
+-- Inventory (top-center — the leaderboard used to live here, but that
+-- moved to a physical monument in the yard). A fusion result lands here
+-- now instead of a physical display; selling or sending something back
+-- to carry to re-fuse it both happen from this popup.
 ------------------------------------------------------------------
 
-local leaderboardBtn = Instance.new("TextButton")
-leaderboardBtn.Size = UDim2.new(0, 160, 0, 34)
-leaderboardBtn.Position = UDim2.new(0.5, -80, 0, 16)
-leaderboardBtn.BackgroundColor3 = GOLD
-leaderboardBtn.Text = "🏆 LEADERBOARD"
-leaderboardBtn.TextColor3 = DARK
-leaderboardBtn.Font = Enum.Font.FredokaOne
-leaderboardBtn.TextSize = 13
-leaderboardBtn.BorderSizePixel = 0
-leaderboardBtn.Parent = gui
-rounded(leaderboardBtn)
+local currentInventory = {}
+local currentInventoryCapacity = 15
 
-local leaderboardFrame = Instance.new("Frame")
-leaderboardFrame.Size = UDim2.new(0, 420, 0, 460)
-leaderboardFrame.Position = UDim2.new(0.5, -210, 0.5, -230)
-leaderboardFrame.BackgroundColor3 = DARK
-leaderboardFrame.BackgroundTransparency = GLASS_PANEL
-leaderboardFrame.BorderSizePixel = 0
-leaderboardFrame.Visible = false
-leaderboardFrame.Parent = gui
-rounded(leaderboardFrame, 10)
+local inventoryBtn = Instance.new("TextButton")
+inventoryBtn.Size = UDim2.new(0, 160, 0, 34)
+inventoryBtn.Position = UDim2.new(0.5, -80, 0, 16)
+inventoryBtn.BackgroundColor3 = ORANGE
+inventoryBtn.Text = "📦 INVENTORY"
+inventoryBtn.TextColor3 = DARK
+inventoryBtn.Font = Enum.Font.FredokaOne
+inventoryBtn.TextSize = 13
+inventoryBtn.BorderSizePixel = 0
+inventoryBtn.Parent = gui
+rounded(inventoryBtn)
 
-local leaderboardTitle = label(leaderboardFrame, "🏆 TOP FUSIONEERS", UDim2.new(1, -30, 0, 30), GOLD, Enum.Font.LuckiestGuy, 20)
-leaderboardTitle.Position = UDim2.new(0, 20, 0, 14)
+local inventoryFrame = Instance.new("Frame")
+inventoryFrame.Size = UDim2.new(0, 620, 0, 460)
+inventoryFrame.Position = UDim2.new(0.5, -310, 0.5, -230)
+inventoryFrame.BackgroundColor3 = DARK
+inventoryFrame.BackgroundTransparency = GLASS_PANEL
+inventoryFrame.BorderSizePixel = 0
+inventoryFrame.Visible = false
+inventoryFrame.Parent = gui
+rounded(inventoryFrame, 10)
 
-local leaderboardSub = label(leaderboardFrame, "Ranked by lifetime coins earned", UDim2.new(1, -30, 0, 18), DIM, Enum.Font.FredokaOne, 12)
-leaderboardSub.Position = UDim2.new(0, 20, 0, 42)
+local inventoryTitle = label(inventoryFrame, "📦 INVENTORY", UDim2.new(0, 260, 0, 30), ORANGE, Enum.Font.LuckiestGuy, 20)
+inventoryTitle.Position = UDim2.new(0, 20, 0, 14)
 
-local leaderboardClose = Instance.new("TextButton")
-leaderboardClose.Size = UDim2.new(0, 30, 0, 30)
-leaderboardClose.Position = UDim2.new(1, -44, 0, 14)
-leaderboardClose.BackgroundTransparency = 1
-leaderboardClose.Text = "X"
-leaderboardClose.TextColor3 = DIM
-leaderboardClose.Font = Enum.Font.FredokaOne
-leaderboardClose.TextSize = 18
-leaderboardClose.Parent = leaderboardFrame
+local inventoryCount = label(inventoryFrame, "0 / 15", UDim2.new(0, 100, 0, 30), DIM, Enum.Font.FredokaOne, 14)
+inventoryCount.Position = UDim2.new(0, 290, 0, 18)
 
-local leaderboardScroll = Instance.new("ScrollingFrame")
-leaderboardScroll.Size = UDim2.new(1, -40, 1, -82)
-leaderboardScroll.Position = UDim2.new(0, 20, 0, 70)
-leaderboardScroll.BackgroundTransparency = 1
-leaderboardScroll.BorderSizePixel = 0
-leaderboardScroll.ScrollBarThickness = 5
-leaderboardScroll.Parent = leaderboardFrame
+local inventoryClose = Instance.new("TextButton")
+inventoryClose.Size = UDim2.new(0, 30, 0, 30)
+inventoryClose.Position = UDim2.new(1, -44, 0, 14)
+inventoryClose.BackgroundTransparency = 1
+inventoryClose.Text = "X"
+inventoryClose.TextColor3 = DIM
+inventoryClose.Font = Enum.Font.FredokaOne
+inventoryClose.TextSize = 18
+inventoryClose.Parent = inventoryFrame
 
-local leaderboardLayout = Instance.new("UIListLayout")
-leaderboardLayout.Padding = UDim.new(0, 6)
-leaderboardLayout.Parent = leaderboardScroll
+-- Left pane: everything you're holding.
+local inventoryScroll = Instance.new("ScrollingFrame")
+inventoryScroll.Size = UDim2.new(0, 350, 1, -64)
+inventoryScroll.Position = UDim2.new(0, 20, 0, 54)
+inventoryScroll.BackgroundTransparency = 1
+inventoryScroll.BorderSizePixel = 0
+inventoryScroll.ScrollBarThickness = 5
+inventoryScroll.Parent = inventoryFrame
 
-local RANK_COLORS = {
-	[1] = Color3.fromRGB(255, 215, 60),
-	[2] = Color3.fromRGB(210, 215, 220),
-	[3] = Color3.fromRGB(210, 140, 80),
-}
+local inventoryLayout = Instance.new("UIGridLayout")
+inventoryLayout.CellSize = UDim2.new(0, 105, 0, 130)
+inventoryLayout.CellPadding = UDim2.new(0, 8, 0, 8)
+inventoryLayout.Parent = inventoryScroll
 
-local function redrawLeaderboard(list)
-	for _, child in ipairs(leaderboardScroll:GetChildren()) do
-		if not child:IsA("UIListLayout") then child:Destroy() end
+-- Right pane: stats for whichever item is currently selected.
+local statPanel = Instance.new("Frame")
+statPanel.Size = UDim2.new(0, 210, 1, -64)
+statPanel.Position = UDim2.new(0, 388, 0, 54)
+statPanel.BackgroundColor3 = Color3.fromRGB(26, 26, 32)
+statPanel.BorderSizePixel = 0
+statPanel.Parent = inventoryFrame
+rounded(statPanel, 10)
+
+local statViewportHolder = Instance.new("Frame")
+statViewportHolder.Size = UDim2.new(1, -24, 0, 140)
+statViewportHolder.Position = UDim2.new(0, 12, 0, 12)
+statViewportHolder.BackgroundColor3 = Color3.fromRGB(36, 36, 44)
+statViewportHolder.BorderSizePixel = 0
+statViewportHolder.Parent = statPanel
+rounded(statViewportHolder, 8)
+
+local statName = label(statPanel, "Select an item", UDim2.new(1, -24, 0, 44), LIGHT, Enum.Font.FredokaOne, 16)
+statName.Position = UDim2.new(0, 12, 0, 158)
+statName.TextWrapped = true
+statName.RichText = true
+
+local statValue = label(statPanel, "", UDim2.new(1, -24, 0, 20), GOLD, Enum.Font.FredokaOne, 13)
+statValue.Position = UDim2.new(0, 12, 0, 202)
+
+local statPerSecond = label(statPanel, "", UDim2.new(1, -24, 0, 20), Color3.fromRGB(120, 220, 140), Enum.Font.FredokaOne, 13)
+statPerSecond.Position = UDim2.new(0, 12, 0, 224)
+
+local sellBtn = Instance.new("TextButton")
+sellBtn.Size = UDim2.new(1, -24, 0, 36)
+sellBtn.Position = UDim2.new(0, 12, 1, -88)
+sellBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
+sellBtn.Text = "SELL"
+sellBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+sellBtn.Font = Enum.Font.LuckiestGuy
+sellBtn.TextSize = 15
+sellBtn.BorderSizePixel = 0
+sellBtn.Visible = false
+sellBtn.Parent = statPanel
+rounded(sellBtn)
+
+local moveToCarryBtn = Instance.new("TextButton")
+moveToCarryBtn.Size = UDim2.new(1, -24, 0, 36)
+moveToCarryBtn.Position = UDim2.new(0, 12, 1, -44)
+moveToCarryBtn.BackgroundColor3 = TEAL
+moveToCarryBtn.Text = "CARRY TO FUSE"
+moveToCarryBtn.TextColor3 = DARK
+moveToCarryBtn.Font = Enum.Font.FredokaOne
+moveToCarryBtn.TextSize = 13
+moveToCarryBtn.BorderSizePixel = 0
+moveToCarryBtn.Visible = false
+moveToCarryBtn.Parent = statPanel
+rounded(moveToCarryBtn)
+
+local selectedIndex = nil
+
+local function showStatsFor(entry)
+	selectedIndex = entry and entry.index
+	for _, c in ipairs(statViewportHolder:GetChildren()) do c:Destroy() end
+
+	if not entry then
+		statName.Text = "Select an item"
+		statValue.Text = ""
+		statPerSecond.Text = ""
+		sellBtn.Visible = false
+		moveToCarryBtn.Visible = false
+		return
 	end
 
-	if #list == 0 then
+	local baseName, mutationId = Mutations.Unwrap(entry.name)
+	local tintColor = Mutations.Color(mutationId)
+	buildItemViewport(statViewportHolder, baseName, tintColor)
+
+	statName.Text = instanceTag(entry.name)
+	statValue.Text = string.format("Value: %d coins", math.floor(entry.value))
+	statPerSecond.Text = string.format("Earning: %.1f coins/sec", entry.perSecond)
+	sellBtn.Visible = true
+	moveToCarryBtn.Visible = true
+end
+
+local function redrawInventory(items, capacity)
+	-- Selling or moving an earlier-indexed item shifts everything after it
+	-- down by one (table.remove semantics), so a plain index match after
+	-- the swap can land on a completely different item that happened to
+	-- inherit the old selection's slot. Comparing the name too catches that;
+	-- an index match with a different name means our selection is gone.
+	local previousSelectedName = selectedIndex and currentInventory[selectedIndex] and currentInventory[selectedIndex].name
+
+	currentInventory = items
+	currentInventoryCapacity = capacity or currentInventoryCapacity
+	inventoryCount.Text = string.format("%d / %d", #items, currentInventoryCapacity)
+
+	for _, child in ipairs(inventoryScroll:GetChildren()) do
+		if not child:IsA("UIGridLayout") then child:Destroy() end
+	end
+
+	if #items == 0 then
 		local empty = Instance.new("TextLabel")
 		empty.Size = UDim2.new(1, 0, 0, 60)
 		empty.BackgroundTransparency = 1
-		empty.Text = "No rankings yet — be the first to earn your way on."
+		empty.Text = "Nothing here yet — fuse something at your pad."
 		empty.TextColor3 = DIM
 		empty.Font = Enum.Font.FredokaOne
-		empty.TextSize = 14
+		empty.TextSize = 13
 		empty.TextWrapped = true
-		empty.Parent = leaderboardScroll
+		empty.Parent = inventoryScroll
 	end
 
-	for i, entry in ipairs(list) do
-		local row = Instance.new("Frame")
-		row.Size = UDim2.new(1, -6, 0, 46)
-		row.LayoutOrder = i
-		row.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
-		row.BackgroundTransparency = 0.2
-		row.BorderSizePixel = 0
-		row.Parent = leaderboardScroll
-		rounded(row, 8)
+	local stillSelected = false
+	for i, entry in ipairs(items) do
+		local baseName, mutationId = Mutations.Unwrap(entry.name)
+		local tintColor = Mutations.Color(mutationId)
+		local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret)
+		local isSelected = entry.index == selectedIndex and entry.name == previousSelectedName
 
-		local rank = label(row, "#" .. i, UDim2.new(0, 44, 1, 0), RANK_COLORS[i] or DIM, Enum.Font.LuckiestGuy, 18)
-		rank.Position = UDim2.new(0, 10, 0, 0)
+		local card = Instance.new("TextButton")
+		card.Size = inventoryLayout.CellSize
+		card.LayoutOrder = i
+		card.BackgroundColor3 = rarityColor:Lerp(Color3.fromRGB(18, 18, 24), 0.35)
+		card.Text = ""
+		card.AutoButtonColor = false
+		card.BorderSizePixel = 0
+		card.Parent = inventoryScroll
+		rounded(card, 10)
 
-		local name = label(row, entry.name, UDim2.new(1, -180, 1, 0), LIGHT, Enum.Font.FredokaOne, 15)
-		name.Position = UDim2.new(0, 58, 0, 0)
-		name.TextTruncate = Enum.TextTruncate.AtEnd
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = isSelected and Color3.fromRGB(255, 255, 255) or rarityColor
+		stroke.Thickness = isSelected and 3 or 2
+		stroke.Parent = card
 
-		local coins = label(row, commas(entry.coins) .. " coins", UDim2.new(0, 110, 1, 0), GOLD, Enum.Font.FredokaOne, 13)
-		coins.Position = UDim2.new(1, -120, 0, 0)
-		coins.TextXAlignment = Enum.TextXAlignment.Right
+		buildItemViewport(card, baseName, tintColor)
+
+		local nameLbl = Instance.new("TextLabel")
+		nameLbl.Size = UDim2.new(1, -10, 0, 26)
+		nameLbl.Position = UDim2.new(0, 5, 1, -30)
+		nameLbl.BackgroundTransparency = 1
+		nameLbl.Text = entry.name
+		nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+		nameLbl.TextStrokeTransparency = 0.4
+		nameLbl.Font = Enum.Font.FredokaOne
+		nameLbl.TextScaled = true
+		nameLbl.TextWrapped = true
+		nameLbl.Parent = card
+
+		card.MouseButton1Click:Connect(function()
+			showStatsFor(entry)
+			redrawInventory(currentInventory, currentInventoryCapacity)
+		end)
+
+		if isSelected then stillSelected = true end
 	end
 
-	leaderboardScroll.CanvasSize = UDim2.new(0, 0, 0, leaderboardLayout.AbsoluteContentSize.Y + 10)
+	inventoryScroll.CanvasSize = UDim2.new(0, 0, 0, inventoryLayout.AbsoluteContentSize.Y + 10)
+
+	if not stillSelected then
+		showStatsFor(nil)
+	end
 end
 
-local function toggleLeaderboard()
-	leaderboardFrame.Visible = not leaderboardFrame.Visible
-	if leaderboardFrame.Visible then
-		requestLeaderboardRemote:FireServer()
-	end
+sellBtn.MouseButton1Click:Connect(function()
+	if selectedIndex then sellInventoryRemote:FireServer(selectedIndex) end
+end)
+moveToCarryBtn.MouseButton1Click:Connect(function()
+	if selectedIndex then moveToCarryRemote:FireServer(selectedIndex) end
+end)
+
+local function toggleInventory()
+	inventoryFrame.Visible = not inventoryFrame.Visible
 end
 
-leaderboardBtn.MouseButton1Click:Connect(toggleLeaderboard)
-leaderboardClose.MouseButton1Click:Connect(toggleLeaderboard)
+inventoryBtn.MouseButton1Click:Connect(toggleInventory)
+inventoryClose.MouseButton1Click:Connect(toggleInventory)
 
 ------------------------------------------------------------------
 -- Event banner — reads EventConfig directly (no remote needed, both
@@ -1836,7 +1975,7 @@ remote.OnClientEvent:Connect(function(data)
 		for i = 1, maxSlots do
 			local name = data.slots[i]
 			if name then
-				table.insert(parts, "[ " .. ItemRarity.Tag(name, FusionRecipes.GetTier(name), FusionRecipes.IsSecretResult(name)) .. " ]")
+				table.insert(parts, "[ " .. instanceTag(name) .. " ]")
 			else
 				table.insert(parts, "[ empty ]")
 			end
@@ -1869,8 +2008,8 @@ remote.OnClientEvent:Connect(function(data)
 		redrawIndex()
 	end
 
-	if data.leaderboard then
-		redrawLeaderboard(data.leaderboard)
+	if data.inventory then
+		redrawInventory(data.inventory, data.inventoryCapacity)
 	end
 
 	if data.trade ~= nil then
