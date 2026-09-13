@@ -10,11 +10,15 @@ local itemModels = ReplicatedStorage:WaitForChild("ItemModels")
 
 local ItemVisuals = {}
 
+-- Flat multiplier on top of every sizeScale below — the "make items bigger"
+-- pass lives here instead of touching every ItemVisuals.Create call site.
+ItemVisuals.GLOBAL_SCALE = 1.4
+
 -- sizeScale multiplies the template's own size (or the fallback box size)
 -- so the same model reads correctly small (pad slot), normal (yard drop)
 -- or large (pedestal) without distorting its proportions.
 function ItemVisuals.Create(itemName, position, sizeScale)
-	sizeScale = sizeScale or 1
+	sizeScale = (sizeScale or 1) * ItemVisuals.GLOBAL_SCALE
 
 	local template = itemModels:FindFirstChild(itemName)
 	if template then

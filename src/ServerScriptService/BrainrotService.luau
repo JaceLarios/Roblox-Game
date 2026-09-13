@@ -102,6 +102,68 @@ part({
 	Parent = islandFolder,
 })
 
+-- Decoration ring: the ground used to be one flat rectangle. Everything
+-- here sits between the creature-spawn field (|x|,|z| <= AREA_SIZE/2) and
+-- the edge of the ground plate, so nothing blocks a live spawn or pickup.
+do
+	local DECOR_INNER = AREA_SIZE / 2 + 2
+	local DECOR_OUTER = AREA_SIZE / 2 + 18
+	local decorColors = {
+		Color3.fromRGB(255, 90, 210), Color3.fromRGB(130, 255, 120),
+		Color3.fromRGB(255, 220, 60), Color3.fromRGB(120, 200, 255),
+	}
+	local decorRng = Random.new(4242)
+
+	for i = 0, 13 do
+		local angle = i * (math.pi * 2 / 14) + decorRng:NextNumber(-0.08, 0.08)
+		local dist = decorRng:NextNumber(DECOR_INNER, DECOR_OUTER)
+		local pos = ISLAND_CENTER + Vector3.new(math.cos(angle) * dist, 0, math.sin(angle) * dist)
+		local col = decorColors[(i % #decorColors) + 1]
+
+		if i % 3 == 0 then
+			-- A stylized alien stalk with a glowing pod on top.
+			local height = decorRng:NextNumber(6, 11)
+			part({
+				Name = "IslandStalk", Size = Vector3.new(1.4, height, 1.4),
+				Position = pos + Vector3.new(0, height / 2, 0),
+				Material = Enum.Material.Neon, Color = col, Parent = islandFolder,
+			})
+			local pod = part({
+				Name = "IslandStalkPod", Size = Vector3.new(3, 3, 3),
+				Position = pos + Vector3.new(0, height, 0),
+				Material = Enum.Material.Neon, Color = col, Parent = islandFolder,
+			})
+			pod.Shape = Enum.PartType.Ball
+		else
+			-- A cluster of glowing pods, like oversized berries.
+			for k = 0, 1 do
+				local size = decorRng:NextNumber(2, 3.4)
+				local bush = part({
+					Name = "IslandBush", Size = Vector3.new(size, size, size),
+					Position = pos + Vector3.new(k * 2 - 1, size / 2, k * 1.4 - 0.7),
+					Material = Enum.Material.Neon, Color = col, Parent = islandFolder,
+				})
+				bush.Shape = Enum.PartType.Ball
+			end
+		end
+	end
+
+	-- Ambient lighting so the island doesn't go flat and dark at dusk.
+	for _, offset in { Vector3.new(20, 6, 20), Vector3.new(-20, 6, -20) } do
+		local lamp = part({
+			Name = "IslandLamp", Size = Vector3.new(1.6, 1.6, 1.6),
+			Position = ISLAND_CENTER + offset,
+			Material = Enum.Material.Neon, Color = Color3.fromRGB(255, 120, 220),
+			Parent = islandFolder,
+		})
+		local pointLight = Instance.new("PointLight")
+		pointLight.Color = Color3.fromRGB(255, 150, 230)
+		pointLight.Range = 30
+		pointLight.Brightness = 2
+		pointLight.Parent = lamp
+	end
+end
+
 local islandSign = part({
 	Name = "IslandSign",
 	Size = Vector3.new(2, 14, 2),
@@ -289,13 +351,14 @@ local function attemptFusion(player)
 	local result, info = BrainrotRecipes.Fuse(a, b)
 
 	if not result then
+		-- Only reachable on malformed input (see BrainrotRecipes.Fuse) —
+		-- every real item name pair now produces a result.
 		dropNearIsland(a)
 		dropNearIsland(b)
-		toast(player, string.format("%s + %s = nothing. Returned to the island.", a, b))
 		return
 	end
 
-	if not s.discovered[result] then
+	if not info.isFallback and not s.discovered[result] then
 		s.discovered[result] = true
 		toast(player, string.format(info.isSecret and "SECRET RECIPE\n%s" or "NEW DISCOVERY\n%s", result), true)
 	end
@@ -303,7 +366,9 @@ local function attemptFusion(player)
 	local payout = addCoins(player, info.value)
 	toast(player, string.format("%s sold for %d coins.", result, payout))
 
-	if info.tier >= 3 or info.isSecret then
+	-- Server-wide callout stays reserved for real discoveries — a generic
+	-- hybrid shouldn't announce itself with the same fanfare.
+	if not info.isFallback and (info.tier >= 3 or info.isSecret) then
 		broadcast(string.format("%s fused %s on Brainrot Island!", player.Name, result))
 	end
 end

@@ -4,6 +4,7 @@ local Baseline = require(ServerStorage:WaitForChild("MapBaseline"))
 local Map = require(ServerStorage:WaitForChild("MapRevamp"))
 Baseline.Restore()
 Map.Build()
+Map.DressYard()
 local plots = workspace:WaitForChild("Plots",30)
 if plots then
  local function dress(plot)

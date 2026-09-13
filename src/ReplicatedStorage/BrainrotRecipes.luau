@@ -64,7 +64,54 @@ for _, r in ipairs(SECRET_LIST) do
 	lookup[makeKey(r[1], r[2])] = { result = r[3], tier = r[4], isSecret = true }
 end
 
--- Returns resultName, infoTable — or nil if there is no recipe.
+-- Fallback fusion: any pair that ISN'T one of the curated recipes above
+-- still produces a hybrid instead of "nothing" — one tier above the
+-- stronger ingredient, worth less than a real discovery of that tier so
+-- hunting down actual recipes stays the better move. Mirrors FusionRecipes.
+local MAX_FALLBACK_TIER = 3
+
+BrainrotRecipes.FallbackValue = {}
+for tier, tierValue in pairs(BrainrotRecipes.TierValue) do
+	BrainrotRecipes.FallbackValue[tier] = math.floor(tierValue * 0.35)
+end
+
+local FALLBACK_NAMES = {
+	[2] = { "Scraprino Mutantelli", "Feralino Snacktoni", "Bentaccio Wobblini" },
+	[3] = { "Chaosaurus Blobbini", "Titanello Munchzilla", "Ferocibro Chompanini" },
+}
+
+local nameTier = {}
+for _, item in ipairs(BrainrotRecipes.BaseItems) do
+	nameTier[item.name] = 1
+end
+for _, r in ipairs(RECIPE_LIST) do
+	nameTier[r[3]] = r[4]
+end
+for _, r in ipairs(SECRET_LIST) do
+	nameTier[r[3]] = r[4]
+end
+
+local fallbackNameSet = {}
+for tier, names in pairs(FALLBACK_NAMES) do
+	for _, name in ipairs(names) do
+		nameTier[name] = tier
+		fallbackNameSet[name] = true
+	end
+end
+
+local function pickFallbackName(itemA, itemB, tier)
+	local pool = FALLBACK_NAMES[tier]
+	local key = makeKey(itemA, itemB)
+	local hash = 0
+	for i = 1, #key do
+		hash = hash + string.byte(key, i)
+	end
+	return pool[(hash % #pool) + 1]
+end
+
+-- Returns resultName, infoTable. Only returns nil for malformed input —
+-- every valid pair of item names produces something, even without a
+-- curated recipe (see the fallback block below).
 function BrainrotRecipes.Fuse(itemA, itemB)
 	if type(itemA) ~= "string" or type(itemB) ~= "string" then
 		warn("[Brainrot] Fuse() needs two item names as strings.")
@@ -72,19 +119,29 @@ function BrainrotRecipes.Fuse(itemA, itemB)
 	end
 
 	local entry = lookup[makeKey(itemA, itemB)]
-	if not entry then
-		return nil
+	if entry then
+		local value = BrainrotRecipes.TierValue[entry.tier] or 0
+		if entry.isSecret then
+			value = BrainrotRecipes.SecretValue
+		end
+
+		return entry.result, {
+			tier     = entry.tier,
+			isSecret = entry.isSecret,
+			value    = value,
+		}
 	end
 
-	local value = BrainrotRecipes.TierValue[entry.tier] or 0
-	if entry.isSecret then
-		value = BrainrotRecipes.SecretValue
-	end
+	local tierA = nameTier[itemA] or 1
+	local tierB = nameTier[itemB] or 1
+	local resultTier = math.min(MAX_FALLBACK_TIER, math.max(tierA, tierB) + 1)
+	local resultName = pickFallbackName(itemA, itemB, resultTier)
 
-	return entry.result, {
-		tier     = entry.tier,
-		isSecret = entry.isSecret,
-		value    = value,
+	return resultName, {
+		tier       = resultTier,
+		isSecret   = false,
+		isFallback = true,
+		value      = BrainrotRecipes.FallbackValue[resultTier] or 0,
 	}
 end
 
@@ -104,7 +161,15 @@ function BrainrotRecipes.GetValue(itemName)
 		end
 	end
 
+	if fallbackNameSet[itemName] then
+		return BrainrotRecipes.FallbackValue[nameTier[itemName]] or 0
+	end
+
 	return 0
+end
+
+function BrainrotRecipes.IsFallbackResult(name)
+	return fallbackNameSet[name] == true
 end
 
 -- Roll a random Tier 1 item using the weights above.

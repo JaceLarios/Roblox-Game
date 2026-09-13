@@ -344,6 +344,63 @@ function Map.Build()
  root.Parent=workspace
  return root
 end
+-- Dresses the shared 130-stud scrap yard at the map's centre. Every other
+-- area MapRevamp builds got roads, garages and landmarks — but the centre
+-- was deliberately left clear (see Map.Build's routing comment), so next
+-- to everything else it read as the plainest spot on the map. This frames
+-- the edge with light, color and scattered junk; ScrapSpawner's own
+-- 130-stud drop square (|x|,|z| <= 65) stays completely clear.
+function Map.DressYard()
+	-- Map.Build() almost always takes its early-return path (the map was
+	-- already built in a prior session and just reused), which means the
+	-- `root` upvalue it sets is usually never assigned. Look the refresh
+	-- folder up directly instead of assuming Map.Build() just populated it.
+	local refresh = workspace:FindFirstChild("JunkyardRefresh")
+	if not refresh or refresh:FindFirstChild("YardDressing") then return end
+	local f = Instance.new("Folder")
+	f.Name = "YardDressing"
+	f.Parent = refresh
+
+	local INNER = 68  -- just outside ScrapSpawner's drop square
+	local OUTER = 92
+
+	-- Bright bollard ring right at the play-square edge, so the yard reads
+	-- as a defined space instead of blending into the surrounding roads.
+	for i = 0, 15 do
+		local a = i * math.pi / 8
+		local pos = V(math.cos(a) * INNER, 0, math.sin(a) * INNER)
+		local col = plotColors[(i % 8) + 1]
+		part("YardBollard", V(1.6, 3.2, 1.6), CF(pos + V(0, 1.6, 0)), col, Enum.Material.Neon, f)
+	end
+
+	-- Lamp posts a bit further out, spilling warm light onto the play square.
+	for i = 0, 7 do
+		local a = (i + 0.5) * math.pi / 4
+		local pos = V(math.cos(a) * OUTER, 0, math.sin(a) * OUTER)
+		part("YardLampPost", V(0.9, 16, 0.9), CF(pos + V(0, 8, 0)), C.navy, Enum.Material.Metal, f)
+		local head = part("YardLampHead", V(2, 1, 2), CF(pos + V(0, 16.2, 0)), C.yellow, Enum.Material.Neon, f)
+		light(head, C.yellow, 0.5, 45)
+	end
+
+	-- Scattered bright junk piles framing the yard between the bollards and
+	-- the lamps — nothing sits inside INNER, so nothing blocks a live drop.
+	local rng = Random.new(77)
+	local junkColors = { plotColors[1], plotColors[2], plotColors[4], plotColors[6], plotColors[8] }
+	for i = 0, 9 do
+		local a = i * math.pi / 5 + rng:NextNumber(-0.1, 0.1)
+		local dist = rng:NextNumber(INNER + 5, OUTER - 6)
+		local base = V(math.cos(a) * dist, 0, math.sin(a) * dist)
+		local col = junkColors[(i % #junkColors) + 1]
+		for k = 0, 2 do
+			local size = 3 + k * 0.6
+			local rock = part("YardJunkPile", V(size, size, size),
+				CF(base + V(k * 1.6 - 1.6, size / 2, k * 1.1 - 1.1)), col, Enum.Material.Neon, f)
+			rock.Shape = Enum.PartType.Ball
+		end
+	end
+
+	print("[Map] Yard dressed.")
+end
 function Map.DressPlot(plot)
  if not plot:IsA("Model") or plot:FindFirstChild("WorkshopFinish") then return end
  local index=tonumber(plot.Name:match("%d+")) or 1

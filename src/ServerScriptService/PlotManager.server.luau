@@ -656,24 +656,42 @@ end
 
 -- Builds the physical item sitting in a zone slot and marks the slot
 -- filled. Shared by a fresh fuse-and-place and restoring a save on join.
-local function renderInSlot(plot, slot, itemName, value, isSecret)
+local function renderInSlot(plot, slot, itemName, value)
+	-- Recomputed from the name rather than threaded through every caller
+	-- (including the save-file restore path, which used to hardcode
+	-- isSecret = false and lose a restored secret's color on rejoin).
+	local isSecret = FusionRecipes.IsSecretResult(itemName)
+	local isFallback = FusionRecipes.IsFallbackResult(itemName)
+
 	local position = slot.base.Position + Vector3.new(0, 2.5, 0)
 	local part
 	if ItemVisuals.HasModel(itemName) then
 		part = ItemVisuals.Create(itemName, position, 1)
 	else
-		-- No detailed model for this result yet — keep a neon placeholder,
-		-- with a distinct color for secret discoveries.
+		-- No detailed model for this result — keep a neon placeholder,
+		-- colored distinctly for secrets and for generic hybrid fusions.
 		part = makePart({
 			Name = itemName,
-			Size = Vector3.new(3.5, 2, 3.5),
+			Size = Vector3.new(3.5, 2, 3.5) * ItemVisuals.GLOBAL_SCALE,
 			Position = position,
 			Material = Enum.Material.Neon,
-			Color = isSecret and Color3.fromRGB(255, 90, 200) or Color3.fromRGB(90, 200, 255),
+			Color = isSecret and Color3.fromRGB(255, 90, 200)
+				or isFallback and Color3.fromRGB(190, 100, 255)
+				or Color3.fromRGB(90, 200, 255),
 		})
 	end
 	part.Parent = plot.model
 	part:SetAttribute("ItemName", itemName)
+
+	-- Showcase glow on anything trophy-case-worthy, so the rarer tiers
+	-- read as more special than just "a bigger mesh in the same lighting".
+	if isSecret or value >= 2000 then
+		local light = Instance.new("PointLight")
+		light.Color = isSecret and Color3.fromRGB(255, 210, 90) or Color3.fromRGB(255, 235, 180)
+		light.Range = isSecret and 18 or 13
+		light.Brightness = isSecret and 4 or 2.2
+		light.Parent = part
+	end
 
 	slot.itemPart = part
 	slot.itemName = itemName
@@ -694,7 +712,7 @@ local function placeFusedItem(plot, resultName, info)
 	local zone = plot.zones[zoneDef.key]
 	for _, slot in ipairs(zone.slots) do
 		if not slot.itemName then
-			renderInSlot(plot, slot, resultName, info.value, info.isSecret)
+			renderInSlot(plot, slot, resultName, info.value)
 			return true
 		end
 	end
@@ -760,16 +778,19 @@ local function attemptFusion(player)
 	local result, info = FusionRecipes.Fuse(a, b)
 
 	if not result then
-		-- Dead ends cost nothing. Both items go back to the yard.
+		-- Only reachable on malformed input (see FusionRecipes.Fuse) —
+		-- every real item name pair now produces a result.
 		dropItemNearYard(a)
 		dropItemNearYard(b)
-		playSound(plot.pad, "fail")
-		toast(player, string.format("%s + %s = nothing. Items returned.", a, b))
 		pushUI(player)
 		return
 	end
 
-	if not s.discovered[result] then
+	if info.isFallback then
+		-- A generic hybrid, not a curated recipe — still worth having and
+		-- placing, but doesn't count toward discoveries/goals.
+		toast(player, string.format("%s + %s = %s", a, b, result))
+	elseif not s.discovered[result] then
 		s.discovered[result] = true
 		s.count = s.count + 1
 		table.insert(s.discoveredList, result)
@@ -1175,7 +1196,7 @@ local function onPlayerAdded(player)
 		local zone = plot.zones[saved.zone]
 		local slot = zone and zone.slots[saved.slot]
 		if slot and not slot.itemName and saved.itemName and saved.value then
-			renderInSlot(plot, slot, saved.itemName, saved.value, false)
+			renderInSlot(plot, slot, saved.itemName, saved.value)
 		end
 	end
 	updateWalkSpeed(player)

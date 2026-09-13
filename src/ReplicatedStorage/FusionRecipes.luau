@@ -86,7 +86,60 @@ for _, r in ipairs(SECRET_LIST) do
 	lookup[makeKey(r[1], r[2])] = { result = r[3], tier = r[4], isSecret = true }
 end
 
--- Returns resultName, infoTable — or nil if there is no recipe.
+-- Fallback fusion: any pair that ISN'T one of the curated recipes above
+-- still produces a hybrid instead of "nothing" — one tier above the
+-- stronger ingredient, worth less than a real discovery of that tier so
+-- hunting down actual recipes stays the better move.
+local MAX_FALLBACK_TIER = 4
+
+FusionRecipes.FallbackValue = {}
+for tier, tierValue in pairs(FusionRecipes.TierValue) do
+	FusionRecipes.FallbackValue[tier] = math.floor(tierValue * 0.35)
+end
+
+local FALLBACK_NAMES = {
+	[2] = { "Scrap Hybrid", "Junk Mashup", "Bent Fusion", "Rusty Splice" },
+	[3] = { "Twisted Wreck", "Chaos Hybrid", "Scrap Titan", "Junkyard Brute" },
+	[4] = { "Mangled Overlord", "Junkyard Behemoth", "Wreck Kraken" },
+}
+
+-- Tier of any name this module knows about — base items, curated results,
+-- and fallback hybrids alike — so a fallback result can be fed back into
+-- a later fusion (curated or another fallback) and still resolve right.
+local nameTier = {}
+for _, item in ipairs(FusionRecipes.BaseItems) do
+	nameTier[item.name] = 1
+end
+for _, r in ipairs(RECIPE_LIST) do
+	nameTier[r[3]] = r[4]
+end
+for _, r in ipairs(SECRET_LIST) do
+	nameTier[r[3]] = r[4]
+end
+
+local fallbackNameSet = {}
+for tier, names in pairs(FALLBACK_NAMES) do
+	for _, name in ipairs(names) do
+		nameTier[name] = tier
+		fallbackNameSet[name] = true
+	end
+end
+
+-- Same pair always lands on the same hybrid name — reads as a rule you
+-- can learn, not a random reroll every time you try it.
+local function pickFallbackName(itemA, itemB, tier)
+	local pool = FALLBACK_NAMES[tier]
+	local key = makeKey(itemA, itemB)
+	local hash = 0
+	for i = 1, #key do
+		hash = hash + string.byte(key, i)
+	end
+	return pool[(hash % #pool) + 1]
+end
+
+-- Returns resultName, infoTable. Only returns nil for malformed input —
+-- every valid pair of item names produces something, even without a
+-- curated recipe (see the fallback block below).
 function FusionRecipes.Fuse(itemA, itemB)
 	if type(itemA) ~= "string" or type(itemB) ~= "string" then
 		warn("[Fusion] Fuse() needs two item names as strings.")
@@ -94,19 +147,29 @@ function FusionRecipes.Fuse(itemA, itemB)
 	end
 
 	local entry = lookup[makeKey(itemA, itemB)]
-	if not entry then
-		return nil
+	if entry then
+		local value = FusionRecipes.TierValue[entry.tier] or 0
+		if entry.isSecret then
+			value = FusionRecipes.SecretValue
+		end
+
+		return entry.result, {
+			tier     = entry.tier,
+			isSecret = entry.isSecret,
+			value    = value,
+		}
 	end
 
-	local value = FusionRecipes.TierValue[entry.tier] or 0
-	if entry.isSecret then
-		value = FusionRecipes.SecretValue
-	end
+	local tierA = nameTier[itemA] or 1
+	local tierB = nameTier[itemB] or 1
+	local resultTier = math.min(MAX_FALLBACK_TIER, math.max(tierA, tierB) + 1)
+	local resultName = pickFallbackName(itemA, itemB, resultTier)
 
-	return entry.result, {
-		tier     = entry.tier,
-		isSecret = entry.isSecret,
-		value    = value,
+	return resultName, {
+		tier       = resultTier,
+		isSecret   = false,
+		isFallback = true,
+		value      = FusionRecipes.FallbackValue[resultTier] or 0,
 	}
 end
 
@@ -126,7 +189,15 @@ function FusionRecipes.GetValue(itemName)
 		end
 	end
 
+	if fallbackNameSet[itemName] then
+		return FusionRecipes.FallbackValue[nameTier[itemName]] or 0
+	end
+
 	return 0
+end
+
+function FusionRecipes.IsFallbackResult(name)
+	return fallbackNameSet[name] == true
 end
 
 -- Roll a random Tier 1 item using the weights above.
