@@ -33,6 +33,7 @@ local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"
 local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local EventConfig = require(ReplicatedStorage:WaitForChild("EventConfig"))
 local Mutations = require(ReplicatedStorage:WaitForChild("Mutations"))
+local NavButton = require(ReplicatedStorage:WaitForChild("NavButton"))
 local itemModels = ReplicatedStorage:WaitForChild("ItemModels")
 
 local DARK   = Color3.fromRGB(18, 18, 22)
@@ -77,88 +78,6 @@ local function label(parent, text, size, color, font, textSize)
 	l.TextXAlignment = Enum.TextXAlignment.Left
 	l.Parent = parent
 	return l
-end
-
--- Shared "icon tile" style for every main HUD nav button — a big square
--- with an emoji icon over a caption, hovering grows it and a press dips
--- it before springing back. The daily-rewards button pioneered this look
--- on its own; every nav trigger uses the same one now instead of each
--- button inventing its own flat rectangle.
-local NAV_BTN_SIZE = 104
-
-local function createIconButton(icon, caption, accentColor, position)
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(0, NAV_BTN_SIZE, 0, NAV_BTN_SIZE)
-	btn.Position = position
-	btn.BackgroundColor3 = accentColor:Lerp(Color3.new(0, 0, 0), 0.7)
-	btn.Text = ""
-	btn.AutoButtonColor = false
-	btn.BorderSizePixel = 0
-	btn.Parent = gui
-	rounded(btn, 20)
-
-	local gradient = Instance.new("UIGradient")
-	gradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, accentColor:Lerp(Color3.new(1, 1, 1), 0.15)),
-		ColorSequenceKeypoint.new(1, accentColor:Lerp(Color3.new(0, 0, 0), 0.5)),
-	})
-	gradient.Rotation = 90
-	gradient.Parent = btn
-
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = accentColor
-	stroke.Thickness = 2
-	stroke.Transparency = 0.25
-	stroke.Parent = btn
-
-	local iconLabel = label(btn, icon, UDim2.new(1, 0, 0, 46), Color3.fromRGB(255, 255, 255), Enum.Font.FredokaOne, 38)
-	iconLabel.Position = UDim2.new(0, 0, 0, 10)
-	iconLabel.TextXAlignment = Enum.TextXAlignment.Center
-
-	local captionLabel = label(btn, caption, UDim2.new(1, -8, 0, 18), Color3.fromRGB(255, 255, 255), Enum.Font.FredokaOne, 13)
-	captionLabel.Position = UDim2.new(0, 4, 0, 60)
-	captionLabel.TextXAlignment = Enum.TextXAlignment.Center
-	captionLabel.TextScaled = true
-
-	local baseSize = btn.Size
-	local hoverSize = UDim2.new(0, NAV_BTN_SIZE + 10, 0, NAV_BTN_SIZE + 10)
-	local pressSize = UDim2.new(0, NAV_BTN_SIZE - 6, 0, NAV_BTN_SIZE - 6)
-	local hovering = false
-
-	btn.MouseEnter:Connect(function()
-		hovering = true
-		TweenService:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = hoverSize }):Play()
-		TweenService:Create(stroke, TweenInfo.new(0.15), { Thickness = 3, Transparency = 0 }):Play()
-	end)
-	btn.MouseLeave:Connect(function()
-		hovering = false
-		TweenService:Create(btn, TweenInfo.new(0.15), { Size = baseSize }):Play()
-		TweenService:Create(stroke, TweenInfo.new(0.15), { Thickness = 2, Transparency = 0.25 }):Play()
-	end)
-	btn.MouseButton1Down:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.08), { Size = pressSize }):Play()
-	end)
-	btn.MouseButton1Up:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = hovering and hoverSize or baseSize }):Play()
-	end)
-
-	return btn, iconLabel, captionLabel, stroke, gradient
-end
-
--- The six main nav tiles split into a left rail ("your stuff": rewards,
--- inventory, the collection index) and a right rail ("systems": travel,
--- upgrades, gamepasses) — three a side, vertically centered as one group,
--- so nothing sits at the very top or bottom of the screen anymore.
-local NAV_GAP = 18
-local RAIL_COUNT = 3
-local RAIL_HEIGHT = RAIL_COUNT * NAV_BTN_SIZE + (RAIL_COUNT - 1) * NAV_GAP
-
-local function railPosition(side, slot)
-	local yOffset = (slot - 1) * (NAV_BTN_SIZE + NAV_GAP) - RAIL_HEIGHT / 2
-	if side == "left" then
-		return UDim2.new(0, 20, 0.5, yOffset)
-	end
-	return UDim2.new(1, -20 - NAV_BTN_SIZE, 0.5, yOffset)
 end
 
 ------------------------------------------------------------------
@@ -351,12 +270,16 @@ end)
 -- Left rail, slot 1 (top). Icon, hover/press animation, and position all
 -- come from the shared nav-tile helper now — only the badge and status
 -- line below the caption are unique to this button.
-local dailyBtn, dailyIcon, dailyCaption, dailyBtnStroke, dailyBtnGradient = createIconButton("🎁", "REWARDS", GOLD, railPosition("left", 1))
+local dailyBtn, dailyIcon, dailyCaption, dailyBtnStroke, dailyBtnGradient = NavButton.Create(gui, "🎁", "REWARDS", GOLD, NavButton.RailPosition("left", 1))
 
 local dailyStatus = label(dailyBtn, "", UDim2.new(1, -8, 0, 16), Color3.fromRGB(230, 230, 235), Enum.Font.FredokaOne, 10)
-dailyStatus.Position = UDim2.new(0, 4, 0, 82)
+dailyStatus.Position = UDim2.new(0, 4, 0, 98)
 dailyStatus.TextXAlignment = Enum.TextXAlignment.Center
 dailyStatus.TextScaled = true
+-- ZIndexBehavior on this ScreenGui is Global, so this needs to explicitly
+-- clear dailyBtn's own ZIndex (2) the same way NavButton's icon/caption
+-- labels do, or the button's own background paints over it.
+dailyStatus.ZIndex = 3
 
 -- Red dot, only when there's something to collect.
 local dailyBadge = Instance.new("Frame")
@@ -837,7 +760,7 @@ carryingStroke.Parent = carrying
 -- showing what you have and haven't found yet.
 ------------------------------------------------------------------
 
-local bookBtn = createIconButton("📖", "INDEX", PURPLE, railPosition("left", 3))
+local bookBtn = NavButton.Create(gui, "📖", "INDEX", PURPLE, NavButton.RailPosition("left", 3))
 
 -- Big picker modal — nearly fullscreen like the travel menu, same scale
 -- trick so it stays "almost the whole screen" on any resolution.
@@ -1163,7 +1086,7 @@ redrawIndex()
 -- Upgrade shop (press U)
 ------------------------------------------------------------------
 
-local shopBtn = createIconButton("🔧", "UPGRADES", Color3.fromRGB(90, 200, 255), railPosition("right", 2))
+local shopBtn = NavButton.Create(gui, "🔧", "UPGRADES", Color3.fromRGB(90, 200, 255), NavButton.RailPosition("right", 2))
 
 local shopFrame = Instance.new("Frame")
 shopFrame.Size = UDim2.new(0, 520, 0, 510)
@@ -1393,7 +1316,7 @@ end)
 local currentInventory = {}
 local currentInventoryCapacity = 15
 
-local inventoryBtn = createIconButton("📦", "INVENTORY", ORANGE, railPosition("left", 2))
+local inventoryBtn = NavButton.Create(gui, "📦", "INVENTORY", ORANGE, NavButton.RailPosition("left", 2))
 
 local inventoryFrame = Instance.new("Frame")
 inventoryFrame.Size = UDim2.new(0, 620, 0, 460)
@@ -2082,7 +2005,7 @@ local WORLDS = {
 }
 
 -- Right rail, slot 1 (top).
-local travelBtn = createIconButton("🚀", "TRAVEL", Color3.fromRGB(60, 230, 170), railPosition("right", 1))
+local travelBtn = NavButton.Create(gui, "🚀", "TRAVEL", Color3.fromRGB(60, 230, 170), NavButton.RailPosition("right", 1))
 
 -- Big picker modal — nearly fullscreen, scale-sized so it stays "almost
 -- the whole screen" on any resolution instead of a fixed pixel box.

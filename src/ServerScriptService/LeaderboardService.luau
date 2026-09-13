@@ -63,7 +63,7 @@ function LeaderboardService.RefreshIfStale()
 	lastFetch = os.time() -- set before the async call so concurrent requests share one fetch
 
 	local ok, pages = pcall(function()
-		return store:GetSortedAsync(false, 10)
+		return store:GetSortedAsync(false, 100)
 	end)
 	if not ok or not pages then return end
 

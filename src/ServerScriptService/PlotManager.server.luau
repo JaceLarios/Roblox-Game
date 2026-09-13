@@ -513,10 +513,15 @@ for i = 1, PLOT_COUNT do
 end
 
 ------------------------------------------------------------------
--- Public leaderboard monument — a physical board in the middle of the
+-- Public leaderboard monument — a physical sign in the middle of the
 -- yard everyone can walk up and read, instead of a private top-of-screen
--- popup. A BillboardGui (not a SurfaceGui) so it reads correctly from
--- any approach angle, same as every name-tag label in this game.
+-- popup. A SurfaceGui on a fixed-orientation board, not a BillboardGui —
+-- it never rotates to track the camera, so it reads like an actual sign
+-- you have to walk up and face rather than a UI element that happens to
+-- float in the world. That also solves "visible from anywhere" for free:
+-- normal perspective already makes a small sign illegible from far away,
+-- with no artificial MaxDistance cutoff needed. Scrollable for the full
+-- Top 100 rather than a fixed 10.
 ------------------------------------------------------------------
 
 local function commas(n)
@@ -529,117 +534,138 @@ local function commas(n)
 	return formatted
 end
 
+local RANK_COLORS = {
+	[1] = Color3.fromRGB(255, 215, 60),
+	[2] = Color3.fromRGB(210, 215, 220),
+	[3] = Color3.fromRGB(210, 140, 80),
+}
+
 do
 	local base = Vector3.new(0, 1.2, 0)
 
+	-- A wide pedestal, not a thin pole — this is a kiosk you walk up and
+	-- stand in front of, so it needs real footing, and the board sits low
+	-- enough (bottom ~7 studs up) to read and scroll without tipping the
+	-- camera back like you would for a tall billboard.
 	makePart({
 		Name = "LeaderboardBase",
-		Size = Vector3.new(6, 2, 6),
-		Position = base + Vector3.new(0, 1, 0),
+		Size = Vector3.new(6, 6, 6),
+		Position = base + Vector3.new(0, 3, 0),
 		Material = Enum.Material.SmoothPlastic,
 		Color = Color3.fromRGB(40, 40, 48),
 		Parent = workspace,
 	})
 
+	-- A slightly larger gold backing peeking out from behind the dark
+	-- board — a real physical frame, not a screen-space UIStroke, since
+	-- this whole redesign is about the sign being an actual object.
 	makePart({
-		Name = "LeaderboardPole",
-		Size = Vector3.new(2, 16, 2),
-		Position = base + Vector3.new(0, 10, 0),
-		Material = Enum.Material.Metal,
-		Color = Color3.fromRGB(90, 90, 100),
+		Name = "LeaderboardFrame",
+		Size = Vector3.new(10.7, 13.7, 0.6),
+		-- +Z, i.e. BEHIND the board relative to its Front (-Z) face — this
+		-- keeps the board's own front surface (where the SurfaceGui lives)
+		-- as the closest thing to a viewer standing in front of it, so the
+		-- frame only ever shows in the margin around the board, never
+		-- occluding the leaderboard text itself.
+		Position = base + Vector3.new(0, 13.7, 0.3),
+		Material = Enum.Material.Neon,
+		Color = Color3.fromRGB(255, 205, 40),
 		Parent = workspace,
 	})
 
+	-- The sign itself — a real, visible, fixed-orientation board (unlike
+	-- the old invisible anchor part the BillboardGui used to hang off of).
+	-- Only readable from its front face, same as an actual sign.
 	local board = makePart({
 		Name = "LeaderboardBoard",
-		Size = Vector3.new(1, 1, 1),
-		Position = base + Vector3.new(0, 22, 0),
-		Transparency = 1,
-		CanCollide = false,
+		Size = Vector3.new(10, 13, 1),
+		Position = base + Vector3.new(0, 13.7, 0),
+		Material = Enum.Material.SmoothPlastic,
+		Color = Color3.fromRGB(18, 18, 24),
 		Parent = workspace,
 	})
 
-	local boardGui = Instance.new("BillboardGui")
-	boardGui.Size = UDim2.new(0, 480, 0, 360)
-	boardGui.AlwaysOnTop = false
-	-- Deliberately short — this is a monument you walk up to and read, not
-	-- a second HUD element visible from your own plot 190 studs away. 220
-	-- covered nearly the whole map; players could read it from anywhere
-	-- just by looking toward the centre, which defeated the point of
-	-- moving it out of the top-of-screen popup in the first place.
-	boardGui.MaxDistance = 50
+	local boardGui = Instance.new("SurfaceGui")
+	boardGui.Face = Enum.NormalId.Front
+	boardGui.SizingMode = Enum.SurfaceGuiSizingMode.FixedSize
+	boardGui.CanvasSize = Vector2.new(640, 860)
 	boardGui.Parent = board
 
-	local boardBg = Instance.new("Frame")
-	boardBg.Size = UDim2.new(1, 0, 1, 0)
-	boardBg.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
-	boardBg.BackgroundTransparency = 0.05
-	boardBg.BorderSizePixel = 0
-	boardBg.Parent = boardGui
-
-	local boardCorner = Instance.new("UICorner")
-	boardCorner.CornerRadius = UDim.new(0, 14)
-	boardCorner.Parent = boardBg
-
-	local boardStroke = Instance.new("UIStroke")
-	boardStroke.Color = Color3.fromRGB(255, 205, 40)
-	boardStroke.Thickness = 3
-	boardStroke.Parent = boardBg
-
 	local boardTitle = Instance.new("TextLabel")
-	boardTitle.Size = UDim2.new(1, -20, 0, 50)
-	boardTitle.Position = UDim2.new(0, 10, 0, 8)
+	boardTitle.Size = UDim2.new(1, -40, 0, 64)
+	boardTitle.Position = UDim2.new(0, 20, 0, 20)
 	boardTitle.BackgroundTransparency = 1
 	boardTitle.Text = "🏆 TOP FUSIONEERS"
 	boardTitle.TextColor3 = Color3.fromRGB(255, 205, 40)
 	boardTitle.TextStrokeTransparency = 0.4
 	boardTitle.Font = Enum.Font.LuckiestGuy
 	boardTitle.TextScaled = true
-	boardTitle.Parent = boardBg
+	boardTitle.Parent = boardGui
 
 	local boardSub = Instance.new("TextLabel")
-	boardSub.Size = UDim2.new(1, -20, 0, 20)
-	boardSub.Position = UDim2.new(0, 10, 0, 54)
+	boardSub.Size = UDim2.new(1, -40, 0, 26)
+	boardSub.Position = UDim2.new(0, 20, 0, 86)
 	boardSub.BackgroundTransparency = 1
-	boardSub.Text = "Ranked by lifetime coins earned"
+	boardSub.Text = "Ranked by lifetime coins earned  —  scroll for more"
 	boardSub.TextColor3 = Color3.fromRGB(180, 180, 190)
 	boardSub.Font = Enum.Font.FredokaOne
 	boardSub.TextScaled = true
-	boardSub.Parent = boardBg
+	boardSub.Parent = boardGui
 
-	local RANK_COLORS = {
-		[1] = Color3.fromRGB(255, 215, 60),
-		[2] = Color3.fromRGB(210, 215, 220),
-		[3] = Color3.fromRGB(210, 140, 80),
-	}
+	-- The part the player actually scrolls — a ScrollingFrame on a
+	-- SurfaceGui responds to mouse wheel / touch drag the same way it
+	-- would on a screen-space GUI, as long as the player is looking at it.
+	local boardScroll = Instance.new("ScrollingFrame")
+	boardScroll.Size = UDim2.new(1, -40, 1, -140)
+	boardScroll.Position = UDim2.new(0, 20, 0, 128)
+	boardScroll.BackgroundTransparency = 1
+	boardScroll.BorderSizePixel = 0
+	boardScroll.ScrollBarThickness = 10
+	boardScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 205, 40)
+	boardScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+	boardScroll.Parent = boardGui
 
-	local boardRows = {}
-	for i = 1, 10 do
-		local row = Instance.new("TextLabel")
-		row.Size = UDim2.new(1, -24, 0, 26)
-		row.Position = UDim2.new(0, 14, 0, 78 + (i - 1) * 27)
-		row.BackgroundTransparency = 1
-		row.Text = string.format("#%d  ---", i)
-		row.TextColor3 = RANK_COLORS[i] or Color3.fromRGB(220, 220, 230)
-		row.Font = Enum.Font.FredokaOne
-		row.TextScaled = true
-		row.TextXAlignment = Enum.TextXAlignment.Left
-		row.Parent = boardBg
-		boardRows[i] = row
+	local boardLayout = Instance.new("UIListLayout")
+	boardLayout.Padding = UDim.new(0, 4)
+	boardLayout.Parent = boardScroll
+
+	local function redrawBoard(top)
+		for _, child in ipairs(boardScroll:GetChildren()) do
+			if not child:IsA("UIListLayout") then child:Destroy() end
+		end
+
+		if #top == 0 then
+			local empty = Instance.new("TextLabel")
+			empty.Size = UDim2.new(1, 0, 0, 40)
+			empty.BackgroundTransparency = 1
+			empty.Text = "No rankings yet — be the first to earn your way on."
+			empty.TextColor3 = Color3.fromRGB(150, 150, 165)
+			empty.Font = Enum.Font.FredokaOne
+			empty.TextSize = 20
+			empty.TextWrapped = true
+			empty.Parent = boardScroll
+		end
+
+		for i, entry in ipairs(top) do
+			local row = Instance.new("TextLabel")
+			row.Size = UDim2.new(1, 0, 0, 34)
+			row.LayoutOrder = i
+			row.BackgroundTransparency = 1
+			row.Text = string.format("#%d  %s — %s coins", i, entry.name, commas(entry.coins))
+			row.TextColor3 = RANK_COLORS[i] or Color3.fromRGB(220, 220, 230)
+			row.Font = Enum.Font.FredokaOne
+			row.TextSize = 22
+			row.TextXAlignment = Enum.TextXAlignment.Left
+			row.Parent = boardScroll
+		end
+
+		boardScroll.CanvasSize = UDim2.new(0, 0, 0, boardLayout.AbsoluteContentSize.Y + 10)
 	end
 
 	task.spawn(function()
 		while true do
 			Leaderboard.RefreshIfStale()
-			local top = Leaderboard.GetTopCached()
-			for i = 1, 10 do
-				local entry = top[i]
-				if entry then
-					boardRows[i].Text = string.format("#%d  %s — %s coins", i, entry.name, commas(entry.coins))
-				else
-					boardRows[i].Text = string.format("#%d  ---", i)
-				end
-			end
+			redrawBoard(Leaderboard.GetTopCached())
 			task.wait(15)
 		end
 	end)
