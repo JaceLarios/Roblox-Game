@@ -19,7 +19,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
+local Mutations = require(ReplicatedStorage:WaitForChild("Mutations"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
+local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
 
 local remote = ReplicatedStorage:WaitForChild("GameUpdate")
 
@@ -366,19 +368,36 @@ local function attemptFusion(player)
 		return
 	end
 
-	local resultTag = ItemRarity.Tag(result, info.tier, info.isSecret)
+	-- Fusion here pays out immediately rather than placing an instance, so
+	-- (unlike the Junkyard side) a mutation never needs to be threaded
+	-- through persisted state — it's just a bigger payout and a fancier
+	-- toast for this one moment. No Luck upgrade exists on this island, so
+	-- this rolls at the flat baseline rate rather than reading a level
+	-- that doesn't exist here.
+	local mutationId = Mutations.Roll(1, s.mutationPity)
+	s.mutationPity = mutationId and 0 or (s.mutationPity or 0) + 1
+
+	local resultTag = mutationId
+		and Mutations.Tag(Mutations.Wrap(result, mutationId), mutationId)
+		or ItemRarity.Tag(result, info.tier, info.isSecret)
 
 	if not info.isFallback and not s.discovered[result] then
 		s.discovered[result] = true
 		toast(player, string.format(info.isSecret and "SECRET RECIPE\n%s" or "NEW DISCOVERY\n%s", resultTag), true)
 	end
 
-	local payout = addCoins(player, info.value)
+	local mult = Mutations.ValueMultiplier(mutationId) * Rebirth.Multiplier(player)
+	local payout = addCoins(player, math.floor(info.value * mult))
 	toast(player, string.format("%s sold for %d coins.", resultTag, payout))
 
+	if mutationId then
+		toast(player, string.format("MUTATION!\n%s", resultTag), true)
+	end
+
 	-- Server-wide callout stays reserved for real discoveries — a generic
-	-- hybrid shouldn't announce itself with the same fanfare.
-	if not info.isFallback and (info.tier >= 3 or info.isSecret) then
+	-- hybrid shouldn't announce itself with the same fanfare. A mutation
+	-- earns the callout even on an already-discovered result.
+	if not info.isFallback and (info.tier >= 3 or info.isSecret or mutationId) then
 		broadcast(string.format("%s fused %s on Brainrot Island!", player.Name, resultTag))
 	end
 end
@@ -394,7 +413,7 @@ function Brainrot.Init(player, discoveredList)
 	for _, name in ipairs(discoveredList or {}) do
 		discovered[name] = true
 	end
-	state[player] = { slots = {}, discovered = discovered }
+	state[player] = { slots = {}, discovered = discovered, mutationPity = 0 }
 end
 
 function Brainrot.Snapshot(player)

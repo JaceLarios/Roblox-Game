@@ -22,8 +22,10 @@ local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local ItemVisuals   = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local ItemRarity    = require(ReplicatedStorage:WaitForChild("ItemRarity"))
+local Mutations     = require(ReplicatedStorage:WaitForChild("Mutations"))
 local DataManager   = require(script.Parent:WaitForChild("DataManager"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
+local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
 local Brainrot = require(script.Parent:WaitForChild("BrainrotService"))
 Gamepasses.Start()
 
@@ -130,6 +132,13 @@ if not claimRemote then
 	claimRemote.Parent = ReplicatedStorage
 end
 
+local rebirthRemote = ReplicatedStorage:FindFirstChild("RebirthPlayer")
+if not rebirthRemote then
+	rebirthRemote = Instance.new("RemoteEvent")
+	rebirthRemote.Name = "RebirthPlayer"
+	rebirthRemote.Parent = ReplicatedStorage
+end
+
 -- The side travel menu asks for a destination key; the server decides
 -- where that actually is.
 local travelRemote = ReplicatedStorage:FindFirstChild("TravelTo")
@@ -198,11 +207,22 @@ local function boostMult(s, stat)
 	return 1
 end
 
--- Shared by manual sells and passive income — the Haggler upgrade and any
--- timed sell boost apply to everything a player's builds earn, not just
--- the moment you press Sell.
-local function valueMultiplier(s)
-	return (1 + (s.upgrades.value - 1) * 0.15) * boostMult(s, "value")
+-- Shared by manual sells and passive income — the Haggler upgrade, any
+-- timed sell boost, and a player's permanent Rebirth multiplier apply to
+-- everything a player's builds earn, not just the moment you press Sell.
+local function valueMultiplier(player, s)
+	return (1 + (s.upgrades.value - 1) * 0.15) * boostMult(s, "value") * Rebirth.Multiplier(player)
+end
+
+-- Best available colored tag for an item name that might carry a mutation
+-- prefix (see Mutations.luau) — mutation color takes over from rarity
+-- color when present, since it's the more exciting signal in that moment.
+local function instanceTag(name)
+	local baseName, mutationId = Mutations.Unwrap(name)
+	if mutationId then
+		return Mutations.Tag(name, mutationId)
+	end
+	return ItemRarity.Tag(baseName, FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName))
 end
 
 -- Cars as transportation: every fused vehicle sitting in your Garage zone
@@ -339,6 +359,25 @@ local function zoneForInfo(info)
 		if zoneDef.accepts(info) then return zoneDef end
 	end
 	return nil
+end
+
+-- Empties every slot in every zone of a plot with no payout — used when a
+-- player leaves (so the next owner starts clean) and when a player
+-- rebirths (clearing placed items is deliberately part of the sacrifice).
+local function clearZones(plot)
+	for _, zoneDef in ipairs(ZONES) do
+		for _, slot in ipairs(plot.zones[zoneDef.key].slots) do
+			if slot.itemPart then
+				slot.itemPart:Destroy()
+				slot.itemPart = nil
+			end
+			slot.itemName = nil
+			slot.value = nil
+			slot.label.Text = "empty"
+			slot.label.TextColor3 = zoneDef.color
+			slot.sellPrompt.Enabled = false
+		end
+	end
 end
 
 ------------------------------------------------------------------
@@ -540,6 +579,14 @@ local function pushUI(player)
 		dailyClaimed = dailyClaimed,
 		dailyRewards = dailyRewards,
 		boosts = activeBoosts,
+		rebirth = {
+			level = Rebirth.Get(player),
+			maxLevel = Rebirth.MaxLevel,
+			multiplier = Rebirth.Multiplier(player),
+			nextCost = Rebirth.NextCost(player),
+			nextMultiplier = Rebirth.NextMultiplier(player),
+			maxed = Rebirth.IsMaxed(player),
+		},
 	})
 end
 
@@ -664,9 +711,12 @@ end
 
 local function dropItemNearYard(itemName)
 	local position = Vector3.new(math.random(-40, 40), 1.2, math.random(-40, 40))
-	local part = ItemVisuals.Create(itemName, position, 1)
+	local baseName, mutationId = Mutations.Unwrap(itemName)
+	local part = ItemVisuals.Create(baseName, position, 1)
+	local mutationColor = Mutations.Color(mutationId)
+	if mutationColor then part.Color = mutationColor end
 	part:SetAttribute("ItemName", itemName)
-	local itemColor = ItemRarity.Color(FusionRecipes.GetTier(itemName), FusionRecipes.IsSecretResult(itemName))
+	local itemColor = mutationColor or ItemRarity.Color(FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName))
 	makeLabel(part, itemName, 2, 150, itemColor, 45)
 	part.Parent = getScrapFolder()
 end
@@ -681,9 +731,13 @@ local function renderInSlot(plot, slot, itemName, value)
 	-- Recomputed from the name rather than threaded through every caller
 	-- (including the save-file restore path, which used to hardcode
 	-- isSecret = false and lose a restored secret's color on rejoin).
-	local isSecret = FusionRecipes.IsSecretResult(itemName)
-	local isFallback = FusionRecipes.IsFallbackResult(itemName)
-	local tier = FusionRecipes.GetTier(itemName)
+	-- itemName may carry a "[Mutation] " prefix (see Mutations.luau) — every
+	-- recipe/visual lookup below needs the unwrapped base name instead.
+	local baseName, mutationId = Mutations.Unwrap(itemName)
+	local isSecret = FusionRecipes.IsSecretResult(baseName)
+	local isFallback = FusionRecipes.IsFallbackResult(baseName)
+	local tier = FusionRecipes.GetTier(baseName)
+	local mutationColor = Mutations.Color(mutationId)
 
 	-- The slot's top surface, not its center — renderInSlot places items of
 	-- very different heights (a raw Rusted Sedan vs. a curated Tier 4
@@ -691,8 +745,8 @@ local function renderInSlot(plot, slot, itemName, value)
 	local surfaceY = slot.base.Position.Y + slot.base.Size.Y / 2
 	local position = Vector3.new(slot.base.Position.X, surfaceY, slot.base.Position.Z)
 	local part
-	if ItemVisuals.HasModel(itemName) then
-		part = ItemVisuals.Create(itemName, position, 1)
+	if ItemVisuals.HasModel(baseName) then
+		part = ItemVisuals.Create(baseName, position, 1)
 	else
 		-- No detailed model for this result — keep a neon placeholder,
 		-- colored distinctly for secrets and for generic hybrid fusions.
@@ -700,7 +754,7 @@ local function renderInSlot(plot, slot, itemName, value)
 		-- surface-to-center offset applied by hand.
 		local phSize = Vector3.new(3.5, 2, 3.5) * ItemVisuals.GLOBAL_SCALE
 		part = makePart({
-			Name = itemName,
+			Name = baseName,
 			Size = phSize,
 			Position = Vector3.new(position.X, surfaceY + phSize.Y / 2, position.Z),
 			Material = Enum.Material.Neon,
@@ -709,16 +763,20 @@ local function renderInSlot(plot, slot, itemName, value)
 				or Color3.fromRGB(90, 200, 255),
 		})
 	end
+	if mutationColor then
+		part.Color = mutationColor
+	end
 	part.Parent = plot.model
 	part:SetAttribute("ItemName", itemName)
 
 	-- Showcase glow on anything trophy-case-worthy, so the rarer tiers
 	-- read as more special than just "a bigger mesh in the same lighting".
-	if isSecret or value >= 2000 then
+	-- A mutation always earns the glow too — that's the whole point of it.
+	if isSecret or mutationId or value >= 2000 then
 		local light = Instance.new("PointLight")
-		light.Color = isSecret and Color3.fromRGB(255, 210, 90) or Color3.fromRGB(255, 235, 180)
-		light.Range = isSecret and 18 or 13
-		light.Brightness = isSecret and 4 or 2.2
+		light.Color = mutationColor or (isSecret and Color3.fromRGB(255, 210, 90) or Color3.fromRGB(255, 235, 180))
+		light.Range = mutationId and 20 or (isSecret and 18 or 13)
+		light.Brightness = mutationId and 5 or (isSecret and 4 or 2.2)
 		light.Parent = part
 	end
 
@@ -726,7 +784,7 @@ local function renderInSlot(plot, slot, itemName, value)
 	slot.itemName = itemName
 	slot.value = value
 	slot.label.Text = string.format("%s\n+%.1f coins/sec", itemName, value / PLACEMENT_PAYBACK_SECONDS)
-	slot.label.TextColor3 = ItemRarity.Color(tier, isSecret)
+	slot.label.TextColor3 = mutationColor or ItemRarity.Color(tier, isSecret)
 	slot.sellPrompt.Enabled = true
 end
 
@@ -762,11 +820,11 @@ local function sellSlot(plot, zoneKey, slotIndex, player)
 	if not slot.itemName then return end
 
 	local s = state[player]
-	local mult = s and valueMultiplier(s) or 1
+	local mult = s and valueMultiplier(player, s) or 1
 	local payout = addCoins(player, math.floor(slot.value * mult)) or 0
 
 	playSound(slot.base, "sell")
-	toast(player, string.format("Sold %s for %d coins.", slot.itemName, payout))
+	toast(player, string.format("Sold %s for %d coins.", instanceTag(slot.itemName), payout))
 
 	slot.itemPart:Destroy()
 	slot.itemPart = nil
@@ -817,7 +875,16 @@ local function attemptFusion(player)
 		return
 	end
 
-	local resultTag = ItemRarity.Tag(result, info.tier, info.isSecret)
+	-- Mutation rolls independently of tier/secret status — a common Rusted
+	-- Sedan and a secret Scrapyard God are equally eligible. Discovery/goal
+	-- bookkeeping below always uses the bare `result` name; only the
+	-- placed/displayed instance carries the mutation.
+	local mutationId = Mutations.Roll(s.upgrades.luck, s.mutationPity)
+	s.mutationPity = mutationId and 0 or (s.mutationPity or 0) + 1
+	local instanceName = Mutations.Wrap(result, mutationId)
+	local instanceValue = math.floor(info.value * Mutations.ValueMultiplier(mutationId))
+
+	local resultTag = instanceTag(instanceName)
 	local aTag = ItemRarity.Tag(a, FusionRecipes.GetTier(a), FusionRecipes.IsSecretResult(a))
 	local bTag = ItemRarity.Tag(b, FusionRecipes.GetTier(b), FusionRecipes.IsSecretResult(b))
 
@@ -842,14 +909,24 @@ local function attemptFusion(player)
 		toast(player, string.format("SECRET RECIPE\n%s", resultTag), true)
 	end
 
-	local placed = placeFusedItem(plot, result, info)
+	if mutationId then
+		toast(player, string.format("MUTATION!\n%s", resultTag), true)
+	end
+
+	local placedInfo = { tier = info.tier, isSecret = info.isSecret, value = instanceValue }
+	local placed = placeFusedItem(plot, instanceName, placedInfo)
 	if not placed then
-		dropItemNearYard(result)
-		toast(player, string.format("Your zone for %s is full — sell something there first. It was returned to the yard.", result))
+		-- Zone's full: auto-sell instead of bouncing it to the shared yard,
+		-- where another player could grab a mutated result before its
+		-- owner does and its mutation bonus would be lost the moment it's
+		-- fused again (the yard/carry system only ever deals in bare names).
+		local mult = valueMultiplier(player, s)
+		local payout = addCoins(player, math.floor(instanceValue * mult)) or 0
+		toast(player, string.format("Your zone for %s is full — auto-sold for %d coins instead.", resultTag, payout))
 	end
 	updateWalkSpeed(player)
 
-	playSound(plot.pad, (info.isSecret or info.tier >= 4) and "big" or "fuse")
+	playSound(plot.pad, (mutationId or info.isSecret or info.tier >= 4) and "big" or "fuse")
 	checkGoals(player)
 	pushUI(player)
 end
@@ -984,6 +1061,47 @@ buyRemote.OnServerEvent:Connect(function(player, key)
 end)
 
 ------------------------------------------------------------------
+-- Rebirth — a permanent coin multiplier, paid for with a full reset of
+-- coins, upgrades, and everything currently placed. Discoveries, the
+-- Index, gamepasses, daily streak and boosts are untouched: those are
+-- earned records, not part of the grind this resets.
+------------------------------------------------------------------
+
+rebirthRemote.OnServerEvent:Connect(function(player)
+	local s = state[player]
+	local plot = s and plots[s.plotIndex]
+	if not (s and plot) then return end
+
+	local cost = Rebirth.NextCost(player)
+	if not cost then
+		toast(player, "Already at max Rebirth.")
+		return
+	end
+
+	local stats = player:FindFirstChild("leaderstats")
+	local coins = stats and stats:FindFirstChild("Coins")
+	if not coins then return end
+
+	if coins.Value < cost then
+		toast(player, string.format("Not enough coins to rebirth. Need %d.", cost))
+		return
+	end
+
+	coins.Value = 0
+	s.upgrades = { luck = 1, carry = 1, magnet = 0, value = 1 }
+	clearZones(plot)
+	updateWalkSpeed(player)
+	Rebirth.Increment(player)
+
+	local level = Rebirth.Get(player)
+	local mult = Rebirth.Multiplier(player)
+	playSound(playerRoot(player), "big")
+	toast(player, string.format("REBIRTH %d\nPermanent x%.2f coin multiplier", level, mult), true)
+	broadcast(string.format("%s reached Rebirth %d!", player.Name, level))
+	pushUI(player)
+end)
+
+------------------------------------------------------------------
 -- Travel menu — the side panel's teleport buttons
 ------------------------------------------------------------------
 
@@ -1048,7 +1166,7 @@ task.spawn(function()
 			local s = state[player]
 			local plot = s and plots[s.plotIndex]
 			if s and plot then
-				local mult = valueMultiplier(s)
+				local mult = valueMultiplier(player, s)
 				local perSecond = 0
 
 				for _, zoneDef in ipairs(ZONES) do
@@ -1182,6 +1300,7 @@ local function onPlayerAdded(player)
 	-- by the player picking something up.
 	local data = DataManager.Load(player)
 	Brainrot.Init(player, data.brainrotDiscovered)
+	Rebirth.Init(player, data.rebirths)
 
 	local stats = Instance.new("Folder")
 	stats.Name = "leaderstats"
@@ -1225,6 +1344,7 @@ local function onPlayerAdded(player)
 		boosts = data.boosts or {},
 		playMinutes = 0,
 		plotIndex = index,
+		mutationPity = 0,
 	}
 
 	refreshPad(player)
@@ -1323,6 +1443,7 @@ local function snapshot(player)
 		lastDailyDay = s.lastDailyDay,
 		dailyStreak = s.dailyStreak,
 		boosts = s.boosts,
+		rebirths = Rebirth.Snapshot(player),
 	}
 end
 
@@ -1368,23 +1489,12 @@ Players.PlayerRemoving:Connect(function(player)
 			plot.owner = nil
 			plot.signLabel.Text = "UNCLAIMED PLOT"
 			plot.padLabel.Text = "FUSION PAD"
-			for _, zoneDef in ipairs(ZONES) do
-				for _, slot in ipairs(plot.zones[zoneDef.key].slots) do
-					if slot.itemPart then
-						slot.itemPart:Destroy()
-						slot.itemPart = nil
-					end
-					slot.itemName = nil
-					slot.value = nil
-					slot.label.Text = "empty"
-					slot.label.TextColor3 = zoneDef.color
-					slot.sellPrompt.Enabled = false
-				end
-			end
+			clearZones(plot)
 		end
 	end
 	state[player] = nil
 	Brainrot.Cleanup(player)
+	Rebirth.Cleanup(player)
 	DataManager.Forget(player)
 end)
 

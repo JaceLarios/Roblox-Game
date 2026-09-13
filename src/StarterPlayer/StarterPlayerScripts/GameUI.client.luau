@@ -20,6 +20,7 @@ local player = Players.LocalPlayer
 local remote = ReplicatedStorage:WaitForChild("GameUpdate")
 local buyRemote = ReplicatedStorage:WaitForChild("BuyUpgrade")
 local claimRemote = ReplicatedStorage:WaitForChild("ClaimDaily")
+local rebirthRemote = ReplicatedStorage:WaitForChild("RebirthPlayer")
 
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
@@ -1058,8 +1059,8 @@ shopBtn.Parent = gui
 rounded(shopBtn)
 
 local shopFrame = Instance.new("Frame")
-shopFrame.Size = UDim2.new(0, 520, 0, 420)
-shopFrame.Position = UDim2.new(0.5, -260, 0.5, -210)
+shopFrame.Size = UDim2.new(0, 520, 0, 510)
+shopFrame.Position = UDim2.new(0.5, -260, 0.5, -255)
 shopFrame.BackgroundColor3 = DARK
 shopFrame.BackgroundTransparency = GLASS_PANEL
 shopFrame.BorderSizePixel = 0
@@ -1080,9 +1081,46 @@ shopClose.Font = Enum.Font.FredokaOne
 shopClose.TextSize = 18
 shopClose.Parent = shopFrame
 
+local rebirthRow = Instance.new("Frame")
+rebirthRow.Size = UDim2.new(1, -40, 0, 90)
+rebirthRow.Position = UDim2.new(0, 20, 0, 54)
+rebirthRow.BackgroundColor3 = PURPLE
+rebirthRow.BackgroundTransparency = 0.65
+rebirthRow.BorderSizePixel = 0
+rebirthRow.Parent = shopFrame
+rounded(rebirthRow, 8)
+
+local rebirthStroke = Instance.new("UIStroke")
+rebirthStroke.Color = PURPLE
+rebirthStroke.Thickness = 1.5
+rebirthStroke.Parent = rebirthRow
+
+local rebirthTitle = label(rebirthRow, "REBIRTH", UDim2.new(1, -150, 0, 24), PURPLE, Enum.Font.LuckiestGuy, 18)
+rebirthTitle.Position = UDim2.new(0, 14, 0, 8)
+
+local rebirthNow = label(rebirthRow, "", UDim2.new(1, -150, 0, 20), LIGHT, Enum.Font.FredokaOne, 13)
+rebirthNow.Position = UDim2.new(0, 14, 0, 34)
+
+local rebirthNext = label(rebirthRow, "", UDim2.new(1, -150, 0, 34), DIM, Enum.Font.FredokaOne, 12)
+rebirthNext.Position = UDim2.new(0, 14, 0, 54)
+rebirthNext.TextWrapped = true
+
+local rebirthBtn = Instance.new("TextButton")
+rebirthBtn.Size = UDim2.new(0, 128, 0, 50)
+rebirthBtn.Position = UDim2.new(1, -142, 0.5, -25)
+rebirthBtn.BorderSizePixel = 0
+rebirthBtn.Font = Enum.Font.LuckiestGuy
+rebirthBtn.TextSize = 15
+rebirthBtn.TextWrapped = true
+rebirthBtn.BackgroundColor3 = PURPLE
+rebirthBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+rebirthBtn.Text = "REBIRTH"
+rebirthBtn.Parent = rebirthRow
+rounded(rebirthBtn, 6)
+
 local shopScroll = Instance.new("ScrollingFrame")
-shopScroll.Size = UDim2.new(1, -40, 1, -70)
-shopScroll.Position = UDim2.new(0, 20, 0, 54)
+shopScroll.Size = UDim2.new(1, -40, 1, -170)
+shopScroll.Position = UDim2.new(0, 20, 0, 154)
 shopScroll.BackgroundTransparency = 1
 shopScroll.BorderSizePixel = 0
 shopScroll.ScrollBarThickness = 5
@@ -1161,6 +1199,66 @@ local function redrawShop(shop)
 
 	shopScroll.CanvasSize = UDim2.new(0, 0, 0, shopLayout.AbsoluteContentSize.Y + 10)
 end
+
+------------------------------------------------------------------
+-- Rebirth row (top of the Upgrades panel)
+------------------------------------------------------------------
+
+local rebirthArmed = false
+local rebirthMaxed = false
+
+-- Needs a deliberate second click before it actually fires — this clears
+-- placed items and upgrades for good, so a single misclick shouldn't cost
+-- someone their garage.
+local function setRebirthArmed(armed)
+	rebirthArmed = armed
+	if rebirthMaxed then return end
+	if armed then
+		rebirthBtn.Text = "CONFIRM?"
+		rebirthBtn.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
+	else
+		rebirthBtn.Text = "REBIRTH"
+		rebirthBtn.BackgroundColor3 = PURPLE
+	end
+end
+
+local function redrawRebirth(info)
+	if not info then return end
+	rebirthMaxed = info.maxed
+
+	rebirthTitle.Text = info.maxed
+		and string.format("REBIRTH — MAX (%d)", info.level)
+		or string.format("REBIRTH — Level %d / %d", info.level, info.maxLevel)
+	rebirthNow.Text = string.format("Current multiplier: x%.2f coins", info.multiplier)
+
+	if info.maxed then
+		rebirthNext.Text = "You've hit the ceiling — nothing left to cash in for."
+		rebirthBtn.Text = "MAXED"
+		rebirthBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 58)
+		rebirthBtn.TextColor3 = DIM
+		rebirthBtn.Active = false
+	else
+		rebirthNext.Text = string.format(
+			"Next: x%.2f — %d coins (clears zones/upgrades only)",
+			info.nextMultiplier, info.nextCost)
+		rebirthBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+		rebirthBtn.Active = true
+		setRebirthArmed(rebirthArmed)
+	end
+end
+
+rebirthBtn.MouseButton1Click:Connect(function()
+	if rebirthMaxed then return end
+	if not rebirthArmed then
+		setRebirthArmed(true)
+		task.delay(4, function()
+			if rebirthArmed then setRebirthArmed(false) end
+		end)
+	else
+		setRebirthArmed(false)
+		rebirthRemote:FireServer()
+	end
+end)
 
 ------------------------------------------------------------------
 -- Toasts
@@ -1289,6 +1387,10 @@ remote.OnClientEvent:Connect(function(data)
 
 	if data.shop then
 		redrawShop(data.shop)
+	end
+
+	if data.rebirth then
+		redrawRebirth(data.rebirth)
 	end
 
 	if data.goalText then

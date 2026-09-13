@@ -46,6 +46,7 @@ local function defaultData()
 		lastDailyDay = 0,
 		dailyStreak = 0,
 		boosts = {},
+		rebirths = 0,
 	}
 end
 
