@@ -23,6 +23,7 @@ local Mutations = require(ReplicatedStorage:WaitForChild("Mutations"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
 local Companions = require(script.Parent:WaitForChild("CompanionService"))
+local Leaderboard = require(script.Parent:WaitForChild("LeaderboardService"))
 
 local remote = ReplicatedStorage:WaitForChild("GameUpdate")
 
@@ -53,6 +54,7 @@ local function addCoins(player, amount)
 	if not coins then return 0 end
 	amount = Gamepasses.Coins(player, amount)
 	coins.Value = coins.Value + amount
+	Leaderboard.Record(player, amount)
 	return amount
 end
 

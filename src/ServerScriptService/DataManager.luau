@@ -47,6 +47,7 @@ local function defaultData()
 		dailyStreak = 0,
 		boosts = {},
 		rebirths = 0,
+		lifetimeCoins = 0,
 	}
 end
 

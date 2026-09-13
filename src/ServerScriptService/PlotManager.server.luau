@@ -28,6 +28,7 @@ local DataManager   = require(script.Parent:WaitForChild("DataManager"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
 local Companions = require(script.Parent:WaitForChild("CompanionService"))
+local Leaderboard = require(script.Parent:WaitForChild("LeaderboardService"))
 local Brainrot = require(script.Parent:WaitForChild("BrainrotService"))
 Gamepasses.Start()
 
@@ -179,6 +180,13 @@ if not equipCompanionRemote then
 	equipCompanionRemote = Instance.new("RemoteEvent")
 	equipCompanionRemote.Name = "EquipCompanion"
 	equipCompanionRemote.Parent = ReplicatedStorage
+end
+
+local requestLeaderboardRemote = ReplicatedStorage:FindFirstChild("RequestLeaderboard")
+if not requestLeaderboardRemote then
+	requestLeaderboardRemote = Instance.new("RemoteEvent")
+	requestLeaderboardRemote.Name = "RequestLeaderboard"
+	requestLeaderboardRemote.Parent = ReplicatedStorage
 end
 
 -- The side travel menu asks for a destination key; the server decides
@@ -742,6 +750,7 @@ local function addCoins(player, amount)
 	if coins then
 		amount = Gamepasses.Coins(player, amount)
 		coins.Value = coins.Value + amount
+		Leaderboard.Record(player, amount)
 		return amount
 	end
 end
@@ -1256,6 +1265,20 @@ equipCompanionRemote.OnServerEvent:Connect(function(player, itemName, island)
 end)
 
 ------------------------------------------------------------------
+-- Leaderboard — top 10 by lifetime coins earned, cached server-side so
+-- several players opening it at once only ever costs one DataStore read.
+------------------------------------------------------------------
+
+requestLeaderboardRemote.OnServerEvent:Connect(function(player)
+	task.spawn(function()
+		Leaderboard.RefreshIfStale()
+		if player.Parent then
+			remote:FireClient(player, { leaderboard = Leaderboard.GetTopCached() })
+		end
+	end)
+end)
+
+------------------------------------------------------------------
 -- Scrap magnet
 ------------------------------------------------------------------
 
@@ -1437,6 +1460,7 @@ local function onPlayerAdded(player)
 	Brainrot.Init(player, data.brainrotDiscovered)
 	Rebirth.Init(player, data.rebirths)
 	Companions.Init(player, data.companion)
+	Leaderboard.Init(player, data.lifetimeCoins)
 
 	local stats = Instance.new("Folder")
 	stats.Name = "leaderstats"
@@ -1582,10 +1606,14 @@ local function snapshot(player)
 		boosts = s.boosts,
 		rebirths = Rebirth.Snapshot(player),
 		companion = Companions.Snapshot(player),
+		lifetimeCoins = Leaderboard.Snapshot(player),
 	}
 end
 
 -- Autosave. Without this, a server crash loses everything since join.
+-- Also the only place the leaderboard's OrderedDataStore gets written —
+-- piggybacking on this cadence instead of a separate loop means a lifetime
+-- coin gain never costs a network call on its own.
 task.spawn(function()
 	while true do
 		task.wait(120)
@@ -1594,6 +1622,7 @@ task.spawn(function()
 			if data then
 				DataManager.Save(player, data)
 			end
+			Leaderboard.PushToStore(player)
 		end
 	end
 end)
@@ -1619,6 +1648,7 @@ Players.PlayerRemoving:Connect(function(player)
 	if data then
 		DataManager.Save(player, data)
 	end
+	Leaderboard.PushToStore(player)
 
 	local s = state[player]
 	if s then
@@ -1634,6 +1664,7 @@ Players.PlayerRemoving:Connect(function(player)
 	Brainrot.Cleanup(player)
 	Rebirth.Cleanup(player)
 	Companions.Cleanup(player)
+	Leaderboard.Cleanup(player)
 	DataManager.Forget(player)
 
 	local companionPart = companionParts[player]

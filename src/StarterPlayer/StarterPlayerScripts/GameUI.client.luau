@@ -22,6 +22,7 @@ local buyRemote = ReplicatedStorage:WaitForChild("BuyUpgrade")
 local claimRemote = ReplicatedStorage:WaitForChild("ClaimDaily")
 local rebirthRemote = ReplicatedStorage:WaitForChild("RebirthPlayer")
 local equipCompanionRemote = ReplicatedStorage:WaitForChild("EquipCompanion")
+local requestLeaderboardRemote = ReplicatedStorage:WaitForChild("RequestLeaderboard")
 
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
@@ -1293,6 +1294,119 @@ rebirthBtn.MouseButton1Click:Connect(function()
 end)
 
 ------------------------------------------------------------------
+-- Leaderboard (top-center — every other trigger button lives bottom-right
+-- or mid-left, so this is the one clearly free spot left on the HUD)
+------------------------------------------------------------------
+
+local leaderboardBtn = Instance.new("TextButton")
+leaderboardBtn.Size = UDim2.new(0, 160, 0, 34)
+leaderboardBtn.Position = UDim2.new(0.5, -80, 0, 16)
+leaderboardBtn.BackgroundColor3 = GOLD
+leaderboardBtn.Text = "🏆 LEADERBOARD"
+leaderboardBtn.TextColor3 = DARK
+leaderboardBtn.Font = Enum.Font.FredokaOne
+leaderboardBtn.TextSize = 13
+leaderboardBtn.BorderSizePixel = 0
+leaderboardBtn.Parent = gui
+rounded(leaderboardBtn)
+
+local leaderboardFrame = Instance.new("Frame")
+leaderboardFrame.Size = UDim2.new(0, 420, 0, 460)
+leaderboardFrame.Position = UDim2.new(0.5, -210, 0.5, -230)
+leaderboardFrame.BackgroundColor3 = DARK
+leaderboardFrame.BackgroundTransparency = GLASS_PANEL
+leaderboardFrame.BorderSizePixel = 0
+leaderboardFrame.Visible = false
+leaderboardFrame.Parent = gui
+rounded(leaderboardFrame, 10)
+
+local leaderboardTitle = label(leaderboardFrame, "🏆 TOP FUSIONEERS", UDim2.new(1, -30, 0, 30), GOLD, Enum.Font.LuckiestGuy, 20)
+leaderboardTitle.Position = UDim2.new(0, 20, 0, 14)
+
+local leaderboardSub = label(leaderboardFrame, "Ranked by lifetime coins earned", UDim2.new(1, -30, 0, 18), DIM, Enum.Font.FredokaOne, 12)
+leaderboardSub.Position = UDim2.new(0, 20, 0, 42)
+
+local leaderboardClose = Instance.new("TextButton")
+leaderboardClose.Size = UDim2.new(0, 30, 0, 30)
+leaderboardClose.Position = UDim2.new(1, -44, 0, 14)
+leaderboardClose.BackgroundTransparency = 1
+leaderboardClose.Text = "X"
+leaderboardClose.TextColor3 = DIM
+leaderboardClose.Font = Enum.Font.FredokaOne
+leaderboardClose.TextSize = 18
+leaderboardClose.Parent = leaderboardFrame
+
+local leaderboardScroll = Instance.new("ScrollingFrame")
+leaderboardScroll.Size = UDim2.new(1, -40, 1, -82)
+leaderboardScroll.Position = UDim2.new(0, 20, 0, 70)
+leaderboardScroll.BackgroundTransparency = 1
+leaderboardScroll.BorderSizePixel = 0
+leaderboardScroll.ScrollBarThickness = 5
+leaderboardScroll.Parent = leaderboardFrame
+
+local leaderboardLayout = Instance.new("UIListLayout")
+leaderboardLayout.Padding = UDim.new(0, 6)
+leaderboardLayout.Parent = leaderboardScroll
+
+local RANK_COLORS = {
+	[1] = Color3.fromRGB(255, 215, 60),
+	[2] = Color3.fromRGB(210, 215, 220),
+	[3] = Color3.fromRGB(210, 140, 80),
+}
+
+local function redrawLeaderboard(list)
+	for _, child in ipairs(leaderboardScroll:GetChildren()) do
+		if not child:IsA("UIListLayout") then child:Destroy() end
+	end
+
+	if #list == 0 then
+		local empty = Instance.new("TextLabel")
+		empty.Size = UDim2.new(1, 0, 0, 60)
+		empty.BackgroundTransparency = 1
+		empty.Text = "No rankings yet — be the first to earn your way on."
+		empty.TextColor3 = DIM
+		empty.Font = Enum.Font.FredokaOne
+		empty.TextSize = 14
+		empty.TextWrapped = true
+		empty.Parent = leaderboardScroll
+	end
+
+	for i, entry in ipairs(list) do
+		local row = Instance.new("Frame")
+		row.Size = UDim2.new(1, -6, 0, 46)
+		row.LayoutOrder = i
+		row.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+		row.BackgroundTransparency = 0.2
+		row.BorderSizePixel = 0
+		row.Parent = leaderboardScroll
+		rounded(row, 8)
+
+		local rank = label(row, "#" .. i, UDim2.new(0, 44, 1, 0), RANK_COLORS[i] or DIM, Enum.Font.LuckiestGuy, 18)
+		rank.Position = UDim2.new(0, 10, 0, 0)
+
+		local name = label(row, entry.name, UDim2.new(1, -180, 1, 0), LIGHT, Enum.Font.FredokaOne, 15)
+		name.Position = UDim2.new(0, 58, 0, 0)
+		name.TextTruncate = Enum.TextTruncate.AtEnd
+
+		local coins = label(row, commas(entry.coins) .. " coins", UDim2.new(0, 110, 1, 0), GOLD, Enum.Font.FredokaOne, 13)
+		coins.Position = UDim2.new(1, -120, 0, 0)
+		coins.TextXAlignment = Enum.TextXAlignment.Right
+	end
+
+	leaderboardScroll.CanvasSize = UDim2.new(0, 0, 0, leaderboardLayout.AbsoluteContentSize.Y + 10)
+end
+
+local function toggleLeaderboard()
+	leaderboardFrame.Visible = not leaderboardFrame.Visible
+	if leaderboardFrame.Visible then
+		requestLeaderboardRemote:FireServer()
+	end
+end
+
+leaderboardBtn.MouseButton1Click:Connect(toggleLeaderboard)
+leaderboardClose.MouseButton1Click:Connect(toggleLeaderboard)
+
+------------------------------------------------------------------
 -- Toasts
 ------------------------------------------------------------------
 
@@ -1431,6 +1545,10 @@ remote.OnClientEvent:Connect(function(data)
 			and string.format("Companion: %s (+%d%%)", equippedCompanion.name, equippedCompanion.bonusPercent)
 			or "No companion equipped"
 		redrawIndex()
+	end
+
+	if data.leaderboard then
+		redrawLeaderboard(data.leaderboard)
 	end
 
 	if data.goalText then

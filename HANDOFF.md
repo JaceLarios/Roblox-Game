@@ -1,4 +1,16 @@
-# Latest handoff — Companion system (2026-09-13)
+# Latest handoff — Global leaderboard (2026-09-13)
+
+Ninth pass, same day. A persistent, cross-server "Top Fusioneers" ranking by lifetime coins earned — not current balance, since Rebirth resets that and a player who just cashed in their multiplier shouldn't fall off the board for it. New `ServerScriptService/LeaderboardService.luau`, same shared-module shape as the others this session.
+
+**Split cleanly into a cheap always-on half and an expensive rare half.** Every coin a player earns (both islands, via each file's own `addCoins`) calls `Leaderboard.Record`, which is just an in-memory add — safe to call from passive income ticking every few seconds. The actual `OrderedDataStore` write only happens on the existing 120-second autosave loop (and on `PlayerRemoving`, so a player who leaves early still gets their final score in) — piggybacking on a loop that already exists rather than adding a new one. Reading is cached the same way: `GetSortedAsync` only actually runs once every 60 seconds no matter how many players open the panel in that window; everyone else gets served the shared cache. `Players:GetNameFromUserIdAsync` resolves UserIds to names for players who may not even be in this server.
+
+**Where the button went, and why:** the bottom-right stack has now broken twice from a single button's size changing (see the two prior handoffs on this), so a fifth button there was a real temptation to avoid. Top-center was the one clearly unclaimed spot on the HUD — everything else lives bottom-right, mid-left, or inside an existing modal.
+
+**Verified with a better test than planned.** Manually wrote a placeholder score into the OrderedDataStore, then stopped Play mode — which fired `PlayerRemoving` and correctly *overwrote* that placeholder with the player's real accumulated total, proving the push-on-leave path works. Restarting Play mode reset the service's in-memory refresh cache, and a fresh request correctly fetched that real value from the store, resolved the username, and rendered it with the right rank color and comma-formatted coins. Also confirmed the empty-state copy renders correctly before any player has ever been pushed to the store.
+
+---
+
+# Previous handoff — Companion system (2026-09-13)
 
 Eighth pass, same day, continuing straight down the researched idea list. Equip any discovered item — base or curated, either island — as a companion that follows you and grants a permanent value bonus scaled by its tier (+2% common up to +15% for a secret). New `ServerScriptService/CompanionService.luau`, same small shared-module shape as `RebirthService`/`GamepassService`, so both `PlotManager` and `BrainrotService` apply the bonus without depending on each other.
 
