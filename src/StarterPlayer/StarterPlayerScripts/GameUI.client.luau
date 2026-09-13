@@ -54,7 +54,7 @@ local function label(parent, text, size, color, font, textSize)
 	l.BackgroundTransparency = 1
 	l.Text = text
 	l.TextColor3 = color or LIGHT
-	l.Font = font or Enum.Font.Gotham
+	l.Font = font or Enum.Font.FredokaOne
 	l.TextSize = textSize or 14
 	l.TextXAlignment = Enum.TextXAlignment.Left
 	l.Parent = parent
@@ -82,14 +82,14 @@ objStripe.BorderSizePixel = 0
 objStripe.Parent = objCard
 rounded(objStripe, 3)
 
-local objHeader = label(objCard, "OBJECTIVE 1 / 9", UDim2.new(1, -30, 0, 20), GOLD, Enum.Font.GothamBold, 12)
+local objHeader = label(objCard, "OBJECTIVE 1 / 9", UDim2.new(1, -30, 0, 20), GOLD, Enum.Font.FredokaOne, 12)
 objHeader.Position = UDim2.new(0, 22, 0, 10)
 
-local objText = label(objCard, "...", UDim2.new(1, -34, 0, 38), LIGHT, Enum.Font.GothamBold, 17)
+local objText = label(objCard, "...", UDim2.new(1, -34, 0, 38), LIGHT, Enum.Font.FredokaOne, 17)
 objText.Position = UDim2.new(0, 22, 0, 30)
 objText.TextWrapped = true
 
-local objReward = label(objCard, "", UDim2.new(1, -30, 0, 18), DIM, Enum.Font.GothamMedium, 13)
+local objReward = label(objCard, "", UDim2.new(1, -30, 0, 18), DIM, Enum.Font.FredokaOne, 13)
 objReward.Position = UDim2.new(0, 22, 0, 68)
 
 ------------------------------------------------------------------
@@ -113,10 +113,10 @@ coinIcon.BorderSizePixel = 0
 coinIcon.Parent = coinCard
 rounded(coinIcon, 11)
 
-local coinText = label(coinCard, "0", UDim2.new(1, -50, 1, 0), GOLD, Enum.Font.GothamBlack, 24)
+local coinText = label(coinCard, "0", UDim2.new(1, -50, 1, 0), GOLD, Enum.Font.LuckiestGuy, 24)
 coinText.Position = UDim2.new(0, 46, 0, 0)
 
-local luckText = label(coinCard, "LUCK 1", UDim2.new(0, 90, 0, 18), DIM, Enum.Font.GothamBold, 12)
+local luckText = label(coinCard, "LUCK 1", UDim2.new(0, 90, 0, 18), DIM, Enum.Font.FredokaOne, 12)
 luckText.Position = UDim2.new(1, -96, 0, 17)
 luckText.TextXAlignment = Enum.TextXAlignment.Right
 
@@ -203,7 +203,7 @@ local function redrawBoosts()
 		chipStroke.Parent = chip
 
 		local text = label(chip, string.format("%dx %s  %s", b.mult, style.text, formatTime(b.remaining)),
-			UDim2.new(1, 0, 1, 0), style.color, Enum.Font.GothamBold, 12)
+			UDim2.new(1, 0, 1, 0), style.color, Enum.Font.FredokaOne, 12)
 		text.TextXAlignment = Enum.TextXAlignment.Center
 	end
 end
@@ -283,7 +283,7 @@ dailyBadge.ZIndex = 3
 dailyBadge.Parent = dailyBtn
 rounded(dailyBadge, 10)
 
-local badgeMark = label(dailyBadge, "!", UDim2.new(1, 0, 1, 0), Color3.fromRGB(255, 255, 255), Enum.Font.GothamBlack, 13)
+local badgeMark = label(dailyBadge, "!", UDim2.new(1, 0, 1, 0), Color3.fromRGB(255, 255, 255), Enum.Font.LuckiestGuy, 13)
 badgeMark.TextXAlignment = Enum.TextXAlignment.Center
 badgeMark.ZIndex = 4
 
@@ -391,7 +391,7 @@ dailyClose.Position = UDim2.new(1, -46, 0, 74)
 dailyClose.BackgroundTransparency = 1
 dailyClose.Text = "✕"
 dailyClose.TextColor3 = DIM
-dailyClose.Font = Enum.Font.GothamBold
+dailyClose.Font = Enum.Font.FredokaOne
 dailyClose.TextSize = 18
 dailyClose.ZIndex = 8
 dailyClose.Parent = dailyFrame
@@ -711,10 +711,10 @@ panel.BorderSizePixel = 0
 panel.Parent = gui
 rounded(panel)
 
-local header = label(panel, "DISCOVERIES  0 / 0", UDim2.new(1, -20, 0, 34), GOLD, Enum.Font.GothamBold, 15)
+local header = label(panel, "DISCOVERIES  0 / 0", UDim2.new(1, -20, 0, 34), GOLD, Enum.Font.FredokaOne, 15)
 header.Position = UDim2.new(0, 12, 0, 8)
 
-local secretLine = label(panel, "Secrets  0 / 3", UDim2.new(1, -20, 0, 16), DIM, Enum.Font.GothamMedium, 12)
+local secretLine = label(panel, "Secrets  0 / 3", UDim2.new(1, -20, 0, 16), DIM, Enum.Font.FredokaOne, 12)
 secretLine.Position = UDim2.new(0, 12, 0, 34)
 
 local list = Instance.new("ScrollingFrame")
@@ -741,7 +741,7 @@ carrying.BackgroundColor3 = DARK
 carrying.BackgroundTransparency = GLASS_HUD
 carrying.Text = "CARRYING:  [ empty ]   +   [ empty ]"
 carrying.TextColor3 = LIGHT
-carrying.Font = Enum.Font.GothamMedium
+carrying.Font = Enum.Font.FredokaOne
 carrying.TextSize = 15
 carrying.BorderSizePixel = 0
 carrying.RichText = true
@@ -754,76 +754,77 @@ rounded(carrying)
 ------------------------------------------------------------------
 
 local bookBtn = Instance.new("TextButton")
-bookBtn.Size = UDim2.new(0, 150, 0, 34)
-bookBtn.Position = UDim2.new(1, -170, 1, -74)
+bookBtn.Size = UDim2.new(0, 150, 0, 46)
+bookBtn.Position = UDim2.new(1, -170, 1, -128)
 bookBtn.BackgroundColor3 = GOLD
-bookBtn.Text = "INDEX  [B]"
+bookBtn.Text = "📖  INDEX"
 bookBtn.TextColor3 = DARK
-bookBtn.Font = Enum.Font.GothamBold
-bookBtn.TextSize = 13
+bookBtn.Font = Enum.Font.LuckiestGuy
+bookBtn.TextSize = 18
 bookBtn.BorderSizePixel = 0
 bookBtn.Parent = gui
-rounded(bookBtn)
+rounded(bookBtn, 12)
 
+-- Big picker modal — nearly fullscreen like the travel menu, same scale
+-- trick so it stays "almost the whole screen" on any resolution.
 local bookFrame = Instance.new("Frame")
-bookFrame.Size = UDim2.new(0, 560, 0, 480)
-bookFrame.Position = UDim2.new(0.5, -280, 0.5, -240)
+bookFrame.Size = UDim2.new(0.88, 0, 0.88, 0)
+bookFrame.Position = UDim2.new(0.06, 0, 0.06, 0)
 bookFrame.BackgroundColor3 = DARK
 bookFrame.BackgroundTransparency = GLASS_PANEL
 bookFrame.BorderSizePixel = 0
 bookFrame.Visible = false
 bookFrame.Parent = gui
-rounded(bookFrame, 10)
+rounded(bookFrame, 18)
 
-local bookTitle = label(bookFrame, "ITEM INDEX", UDim2.new(0, 220, 0, 30), GOLD, Enum.Font.GothamBlack, 20)
-bookTitle.Position = UDim2.new(0, 20, 0, 14)
+local bookTitle = label(bookFrame, "ITEM INDEX", UDim2.new(0, 360, 0, 50), GOLD, Enum.Font.LuckiestGuy, 40)
+bookTitle.Position = UDim2.new(0, 32, 0, 22)
 
-local bookHint = label(bookFrame, "Undiscovered fusions stay hidden. Experimenting costs you nothing.", UDim2.new(1, -40, 0, 18), DIM, Enum.Font.Gotham, 12)
-bookHint.Position = UDim2.new(0, 20, 0, 46)
-bookHint.TextWrapped = true
+local bookHint = label(bookFrame, "Undiscovered fusions stay hidden. Experimenting costs you nothing.", UDim2.new(1, -50, 0, 24), DIM, Enum.Font.FredokaOne, 16)
+bookHint.Position = UDim2.new(0, 32, 0, 74)
 
 local bookClose = Instance.new("TextButton")
-bookClose.Size = UDim2.new(0, 30, 0, 30)
-bookClose.Position = UDim2.new(1, -44, 0, 14)
+bookClose.Size = UDim2.new(0, 42, 0, 42)
+bookClose.Position = UDim2.new(1, -60, 0, 20)
 bookClose.BackgroundTransparency = 1
 bookClose.Text = "X"
 bookClose.TextColor3 = DIM
-bookClose.Font = Enum.Font.GothamBold
-bookClose.TextSize = 18
+bookClose.Font = Enum.Font.FredokaOne
+bookClose.TextSize = 26
 bookClose.Parent = bookFrame
 
--- Two tabs, one per item line — each keeps its own list so switching
--- tabs never needs a round trip to the server.
+-- Two big pill tabs, one per item line — each keeps its own list so
+-- switching tabs never needs a round trip to the server.
 local tabJunkyard = Instance.new("TextButton")
-tabJunkyard.Size = UDim2.new(0, 130, 0, 26)
-tabJunkyard.Position = UDim2.new(1, -280, 0, 12)
-tabJunkyard.Text = "JUNKYARD"
-tabJunkyard.Font = Enum.Font.GothamBold
-tabJunkyard.TextSize = 12
+tabJunkyard.Size = UDim2.new(0, 190, 0, 40)
+tabJunkyard.Position = UDim2.new(1, -420, 0, 28)
+tabJunkyard.Text = "🚗 JUNKYARD"
+tabJunkyard.Font = Enum.Font.LuckiestGuy
+tabJunkyard.TextSize = 16
 tabJunkyard.BorderSizePixel = 0
 tabJunkyard.Parent = bookFrame
-rounded(tabJunkyard, 6)
+rounded(tabJunkyard, 20)
 
 local tabBrainrot = Instance.new("TextButton")
-tabBrainrot.Size = UDim2.new(0, 130, 0, 26)
-tabBrainrot.Position = UDim2.new(1, -144, 0, 12)
-tabBrainrot.Text = "BRAINROT"
-tabBrainrot.Font = Enum.Font.GothamBold
-tabBrainrot.TextSize = 12
+tabBrainrot.Size = UDim2.new(0, 190, 0, 40)
+tabBrainrot.Position = UDim2.new(1, -220, 0, 28)
+tabBrainrot.Text = "🧠 BRAINROT"
+tabBrainrot.Font = Enum.Font.LuckiestGuy
+tabBrainrot.TextSize = 16
 tabBrainrot.BorderSizePixel = 0
 tabBrainrot.Parent = bookFrame
-rounded(tabBrainrot, 6)
+rounded(tabBrainrot, 20)
 
 local bookScroll = Instance.new("ScrollingFrame")
-bookScroll.Size = UDim2.new(1, -40, 1, -110)
-bookScroll.Position = UDim2.new(0, 20, 0, 94)
+bookScroll.Size = UDim2.new(1, -64, 1, -140)
+bookScroll.Position = UDim2.new(0, 32, 0, 120)
 bookScroll.BackgroundTransparency = 1
 bookScroll.BorderSizePixel = 0
-bookScroll.ScrollBarThickness = 5
+bookScroll.ScrollBarThickness = 8
 bookScroll.Parent = bookFrame
 
 local bookLayout = Instance.new("UIListLayout")
-bookLayout.Padding = UDim.new(0, 4)
+bookLayout.Padding = UDim.new(0, 10)
 bookLayout.Parent = bookScroll
 
 local function toggleBook()
@@ -843,6 +844,18 @@ end)
 local indexData = { junkyard = {}, brainrot = {} }
 local activeTab = "junkyard"
 
+-- One section per rarity color, in display order — secrets pulled out of
+-- their numeric tier into their own gold section, since "which tier" is
+-- less interesting than "it's a secret" once you're browsing by color.
+local SECTION_ORDER = { 1, 2, 3, 4, "secret" }
+local SECTION_INFO = {
+	[1]      = { name = "TIER 1  ·  COMMON",   color = ItemRarity.Color(1, false) },
+	[2]      = { name = "TIER 2  ·  UNCOMMON", color = ItemRarity.Color(2, false) },
+	[3]      = { name = "TIER 3  ·  RARE",     color = ItemRarity.Color(3, false) },
+	[4]      = { name = "TIER 4  ·  EPIC",     color = ItemRarity.Color(4, false) },
+	secret   = { name = "★  SECRET  ★",        color = ItemRarity.Color(1, true) },
+}
+
 local function redrawIndex()
 	for _, child in ipairs(bookScroll:GetChildren()) do
 		if not child:IsA("UIListLayout") then child:Destroy() end
@@ -855,46 +868,76 @@ local function redrawIndex()
 	tabBrainrot.TextColor3 = onJunkyard and LIGHT or DARK
 
 	local Recipes = onJunkyard and FusionRecipes or BrainrotRecipes
-	local items = indexData[activeTab]
-	local lastTier = nil
+
+	local buckets = {}
+	for _, key in ipairs(SECTION_ORDER) do buckets[key] = {} end
+	for _, entry in ipairs(indexData[activeTab]) do
+		local key = entry.isSecret and "secret" or entry.tier
+		if buckets[key] then table.insert(buckets[key], entry) end
+	end
+
 	local order = 0
+	for _, key in ipairs(SECTION_ORDER) do
+		local bucket = buckets[key]
+		if #bucket > 0 then
+			local info = SECTION_INFO[key]
+			local knownCount = 0
+			for _, e in ipairs(bucket) do
+				if e.known then knownCount = knownCount + 1 end
+			end
 
-	for _, entry in ipairs(items) do
-		order = order + 1
-
-		if entry.tier ~= lastTier then
-			lastTier = entry.tier
-			local heading = label(bookScroll, "TIER " .. entry.tier, UDim2.new(1, 0, 0, 24), GOLD, Enum.Font.GothamBold, 13)
-			heading.LayoutOrder = order
 			order = order + 1
+			local header = Instance.new("Frame")
+			header.Size = UDim2.new(1, 0, 0, 52)
+			header.BackgroundColor3 = info.color
+			header.BorderSizePixel = 0
+			header.LayoutOrder = order
+			header.Parent = bookScroll
+			rounded(header, 14)
+
+			local headerGradient = Instance.new("UIGradient")
+			headerGradient.Color = ColorSequence.new(info.color, info.color:Lerp(Color3.new(1, 1, 1), 0.35))
+			headerGradient.Rotation = 20
+			headerGradient.Parent = header
+
+			local headerText = label(header, info.name, UDim2.new(1, -150, 1, 0), Color3.fromRGB(255, 255, 255), Enum.Font.LuckiestGuy, 26)
+			headerText.Position = UDim2.new(0, 20, 0, 0)
+			headerText.TextStrokeTransparency = 0.5
+
+			local headerCount = label(header, string.format("%d / %d", knownCount, #bucket), UDim2.new(0, 110, 1, 0), Color3.fromRGB(255, 255, 255), Enum.Font.LuckiestGuy, 22)
+			headerCount.Position = UDim2.new(1, -128, 0, 0)
+			headerCount.TextXAlignment = Enum.TextXAlignment.Right
+			headerCount.TextStrokeTransparency = 0.5
+
+			for _, entry in ipairs(bucket) do
+				order = order + 1
+				local row = Instance.new("Frame")
+				row.Size = UDim2.new(1, -6, 0, 38)
+				row.LayoutOrder = order
+				row.BackgroundColor3 = info.color:Lerp(Color3.fromRGB(18, 18, 24), entry.known and 0.68 or 0.82)
+				row.BorderSizePixel = 0
+				row.Parent = bookScroll
+				rounded(row, 9)
+
+				local text
+				if entry.isBase then
+					text = ItemRarity.Tag(entry.name, entry.tier, false) .. "   (raw material)"
+				elseif entry.known then
+					text = string.format("%s  +  %s   →   %s",
+						ItemRarity.Tag(entry.a, Recipes.GetTier(entry.a), Recipes.IsSecretResult(entry.a)),
+						ItemRarity.Tag(entry.b, Recipes.GetTier(entry.b), Recipes.IsSecretResult(entry.b)),
+						ItemRarity.Tag(entry.name, entry.tier, entry.isSecret))
+				elseif entry.isSecret then
+					text = "???   SECRET RECIPE   ???"
+				else
+					text = "???   +   ???   →   ???"
+				end
+
+				local l = label(row, text, UDim2.new(1, -28, 1, 0), entry.known and LIGHT or DIM, Enum.Font.FredokaOne, 16)
+				l.Position = UDim2.new(0, 16, 0, 0)
+				l.RichText = true
+			end
 		end
-
-		local row = Instance.new("Frame")
-		row.Size = UDim2.new(1, -6, 0, 26)
-		row.LayoutOrder = order
-		row.BackgroundColor3 = entry.known and Color3.fromRGB(34, 38, 34) or Color3.fromRGB(28, 28, 32)
-		row.BackgroundTransparency = 0.25
-		row.BorderSizePixel = 0
-		row.Parent = bookScroll
-		rounded(row, 5)
-
-		local text
-		if entry.isBase then
-			text = ItemRarity.Tag(entry.name, entry.tier, false) .. "   (raw material)"
-		elseif entry.known then
-			text = string.format("%s  +  %s   →   %s",
-				ItemRarity.Tag(entry.a, Recipes.GetTier(entry.a), Recipes.IsSecretResult(entry.a)),
-				ItemRarity.Tag(entry.b, Recipes.GetTier(entry.b), Recipes.IsSecretResult(entry.b)),
-				ItemRarity.Tag(entry.name, entry.tier, entry.isSecret))
-		elseif entry.isSecret then
-			text = "???   SECRET RECIPE   ???"
-		else
-			text = "???   +   ???   →   ???"
-		end
-
-		local l = label(row, text, UDim2.new(1, -16, 1, 0), entry.known and LIGHT or DIM, Enum.Font.GothamMedium, 13)
-		l.Position = UDim2.new(0, 10, 0, 0)
-		l.RichText = true
 	end
 
 	bookScroll.CanvasSize = UDim2.new(0, 0, 0, bookLayout.AbsoluteContentSize.Y + 10)
@@ -921,7 +964,7 @@ shopBtn.Position = UDim2.new(1, -170, 1, -114)
 shopBtn.BackgroundColor3 = Color3.fromRGB(90, 200, 255)
 shopBtn.Text = "UPGRADES  [U]"
 shopBtn.TextColor3 = DARK
-shopBtn.Font = Enum.Font.GothamBold
+shopBtn.Font = Enum.Font.FredokaOne
 shopBtn.TextSize = 13
 shopBtn.BorderSizePixel = 0
 shopBtn.Parent = gui
@@ -937,7 +980,7 @@ shopFrame.Visible = false
 shopFrame.Parent = gui
 rounded(shopFrame, 10)
 
-local shopTitle = label(shopFrame, "UPGRADES", UDim2.new(1, -30, 0, 30), Color3.fromRGB(90, 200, 255), Enum.Font.GothamBlack, 20)
+local shopTitle = label(shopFrame, "UPGRADES", UDim2.new(1, -30, 0, 30), Color3.fromRGB(90, 200, 255), Enum.Font.LuckiestGuy, 20)
 shopTitle.Position = UDim2.new(0, 20, 0, 14)
 
 local shopClose = Instance.new("TextButton")
@@ -946,7 +989,7 @@ shopClose.Position = UDim2.new(1, -44, 0, 14)
 shopClose.BackgroundTransparency = 1
 shopClose.Text = "X"
 shopClose.TextColor3 = DIM
-shopClose.Font = Enum.Font.GothamBold
+shopClose.Font = Enum.Font.FredokaOne
 shopClose.TextSize = 18
 shopClose.Parent = shopFrame
 
@@ -994,15 +1037,15 @@ local function redrawShop(shop)
 		rounded(row, 6)
 
 		local name = label(row, string.format("%s  —  Lv %d / %d", entry.name, entry.level, entry.max),
-			UDim2.new(1, -160, 0, 22), LIGHT, Enum.Font.GothamBold, 15)
+			UDim2.new(1, -160, 0, 22), LIGHT, Enum.Font.FredokaOne, 15)
 		name.Position = UDim2.new(0, 14, 0, 10)
 
-		local now = label(row, "Now: " .. entry.effect, UDim2.new(1, -160, 0, 18), DIM, Enum.Font.Gotham, 12)
+		local now = label(row, "Now: " .. entry.effect, UDim2.new(1, -160, 0, 18), DIM, Enum.Font.FredokaOne, 12)
 		now.Position = UDim2.new(0, 14, 0, 32)
 
 		if entry.nextEffect then
 			local nxt = label(row, "Next: " .. entry.nextEffect, UDim2.new(1, -160, 0, 18),
-				Color3.fromRGB(150, 220, 160), Enum.Font.Gotham, 12)
+				Color3.fromRGB(150, 220, 160), Enum.Font.FredokaOne, 12)
 			nxt.Position = UDim2.new(0, 14, 0, 50)
 		end
 
@@ -1010,7 +1053,7 @@ local function redrawShop(shop)
 		buy.Size = UDim2.new(0, 128, 0, 40)
 		buy.Position = UDim2.new(1, -142, 0, 19)
 		buy.BorderSizePixel = 0
-		buy.Font = Enum.Font.GothamBold
+		buy.Font = Enum.Font.FredokaOne
 		buy.TextSize = 14
 		buy.Parent = row
 		rounded(buy, 6)
@@ -1044,7 +1087,7 @@ local function showToast(message, big)
 	toast.BackgroundTransparency = 0.08
 	toast.Text = message
 	toast.TextColor3 = big and DARK or LIGHT
-	toast.Font = big and Enum.Font.GothamBlack or Enum.Font.GothamMedium
+	toast.Font = big and Enum.Font.LuckiestGuy or Enum.Font.FredokaOne
 	toast.TextSize = big and 20 or 15
 	toast.TextWrapped = true
 	toast.BorderSizePixel = 0
@@ -1079,7 +1122,7 @@ local function showAnnounce(message)
 	banner.BackgroundTransparency = 0.05
 	banner.Text = message
 	banner.TextColor3 = DARK
-	banner.Font = Enum.Font.GothamBlack
+	banner.Font = Enum.Font.LuckiestGuy
 	banner.TextSize = 17
 	banner.TextWrapped = true
 	banner.BorderSizePixel = 0
@@ -1116,7 +1159,7 @@ local function redrawList(names)
 
 	for i, name in ipairs(names or {}) do
 		local itemColor = ItemRarity.Color(FusionRecipes.GetTier(name), FusionRecipes.IsSecretResult(name))
-		local entry = label(list, "• " .. name, UDim2.new(1, 0, 0, 20), itemColor, Enum.Font.Gotham, 13)
+		local entry = label(list, "• " .. name, UDim2.new(1, 0, 0, 20), itemColor, Enum.Font.FredokaOne, 13)
 		entry.LayoutOrder = i
 	end
 
@@ -1217,7 +1260,7 @@ travelBtn.Position = UDim2.new(1, -170, 0.5, -23)
 travelBtn.BackgroundColor3 = Color3.fromRGB(60, 230, 170)
 travelBtn.Text = "🚀  TRAVEL"
 travelBtn.TextColor3 = DARK
-travelBtn.Font = Enum.Font.GothamBlack
+travelBtn.Font = Enum.Font.LuckiestGuy
 travelBtn.TextSize = 18
 travelBtn.BorderSizePixel = 0
 travelBtn.Parent = gui
@@ -1235,10 +1278,10 @@ travelFrame.Visible = false
 travelFrame.Parent = gui
 rounded(travelFrame, 18)
 
-local travelTitle = label(travelFrame, "WHERE TO?", UDim2.new(1, -40, 0, 50), GOLD, Enum.Font.GothamBlack, 40)
+local travelTitle = label(travelFrame, "WHERE TO?", UDim2.new(1, -40, 0, 50), GOLD, Enum.Font.LuckiestGuy, 40)
 travelTitle.Position = UDim2.new(0, 32, 0, 22)
 
-local travelSub = label(travelFrame, "Pick a destination.", UDim2.new(1, -50, 0, 24), DIM, Enum.Font.Gotham, 16)
+local travelSub = label(travelFrame, "Pick a destination.", UDim2.new(1, -50, 0, 24), DIM, Enum.Font.FredokaOne, 16)
 travelSub.Position = UDim2.new(0, 32, 0, 74)
 
 local travelClose = Instance.new("TextButton")
@@ -1247,7 +1290,7 @@ travelClose.Position = UDim2.new(1, -60, 0, 20)
 travelClose.BackgroundTransparency = 1
 travelClose.Text = "X"
 travelClose.TextColor3 = DIM
-travelClose.Font = Enum.Font.GothamBold
+travelClose.Font = Enum.Font.FredokaOne
 travelClose.TextSize = 26
 travelClose.Parent = travelFrame
 
@@ -1300,18 +1343,18 @@ local function buildWorldRow(world)
 	emojiBadge.Position = UDim2.new(0, -40, 0.5, -130)
 	emojiBadge.BackgroundTransparency = 1
 	emojiBadge.Text = world.emoji
-	emojiBadge.Font = Enum.Font.GothamBlack
+	emojiBadge.Font = Enum.Font.LuckiestGuy
 	emojiBadge.TextSize = 150
 	emojiBadge.TextTransparency = 0.06
 	emojiBadge.TextStrokeTransparency = 0.75
 	emojiBadge.Rotation = -8
 	emojiBadge.Parent = row
 
-	local nameLabel = label(row, world.name, UDim2.new(1, -280, 0, 44), Color3.fromRGB(255, 255, 255), Enum.Font.GothamBlack, 34)
+	local nameLabel = label(row, world.name, UDim2.new(1, -280, 0, 44), Color3.fromRGB(255, 255, 255), Enum.Font.LuckiestGuy, 34)
 	nameLabel.Position = UDim2.new(0, 200, 0, 34)
 	nameLabel.TextStrokeTransparency = 0.55
 
-	local blurbLabel = label(row, world.blurb, UDim2.new(1, -300, 0, 40), Color3.fromRGB(255, 255, 255), Enum.Font.GothamMedium, 16)
+	local blurbLabel = label(row, world.blurb, UDim2.new(1, -300, 0, 40), Color3.fromRGB(255, 255, 255), Enum.Font.FredokaOne, 16)
 	blurbLabel.Position = UDim2.new(0, 200, 0, 82)
 	blurbLabel.TextWrapped = true
 	blurbLabel.TextTransparency = 0.05
@@ -1325,7 +1368,7 @@ local function buildWorldRow(world)
 	goPill.Parent = row
 	rounded(goPill, 21)
 
-	local goLabel = label(goPill, "TAP TO TRAVEL  →", UDim2.new(1, 0, 1, 0), world.gradientColors[2], Enum.Font.GothamBlack, 15)
+	local goLabel = label(goPill, "TAP TO TRAVEL  →", UDim2.new(1, 0, 1, 0), world.gradientColors[2], Enum.Font.LuckiestGuy, 15)
 	goLabel.TextXAlignment = Enum.TextXAlignment.Center
 
 	row.MouseButton1Click:Connect(function()

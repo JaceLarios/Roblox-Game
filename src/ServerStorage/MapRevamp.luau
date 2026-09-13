@@ -35,11 +35,11 @@ local function sign(name,title,subtitle,cf,width,height,color,parent)
   gui.LightInfluence=0.2 gui.AlwaysOnTop=false gui.Parent=board
   local label=Instance.new("TextLabel") label.Name="Heading" label.Size=UDim2.new(1,-12,0.65,0)
   label.Position=UDim2.fromOffset(6,0) label.BackgroundTransparency=1 label.Text=title
-  label.Font=Enum.Font.GothamBlack label.TextScaled=true
+  label.Font=Enum.Font.LuckiestGuy label.TextScaled=true
   local bright=board.Color.R>0.65 and board.Color.G>0.45
   label.TextColor3=bright and C.navy or C.cream label.Parent=gui
   local small=label:Clone() small.Name="Subtitle" small.Size=UDim2.new(1,-12,0.28,0)
-  small.Position=UDim2.new(0,6,0.67,0) small.Font=Enum.Font.GothamBold small.Text=subtitle
+  small.Position=UDim2.new(0,6,0.67,0) small.Font=Enum.Font.FredokaOne small.Text=subtitle
   small.TextColor3=bright and C.navy or C.yellow small.Parent=gui
  end
  return board
@@ -100,6 +100,28 @@ local function forklift(cf,parent)
  return m
 end
 function Map.Build()
+ -- Lighting/fog is cheap and global — apply it on every call, not only a
+ -- full geometry rebuild. The early-return just below fires on almost
+ -- every normal server start (the map is versioned and built once), so
+ -- anything placed after it — including fog — would otherwise silently
+ -- never run.
+ local lighting=game:GetService("Lighting")
+ lighting.ClockTime=15.7 lighting.Brightness=2.7 lighting.ExposureCompensation=0.1
+ lighting.Ambient=RGB(113,122,133) lighting.OutdoorAmbient=RGB(143,148,145)
+ lighting.EnvironmentDiffuseScale=0.65 lighting.EnvironmentSpecularScale=0.65
+ lighting.ShadowSoftness=0.35 lighting.GlobalShadows=true
+ -- Distance fog: keeps the plot ring and everything inside it (out to
+ -- ~225 studs) fully clear, fades the outer district road/trees, and
+ -- fully hides anything past ~500 studs — which is what keeps Brainrot
+ -- Island (900 studs out) from poking over the horizon while standing in
+ -- the Foundry District, and vice versa, without touching either area's
+ -- own local geometry.
+ lighting.FogStart=180 lighting.FogEnd=500 lighting.FogColor=RGB(213,233,239)
+ local atmosphere=lighting:FindFirstChildOfClass("Atmosphere")
+ if atmosphere then atmosphere.Density=0.22 atmosphere.Haze=0.65 atmosphere.Glare=0.15 atmosphere.Color=RGB(213,233,239) atmosphere.Decay=RGB(180,194,209) end
+ local dof=lighting:FindFirstChildOfClass("DepthOfFieldEffect") if dof then dof.Enabled=false end
+ local bloom=lighting:FindFirstChildOfClass("BloomEffect") if bloom then bloom.Intensity=0.12 bloom.Threshold=1.3 bloom.Size=24 end
+
  local old=workspace:FindFirstChild("JunkyardRefresh")
  if old and old:GetAttribute("Version")==5 then return old end
  local scene=assert(workspace:FindFirstChild("JunkyardScene"),"Restore the baseline map first")
@@ -331,15 +353,6 @@ function Map.Build()
    elseif x.Name=="LampHead" then x.Color=C.yellow end
   end
  end
- local lighting=game:GetService("Lighting")
- lighting.ClockTime=15.7 lighting.Brightness=2.7 lighting.ExposureCompensation=0.1
- lighting.Ambient=RGB(113,122,133) lighting.OutdoorAmbient=RGB(143,148,145)
- lighting.EnvironmentDiffuseScale=0.65 lighting.EnvironmentSpecularScale=0.65
- lighting.ShadowSoftness=0.35 lighting.GlobalShadows=true
- local atmosphere=lighting:FindFirstChildOfClass("Atmosphere")
- if atmosphere then atmosphere.Density=0.22 atmosphere.Haze=0.65 atmosphere.Glare=0.15 atmosphere.Color=RGB(213,233,239) atmosphere.Decay=RGB(180,194,209) end
- local dof=lighting:FindFirstChildOfClass("DepthOfFieldEffect") if dof then dof.Enabled=false end
- local bloom=lighting:FindFirstChildOfClass("BloomEffect") if bloom then bloom.Intensity=0.12 bloom.Threshold=1.3 bloom.Size=24 end
  if old then old:Destroy() end
  root.Parent=workspace
  return root

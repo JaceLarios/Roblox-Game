@@ -78,7 +78,7 @@ local function label(parent, text, offsetY, size, color, maxDistance)
 	lbl.TextColor3 = color or Color3.fromRGB(255, 255, 255)
 	lbl.TextStrokeTransparency = 0.3
 	lbl.TextScaled = true
-	lbl.Font = Enum.Font.GothamBold
+	lbl.Font = Enum.Font.FredokaOne
 	lbl.RichText = true
 	lbl.Parent = gui
 	return lbl
@@ -262,10 +262,10 @@ local function randomSpawnPosition()
 		local x = ISLAND_CENTER.X + math.random(-half, half)
 		local z = ISLAND_CENTER.Z + math.random(-half, half)
 		if (Vector3.new(x, 0, z) - Vector3.new(pad.Position.X, 0, pad.Position.Z)).Magnitude >= PAD_EXCLUSION_RADIUS then
-			return Vector3.new(x, ISLAND_CENTER.Y + 3, z)
+			return Vector3.new(x, ISLAND_CENTER.Y + 0.5, z)
 		end
 	end
-	return Vector3.new(ISLAND_CENTER.X - half, ISLAND_CENTER.Y + 3, ISLAND_CENTER.Z - half)
+	return Vector3.new(ISLAND_CENTER.X - half, ISLAND_CENTER.Y + 0.5, ISLAND_CENTER.Z - half)
 end
 
 local function attachPickup(itemPart)

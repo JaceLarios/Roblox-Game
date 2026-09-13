@@ -246,7 +246,7 @@ local function makeLabel(parent, text, offsetY, size, color, maxDistance)
 	label.TextColor3 = color or Color3.fromRGB(255, 255, 255)
 	label.TextStrokeTransparency = 0.3
 	label.TextScaled = true
-	label.Font = Enum.Font.GothamBold
+	label.Font = Enum.Font.FredokaOne
 	-- Lets a caller color individual item names within a shared label (the
 	-- pad's "[a] + [b]" preview) via <font color="..."> tags. Plain text
 	-- without tags renders identically either way.
@@ -614,7 +614,8 @@ local function refreshPad(player)
 		local itemName = s.slots[i]
 		if itemName then
 			local offset = (i == 1) and -4.6 or 4.6
-			local slotPart = ItemVisuals.Create(itemName, plot.pad.Position + Vector3.new(offset, 2.4, 0), 0.85)
+			local padSurfaceY = plot.pad.Position.Y + plot.pad.Size.Y / 2
+			local slotPart = ItemVisuals.Create(itemName, Vector3.new(plot.pad.Position.X + offset, padSurfaceY, plot.pad.Position.Z), 0.85)
 			slotPart.Name = "Slot" .. i
 			slotPart.Parent = plot.model
 			local itemColor = ItemRarity.Color(FusionRecipes.GetTier(itemName), FusionRecipes.IsSecretResult(itemName))
@@ -661,7 +662,7 @@ local function getScrapFolder()
 end
 
 local function dropItemNearYard(itemName)
-	local position = Vector3.new(math.random(-40, 40), 3, math.random(-40, 40))
+	local position = Vector3.new(math.random(-40, 40), 1.2, math.random(-40, 40))
 	local part = ItemVisuals.Create(itemName, position, 1)
 	part:SetAttribute("ItemName", itemName)
 	local itemColor = ItemRarity.Color(FusionRecipes.GetTier(itemName), FusionRecipes.IsSecretResult(itemName))
@@ -683,17 +684,24 @@ local function renderInSlot(plot, slot, itemName, value)
 	local isFallback = FusionRecipes.IsFallbackResult(itemName)
 	local tier = FusionRecipes.GetTier(itemName)
 
-	local position = slot.base.Position + Vector3.new(0, 2.5, 0)
+	-- The slot's top surface, not its center — renderInSlot places items of
+	-- very different heights (a raw Traffic Cone vs. a curated Tier 4
+	-- monster), and a fixed offset either floats or buries one of them.
+	local surfaceY = slot.base.Position.Y + slot.base.Size.Y / 2
+	local position = Vector3.new(slot.base.Position.X, surfaceY, slot.base.Position.Z)
 	local part
 	if ItemVisuals.HasModel(itemName) then
 		part = ItemVisuals.Create(itemName, position, 1)
 	else
 		-- No detailed model for this result — keep a neon placeholder,
 		-- colored distinctly for secrets and for generic hybrid fusions.
+		-- Doesn't go through ItemVisuals.Create, so it needs the same
+		-- surface-to-center offset applied by hand.
+		local phSize = Vector3.new(3.5, 2, 3.5) * ItemVisuals.GLOBAL_SCALE
 		part = makePart({
 			Name = itemName,
-			Size = Vector3.new(3.5, 2, 3.5) * ItemVisuals.GLOBAL_SCALE,
-			Position = position,
+			Size = phSize,
+			Position = Vector3.new(position.X, surfaceY + phSize.Y / 2, position.Z),
 			Material = Enum.Material.Neon,
 			Color = isSecret and Color3.fromRGB(255, 90, 200)
 				or isFallback and Color3.fromRGB(190, 100, 255)

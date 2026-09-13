@@ -21,7 +21,7 @@ end
 local SPAWN_INTERVAL = 2      -- seconds between drops
 local DESPAWN_AFTER  = 45     -- seconds before an ignored item disappears
 local MAX_ITEMS      = 45     -- hard cap, so the yard never floods
-local AREA_CENTER    = Vector3.new(0, 3, 0)
+local AREA_CENTER    = Vector3.new(0, 1.2, 0)  -- Y is the yard's ground surface, not an item's center
 local AREA_SIZE      = 130    -- studs wide/deep (the central shared yard)
 
 -- Golden scrap: the event that makes the shared yard competitive.
@@ -83,10 +83,13 @@ local function spawnScrap()
 
 	local part
 	if isGolden then
+		local goldenSize = Vector3.new(6, 3, 8)
 		part = Instance.new("Part")
 		part.Name = itemName
-		part.Size = Vector3.new(6, 3, 8)
-		part.Position = position
+		part.Size = goldenSize
+		-- Doesn't go through ItemVisuals.Create, so it needs the same
+		-- surface-to-center offset applied by hand.
+		part.Position = Vector3.new(position.X, position.Y + goldenSize.Y / 2, position.Z)
 		part.Anchored = true          -- v1: no physics. Simpler and cheaper.
 		part.Material = Enum.Material.Neon
 		part.Color = Color3.fromRGB(255, 205, 60)
