@@ -1,4 +1,16 @@
-# Latest handoff — Rebirth prestige system + item Mutations, both islands (2026-09-13)
+# Latest handoff — Companion system (2026-09-13)
+
+Eighth pass, same day, continuing straight down the researched idea list. Equip any discovered item — base or curated, either island — as a companion that follows you and grants a permanent value bonus scaled by its tier (+2% common up to +15% for a secret). New `ServerScriptService/CompanionService.luau`, same small shared-module shape as `RebirthService`/`GamepassService`, so both `PlotManager` and `BrainrotService` apply the bonus without depending on each other.
+
+**No new UI surface needed — the Index doubles as the picker.** Every known card in the Pet-Sim grid is now a real `TextButton`; clicking one equips it (clicking the equipped one again unequips), with a white stroke and a "★ COMPANION" badge marking whichever is active. A small readout in the coin card ("Companion: X (+Y%)") shows the equipped bonus without needing to open the Index to check. The follow visual is a scaled-down clone of the item's own mesh (via the existing `ItemVisuals`), orbiting the player with a bob via `RunService.Heartbeat` — the one background loop in this file that runs every frame instead of every second or two, since a stuttering companion would be worse than none.
+
+**A real bug caught before syncing, not after this time:** the server sends `companion = nil` for "no companion equipped," but Roblox drops nil-valued keys when firing a RemoteEvent — so the client can't tell "you have no companion" apart from "this message didn't mention companions at all," and would leave a stale equipped-display up forever after an unequip. Fixed by sending `false` instead of `nil` as the explicit "empty" sentinel and checking `~= nil` client-side, which does distinguish `false` from absent. Caught by tracing through the dispatcher's `if data.X then` pattern before syncing, rather than after.
+
+**Verified for real:** equipped a base item via the actual `EquipCompanion` remote and confirmed the HUD bonus text, a live companion `MeshPart` following the player at the right distance with the right glow color, clicking the same item again correctly unequipped and destroyed the visual, and that equipping something not yet discovered is silently rejected server-side. Zero console errors throughout.
+
+---
+
+# Previous handoff — Rebirth prestige system + item Mutations, both islands (2026-09-13)
 
 Seventh pass, continuing the previous session's research-driven idea list. Built the top two recommended features: a Rebirth prestige loop and a second, tier-independent "mutation" rarity layer on fusion results — the pieces most directly aimed at the "grind heavy, niche items as well as popular items" ask from last time.
 

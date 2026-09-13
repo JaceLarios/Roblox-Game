@@ -17,6 +17,7 @@
 
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService        = game:GetService("RunService")
 
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
@@ -26,6 +27,7 @@ local Mutations     = require(ReplicatedStorage:WaitForChild("Mutations"))
 local DataManager   = require(script.Parent:WaitForChild("DataManager"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
+local Companions = require(script.Parent:WaitForChild("CompanionService"))
 local Brainrot = require(script.Parent:WaitForChild("BrainrotService"))
 Gamepasses.Start()
 
@@ -93,6 +95,39 @@ local function upgradeCost(def, currentLevel)
 end
 -- ----------------------------
 
+-- Companions: equip any discovered item (either island) to follow you and
+-- earn a small permanent value bonus scaled by its tier (see
+-- CompanionService.luau for the bonus table — this file only validates
+-- equip requests and owns the follow visual). No new content needed —
+-- reuses whatever's already been discovered.
+local COMPANION_SCALE = 0.45
+
+local function isBaseItemName(itemName, Recipes)
+	for _, item in ipairs(Recipes.BaseItems) do
+		if item.name == itemName then return true end
+	end
+	return false
+end
+
+local function recipesFor(island)
+	return island == "brainrot" and BrainrotRecipes or FusionRecipes
+end
+
+-- A player can equip anything they've actually discovered, base item or
+-- curated result, on either island — same "known" definition the Index
+-- already uses, just checked here instead of read off it.
+local function playerKnowsItem(s, player, itemName, island)
+	local Recipes = recipesFor(island)
+	if isBaseItemName(itemName, Recipes) then return true end
+	if island == "junkyard" then
+		return s.discovered[itemName] == true
+	end
+	for _, name in ipairs(Brainrot.Snapshot(player)) do
+		if name == itemName then return true end
+	end
+	return false
+end
+
 -- Ordered objectives. Each unlocks only after the previous is done, so
 -- there is always exactly one thing the player is working toward.
 local GOALS = {
@@ -137,6 +172,13 @@ if not rebirthRemote then
 	rebirthRemote = Instance.new("RemoteEvent")
 	rebirthRemote.Name = "RebirthPlayer"
 	rebirthRemote.Parent = ReplicatedStorage
+end
+
+local equipCompanionRemote = ReplicatedStorage:FindFirstChild("EquipCompanion")
+if not equipCompanionRemote then
+	equipCompanionRemote = Instance.new("RemoteEvent")
+	equipCompanionRemote.Name = "EquipCompanion"
+	equipCompanionRemote.Parent = ReplicatedStorage
 end
 
 -- The side travel menu asks for a destination key; the server decides
@@ -208,10 +250,11 @@ local function boostMult(s, stat)
 end
 
 -- Shared by manual sells and passive income — the Haggler upgrade, any
--- timed sell boost, and a player's permanent Rebirth multiplier apply to
--- everything a player's builds earn, not just the moment you press Sell.
+-- timed sell boost, a player's permanent Rebirth multiplier, and their
+-- equipped companion (if any) apply to everything a player's builds earn,
+-- not just the moment you press Sell.
 local function valueMultiplier(player, s)
-	return (1 + (s.upgrades.value - 1) * 0.15) * boostMult(s, "value") * Rebirth.Multiplier(player)
+	return (1 + (s.upgrades.value - 1) * 0.15) * boostMult(s, "value") * Rebirth.Multiplier(player) * Companions.Bonus(player)
 end
 
 -- Best available colored tag for an item name that might carry a mutation
@@ -223,6 +266,14 @@ local function instanceTag(name)
 		return Mutations.Tag(name, mutationId)
 	end
 	return ItemRarity.Tag(baseName, FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName))
+end
+
+-- Same idea as instanceTag, but for a name that's known to belong to a
+-- specific island rather than possibly carrying a mutation prefix — used
+-- for companion names, which are chosen by base recipe identity.
+local function islandTag(itemName, island)
+	local Recipes = recipesFor(island)
+	return ItemRarity.Tag(itemName, Recipes.GetTier(itemName), Recipes.IsSecretResult(itemName))
 end
 
 -- Cars as transportation: every fused vehicle sitting in your Garage zone
@@ -558,6 +609,16 @@ local function pushUI(player)
 		brainrotDiscovered[name] = true
 	end
 
+	-- `false`, never nil: RemoteEvent args drop nil-valued table keys, and
+	-- the client needs to tell "no companion" apart from "field absent"
+	-- (e.g. on a toast-only message) to know when to clear a stale display.
+	local equippedCompanion = Companions.Get(player)
+	local companionInfo = equippedCompanion and {
+		name = equippedCompanion.name,
+		island = equippedCompanion.island,
+		bonusPercent = math.floor((Companions.Bonus(player) - 1) * 100 + 0.5),
+	} or false
+
 	remote:FireClient(player, {
 		slots = s.slots,
 		maxSlots = capacity(player, s),
@@ -587,6 +648,7 @@ local function pushUI(player)
 			nextMultiplier = Rebirth.NextMultiplier(player),
 			maxed = Rebirth.IsMaxed(player),
 		},
+		companion = companionInfo,
 	})
 end
 
@@ -1121,6 +1183,79 @@ travelRemote.OnServerEvent:Connect(function(player, destination)
 end)
 
 ------------------------------------------------------------------
+-- Companions — equip any discovered item to follow you and boost value
+------------------------------------------------------------------
+
+local companionParts = {} -- [player] = part
+
+local function updateCompanionVisual(player)
+	local old = companionParts[player]
+	if old then
+		old:Destroy()
+		companionParts[player] = nil
+	end
+
+	local companion = Companions.Get(player)
+	if not companion then return end
+
+	local Recipes = recipesFor(companion.island)
+	local part = ItemVisuals.Create(companion.name, Vector3.new(0, 5, 0), COMPANION_SCALE)
+	part.Anchored = true
+	part.CanCollide = false
+	part.Parent = workspace
+
+	local light = Instance.new("PointLight")
+	light.Color = ItemRarity.Color(Recipes.GetTier(companion.name), Recipes.IsSecretResult(companion.name))
+	light.Range = 10
+	light.Brightness = 1.5
+	light.Parent = part
+
+	companionParts[player] = part
+end
+
+-- Runs every frame (unlike the other background loops below, which only
+-- need to tick every second or two) because a companion that visibly
+-- stutters while following is worse than not having one at all.
+RunService.Heartbeat:Connect(function()
+	local t = os.clock()
+	for player, part in pairs(companionParts) do
+		local root = part.Parent and playerRoot(player)
+		if root then
+			local bob = math.sin(t * 2 + player.UserId) * 0.6
+			local orbit = root.CFrame:VectorToWorldSpace(Vector3.new(-4, 3 + bob, -3))
+			part.CFrame = CFrame.new(root.Position + orbit) * CFrame.Angles(0, t * 1.5, 0)
+		elseif not root then
+			part:Destroy()
+			companionParts[player] = nil
+		end
+	end
+end)
+
+equipCompanionRemote.OnServerEvent:Connect(function(player, itemName, island)
+	local s = state[player]
+	if not s then return end
+	if type(itemName) ~= "string" or (island ~= "junkyard" and island ~= "brainrot") then return end
+
+	if not playerKnowsItem(s, player, itemName, island) then
+		toast(player, "You haven't discovered that yet.")
+		return
+	end
+
+	-- Clicking the currently-equipped item again unequips it.
+	local current = Companions.Get(player)
+	if current and current.name == itemName and current.island == island then
+		Companions.Set(player, nil)
+		toast(player, "Companion unequipped.")
+	else
+		Companions.Set(player, { name = itemName, island = island })
+		toast(player, string.format("%s is now your companion.", islandTag(itemName, island)))
+	end
+
+	updateCompanionVisual(player)
+	pushUI(player)
+end)
+
+------------------------------------------------------------------
 -- Scrap magnet
 ------------------------------------------------------------------
 
@@ -1301,6 +1436,7 @@ local function onPlayerAdded(player)
 	local data = DataManager.Load(player)
 	Brainrot.Init(player, data.brainrotDiscovered)
 	Rebirth.Init(player, data.rebirths)
+	Companions.Init(player, data.companion)
 
 	local stats = Instance.new("Folder")
 	stats.Name = "leaderstats"
@@ -1379,6 +1515,7 @@ local function onPlayerAdded(player)
 	player.CharacterAdded:Connect(function(character)
 		character:WaitForChild("Humanoid")
 		updateWalkSpeed(player)
+		updateCompanionVisual(player)
 		task.wait(1)
 		pushUI(player)
 		toast(player, "Plot " .. index .. " is yours. Scrap spawns in the centre.")
@@ -1444,6 +1581,7 @@ local function snapshot(player)
 		dailyStreak = s.dailyStreak,
 		boosts = s.boosts,
 		rebirths = Rebirth.Snapshot(player),
+		companion = Companions.Snapshot(player),
 	}
 end
 
@@ -1495,7 +1633,14 @@ Players.PlayerRemoving:Connect(function(player)
 	state[player] = nil
 	Brainrot.Cleanup(player)
 	Rebirth.Cleanup(player)
+	Companions.Cleanup(player)
 	DataManager.Forget(player)
+
+	local companionPart = companionParts[player]
+	if companionPart then
+		companionPart:Destroy()
+		companionParts[player] = nil
+	end
 end)
 
 print(string.format("[PlotManager] %d plots ready. %d combos to discover.",

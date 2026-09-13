@@ -21,6 +21,7 @@ local remote = ReplicatedStorage:WaitForChild("GameUpdate")
 local buyRemote = ReplicatedStorage:WaitForChild("BuyUpgrade")
 local claimRemote = ReplicatedStorage:WaitForChild("ClaimDaily")
 local rebirthRemote = ReplicatedStorage:WaitForChild("RebirthPlayer")
+local equipCompanionRemote = ReplicatedStorage:WaitForChild("EquipCompanion")
 
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
@@ -107,7 +108,7 @@ objReward.Position = UDim2.new(0, 22, 0, 68)
 ------------------------------------------------------------------
 
 local coinCard = Instance.new("Frame")
-coinCard.Size = UDim2.new(0, 300, 0, 52)
+coinCard.Size = UDim2.new(0, 300, 0, 76)
 coinCard.Position = UDim2.new(0, 20, 0, 122)
 coinCard.BackgroundColor3 = DARK
 coinCard.BackgroundTransparency = GLASS_HUD
@@ -129,6 +130,9 @@ coinText.Position = UDim2.new(0, 46, 0, 0)
 local luckText = label(coinCard, "LUCK 1", UDim2.new(0, 90, 0, 18), DIM, Enum.Font.FredokaOne, 12)
 luckText.Position = UDim2.new(1, -96, 0, 17)
 luckText.TextXAlignment = Enum.TextXAlignment.Right
+
+local companionText = label(coinCard, "No companion equipped", UDim2.new(1, -32, 0, 18), TEAL, Enum.Font.FredokaOne, 12)
+companionText.Position = UDim2.new(0, 16, 0, 50)
 
 local function commas(n)
 	local formatted = tostring(n)
@@ -936,6 +940,7 @@ end)
 local indexData = { junkyard = {}, brainrot = {} }
 local activeTab = "junkyard"
 local activeRarity = 1
+local equippedCompanion = nil -- { name, island, bonusPercent } or nil
 
 local function redrawIndex()
 	for _, child in ipairs(bookScroll:GetChildren()) do
@@ -978,8 +983,13 @@ local function redrawIndex()
 	-- name below, tinted by rarity. Undiscovered entries show a "?"
 	-- silhouette instead of rendering anything — collected or not, no
 	-- ingredients, no arrows: this is a collection list, not a recipe book.
+	-- Known cards double as the companion picker — click one to equip it.
 	for i, entry in ipairs(bucket) do
-		local card = Instance.new("Frame")
+		local isEquipped = equippedCompanion
+			and equippedCompanion.name == entry.name
+			and equippedCompanion.island == activeTab
+
+		local card = Instance.new(entry.known and "TextButton" or "Frame")
 		card.Size = bookLayout.CellSize
 		card.LayoutOrder = i
 		card.BackgroundColor3 = entry.known
@@ -989,10 +999,32 @@ local function redrawIndex()
 		card.Parent = bookScroll
 		rounded(card, 14)
 
+		if entry.known then
+			card.Text = ""
+			card.AutoButtonColor = false
+			card.MouseButton1Click:Connect(function()
+				equipCompanionRemote:FireServer(entry.name, activeTab)
+			end)
+		end
+
 		local stroke = Instance.new("UIStroke")
-		stroke.Color = entry.known and info.color or Color3.fromRGB(60, 60, 68)
-		stroke.Thickness = entry.known and 2.5 or 1.5
+		stroke.Color = isEquipped and Color3.fromRGB(255, 255, 255) or entry.known and info.color or Color3.fromRGB(60, 60, 68)
+		stroke.Thickness = isEquipped and 3.5 or entry.known and 2.5 or 1.5
 		stroke.Parent = card
+
+		if isEquipped then
+			local badge = Instance.new("TextLabel")
+			badge.Size = UDim2.new(1, -12, 0, 20)
+			badge.Position = UDim2.new(0, 6, 0, 6)
+			badge.BackgroundTransparency = 1
+			badge.Text = "★ COMPANION"
+			badge.TextColor3 = Color3.fromRGB(255, 255, 255)
+			badge.TextStrokeTransparency = 0.3
+			badge.Font = Enum.Font.FredokaOne
+			badge.TextScaled = true
+			badge.ZIndex = 2
+			badge.Parent = card
+		end
 
 		if entry.known then
 			buildItemViewport(card, entry.name)
@@ -1391,6 +1423,14 @@ remote.OnClientEvent:Connect(function(data)
 
 	if data.rebirth then
 		redrawRebirth(data.rebirth)
+	end
+
+	if data.companion ~= nil then
+		equippedCompanion = data.companion or nil
+		companionText.Text = equippedCompanion
+			and string.format("Companion: %s (+%d%%)", equippedCompanion.name, equippedCompanion.bonusPercent)
+			or "No companion equipped"
+		redrawIndex()
 	end
 
 	if data.goalText then

@@ -22,6 +22,7 @@ local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local Mutations = require(ReplicatedStorage:WaitForChild("Mutations"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
+local Companions = require(script.Parent:WaitForChild("CompanionService"))
 
 local remote = ReplicatedStorage:WaitForChild("GameUpdate")
 
@@ -386,7 +387,7 @@ local function attemptFusion(player)
 		toast(player, string.format(info.isSecret and "SECRET RECIPE\n%s" or "NEW DISCOVERY\n%s", resultTag), true)
 	end
 
-	local mult = Mutations.ValueMultiplier(mutationId) * Rebirth.Multiplier(player)
+	local mult = Mutations.ValueMultiplier(mutationId) * Rebirth.Multiplier(player) * Companions.Bonus(player)
 	local payout = addCoins(player, math.floor(info.value * mult))
 	toast(player, string.format("%s sold for %d coins.", resultTag, payout))
 
