@@ -1,4 +1,18 @@
-# Latest handoff — items sinking into the floor, islands seeing each other, a boring font, and a much bigger Index (2026-09-12)
+# Latest handoff — real models for all 17 fallback hybrid items (2026-09-12)
+
+Closes out the one item explicitly left pending from earlier today: the generic hybrid fusion results (Scrap Hybrid, Twisted Wreck, Mangled Overlord, Scraprino Mutantelli, etc. — see the fallback-fusion handoff from earlier) were still rendering as the plain neon placeholder box. Same AI mesh-generation workflow as the original 48-item pass, applied to the 11 Junkyard + 6 Brainrot fallback names.
+
+**One workflow difference from last time, worth remembering:** the first two meshes generated without an explicit `segmentation` argument came back as multi-part `Model`s (a separate `MeshPart` per auto-detected part — chassis/wheels/door as three pieces, say) instead of one unified `MeshPart`. `ItemVisuals.Create` and the rest of the item pipeline assume a single `MeshPart` directly under `ItemModels` (confirmed by checking an existing entry — `Rusted Sedan` is one `MeshPart`, not a `Model`) — a multi-part result doesn't fit that contract (`Model.Size` isn't a settable property the way `Part.Size` is, so `template.Size * sizeScale` would simply error). Deleted those two and regenerated everything in this batch with `segmentation = "none"` explicitly, which reliably comes back as `Model > Model("body") > MeshPart("body_geom")` — still one real piece of geometry to extract, just nested two levels deep instead of one. **Pass `segmentation = "none"` explicitly any time a single-mesh item is going into `ItemModels`; don't rely on the "auto" default.**
+
+**Content moderation rejected "Bentaccio Wobblini" twice** before a third, plainer rewording succeeded — first attempt mentioned a "springy antenna," second dropped that but kept "blob"/"wobbly," third simplified to "a round bouncy creature with big round feet and short stubby arms" and passed. As before, the specific trigger word is never obvious in advance; the fix is always to reword plainer and retry rather than debug which word it was.
+
+**Migration:** one script matched each of the 17 newly-inserted Workspace models by a substring of its prompt (kept well under the ~100-character instance-name truncation limit learned the first time around), grabbed the first `MeshPart` found among its descendants, renamed it to the exact item name, and reparented it directly into `ReplicatedStorage.ItemModels` — same shape as every pre-existing entry.
+
+**Verified, not just migrated:** confirmed `ItemVisuals.HasModel(name)` now returns `true` for these names (so `renderInSlot` and every other spawn site take the real-mesh branch instead of the neon-placeholder one), and that a freshly-created part is a real `MeshPart` at the correct `GLOBAL_SCALE`-adjusted size with its bottom sitting exactly on the passed-in surface height — i.e., this batch inherits both of today's earlier fixes (bigger items, floor-accurate placement) automatically, with no extra work, because they live in `ItemVisuals.Create` rather than per-item. Spawned a handful into the world and screenshotted them: all render as distinct, colorful, correctly-scaled models, nothing broken or missing texture. `BACKUP.md`'s item-mesh count updated from 48 to 65 (34+11 Junkyard, 14+6 Brainrot) to match.
+
+---
+
+# Previous handoff — items sinking into the floor, islands seeing each other, a boring font, and a much bigger Index (2026-09-12)
 
 Fourth pass the same day: floor-clipping items, a font-wide "this looks boring" complaint, seeing Brainrot Island from the Foundry District (and vice versa), and the Index UI needed to actually look like the rest of this game instead of a plain settings list.
 
