@@ -974,8 +974,11 @@ local function redrawIndex()
 	for _, key in ipairs(SECTION_ORDER) do
 		local info = SECTION_INFO[key]
 		local isActive = key == activeRarity
-		rarityTabs[key].BackgroundColor3 = isActive and info.color or Color3.fromRGB(40, 40, 46)
-		rarityTabs[key].TextColor3 = isActive and Color3.fromRGB(20, 20, 26) or LIGHT
+		-- Inactive tabs stay tinted with their own color instead of flat
+		-- gray, so the whole row previews the rarity palette even before
+		-- you click anything.
+		rarityTabs[key].BackgroundColor3 = isActive and info.color or info.color:Lerp(Color3.fromRGB(30, 30, 36), 0.75)
+		rarityTabs[key].TextColor3 = isActive and Color3.fromRGB(20, 20, 26) or info.color:Lerp(Color3.fromRGB(255, 255, 255), 0.25)
 	end
 
 	local bucket = buckets[activeRarity]
@@ -1004,7 +1007,7 @@ local function redrawIndex()
 		card.Size = bookLayout.CellSize
 		card.LayoutOrder = i
 		card.BackgroundColor3 = entry.known
-			and info.color:Lerp(Color3.fromRGB(18, 18, 24), 0.6)
+			and info.color:Lerp(Color3.fromRGB(18, 18, 24), 0.35)
 			or Color3.fromRGB(32, 32, 38)
 		card.BorderSizePixel = 0
 		card.Parent = bookScroll
@@ -1016,12 +1019,28 @@ local function redrawIndex()
 			card.MouseButton1Click:Connect(function()
 				equipCompanionRemote:FireServer(entry.name, activeTab)
 			end)
+
+			-- A soft top-to-bottom sheen instead of a flat fill, so cards
+			-- read as glossy collectibles rather than plain colored boxes.
+			local sheen = Instance.new("UIGradient")
+			sheen.Color = ColorSequence.new(info.color:Lerp(Color3.fromRGB(255, 255, 255), 0.3), card.BackgroundColor3)
+			sheen.Rotation = 90
+			sheen.Parent = card
 		end
 
 		local stroke = Instance.new("UIStroke")
 		stroke.Color = isEquipped and Color3.fromRGB(255, 255, 255) or entry.known and info.color or Color3.fromRGB(60, 60, 68)
 		stroke.Thickness = isEquipped and 3.5 or entry.known and 2.5 or 1.5
 		stroke.Parent = card
+
+		-- Secrets get a slow breathing glow on top of everything else —
+		-- the rarest page in the book should feel like it, not just be
+		-- colored gold like any other rarity.
+		if entry.known and activeRarity == "secret" and not isEquipped then
+			TweenService:Create(stroke, TweenInfo.new(0.9, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
+				Thickness = 4.5,
+			}):Play()
+		end
 
 		if isEquipped then
 			local badge = Instance.new("TextLabel")
@@ -1045,7 +1064,10 @@ local function redrawIndex()
 			lock.Position = UDim2.new(0, 8, 0, 8)
 			lock.BackgroundTransparency = 1
 			lock.Text = "?"
-			lock.TextColor3 = Color3.fromRGB(70, 70, 78)
+			-- A faint hint of the page's own color instead of flat gray —
+			-- still clearly "locked", but the whole page doesn't go dead
+			-- monochrome just because nothing on it is discovered yet.
+			lock.TextColor3 = info.color:Lerp(Color3.fromRGB(45, 45, 52), 0.75)
 			lock.Font = Enum.Font.LuckiestGuy
 			lock.TextScaled = true
 			lock.Parent = card

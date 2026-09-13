@@ -457,6 +457,7 @@ local function clearZones(plot)
 			slot.label.Text = "empty"
 			slot.label.TextColor3 = zoneDef.color
 			slot.sellPrompt.Enabled = false
+			slot.retrievePrompt.Enabled = false
 		end
 	end
 end
@@ -556,10 +557,29 @@ for i = 1, PLOT_COUNT do
 			sellPrompt.Enabled = false
 			sellPrompt.Parent = base
 
+			-- Lets a placed item be pulled back into carry slots instead of
+			-- only sold — without this, nothing above Tier 2 was actually
+			-- reachable, since every curated Tier 3+ recipe fuses two
+			-- *placed results* together (see FusionRecipes' Tier 3 list),
+			-- and there was previously no way to un-place one. A separate
+			-- key (R, not E) so it can sit on the same part as Sell without
+			-- the two competing over the same prompt.
+			local retrievePrompt = Instance.new("ProximityPrompt")
+			retrievePrompt.ActionText = "Pick Up"
+			retrievePrompt.ObjectText = "Placed item"
+			retrievePrompt.HoldDuration = 0.4
+			retrievePrompt.MaxActivationDistance = 12
+			retrievePrompt.RequiresLineOfSight = false
+			retrievePrompt.KeyboardKeyCode = Enum.KeyCode.R
+			retrievePrompt.GamepadKeyCode = Enum.KeyCode.ButtonY -- Sell defaults to ButtonX; keep them apart on gamepad too
+			retrievePrompt.Enabled = false
+			retrievePrompt.Parent = base
+
 			slots[slotIndex] = {
 				base = base,
 				label = slotLabel,
 				sellPrompt = sellPrompt,
+				retrievePrompt = retrievePrompt,
 				itemPart = nil,
 				itemName = nil,
 				value = nil,
@@ -734,7 +754,7 @@ local function refreshPad(player)
 
 	local function tag(itemName)
 		if not itemName then return "empty" end
-		return ItemRarity.Tag(itemName, FusionRecipes.GetTier(itemName), FusionRecipes.IsSecretResult(itemName))
+		return instanceTag(itemName)
 	end
 
 	plot.padLabel.Text = string.format(
@@ -743,7 +763,10 @@ local function refreshPad(player)
 		tag(s.slots[2])
 	)
 
-	-- Physical items sitting in the two slots on the pad.
+	-- Physical items sitting in the two slots on the pad. A carried item
+	-- can now carry a mutation prefix (retrieved back off a placement —
+	-- see Retrieving below), so this needs the same unwrap-for-lookup,
+	-- tint-the-mesh handling renderInSlot already does.
 	plot.slotParts = plot.slotParts or {}
 	for i = 1, 2 do
 		if plot.slotParts[i] then
@@ -753,12 +776,15 @@ local function refreshPad(player)
 
 		local itemName = s.slots[i]
 		if itemName then
+			local baseName, mutationId = Mutations.Unwrap(itemName)
 			local offset = (i == 1) and -4.6 or 4.6
 			local padSurfaceY = plot.pad.Position.Y + plot.pad.Size.Y / 2
-			local slotPart = ItemVisuals.Create(itemName, Vector3.new(plot.pad.Position.X + offset, padSurfaceY, plot.pad.Position.Z), 0.85)
+			local slotPart = ItemVisuals.Create(baseName, Vector3.new(plot.pad.Position.X + offset, padSurfaceY, plot.pad.Position.Z), 0.85)
 			slotPart.Name = "Slot" .. i
 			slotPart.Parent = plot.model
-			local itemColor = ItemRarity.Color(FusionRecipes.GetTier(itemName), FusionRecipes.IsSecretResult(itemName))
+			local mutationColor = Mutations.Color(mutationId)
+			if mutationColor then slotPart.Color = mutationColor end
+			local itemColor = mutationColor or ItemRarity.Color(FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName))
 			makeLabel(slotPart, itemName, 1.8, 140, itemColor, 45)
 			plot.slotParts[i] = slotPart
 		end
@@ -879,6 +905,7 @@ local function renderInSlot(plot, slot, itemName, value)
 	slot.label.Text = string.format("%s\n+%.1f coins/sec", itemName, value / PLACEMENT_PAYBACK_SECONDS)
 	slot.label.TextColor3 = mutationColor or ItemRarity.Color(tier, isSecret)
 	slot.sellPrompt.Enabled = true
+	slot.retrievePrompt.Enabled = true
 end
 
 -- Finds the first empty slot in the zone matching this result's tier and
@@ -926,6 +953,7 @@ local function sellSlot(plot, zoneKey, slotIndex, player)
 	slot.label.Text = "empty"
 	slot.label.TextColor3 = plot.zones[zoneKey].def.color
 	slot.sellPrompt.Enabled = false
+	slot.retrievePrompt.Enabled = false
 	updateWalkSpeed(player)
 
 	if s then
@@ -948,6 +976,15 @@ local function attemptFusion(player)
 		return
 	end
 
+	-- A retrieved item can still carry its mutation prefix (see Retrieving
+	-- below) — recipe lookups need the bare name, or a retrieved "[Shiny]
+	-- Trail Blazer" would never match the curated recipe for "Trail
+	-- Blazer" and would silently fall back to a worse, wrong-tier hybrid.
+	-- The ingredient's own mutation isn't carried forward either way —
+	-- the result gets its own independent roll below, same as always.
+	local baseA = Mutations.Unwrap(a)
+	local baseB = Mutations.Unwrap(b)
+
 	s.slots[1], s.slots[2] = nil, nil
 	-- Shift any extra carried items down into the empty slots.
 	local remaining = {}
@@ -957,7 +994,7 @@ local function attemptFusion(player)
 	s.slots = remaining
 	refreshPad(player)
 
-	local result, info = FusionRecipes.Fuse(a, b)
+	local result, info = FusionRecipes.Fuse(baseA, baseB)
 
 	if not result then
 		-- Only reachable on malformed input (see FusionRecipes.Fuse) —
@@ -978,8 +1015,8 @@ local function attemptFusion(player)
 	local instanceValue = math.floor(info.value * Mutations.ValueMultiplier(mutationId))
 
 	local resultTag = instanceTag(instanceName)
-	local aTag = ItemRarity.Tag(a, FusionRecipes.GetTier(a), FusionRecipes.IsSecretResult(a))
-	local bTag = ItemRarity.Tag(b, FusionRecipes.GetTier(b), FusionRecipes.IsSecretResult(b))
+	local aTag = instanceTag(a)
+	local bTag = instanceTag(b)
 
 	if info.isFallback then
 		-- A generic hybrid, not a curated recipe — still worth having and
@@ -1415,6 +1452,7 @@ local function removeTradedItem(player, ref)
 	slot.label.Text = "empty"
 	slot.label.TextColor3 = zoneDef.def.color
 	slot.sellPrompt.Enabled = false
+	slot.retrievePrompt.Enabled = false
 	updateWalkSpeed(player)
 end
 
@@ -1488,6 +1526,15 @@ local function executeTrade(playerA, playerB)
 	pushUI(playerB)
 end
 
+-- Trade prompts only show to players OTHER than their owner. A
+-- ProximityPrompt parented to your own HumanoidRootPart is always at
+-- distance 0 from you — left always "Enabled", it permanently wins
+-- proximity over every other prompt in range (grab, fuse) and blocks
+-- them, which is exactly the "can't pick anything up" bug this fixes.
+-- Only enabled while some other player is actually within range.
+local TRADE_PROMPT_RANGE = 10
+local tradePrompts = {} -- [player] = { prompt = ProximityPrompt, root = BasePart }
+
 local function attachTradePrompt(player, character)
 	local root = character:WaitForChild("HumanoidRootPart")
 	local existing = root:FindFirstChild("TradePrompt")
@@ -1498,9 +1545,12 @@ local function attachTradePrompt(player, character)
 	prompt.ActionText = "Trade"
 	prompt.ObjectText = player.Name
 	prompt.HoldDuration = 0.3
-	prompt.MaxActivationDistance = 10
+	prompt.MaxActivationDistance = TRADE_PROMPT_RANGE
 	prompt.RequiresLineOfSight = false
+	prompt.Enabled = false
 	prompt.Parent = root
+
+	tradePrompts[player] = { prompt = prompt, root = root }
 
 	prompt.Triggered:Connect(function(triggeringPlayer)
 		if triggeringPlayer == player then return end
@@ -1515,6 +1565,27 @@ local function attachTradePrompt(player, character)
 		pushTradeUpdate(player)
 	end)
 end
+
+task.spawn(function()
+	while true do
+		task.wait(0.5)
+		for owner, info in pairs(tradePrompts) do
+			if info.root.Parent then
+				local nearbyOther = false
+				for _, other in ipairs(Players:GetPlayers()) do
+					if other ~= owner then
+						local otherRoot = playerRoot(other)
+						if otherRoot and (otherRoot.Position - info.root.Position).Magnitude <= TRADE_PROMPT_RANGE then
+							nearbyOther = true
+							break
+						end
+					end
+				end
+				info.prompt.Enabled = nearbyOther
+			end
+		end
+	end
+end)
 
 selectTradeOfferRemote.OnServerEvent:Connect(function(player, ref)
 	if not Trade.Get(player) then return end
@@ -1547,6 +1618,46 @@ cancelTradeRemote.OnServerEvent:Connect(function(player)
 	if not Trade.Get(player) then return end
 	endTrade(player)
 end)
+
+------------------------------------------------------------------
+-- Retrieving a placed item — every curated Tier 3+ recipe fuses two
+-- already-placed results together (see FusionRecipes' Tier 3/4 lists), so
+-- without a way to un-place one, nothing past Tier 2 was actually
+-- reachable except by the random fallback system. Reuses the same
+-- remove/give helpers Trading already validated.
+------------------------------------------------------------------
+
+local function retrieveItem(plot, zoneKey, slotIndex, player)
+	if plot.owner ~= player then
+		toast(player, "That's not your plot.")
+		return
+	end
+
+	local slot = plot.zones[zoneKey].slots[slotIndex]
+	if not slot.itemName then return end
+	local itemName = slot.itemName
+
+	if not canReceiveTradedItem(player, itemName, "carry") then
+		toast(player, "Hands full — fuse or sell something first.")
+		return
+	end
+
+	removeTradedItem(player, { source = zoneKey, index = slotIndex })
+	giveTradedItem(player, itemName, "carry")
+
+	toast(player, string.format("Picked up %s — carry it to your pad to fuse into something bigger.", instanceTag(itemName)))
+	pushUI(player)
+end
+
+for _, plot in ipairs(plots) do
+	for _, zoneDef in ipairs(ZONES) do
+		for slotIndex, slot in ipairs(plot.zones[zoneDef.key].slots) do
+			slot.retrievePrompt.Triggered:Connect(function(player)
+				retrieveItem(plot, zoneDef.key, slotIndex, player)
+			end)
+		end
+	end
+end
 
 ------------------------------------------------------------------
 -- Scrap magnet
@@ -1927,6 +2038,7 @@ Players.PlayerRemoving:Connect(function(player)
 		toast(tradePartner, player.Name .. " left — trade cancelled.")
 		pushTradeUpdate(tradePartner)
 	end
+	tradePrompts[player] = nil
 
 	local s = state[player]
 	if s then
