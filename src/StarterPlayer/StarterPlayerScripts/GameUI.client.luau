@@ -24,11 +24,20 @@ local claimRemote = ReplicatedStorage:WaitForChild("ClaimDaily")
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
+local itemModels = ReplicatedStorage:WaitForChild("ItemModels")
 
 local DARK   = Color3.fromRGB(18, 18, 22)
 local GOLD   = Color3.fromRGB(255, 200, 80)
 local LIGHT  = Color3.fromRGB(235, 235, 240)
 local DIM    = Color3.fromRGB(120, 120, 132)
+
+-- A wider accent palette so the HUD doesn't read as one gray-and-gold
+-- box repeated five times — each panel below claims one of these as its
+-- own identity instead of everything defaulting to GOLD.
+local ORANGE = Color3.fromRGB(255, 140, 60)
+local TEAL   = Color3.fromRGB(70, 220, 200)
+local PURPLE = Color3.fromRGB(180, 110, 255)
+local PINK   = Color3.fromRGB(255, 90, 180)
 
 -- Glass look: panels let the world through, text stays fully opaque.
 -- Readability comes from the stroke and the text contrast, not from
@@ -77,12 +86,12 @@ rounded(objCard)
 local objStripe = Instance.new("Frame")
 objStripe.Size = UDim2.new(0, 5, 1, -16)
 objStripe.Position = UDim2.new(0, 8, 0, 8)
-objStripe.BackgroundColor3 = GOLD
+objStripe.BackgroundColor3 = ORANGE
 objStripe.BorderSizePixel = 0
 objStripe.Parent = objCard
 rounded(objStripe, 3)
 
-local objHeader = label(objCard, "OBJECTIVE 1 / 9", UDim2.new(1, -30, 0, 20), GOLD, Enum.Font.FredokaOne, 12)
+local objHeader = label(objCard, "OBJECTIVE 1 / 9", UDim2.new(1, -30, 0, 20), ORANGE, Enum.Font.FredokaOne, 12)
 objHeader.Position = UDim2.new(0, 22, 0, 10)
 
 local objText = label(objCard, "...", UDim2.new(1, -34, 0, 38), LIGHT, Enum.Font.FredokaOne, 17)
@@ -711,7 +720,7 @@ panel.BorderSizePixel = 0
 panel.Parent = gui
 rounded(panel)
 
-local header = label(panel, "DISCOVERIES  0 / 0", UDim2.new(1, -20, 0, 34), GOLD, Enum.Font.FredokaOne, 15)
+local header = label(panel, "DISCOVERIES  0 / 0", UDim2.new(1, -20, 0, 34), TEAL, Enum.Font.FredokaOne, 15)
 header.Position = UDim2.new(0, 12, 0, 8)
 
 local secretLine = label(panel, "Secrets  0 / 3", UDim2.new(1, -20, 0, 16), DIM, Enum.Font.FredokaOne, 12)
@@ -756,9 +765,9 @@ rounded(carrying)
 local bookBtn = Instance.new("TextButton")
 bookBtn.Size = UDim2.new(0, 150, 0, 34)
 bookBtn.Position = UDim2.new(1, -170, 1, -74)
-bookBtn.BackgroundColor3 = GOLD
+bookBtn.BackgroundColor3 = PURPLE
 bookBtn.Text = "📖  INDEX"
-bookBtn.TextColor3 = DARK
+bookBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 bookBtn.Font = Enum.Font.LuckiestGuy
 bookBtn.TextSize = 15
 bookBtn.BorderSizePixel = 0
@@ -877,9 +886,37 @@ bookScroll.BorderSizePixel = 0
 bookScroll.ScrollBarThickness = 8
 bookScroll.Parent = bookFrame
 
-local bookLayout = Instance.new("UIListLayout")
-bookLayout.Padding = UDim.new(0, 10)
+local bookLayout = Instance.new("UIGridLayout")
+bookLayout.CellSize = UDim2.new(0, 170, 0, 200)
+bookLayout.CellPadding = UDim2.new(0, 14, 0, 14)
 bookLayout.Parent = bookScroll
+
+-- A small live 3D render of the actual mesh, framed generically by its
+-- own bounding size so a Rusted Sedan and a THE LAWNLORD both center
+-- nicely without per-item camera tuning.
+local function buildItemViewport(parent, itemName)
+	local viewport = Instance.new("ViewportFrame")
+	viewport.Size = UDim2.new(1, -16, 1, -46)
+	viewport.Position = UDim2.new(0, 8, 0, 8)
+	viewport.BackgroundTransparency = 1
+	viewport.Parent = parent
+
+	local cam = Instance.new("Camera")
+	viewport.CurrentCamera = cam
+	cam.Parent = viewport
+
+	local template = itemModels:FindFirstChild(itemName)
+	if template then
+		local clone = template:Clone()
+		clone.Anchored = true
+		clone.CFrame = CFrame.new(0, 0, 0)
+		clone.Parent = viewport
+
+		local size = clone.Size
+		local reach = math.max(size.X, size.Y, size.Z) * 1.5 + 1.5
+		cam.CFrame = CFrame.new(Vector3.new(reach * 0.6, reach * 0.5, reach * 0.85), Vector3.new(0, 0, 0))
+	end
+end
 
 local function toggleBook()
 	bookFrame.Visible = not bookFrame.Visible
@@ -901,7 +938,7 @@ local activeRarity = 1
 
 local function redrawIndex()
 	for _, child in ipairs(bookScroll:GetChildren()) do
-		if not child:IsA("UIListLayout") then child:Destroy() end
+		if not child:IsA("UIGridLayout") then child:Destroy() end
 	end
 
 	local onJunkyard = activeTab == "junkyard"
@@ -936,23 +973,51 @@ local function redrawIndex()
 	pageHeaderText.Text = info.name
 	pageHeaderCount.Text = string.format("%d / %d", knownCount, #bucket)
 
+	-- Pet-Sim style cards: a live photo of the actual item on top, its
+	-- name below, tinted by rarity. Undiscovered entries show a "?"
+	-- silhouette instead of rendering anything — collected or not, no
+	-- ingredients, no arrows: this is a collection list, not a recipe book.
 	for i, entry in ipairs(bucket) do
-		local row = Instance.new("Frame")
-		row.Size = UDim2.new(1, -6, 0, 40)
-		row.LayoutOrder = i
-		row.BackgroundColor3 = info.color:Lerp(Color3.fromRGB(18, 18, 24), entry.known and 0.68 or 0.82)
-		row.BorderSizePixel = 0
-		row.Parent = bookScroll
-		rounded(row, 9)
+		local card = Instance.new("Frame")
+		card.Size = bookLayout.CellSize
+		card.LayoutOrder = i
+		card.BackgroundColor3 = entry.known
+			and info.color:Lerp(Color3.fromRGB(18, 18, 24), 0.6)
+			or Color3.fromRGB(32, 32, 38)
+		card.BorderSizePixel = 0
+		card.Parent = bookScroll
+		rounded(card, 14)
 
-		-- Just the final name — collected or not. No ingredients, no
-		-- arrows: this is a collection list, not a recipe book.
-		local text = entry.known and ItemRarity.Tag(entry.name, entry.tier, entry.isSecret) or "???"
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = entry.known and info.color or Color3.fromRGB(60, 60, 68)
+		stroke.Thickness = entry.known and 2.5 or 1.5
+		stroke.Parent = card
 
-		local l = label(row, text, UDim2.new(1, -28, 1, 0), entry.known and LIGHT or DIM, Enum.Font.FredokaOne, 18)
-		l.Position = UDim2.new(0, 16, 0, 0)
-		l.TextXAlignment = Enum.TextXAlignment.Center
-		l.RichText = true
+		if entry.known then
+			buildItemViewport(card, entry.name)
+		else
+			local lock = Instance.new("TextLabel")
+			lock.Size = UDim2.new(1, -16, 1, -46)
+			lock.Position = UDim2.new(0, 8, 0, 8)
+			lock.BackgroundTransparency = 1
+			lock.Text = "?"
+			lock.TextColor3 = Color3.fromRGB(70, 70, 78)
+			lock.Font = Enum.Font.LuckiestGuy
+			lock.TextScaled = true
+			lock.Parent = card
+		end
+
+		local nameLabel = Instance.new("TextLabel")
+		nameLabel.Size = UDim2.new(1, -16, 0, 32)
+		nameLabel.Position = UDim2.new(0, 8, 1, -38)
+		nameLabel.BackgroundTransparency = 1
+		nameLabel.Text = entry.known and entry.name or "???"
+		nameLabel.TextColor3 = entry.known and Color3.fromRGB(255, 255, 255) or DIM
+		nameLabel.TextStrokeTransparency = entry.known and 0.4 or 1
+		nameLabel.Font = Enum.Font.FredokaOne
+		nameLabel.TextScaled = true
+		nameLabel.TextWrapped = true
+		nameLabel.Parent = card
 	end
 
 	bookScroll.CanvasSize = UDim2.new(0, 0, 0, bookLayout.AbsoluteContentSize.Y + 10)

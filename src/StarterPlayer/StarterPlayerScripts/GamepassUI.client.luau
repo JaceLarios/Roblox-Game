@@ -36,8 +36,8 @@ open.Position = UDim2.new(1,-170,1,-154)
 open.Text = "GAMEPASSES"
 open.Font = Enum.Font.FredokaOne
 open.TextSize = 13
-open.BackgroundColor3 = Color3.fromRGB(255,200,80)
-open.TextColor3 = Color3.fromRGB(18,18,22)
+open.BackgroundColor3 = Color3.fromRGB(255,90,180)
+open.TextColor3 = Color3.fromRGB(255,255,255)
 open.Parent = gui
 corner(open)
 
