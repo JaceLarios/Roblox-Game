@@ -3,25 +3,32 @@
 	Recipe data + lookup for the Brainrot Island item line. Mirrors
 	FusionRecipes' shape (same API surface) but is a fully separate item
 	namespace — original creatures, not the viral meme characters.
+
+	Second creature roster (first was all food+animal hybrids — "more
+	brainrot" meant chasing the wilder object+animal mashups the actual
+	meme leans on: instruments, appliances, vehicles, fused onto animals).
 --]]
 
 local BrainrotRecipes = {}
 
 -- TIER 1: what the island's spawner drops. Higher weight = more common.
 BrainrotRecipes.BaseItems = {
-	{ name = "Waffronio Pigeonelli",   weight = 100, value = 5 },
-	{ name = "Spaghettuccio Wormanini",weight = 100, value = 5 },
-	{ name = "Toastarino Frogolini",   weight = 90,  value = 6 },
-	{ name = "Pretzeletto Owlbini",    weight = 70,  value = 9 },
-	{ name = "Meatballo Snailini",     weight = 55,  value = 14 },
-	{ name = "Croissantino Batusso",   weight = 40,  value = 20 },
-	{ name = "Donutello Sharkanini",   weight = 25,  value = 35 },
-	{ name = "Espressimo Direwolfini", weight = 8,   value = 120 },
+	{ name = "Trattorino Rexini",        weight = 100, value = 5 },
+	{ name = "Saxofonio Serpentoni",     weight = 90,  value = 7 },
+	{ name = "Frigorino Gattelli",       weight = 75,  value = 10 },
+	{ name = "Chitarrino Lupini",        weight = 60,  value = 14 },
+	{ name = "Elicottero Ranini",        weight = 45,  value = 20 },
+	{ name = "Bombardino Squalini",      weight = 32,  value = 28 },
+	{ name = "Aspirapolvere Coccodrilli", weight = 20, value = 40 },
+	{ name = "Panino Orsetti",           weight = 12,  value = 60 },
+	{ name = "Ombrellino Pinguini",      weight = 6,   value = 90 },
+	{ name = "Trombetta Elefantini",     weight = 3,   value = 150 },
 }
 
 BrainrotRecipes.TierValue = {
 	[2] = 250,
 	[3] = 2000,
+	[4] = 15000,
 }
 
 BrainrotRecipes.SecretValue = 50000
@@ -29,18 +36,26 @@ BrainrotRecipes.SecretValue = 50000
 -- { ingredientA, ingredientB, result, tier } — order does not matter.
 local RECIPE_LIST = {
 	-- Tier 2
-	{ "Waffronio Pigeonelli",    "Espressimo Direwolfini", "Turbowaffle Espressoni", 2 },
-	{ "Spaghettuccio Wormanini", "Meatballo Snailini",     "Spagmeato Chaosini",     2 },
-	{ "Pretzeletto Owlbini",     "Croissantino Batusso",   "Pretzoissant Skyterror", 2 },
-	{ "Toastarino Frogolini",    "Donutello Sharkanini",   "Toastdonut Frenzicane",  2 },
+	{ "Trattorino Rexini",   "Saxofonio Serpentoni",      "Jazzosauro Furioso", 2 },
+	{ "Frigorino Gattelli",  "Chitarrino Lupini",         "Rockabilly Gelato",  2 },
+	{ "Elicottero Ranini",   "Bombardino Squalini",       "Squalo Volante",     2 },
+	{ "Aspirapolvere Coccodrilli", "Panino Orsetti",      "Panzer Panino",      2 },
+	{ "Ombrellino Pinguini", "Trombetta Elefantini",      "Fanfara Glaciale",   2 },
+	{ "Trattorino Rexini",   "Frigorino Gattelli",        "Gelato Rex",         2 },
 
 	-- Tier 3
-	{ "Turbowaffle Espressoni", "Spagmeato Chaosini", "OMEGA BRAINO REX", 3 },
+	{ "Jazzosauro Furioso", "Squalo Volante",  "Sinfonia Apocalittica", 3 },
+	{ "Rockabilly Gelato",  "Panzer Panino",   "Bistecca Boogaloo",     3 },
+	{ "Fanfara Glaciale",   "Gelato Rex",      "Orchestra Glaciale",    3 },
+
+	-- Tier 4
+	{ "Sinfonia Apocalittica", "Bistecca Boogaloo", "IL BRAINROT SUPREMO", 4 },
 }
 
 -- Secrets: same-item fusions, so players can't stumble into them.
 local SECRET_LIST = {
-	{ "Meatballo Snailini", "Meatballo Snailini", "Meatballzilla Supremo", 3 },
+	{ "Panino Orsetti",       "Panino Orsetti",       "Panino Colossale",        3 },
+	{ "Trombetta Elefantini", "Trombetta Elefantini", "Elefantissimo Imperiale", 3 },
 }
 
 -- Key = the two names sorted alphabetically and joined with "|".
@@ -68,7 +83,7 @@ end
 -- still produces a hybrid instead of "nothing" — one tier above the
 -- stronger ingredient, worth less than a real discovery of that tier so
 -- hunting down actual recipes stays the better move. Mirrors FusionRecipes.
-local MAX_FALLBACK_TIER = 3
+local MAX_FALLBACK_TIER = 4
 
 BrainrotRecipes.FallbackValue = {}
 for tier, tierValue in pairs(BrainrotRecipes.TierValue) do
@@ -78,6 +93,7 @@ end
 local FALLBACK_NAMES = {
 	[2] = { "Scraprino Mutantelli", "Feralino Snacktoni", "Bentaccio Wobblini" },
 	[3] = { "Chaosaurus Blobbini", "Titanello Munchzilla", "Ferocibro Chompanini" },
+	[4] = { "Colosso Fallimento", "Disastro Totale", "Catastrofe Suprema" },
 }
 
 local nameTier = {}
@@ -214,7 +230,8 @@ function BrainrotRecipes.IsSecretResult(name)
 end
 
 -- Mirrors FusionRecipes.GetIndex — every real creature, secrets included
--- as masked rows, fallback hybrids excluded.
+-- as masked rows, fallback hybrids excluded. Only the final name is
+-- exposed — the index is a collection list, not a recipe book.
 function BrainrotRecipes.GetIndex(discovered)
 	discovered = discovered or {}
 	local items = {}
@@ -231,8 +248,6 @@ function BrainrotRecipes.GetIndex(discovered)
 			isSecret = isSecret,
 			isBase   = false,
 			known    = known,
-			a        = known and r[1] or "???",
-			b        = known and r[2] or "???",
 		})
 	end
 

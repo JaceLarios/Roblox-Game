@@ -754,13 +754,13 @@ rounded(carrying)
 ------------------------------------------------------------------
 
 local bookBtn = Instance.new("TextButton")
-bookBtn.Size = UDim2.new(0, 150, 0, 46)
-bookBtn.Position = UDim2.new(1, -170, 1, -128)
+bookBtn.Size = UDim2.new(0, 150, 0, 34)
+bookBtn.Position = UDim2.new(1, -170, 1, -74)
 bookBtn.BackgroundColor3 = GOLD
 bookBtn.Text = "📖  INDEX"
 bookBtn.TextColor3 = DARK
 bookBtn.Font = Enum.Font.LuckiestGuy
-bookBtn.TextSize = 18
+bookBtn.TextSize = 15
 bookBtn.BorderSizePixel = 0
 bookBtn.Parent = gui
 rounded(bookBtn, 12)
@@ -779,9 +779,6 @@ rounded(bookFrame, 18)
 
 local bookTitle = label(bookFrame, "ITEM INDEX", UDim2.new(0, 360, 0, 50), GOLD, Enum.Font.LuckiestGuy, 40)
 bookTitle.Position = UDim2.new(0, 32, 0, 22)
-
-local bookHint = label(bookFrame, "Undiscovered fusions stay hidden. Experimenting costs you nothing.", UDim2.new(1, -50, 0, 24), DIM, Enum.Font.FredokaOne, 16)
-bookHint.Position = UDim2.new(0, 32, 0, 74)
 
 local bookClose = Instance.new("TextButton")
 bookClose.Size = UDim2.new(0, 42, 0, 42)
@@ -815,9 +812,66 @@ tabBrainrot.BorderSizePixel = 0
 tabBrainrot.Parent = bookFrame
 rounded(tabBrainrot, 20)
 
+-- One pill per rarity, in display order — secrets pulled out of their
+-- numeric tier into their own gold page, since "which tier" is less
+-- interesting than "it's a secret" once you're paging by color.
+local SECTION_ORDER = { 1, 2, 3, 4, "secret" }
+local SECTION_INFO = {
+	[1]      = { name = "COMMON",   color = ItemRarity.Color(1, false) },
+	[2]      = { name = "UNCOMMON", color = ItemRarity.Color(2, false) },
+	[3]      = { name = "RARE",     color = ItemRarity.Color(3, false) },
+	[4]      = { name = "EPIC",     color = ItemRarity.Color(4, false) },
+	secret   = { name = "SECRET",   color = ItemRarity.Color(1, true) },
+}
+
+local rarityRow = Instance.new("Frame")
+rarityRow.Size = UDim2.new(1, -64, 0, 40)
+rarityRow.Position = UDim2.new(0, 32, 0, 74)
+rarityRow.BackgroundTransparency = 1
+rarityRow.Parent = bookFrame
+
+local rarityLayout = Instance.new("UIListLayout")
+rarityLayout.FillDirection = Enum.FillDirection.Horizontal
+rarityLayout.Padding = UDim.new(0, 8)
+rarityLayout.Parent = rarityRow
+
+local rarityTabs = {}
+for _, key in ipairs(SECTION_ORDER) do
+	local info = SECTION_INFO[key]
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0.19, 0, 1, 0)
+	btn.Text = info.name
+	btn.Font = Enum.Font.LuckiestGuy
+	btn.TextSize = 15
+	btn.BorderSizePixel = 0
+	btn.Parent = rarityRow
+	rounded(btn, 10)
+	rarityTabs[key] = btn
+end
+
+local pageHeader = Instance.new("Frame")
+pageHeader.Size = UDim2.new(1, -64, 0, 44)
+pageHeader.Position = UDim2.new(0, 32, 0, 122)
+pageHeader.BorderSizePixel = 0
+pageHeader.Parent = bookFrame
+rounded(pageHeader, 12)
+
+local pageHeaderGradient = Instance.new("UIGradient")
+pageHeaderGradient.Rotation = 20
+pageHeaderGradient.Parent = pageHeader
+
+local pageHeaderText = label(pageHeader, "", UDim2.new(1, -140, 1, 0), Color3.fromRGB(255, 255, 255), Enum.Font.LuckiestGuy, 22)
+pageHeaderText.Position = UDim2.new(0, 18, 0, 0)
+pageHeaderText.TextStrokeTransparency = 0.5
+
+local pageHeaderCount = label(pageHeader, "", UDim2.new(0, 110, 1, 0), Color3.fromRGB(255, 255, 255), Enum.Font.LuckiestGuy, 20)
+pageHeaderCount.Position = UDim2.new(1, -128, 0, 0)
+pageHeaderCount.TextXAlignment = Enum.TextXAlignment.Right
+pageHeaderCount.TextStrokeTransparency = 0.5
+
 local bookScroll = Instance.new("ScrollingFrame")
-bookScroll.Size = UDim2.new(1, -64, 1, -140)
-bookScroll.Position = UDim2.new(0, 32, 0, 120)
+bookScroll.Size = UDim2.new(1, -64, 1, -222)
+bookScroll.Position = UDim2.new(0, 32, 0, 178)
 bookScroll.BackgroundTransparency = 1
 bookScroll.BorderSizePixel = 0
 bookScroll.ScrollBarThickness = 8
@@ -843,18 +897,7 @@ end)
 
 local indexData = { junkyard = {}, brainrot = {} }
 local activeTab = "junkyard"
-
--- One section per rarity color, in display order — secrets pulled out of
--- their numeric tier into their own gold section, since "which tier" is
--- less interesting than "it's a secret" once you're browsing by color.
-local SECTION_ORDER = { 1, 2, 3, 4, "secret" }
-local SECTION_INFO = {
-	[1]      = { name = "TIER 1  ·  COMMON",   color = ItemRarity.Color(1, false) },
-	[2]      = { name = "TIER 2  ·  UNCOMMON", color = ItemRarity.Color(2, false) },
-	[3]      = { name = "TIER 3  ·  RARE",     color = ItemRarity.Color(3, false) },
-	[4]      = { name = "TIER 4  ·  EPIC",     color = ItemRarity.Color(4, false) },
-	secret   = { name = "★  SECRET  ★",        color = ItemRarity.Color(1, true) },
-}
+local activeRarity = 1
 
 local function redrawIndex()
 	for _, child in ipairs(bookScroll:GetChildren()) do
@@ -867,8 +910,6 @@ local function redrawIndex()
 	tabBrainrot.BackgroundColor3 = onJunkyard and Color3.fromRGB(50, 50, 58) or GOLD
 	tabBrainrot.TextColor3 = onJunkyard and LIGHT or DARK
 
-	local Recipes = onJunkyard and FusionRecipes or BrainrotRecipes
-
 	local buckets = {}
 	for _, key in ipairs(SECTION_ORDER) do buckets[key] = {} end
 	for _, entry in ipairs(indexData[activeTab]) do
@@ -876,71 +917,52 @@ local function redrawIndex()
 		if buckets[key] then table.insert(buckets[key], entry) end
 	end
 
-	local order = 0
 	for _, key in ipairs(SECTION_ORDER) do
-		local bucket = buckets[key]
-		if #bucket > 0 then
-			local info = SECTION_INFO[key]
-			local knownCount = 0
-			for _, e in ipairs(bucket) do
-				if e.known then knownCount = knownCount + 1 end
-			end
+		local info = SECTION_INFO[key]
+		local isActive = key == activeRarity
+		rarityTabs[key].BackgroundColor3 = isActive and info.color or Color3.fromRGB(40, 40, 46)
+		rarityTabs[key].TextColor3 = isActive and Color3.fromRGB(20, 20, 26) or LIGHT
+	end
 
-			order = order + 1
-			local header = Instance.new("Frame")
-			header.Size = UDim2.new(1, 0, 0, 52)
-			header.BackgroundColor3 = info.color
-			header.BorderSizePixel = 0
-			header.LayoutOrder = order
-			header.Parent = bookScroll
-			rounded(header, 14)
+	local bucket = buckets[activeRarity]
+	local info = SECTION_INFO[activeRarity]
+	local knownCount = 0
+	for _, e in ipairs(bucket) do
+		if e.known then knownCount = knownCount + 1 end
+	end
 
-			local headerGradient = Instance.new("UIGradient")
-			headerGradient.Color = ColorSequence.new(info.color, info.color:Lerp(Color3.new(1, 1, 1), 0.35))
-			headerGradient.Rotation = 20
-			headerGradient.Parent = header
+	pageHeader.BackgroundColor3 = info.color
+	pageHeaderGradient.Color = ColorSequence.new(info.color, info.color:Lerp(Color3.new(1, 1, 1), 0.35))
+	pageHeaderText.Text = info.name
+	pageHeaderCount.Text = string.format("%d / %d", knownCount, #bucket)
 
-			local headerText = label(header, info.name, UDim2.new(1, -150, 1, 0), Color3.fromRGB(255, 255, 255), Enum.Font.LuckiestGuy, 26)
-			headerText.Position = UDim2.new(0, 20, 0, 0)
-			headerText.TextStrokeTransparency = 0.5
+	for i, entry in ipairs(bucket) do
+		local row = Instance.new("Frame")
+		row.Size = UDim2.new(1, -6, 0, 40)
+		row.LayoutOrder = i
+		row.BackgroundColor3 = info.color:Lerp(Color3.fromRGB(18, 18, 24), entry.known and 0.68 or 0.82)
+		row.BorderSizePixel = 0
+		row.Parent = bookScroll
+		rounded(row, 9)
 
-			local headerCount = label(header, string.format("%d / %d", knownCount, #bucket), UDim2.new(0, 110, 1, 0), Color3.fromRGB(255, 255, 255), Enum.Font.LuckiestGuy, 22)
-			headerCount.Position = UDim2.new(1, -128, 0, 0)
-			headerCount.TextXAlignment = Enum.TextXAlignment.Right
-			headerCount.TextStrokeTransparency = 0.5
+		-- Just the final name — collected or not. No ingredients, no
+		-- arrows: this is a collection list, not a recipe book.
+		local text = entry.known and ItemRarity.Tag(entry.name, entry.tier, entry.isSecret) or "???"
 
-			for _, entry in ipairs(bucket) do
-				order = order + 1
-				local row = Instance.new("Frame")
-				row.Size = UDim2.new(1, -6, 0, 38)
-				row.LayoutOrder = order
-				row.BackgroundColor3 = info.color:Lerp(Color3.fromRGB(18, 18, 24), entry.known and 0.68 or 0.82)
-				row.BorderSizePixel = 0
-				row.Parent = bookScroll
-				rounded(row, 9)
-
-				local text
-				if entry.isBase then
-					text = ItemRarity.Tag(entry.name, entry.tier, false) .. "   (raw material)"
-				elseif entry.known then
-					text = string.format("%s  +  %s   →   %s",
-						ItemRarity.Tag(entry.a, Recipes.GetTier(entry.a), Recipes.IsSecretResult(entry.a)),
-						ItemRarity.Tag(entry.b, Recipes.GetTier(entry.b), Recipes.IsSecretResult(entry.b)),
-						ItemRarity.Tag(entry.name, entry.tier, entry.isSecret))
-				elseif entry.isSecret then
-					text = "???   SECRET RECIPE   ???"
-				else
-					text = "???   +   ???   →   ???"
-				end
-
-				local l = label(row, text, UDim2.new(1, -28, 1, 0), entry.known and LIGHT or DIM, Enum.Font.FredokaOne, 16)
-				l.Position = UDim2.new(0, 16, 0, 0)
-				l.RichText = true
-			end
-		end
+		local l = label(row, text, UDim2.new(1, -28, 1, 0), entry.known and LIGHT or DIM, Enum.Font.FredokaOne, 18)
+		l.Position = UDim2.new(0, 16, 0, 0)
+		l.TextXAlignment = Enum.TextXAlignment.Center
+		l.RichText = true
 	end
 
 	bookScroll.CanvasSize = UDim2.new(0, 0, 0, bookLayout.AbsoluteContentSize.Y + 10)
+end
+
+for _, key in ipairs(SECTION_ORDER) do
+	rarityTabs[key].MouseButton1Click:Connect(function()
+		activeRarity = key
+		redrawIndex()
+	end)
 end
 
 tabJunkyard.MouseButton1Click:Connect(function()

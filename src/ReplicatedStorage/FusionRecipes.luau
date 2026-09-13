@@ -6,19 +6,18 @@
 local FusionRecipes = {}
 
 -- TIER 1: what the scrap spawner drops. Higher weight = more common.
+-- Trimmed to 8 focused vehicles (was 12, including two non-vehicle "junk"
+-- items nobody was excited to grab) — a shorter, punchier roster reads
+-- better than a long one padded with mundane filler.
 FusionRecipes.BaseItems = {
-	{ name = "Rusted Sedan",       weight = 100, value = 5 },
-	{ name = "Traffic Cone",       weight = 100, value = 5 },
-	{ name = "Shopping Cart",      weight = 90,  value = 6 },
-	{ name = "Golf Cart",          weight = 70,  value = 9 },
-	{ name = "Dirt Bike",          weight = 60,  value = 12 },
-	{ name = "Minivan",            weight = 55,  value = 14 },
-	{ name = "Riding Mower",       weight = 45,  value = 18 },
-	{ name = "Cop Cruiser",        weight = 30,  value = 30 },
-	{ name = "Box Truck",          weight = 25,  value = 38 },
-	{ name = "Monster Truck Tire", weight = 15,  value = 60 },
-	{ name = "Nitrous Tank",       weight = 8,   value = 120 },
-	{ name = "Jet Engine",         weight = 3,   value = 300 },
+	{ name = "Rusted Sedan",  weight = 100, value = 5 },
+	{ name = "Dirt Bike",     weight = 85,  value = 10 },
+	{ name = "Golf Cart",     weight = 65,  value = 15 },
+	{ name = "Muscle Car",    weight = 45,  value = 25 },
+	{ name = "Cop Cruiser",   weight = 30,  value = 35 },
+	{ name = "Box Truck",     weight = 18,  value = 55 },
+	{ name = "Monster Truck", weight = 8,   value = 90 },
+	{ name = "Jet Engine",    weight = 3,   value = 300 },
 }
 
 FusionRecipes.TierValue = {
@@ -32,36 +31,33 @@ FusionRecipes.SecretValue = 50000
 -- { ingredientA, ingredientB, result, tier } — order does not matter.
 local RECIPE_LIST = {
 	-- Tier 2
-	{ "Rusted Sedan",  "Nitrous Tank",       "Boosted Beater",      2 },
-	{ "Shopping Cart", "Dirt Bike",          "Cart Rocket",         2 },
-	{ "Golf Cart",     "Monster Truck Tire", "Lifted Cart",         2 },
-	{ "Minivan",       "Cop Cruiser",        "Undercover Van",      2 },
-	{ "Box Truck",     "Jet Engine",         "Jet Hauler",          2 },
-	{ "Riding Mower",  "Nitrous Tank",       "Lawn Missile",        2 },
-	{ "Cop Cruiser",   "Dirt Bike",          "Pursuit Bike",        2 },
-	{ "Minivan",       "Monster Truck Tire", "Soccer Mom Monster",  2 },
-	{ "Rusted Sedan",  "Traffic Cone",       "Cone Cruiser",        2 },
-	{ "Golf Cart",     "Jet Engine",         "Fairway Fighter",     2 },
+	{ "Rusted Sedan", "Dirt Bike",   "Trail Blazer",      2 },
+	{ "Rusted Sedan", "Jet Engine",  "Boosted Beater",    2 },
+	{ "Golf Cart",    "Jet Engine",  "Fairway Fighter",   2 },
+	{ "Golf Cart",    "Monster Truck", "Lifted Cart",     2 },
+	{ "Muscle Car",   "Cop Cruiser", "Undercover Muscle", 2 },
+	{ "Dirt Bike",    "Cop Cruiser", "Pursuit Bike",      2 },
+	{ "Box Truck",    "Jet Engine",  "Jet Hauler",        2 },
+	{ "Muscle Car",   "Box Truck",   "Hauler Hemi",       2 },
 
 	-- Tier 3
-	{ "Boosted Beater", "Pursuit Bike",       "Street Menace",       3 },
-	{ "Lifted Cart",    "Soccer Mom Monster", "Suburban Assault",    3 },
-	{ "Jet Hauler",     "Lawn Missile",       "Yard Destroyer",      3 },
-	{ "Cart Rocket",    "Fairway Fighter",    "Trolley Interceptor", 3 },
-	{ "Cone Cruiser",   "Undercover Van",     "Construction Cartel", 3 },
-	{ "Street Menace",  "Nitrous Tank",       "Redline Reaper",      3 },
+	{ "Boosted Beater",  "Pursuit Bike",      "Street Menace",     3 },
+	{ "Lifted Cart",     "Undercover Muscle", "Suburban Assault",  3 },
+	{ "Jet Hauler",      "Trail Blazer",      "Yard Destroyer",    3 },
+	{ "Fairway Fighter", "Hauler Hemi",       "Turbo Interceptor", 3 },
+	{ "Street Menace",   "Jet Engine",        "Redline Reaper",    3 },
 
 	-- Tier 4
-	{ "Yard Destroyer",      "Suburban Assault",    "THE LAWNLORD",     4 },
-	{ "Redline Reaper",      "Trolley Interceptor", "Sonic Scrapheap",  4 },
-	{ "Construction Cartel", "Jet Hauler",          "Highway Overlord", 4 },
+	{ "Yard Destroyer", "Suburban Assault", "THE LAWNLORD",     4 },
+	{ "Redline Reaper",  "Turbo Interceptor", "Sonic Scrapheap", 4 },
+	{ "Suburban Assault", "Jet Hauler",      "Highway Overlord", 4 },
 }
 
 -- Secrets: same-item fusions, so players can't stumble into them.
 local SECRET_LIST = {
-	{ "Traffic Cone",  "Traffic Cone",     "Cone Sentinel", 3 },
-	{ "Shopping Cart", "Shopping Cart",    "Cartpocalypse", 3 },
-	{ "THE LAWNLORD",  "Highway Overlord", "Scrapyard God", 5 },
+	{ "Muscle Car", "Muscle Car",      "Chrome Sentinel", 3 },
+	{ "Golf Cart",  "Golf Cart",       "Cartpocalypse",   3 },
+	{ "THE LAWNLORD", "Highway Overlord", "Scrapyard God", 5 },
 }
 
 -- Key = the two names sorted alphabetically and joined with "|".
@@ -273,7 +269,9 @@ end
 -- Every REAL item in this line — base scrap plus every curated result,
 -- secrets included as masked rows — for the item index. Deliberately
 -- excludes fallback hybrids: those aren't part of the collection to hunt
--- for, same as they're excluded from discoveries/goals.
+-- for, same as they're excluded from discoveries/goals. Only the final
+-- name is exposed — the index is a collection list, not a recipe book,
+-- so ingredients never leave the server.
 function FusionRecipes.GetIndex(discovered)
 	discovered = discovered or {}
 	local items = {}
@@ -290,8 +288,6 @@ function FusionRecipes.GetIndex(discovered)
 			isSecret = isSecret,
 			isBase   = false,
 			known    = known,
-			a        = known and r[1] or "???",
-			b        = known and r[2] or "???",
 		})
 	end
 

@@ -102,7 +102,8 @@ local GOALS = {
 	{ text = "Discover 12 different builds",      reward = 3000,  check = function(s) return s.count >= 12 end },
 	{ text = "Build a Tier 4 monster",            reward = 8000,  check = function(s) return s.bestTier >= 4 end },
 	{ text = "Uncover a secret recipe",           reward = 15000, check = function(s) return s.secrets >= 1 end },
-	{ text = "Complete the index: all 22 builds", reward = 50000, check = function(s) return s.count >= 22 end },
+	{ text = string.format("Complete the index: all %d builds", FusionRecipes.GetTotalDiscoveries()),
+	  reward = 50000, check = function(s) return s.count >= FusionRecipes.GetTotalDiscoveries() end },
 }
 
 -- Client talks to this for UI updates.
@@ -685,7 +686,7 @@ local function renderInSlot(plot, slot, itemName, value)
 	local tier = FusionRecipes.GetTier(itemName)
 
 	-- The slot's top surface, not its center — renderInSlot places items of
-	-- very different heights (a raw Traffic Cone vs. a curated Tier 4
+	-- very different heights (a raw Rusted Sedan vs. a curated Tier 4
 	-- monster), and a fixed offset either floats or buries one of them.
 	local surfaceY = slot.base.Position.Y + slot.base.Size.Y / 2
 	local position = Vector3.new(slot.base.Position.X, surfaceY, slot.base.Position.Z)
