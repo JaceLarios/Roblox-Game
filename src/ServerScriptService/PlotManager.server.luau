@@ -25,11 +25,14 @@ local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"
 local ItemVisuals   = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local ItemRarity    = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local Mutations     = require(ReplicatedStorage:WaitForChild("Mutations"))
+local PromoCodes    = require(ReplicatedStorage:WaitForChild("PromoCodes"))
+local ShopPets      = require(ReplicatedStorage:WaitForChild("ShopPets"))
 local DataManager   = require(script.Parent:WaitForChild("DataManager"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
 local Companions = require(script.Parent:WaitForChild("CompanionService"))
 local Leaderboard = require(script.Parent:WaitForChild("LeaderboardService"))
+local PlaytimeLeaderboard = require(script.Parent:WaitForChild("PlaytimeLeaderboardService"))
 local Trade = require(script.Parent:WaitForChild("TradeService"))
 local Brainrot = require(script.Parent:WaitForChild("BrainrotService"))
 Gamepasses.Start()
@@ -45,6 +48,13 @@ Players.CharacterAutoLoads = false
 local PLOT_COUNT  = 8
 local RING_RADIUS = 190    -- how far each plot sits from the centre yard
 local PLOT_SIZE   = 70
+
+-- Five pads per plot, full stop — this doubles as both the physical pad
+-- count and the cap on how many pets can ever be earning money for one
+-- player at once, so there's only the one number to keep in sync.
+local PET_PAD_COUNT = 5
+local PET_PAD_SPACING = 7
+local PET_PAD_Z = 16 -- clears the 16-stud fusion pad
 
 -- Luck: applied when you GRAB, not when scrap spawns. The yard is shared,
 -- so a per-player spawn table is impossible — but a per-player reroll at
@@ -81,6 +91,11 @@ local UPGRADES = {
 		key = "value", name = "Haggler", start = 1, max = 8,
 		baseCost = 1000, mult = 2.0,
 		describe = function(lv) return string.format("+%d%% sell price", (lv - 1) * 15) end,
+	},
+	{
+		key = "speed", name = "Speed Boots", start = 1, max = 8,
+		baseCost = 700, mult = 1.85,
+		describe = function(lv) return string.format("+%d%% move speed", (lv - 1) * 8) end,
 	},
 }
 
@@ -219,6 +234,29 @@ if not moveToCarryRemote then
 	moveToCarryRemote.Parent = ReplicatedStorage
 end
 
+local placePetRemote = ReplicatedStorage:FindFirstChild("PlacePet")
+if not placePetRemote then
+	placePetRemote = Instance.new("RemoteEvent")
+	placePetRemote.Name = "PlacePet"
+	placePetRemote.Parent = ReplicatedStorage
+end
+
+local unplacePetRemote = ReplicatedStorage:FindFirstChild("UnplacePet")
+if not unplacePetRemote then
+	unplacePetRemote = Instance.new("RemoteEvent")
+	unplacePetRemote.Name = "UnplacePet"
+	unplacePetRemote.Parent = ReplicatedStorage
+end
+
+-- Takes a carried item (already grabbed, sitting on the pad waiting to be
+-- fused) back off before you commit to fusing it, straight to Inventory.
+local removeFromCarryRemote = ReplicatedStorage:FindFirstChild("RemoveFromCarry")
+if not removeFromCarryRemote then
+	removeFromCarryRemote = Instance.new("RemoteEvent")
+	removeFromCarryRemote.Name = "RemoveFromCarry"
+	removeFromCarryRemote.Parent = ReplicatedStorage
+end
+
 -- The side travel menu asks for a destination key; the server decides
 -- where that actually is.
 local travelRemote = ReplicatedStorage:FindFirstChild("TravelTo")
@@ -226,6 +264,21 @@ if not travelRemote then
 	travelRemote = Instance.new("RemoteEvent")
 	travelRemote.Name = "TravelTo"
 	travelRemote.Parent = ReplicatedStorage
+end
+
+-- Shop UI: promo codes and coin-purchasable pets.
+local redeemCodeRemote = ReplicatedStorage:FindFirstChild("RedeemCode")
+if not redeemCodeRemote then
+	redeemCodeRemote = Instance.new("RemoteEvent")
+	redeemCodeRemote.Name = "RedeemCode"
+	redeemCodeRemote.Parent = ReplicatedStorage
+end
+
+local buyShopPetRemote = ReplicatedStorage:FindFirstChild("BuyShopPet")
+if not buyShopPetRemote then
+	buyShopPetRemote = Instance.new("RemoteEvent")
+	buyShopPetRemote.Name = "BuyShopPet"
+	buyShopPetRemote.Parent = ReplicatedStorage
 end
 
 -- Retention rewards.
@@ -242,9 +295,17 @@ local DAILY_REWARDS = {
 }
 local DAILY_MAX_STREAK = #DAILY_REWARDS
 
--- Escalating within a session: the longer you stay, the better it gets.
-local PLAYTIME_REWARDS = { 300, 500, 800, 1200, 1500 }
-local PLAYTIME_INTERVAL = 5   -- minutes between payouts
+-- Four fixed check-in points per session, each paid out exactly once —
+-- not a repeating-forever timer. "minutes" is time played THIS session
+-- (s.playMinutes resets to 0 on join); lifetime playtime for the
+-- "Most Dedicated" leaderboard is tracked separately, in
+-- PlaytimeLeaderboardService, and never resets.
+local PLAYTIME_MILESTONES = {
+	{ minutes = 5, reward = 300 },
+	{ minutes = 15, reward = 500 },
+	{ minutes = 30, reward = 800 },
+	{ minutes = 60, reward = 1500 },
+}
 
 -- Days since epoch. Simple, and immune to timezone drift because it's
 -- computed from UTC on the server, never from the client's clock.
@@ -327,21 +388,23 @@ local function itemTierInfo(itemName)
 	}
 end
 
--- Cars as transportation: every fused vehicle in your inventory (not sold)
--- makes you faster, on top of everything else. Used to be keyed off
--- physical Garage placement; inventory only ever holds fusion results
--- (never raw scrap), so a plain count does the same job with no zones.
-local BASE_WALK_SPEED = 16
-local INVENTORY_SPEED_PER_ITEM = 1
-local INVENTORY_SPEED_CAP = 10
+-- Cars as transportation: every pet actually placed and earning (not just
+-- sitting in Inventory) makes you faster, on top of the Speed Boots
+-- upgrade below. Placement is capped at PET_PAD_COUNT, so this is now a
+-- flat per-pad bonus instead of the old per-inventory-item one.
+local BASE_WALK_SPEED = 22
+local PLACED_SPEED_PER_ITEM = 2
+local PLACED_SPEED_CAP = PET_PAD_COUNT * PLACED_SPEED_PER_ITEM
+local SPEED_UPGRADE_PER_LEVEL = 0.08 -- +8% per level above 1
 
 local function updateWalkSpeed(player)
 	local s = state[player]
 	local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
 	if not (s and humanoid) then return end
 
-	local bonus = math.min(#s.inventory * INVENTORY_SPEED_PER_ITEM, INVENTORY_SPEED_CAP)
-	humanoid.WalkSpeed = BASE_WALK_SPEED + bonus
+	local placedBonus = math.min(#s.placed * PLACED_SPEED_PER_ITEM, PLACED_SPEED_CAP)
+	local speedMult = 1 + (s.upgrades.speed - 1) * SPEED_UPGRADE_PER_LEVEL
+	humanoid.WalkSpeed = (BASE_WALK_SPEED + placedBonus) * speedMult
 end
 
 ------------------------------------------------------------------
@@ -496,6 +559,39 @@ for i = 1, PLOT_COUNT do
 	padPrompt.RequiresLineOfSight = false
 	padPrompt.Parent = pad
 
+	-- Five small pads behind the fusion pad — the only place a pet
+	-- actually earns money. Everything else in Inventory is just stored;
+	-- only what's physically placed here counts toward passive income.
+	-- Built here (fixed platforms + prompts), wired up for real down in
+	-- "Wire up each plot's prompts" once the handler exists, same as the
+	-- fusion pad itself.
+	local petPads = {}
+	for slot = 1, PET_PAD_COUNT do
+		local xOffset = (slot - (PET_PAD_COUNT + 1) / 2) * PET_PAD_SPACING
+		local padCentre = centre + Vector3.new(xOffset, 0, PET_PAD_Z)
+
+		local petPadPart = makePart({
+			Name = "PetPad" .. slot,
+			Size = Vector3.new(5, 1, 5),
+			Position = padCentre + Vector3.new(0, 0.5, 0),
+			Material = Enum.Material.SmoothPlastic,
+			Color = Color3.fromRGB(210, 210, 220),
+			Parent = model,
+		})
+		local petPadLabel = makeLabel(petPadPart, "EMPTY PAD", 2, 130, Color3.fromRGB(150, 150, 165), 40)
+
+		local takeOffPrompt = Instance.new("ProximityPrompt")
+		takeOffPrompt.ActionText = "Take Off"
+		takeOffPrompt.ObjectText = "Pet Pad"
+		takeOffPrompt.HoldDuration = 0.3
+		takeOffPrompt.MaxActivationDistance = 10
+		takeOffPrompt.RequiresLineOfSight = false
+		takeOffPrompt.Enabled = false -- only enabled once something is actually placed
+		takeOffPrompt.Parent = petPadPart
+
+		petPads[slot] = { part = petPadPart, label = petPadLabel, prompt = takeOffPrompt, itemPart = nil }
+	end
+
 	-- No physical display zones anymore — a fused result goes straight
 	-- into the player's inventory (see Inventory below), sold or sent
 	-- back to the pad from the Inventory popup instead of walking to a
@@ -508,6 +604,7 @@ for i = 1, PLOT_COUNT do
 		pad = pad,
 		padLabel = padLabel,
 		padPrompt = padPrompt,
+		petPads = petPads,
 		signLabel = signLabel,
 	}
 end
@@ -558,16 +655,20 @@ do
 
 	-- A slightly larger gold backing peeking out from behind the dark
 	-- board — a real physical frame, not a screen-space UIStroke, since
-	-- this whole redesign is about the sign being an actual object.
+	-- this whole redesign is about the sign being an actual object. Now
+	-- that the board carries a SurfaceGui on BOTH its Front and Back faces
+	-- (coins leaderboard / playtime leaderboard), the frame is centered on
+	-- the board's own Z-center and made thinner than the board itself —
+	-- fully embedded within the board's depth. That keeps it strictly
+	-- behind whichever face is being viewed from either side, so it only
+	-- ever shows in the margin around the board, never occluding either
+	-- SurfaceGui. (An earlier version offset it +Z to clear the Front
+	-- face — which would have put it in front of, and occluded, a Back
+	-- face SurfaceGui.)
 	makePart({
 		Name = "LeaderboardFrame",
-		Size = Vector3.new(10.7, 13.7, 0.6),
-		-- +Z, i.e. BEHIND the board relative to its Front (-Z) face — this
-		-- keeps the board's own front surface (where the SurfaceGui lives)
-		-- as the closest thing to a viewer standing in front of it, so the
-		-- frame only ever shows in the margin around the board, never
-		-- occluding the leaderboard text itself.
-		Position = base + Vector3.new(0, 13.7, 0.3),
+		Size = Vector3.new(10.7, 13.7, 0.7),
+		Position = base + Vector3.new(0, 13.7, 0),
 		Material = Enum.Material.Neon,
 		Color = Color3.fromRGB(255, 205, 40),
 		Parent = workspace,
@@ -585,87 +686,112 @@ do
 		Parent = workspace,
 	})
 
-	local boardGui = Instance.new("SurfaceGui")
-	boardGui.Face = Enum.NormalId.Front
-	boardGui.SizingMode = Enum.SurfaceGuiSizingMode.FixedSize
-	boardGui.CanvasSize = Vector2.new(640, 860)
-	boardGui.Parent = board
+	-- Shared by both faces of the sign (coins on Front, playtime on Back) —
+	-- identical layout, differing only in which face it's drawn on, its
+	-- title/subtitle, and how it formats a ranking row.
+	local function buildLeaderboardFace(face, title, subtitle, scrollBarColor, formatRow)
+		local boardGui = Instance.new("SurfaceGui")
+		boardGui.Face = face
+		boardGui.SizingMode = Enum.SurfaceGuiSizingMode.FixedSize
+		boardGui.CanvasSize = Vector2.new(640, 860)
+		boardGui.Parent = board
 
-	local boardTitle = Instance.new("TextLabel")
-	boardTitle.Size = UDim2.new(1, -40, 0, 64)
-	boardTitle.Position = UDim2.new(0, 20, 0, 20)
-	boardTitle.BackgroundTransparency = 1
-	boardTitle.Text = "🏆 TOP FUSIONEERS"
-	boardTitle.TextColor3 = Color3.fromRGB(255, 205, 40)
-	boardTitle.TextStrokeTransparency = 0.4
-	boardTitle.Font = Enum.Font.LuckiestGuy
-	boardTitle.TextScaled = true
-	boardTitle.Parent = boardGui
+		local boardTitle = Instance.new("TextLabel")
+		boardTitle.Size = UDim2.new(1, -40, 0, 64)
+		boardTitle.Position = UDim2.new(0, 20, 0, 20)
+		boardTitle.BackgroundTransparency = 1
+		boardTitle.Text = title
+		boardTitle.TextColor3 = Color3.fromRGB(255, 205, 40)
+		boardTitle.TextStrokeTransparency = 0.4
+		boardTitle.Font = Enum.Font.LuckiestGuy
+		boardTitle.TextScaled = true
+		boardTitle.Parent = boardGui
 
-	local boardSub = Instance.new("TextLabel")
-	boardSub.Size = UDim2.new(1, -40, 0, 26)
-	boardSub.Position = UDim2.new(0, 20, 0, 86)
-	boardSub.BackgroundTransparency = 1
-	boardSub.Text = "Ranked by lifetime coins earned  —  scroll for more"
-	boardSub.TextColor3 = Color3.fromRGB(180, 180, 190)
-	boardSub.Font = Enum.Font.FredokaOne
-	boardSub.TextScaled = true
-	boardSub.Parent = boardGui
+		local boardSub = Instance.new("TextLabel")
+		boardSub.Size = UDim2.new(1, -40, 0, 26)
+		boardSub.Position = UDim2.new(0, 20, 0, 86)
+		boardSub.BackgroundTransparency = 1
+		boardSub.Text = subtitle
+		boardSub.TextColor3 = Color3.fromRGB(180, 180, 190)
+		boardSub.Font = Enum.Font.FredokaOne
+		boardSub.TextScaled = true
+		boardSub.Parent = boardGui
 
-	-- The part the player actually scrolls — a ScrollingFrame on a
-	-- SurfaceGui responds to mouse wheel / touch drag the same way it
-	-- would on a screen-space GUI, as long as the player is looking at it.
-	local boardScroll = Instance.new("ScrollingFrame")
-	boardScroll.Size = UDim2.new(1, -40, 1, -140)
-	boardScroll.Position = UDim2.new(0, 20, 0, 128)
-	boardScroll.BackgroundTransparency = 1
-	boardScroll.BorderSizePixel = 0
-	boardScroll.ScrollBarThickness = 10
-	boardScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 205, 40)
-	boardScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-	boardScroll.Parent = boardGui
+		-- The part the player actually scrolls — a ScrollingFrame on a
+		-- SurfaceGui responds to mouse wheel / touch drag the same way it
+		-- would on a screen-space GUI, as long as the player is looking at it.
+		local boardScroll = Instance.new("ScrollingFrame")
+		boardScroll.Size = UDim2.new(1, -40, 1, -140)
+		boardScroll.Position = UDim2.new(0, 20, 0, 128)
+		boardScroll.BackgroundTransparency = 1
+		boardScroll.BorderSizePixel = 0
+		boardScroll.ScrollBarThickness = 10
+		boardScroll.ScrollBarImageColor3 = scrollBarColor
+		boardScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+		boardScroll.Parent = boardGui
 
-	local boardLayout = Instance.new("UIListLayout")
-	boardLayout.Padding = UDim.new(0, 4)
-	boardLayout.Parent = boardScroll
+		local boardLayout = Instance.new("UIListLayout")
+		boardLayout.Padding = UDim.new(0, 4)
+		boardLayout.Parent = boardScroll
 
-	local function redrawBoard(top)
-		for _, child in ipairs(boardScroll:GetChildren()) do
-			if not child:IsA("UIListLayout") then child:Destroy() end
+		local function redrawBoard(top)
+			for _, child in ipairs(boardScroll:GetChildren()) do
+				if not child:IsA("UIListLayout") then child:Destroy() end
+			end
+
+			if #top == 0 then
+				local empty = Instance.new("TextLabel")
+				empty.Size = UDim2.new(1, 0, 0, 40)
+				empty.BackgroundTransparency = 1
+				empty.Text = "No rankings yet — be the first to earn your way on."
+				empty.TextColor3 = Color3.fromRGB(150, 150, 165)
+				empty.Font = Enum.Font.FredokaOne
+				empty.TextSize = 20
+				empty.TextWrapped = true
+				empty.Parent = boardScroll
+			end
+
+			for i, entry in ipairs(top) do
+				local row = Instance.new("TextLabel")
+				row.Size = UDim2.new(1, 0, 0, 34)
+				row.LayoutOrder = i
+				row.BackgroundTransparency = 1
+				row.Text = formatRow(i, entry)
+				row.TextColor3 = RANK_COLORS[i] or Color3.fromRGB(220, 220, 230)
+				row.Font = Enum.Font.FredokaOne
+				row.TextSize = 22
+				row.TextXAlignment = Enum.TextXAlignment.Left
+				row.Parent = boardScroll
+			end
+
+			boardScroll.CanvasSize = UDim2.new(0, 0, 0, boardLayout.AbsoluteContentSize.Y + 10)
 		end
 
-		if #top == 0 then
-			local empty = Instance.new("TextLabel")
-			empty.Size = UDim2.new(1, 0, 0, 40)
-			empty.BackgroundTransparency = 1
-			empty.Text = "No rankings yet — be the first to earn your way on."
-			empty.TextColor3 = Color3.fromRGB(150, 150, 165)
-			empty.Font = Enum.Font.FredokaOne
-			empty.TextSize = 20
-			empty.TextWrapped = true
-			empty.Parent = boardScroll
-		end
-
-		for i, entry in ipairs(top) do
-			local row = Instance.new("TextLabel")
-			row.Size = UDim2.new(1, 0, 0, 34)
-			row.LayoutOrder = i
-			row.BackgroundTransparency = 1
-			row.Text = string.format("#%d  %s — %s coins", i, entry.name, commas(entry.coins))
-			row.TextColor3 = RANK_COLORS[i] or Color3.fromRGB(220, 220, 230)
-			row.Font = Enum.Font.FredokaOne
-			row.TextSize = 22
-			row.TextXAlignment = Enum.TextXAlignment.Left
-			row.Parent = boardScroll
-		end
-
-		boardScroll.CanvasSize = UDim2.new(0, 0, 0, boardLayout.AbsoluteContentSize.Y + 10)
+		return redrawBoard
 	end
+
+	local redrawCoinsBoard = buildLeaderboardFace(
+		Enum.NormalId.Front,
+		"🏆 TOP FUSIONEERS",
+		"Ranked by lifetime coins earned  —  scroll for more",
+		Color3.fromRGB(255, 205, 40),
+		function(i, entry) return string.format("#%d  %s — %s coins", i, entry.name, commas(entry.coins)) end
+	)
+
+	local redrawPlaytimeBoard = buildLeaderboardFace(
+		Enum.NormalId.Back,
+		"⏱️ MOST DEDICATED",
+		"Ranked by total playtime  —  scroll for more",
+		Color3.fromRGB(120, 200, 255),
+		function(i, entry) return string.format("#%d  %s — %.1f hours", i, entry.name, entry.minutes / 60) end
+	)
 
 	task.spawn(function()
 		while true do
 			Leaderboard.RefreshIfStale()
-			redrawBoard(Leaderboard.GetTopCached())
+			redrawCoinsBoard(Leaderboard.GetTopCached())
+			PlaytimeLeaderboard.RefreshIfStale()
+			redrawPlaytimeBoard(PlaytimeLeaderboard.GetTopCached())
 			task.wait(15)
 		end
 	end)
@@ -740,6 +866,23 @@ local function pushUI(player)
 			tier = info.tier,
 			isSecret = info.isSecret,
 			value = info.value,
+			-- What it WOULD earn once placed — not placed yet, so this is
+			-- potential, not current. The client is responsible for
+			-- wording that distinction; the number itself is what a
+			-- player needs to decide which pet is worth placing.
+			perSecond = info.value / PLACEMENT_PAYBACK_SECONDS,
+		})
+	end
+
+	local placedInfo = {}
+	for i, itemName in ipairs(s.placed) do
+		local info = itemTierInfo(itemName)
+		table.insert(placedInfo, {
+			index = i,
+			name = itemName,
+			tier = info.tier,
+			isSecret = info.isSecret,
+			value = info.value,
 			perSecond = info.value / PLACEMENT_PAYBACK_SECONDS,
 		})
 	end
@@ -786,6 +929,8 @@ local function pushUI(player)
 		companion = companionInfo,
 		inventory = inventoryInfo,
 		inventoryCapacity = INVENTORY_CAPACITY,
+		placed = placedInfo,
+		placedCapacity = PET_PAD_COUNT,
 	})
 end
 
@@ -878,53 +1023,47 @@ local function refreshPad(player)
 	end
 end
 
--- A small physical display behind each plot's pad, mirroring inventory
--- 1:1 — purely decorative, no selling/picking-up here, since that's what
--- the Inventory popup is for. This exists so a player (and anyone walking
--- by) can actually SEE what's earning them money instead of it only ever
--- being a number in a list. Rebuilt from scratch on every call rather
--- than diffed, same as the Inventory popup's own grid — simplest thing
--- that's correct, and inventory tops out at 15 items so it's cheap.
-local DISPLAY_COLS = 5
-local DISPLAY_SPACING = 6
-local DISPLAY_START_Z = 14 -- clears the 16-stud pad before the grid begins
-
-local function clearInventoryDisplay(plot)
-	if not plot.displayParts then return end
-	for _, part in ipairs(plot.displayParts) do
-		part:Destroy()
+-- The five physical pads behind each plot's pad are the only place a pet
+-- earns money — placing/unplacing (see the Inventory section and the
+-- prompt wiring below) both funnel through here to keep a pad's platform,
+-- prompt, and label in sync with whatever's actually in that slot.
+local function redrawPetPad(plot, slot, itemName)
+	local pad = plot.petPads[slot]
+	if pad.itemPart then
+		pad.itemPart:Destroy()
+		pad.itemPart = nil
 	end
-	plot.displayParts = nil
+
+	if not itemName then
+		pad.label.Text = "EMPTY PAD"
+		pad.label.TextColor3 = Color3.fromRGB(150, 150, 165)
+		pad.prompt.Enabled = false
+		return
+	end
+
+	local baseName, mutationId = Mutations.Unwrap(itemName)
+	local padSurfaceY = pad.part.Position.Y + pad.part.Size.Y / 2
+	local part = ItemVisuals.Create(baseName, Vector3.new(pad.part.Position.X, padSurfaceY, pad.part.Position.Z), 0.75)
+	local mutationColor = Mutations.Color(mutationId)
+	if mutationColor then part.Color = mutationColor end
+	part.Parent = plot.model
+	pad.itemPart = part
+
+	local info = itemTierInfo(itemName)
+	local itemColor = mutationColor or ItemRarity.Color(info.tier, info.isSecret)
+	pad.label.Text = string.format("%s\n+%.1f coins/sec", instanceTag(itemName), info.value / PLACEMENT_PAYBACK_SECONDS)
+	pad.label.TextColor3 = itemColor
+	pad.prompt.Enabled = true
 end
 
-local function refreshInventoryDisplay(player)
+local function refreshPlacedPets(player)
 	local s = state[player]
 	if not s then return end
 	local plot = plots[s.plotIndex]
 	if not plot then return end
 
-	clearInventoryDisplay(plot)
-	plot.displayParts = {}
-
-	for i, itemName in ipairs(s.inventory) do
-		local baseName, mutationId = Mutations.Unwrap(itemName)
-		local col = (i - 1) % DISPLAY_COLS
-		local row = math.floor((i - 1) / DISPLAY_COLS)
-		local offset = Vector3.new(
-			(col - (DISPLAY_COLS - 1) / 2) * DISPLAY_SPACING,
-			0,
-			DISPLAY_START_Z + row * DISPLAY_SPACING
-		)
-		local part = ItemVisuals.Create(baseName, plot.centre + offset + Vector3.new(0, 1, 0), 0.6)
-		local mutationColor = Mutations.Color(mutationId)
-		if mutationColor then part.Color = mutationColor end
-		part.Parent = plot.model
-
-		local info = itemTierInfo(itemName)
-		local itemColor = mutationColor or ItemRarity.Color(info.tier, info.isSecret)
-		makeLabel(part, string.format("%s\n+%.1f/sec", instanceTag(itemName), info.value / PLACEMENT_PAYBACK_SECONDS), 1.6, 130, itemColor, 40)
-
-		table.insert(plot.displayParts, part)
+	for slot = 1, PET_PAD_COUNT do
+		redrawPetPad(plot, slot, s.placed[slot])
 	end
 end
 
@@ -1079,7 +1218,6 @@ local function attemptFusion(player)
 		toast(player, string.format("Inventory's full — %s auto-sold for %d coins instead.", resultTag, payout))
 	end
 	updateWalkSpeed(player)
-	refreshInventoryDisplay(player)
 
 	playSound(plot.pad, (mutationId or info.isSecret or info.tier >= 4) and "big" or "fuse")
 	checkGoals(player)
@@ -1200,6 +1338,8 @@ buyRemote.OnServerEvent:Connect(function(player, key)
 
 	if key == "carry" then
 		-- Capacity is derived from earned upgrades plus pass ownership.
+	elseif key == "speed" then
+		updateWalkSpeed(player) -- feel it immediately, not on the next fuse/place
 	end
 
 	playSound(playerRoot(player), "big")
@@ -1234,10 +1374,11 @@ rebirthRemote.OnServerEvent:Connect(function(player)
 	end
 
 	coins.Value = 0
-	s.upgrades = { luck = 1, carry = 1, magnet = 0, value = 1 }
+	s.upgrades = { luck = 1, carry = 1, magnet = 0, value = 1, speed = 1 }
 	s.inventory = {}
+	s.placed = {}
 	updateWalkSpeed(player)
-	refreshInventoryDisplay(player)
+	refreshPlacedPets(player)
 	Rebirth.Increment(player)
 
 	local level = Rebirth.Get(player)
@@ -1416,8 +1557,6 @@ local function removeTradedItem(player, ref)
 		refreshPad(player)
 	elseif ref.source == "inventory" then
 		table.remove(s.inventory, ref.index)
-		updateWalkSpeed(player)
-		refreshInventoryDisplay(player)
 	end
 end
 
@@ -1428,8 +1567,6 @@ local function giveTradedItem(player, itemName, source)
 		refreshPad(player)
 	elseif source == "inventory" then
 		table.insert(s.inventory, itemName)
-		updateWalkSpeed(player)
-		refreshInventoryDisplay(player)
 	end
 end
 
@@ -1628,6 +1765,155 @@ moveToCarryRemote.OnServerEvent:Connect(function(player, index)
 	pushUI(player)
 end)
 
+-- Lets a fresh grab sitting on the pad (not fused yet) go back to
+-- Inventory instead of being stuck there until you commit to a fuse.
+removeFromCarryRemote.OnServerEvent:Connect(function(player, index)
+	local s = state[player]
+	if not s then return end
+	local itemName = type(index) == "number" and s.slots[index]
+	if not itemName then return end
+
+	if #s.inventory >= INVENTORY_CAPACITY then
+		toast(player, "Inventory's full — sell or place something first.")
+		return
+	end
+
+	table.remove(s.slots, index)
+	table.insert(s.inventory, itemName)
+	refreshPad(player)
+
+	toast(player, string.format("%s is back in your Inventory.", instanceTag(itemName)))
+	pushUI(player)
+end)
+
+------------------------------------------------------------------
+-- Placing and unplacing pets — a pet only earns money while it's
+-- physically on one of a player's five pads. Placing happens from the
+-- Inventory popup (you're choosing which of your pets goes to work);
+-- unplacing happens either the same way or by walking up to an occupied
+-- pad and taking it off directly, same "physical prompt for the pad
+-- itself" pattern as the fusion pad.
+------------------------------------------------------------------
+
+placePetRemote.OnServerEvent:Connect(function(player, index)
+	local s = state[player]
+	if not s then return end
+	local itemName = type(index) == "number" and s.inventory[index]
+	if not itemName then return end
+
+	if #s.placed >= PET_PAD_COUNT then
+		toast(player, "All 5 pads are full — take one off first.")
+		return
+	end
+
+	table.remove(s.inventory, index)
+	table.insert(s.placed, itemName)
+	updateWalkSpeed(player)
+	refreshPlacedPets(player)
+
+	toast(player, string.format("%s is on the job — earning coins now.", instanceTag(itemName)))
+	pushUI(player)
+end)
+
+local function unplacePet(player, slot)
+	local s = state[player]
+	if not s then return end
+	local itemName = type(slot) == "number" and s.placed[slot]
+	if not itemName then return end
+
+	if #s.inventory >= INVENTORY_CAPACITY then
+		toast(player, "Inventory's full — sell something first.")
+		return
+	end
+
+	table.remove(s.placed, slot)
+	table.insert(s.inventory, itemName)
+	updateWalkSpeed(player)
+	refreshPlacedPets(player)
+
+	toast(player, string.format("%s is back in your Inventory.", instanceTag(itemName)))
+	pushUI(player)
+end
+
+unplacePetRemote.OnServerEvent:Connect(function(player, slot)
+	unplacePet(player, slot)
+end)
+
+-- Walking up to an occupied pad and taking it off directly — same
+-- "physical prompt right on the thing" pattern as the fusion pad, wired
+-- separately from that loop since it needs unplacePet, defined above it.
+for _, plot in ipairs(plots) do
+	for slot, pad in ipairs(plot.petPads) do
+		pad.prompt.Triggered:Connect(function(player)
+			if plot.owner ~= player then
+				toast(player, "That's not your plot.")
+				return
+			end
+			unplacePet(player, slot)
+		end)
+	end
+end
+
+------------------------------------------------------------------
+-- Shop: promo codes and coin-purchasable pets
+------------------------------------------------------------------
+
+redeemCodeRemote.OnServerEvent:Connect(function(player, rawCode)
+	local s = state[player]
+	if not s then return end
+	if type(rawCode) ~= "string" then return end
+
+	local code = rawCode:gsub("^%s+", ""):gsub("%s+$", ""):upper()
+	if code == "" then return end
+
+	if s.redeemedCodes[code] then
+		toast(player, "You've already redeemed that code.")
+		return
+	end
+
+	local reward = PromoCodes[code]
+	if not reward then
+		toast(player, "That code isn't valid.")
+		return
+	end
+
+	s.redeemedCodes[code] = true
+
+	if reward.coins then
+		local awarded = addCoins(player, reward.coins) or 0
+		toast(player, string.format("CODE REDEEMED\n+%d coins", awarded), true)
+	end
+
+	pushUI(player)
+end)
+
+buyShopPetRemote.OnServerEvent:Connect(function(player, index)
+	local s = state[player]
+	if not s then return end
+
+	local entry = type(index) == "number" and ShopPets[index]
+	if not entry then return end
+
+	local stats = player:FindFirstChild("leaderstats")
+	local coins = stats and stats:FindFirstChild("Coins")
+	if not coins then return end
+
+	if coins.Value < entry.cost then
+		toast(player, string.format("Not enough coins. Need %d.", entry.cost))
+		return
+	end
+
+	if #s.inventory >= INVENTORY_CAPACITY then
+		toast(player, "Inventory's full — sell or place something first.")
+		return
+	end
+
+	coins.Value = coins.Value - entry.cost
+	table.insert(s.inventory, entry.item)
+	toast(player, string.format("Bought %s!", instanceTag(entry.item)), true)
+	pushUI(player)
+end)
+
 ------------------------------------------------------------------
 -- Scrap magnet
 ------------------------------------------------------------------
@@ -1663,9 +1949,9 @@ task.spawn(function()
 end)
 
 ------------------------------------------------------------------
--- Passive income from inventory — every fusion result you're holding
--- (never raw scrap, since inventory only ever receives fusion results)
--- keeps paying out for as long as you keep it instead of selling it.
+-- Passive income from placed pets ONLY — sitting in Inventory doesn't
+-- earn a thing anymore; a pet has to actually be on one of a player's
+-- five pads (see "Placing and unplacing pets" below) to make money.
 ------------------------------------------------------------------
 
 task.spawn(function()
@@ -1678,7 +1964,7 @@ task.spawn(function()
 				local mult = valueMultiplier(player, s)
 				local perSecond = 0
 
-				for _, itemName in ipairs(s.inventory) do
+				for _, itemName in ipairs(s.placed) do
 					perSecond = perSecond + (itemTierInfo(itemName).value / PLACEMENT_PAYBACK_SECONDS) * mult
 				end
 
@@ -1770,14 +2056,15 @@ task.spawn(function()
 			local s = state[player]
 			if s then
 				s.playMinutes = (s.playMinutes or 0) + 1
+				PlaytimeLeaderboard.Record(player, 1)
 
-				if s.playMinutes % PLAYTIME_INTERVAL == 0 then
-					local step = math.floor(s.playMinutes / PLAYTIME_INTERVAL)
-					local reward = PLAYTIME_REWARDS[math.min(step, #PLAYTIME_REWARDS)]
-
-					local awarded = addCoins(player, reward) or 0
-					toast(player, string.format("%d MINUTES PLAYED\n+%d coins", s.playMinutes, awarded), true)
-					pushUI(player)
+				for _, milestone in ipairs(PLAYTIME_MILESTONES) do
+					if s.playMinutes >= milestone.minutes and not s.playtimeMilestonesClaimed[milestone.minutes] then
+						s.playtimeMilestonesClaimed[milestone.minutes] = true
+						local awarded = addCoins(player, milestone.reward) or 0
+						toast(player, string.format("%d MINUTES PLAYED\n+%d coins", milestone.minutes, awarded), true)
+						pushUI(player)
+					end
 				end
 			end
 		end
@@ -1808,6 +2095,7 @@ local function onPlayerAdded(player)
 	Rebirth.Init(player, data.rebirths)
 	Companions.Init(player, data.companion)
 	Leaderboard.Init(player, data.lifetimeCoins)
+	PlaytimeLeaderboard.Init(player, data.totalPlaytimeMinutes)
 
 	local stats = Instance.new("Folder")
 	stats.Name = "leaderstats"
@@ -1833,11 +2121,13 @@ local function onPlayerAdded(player)
 		discovered[name] = true
 	end
 
-	local upgrades = data.upgrades or { luck = 1, carry = 1, magnet = 0, value = 1 }
+	local upgrades = data.upgrades or { luck = 1, carry = 1, magnet = 0, value = 1, speed = 1 }
+	upgrades.speed = upgrades.speed or 1 -- fills in for a save from before Speed Boots existed
 
 	state[player] = {
 		slots = {},
 		inventory = data.inventory or {},
+		placed = data.placedPets or {},
 		discovered = discovered,
 		discoveredList = data.discoveredList,
 		count = #data.discoveredList,
@@ -1851,13 +2141,15 @@ local function onPlayerAdded(player)
 		dailyStreak = data.dailyStreak or 0,
 		boosts = data.boosts or {},
 		playMinutes = 0,
+		playtimeMilestonesClaimed = {},
+		redeemedCodes = data.redeemedCodes or {},
 		plotIndex = index,
 		mutationPity = 0,
 	}
 
 	refreshPad(player)
 	updateWalkSpeed(player)
-	refreshInventoryDisplay(player)
+	refreshPlacedPets(player)
 
 	-- A dedicated, invisible spawn point right on their plot, so the
 	-- character appears there from frame one instead of flashing at the
@@ -1922,6 +2214,7 @@ local function snapshot(player)
 		secrets = s.secrets,
 		sales = s.sales,
 		inventory = s.inventory,
+		placedPets = s.placed,
 		brainrotDiscovered = Brainrot.Snapshot(player),
 		upgrades = s.upgrades,
 		lastDailyDay = s.lastDailyDay,
@@ -1930,6 +2223,8 @@ local function snapshot(player)
 		rebirths = Rebirth.Snapshot(player),
 		companion = Companions.Snapshot(player),
 		lifetimeCoins = Leaderboard.Snapshot(player),
+		totalPlaytimeMinutes = PlaytimeLeaderboard.Snapshot(player),
+		redeemedCodes = s.redeemedCodes,
 	}
 end
 
@@ -1946,6 +2241,7 @@ task.spawn(function()
 				DataManager.Save(player, data)
 			end
 			Leaderboard.PushToStore(player)
+			PlaytimeLeaderboard.PushToStore(player)
 		end
 	end
 end)
@@ -1972,6 +2268,7 @@ Players.PlayerRemoving:Connect(function(player)
 		DataManager.Save(player, data)
 	end
 	Leaderboard.PushToStore(player)
+	PlaytimeLeaderboard.PushToStore(player)
 
 	local tradePartner = Trade.Partner(player)
 	Trade.Cleanup(player)
@@ -1988,7 +2285,9 @@ Players.PlayerRemoving:Connect(function(player)
 			plot.owner = nil
 			plot.signLabel.Text = "UNCLAIMED PLOT"
 			plot.padLabel.Text = "FUSION PAD"
-			clearInventoryDisplay(plot)
+			for slot = 1, PET_PAD_COUNT do
+				redrawPetPad(plot, slot, nil)
+			end
 		end
 	end
 	state[player] = nil
@@ -1996,6 +2295,7 @@ Players.PlayerRemoving:Connect(function(player)
 	Rebirth.Cleanup(player)
 	Companions.Cleanup(player)
 	Leaderboard.Cleanup(player)
+	PlaytimeLeaderboard.Cleanup(player)
 	DataManager.Forget(player)
 
 	local companionPart = companionParts[player]

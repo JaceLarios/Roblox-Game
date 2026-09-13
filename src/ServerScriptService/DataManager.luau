@@ -42,13 +42,16 @@ local function defaultData()
 		sales = 0,
 		placed = {}, -- legacy: the old physical placement system. No longer written; kept so an old save still loads.
 		inventory = {},
+		placedPets = {}, -- up to 5 items actually earning money on a pad; see PlotManager.
 		brainrotDiscovered = {},
-		upgrades = { luck = 1, carry = 1, magnet = 0, value = 1 },
+		upgrades = { luck = 1, carry = 1, magnet = 0, value = 1, speed = 1 },
 		lastDailyDay = 0,
 		dailyStreak = 0,
 		boosts = {},
 		rebirths = 0,
 		lifetimeCoins = 0,
+		totalPlaytimeMinutes = 0,
+		redeemedCodes = {},
 	}
 end
 

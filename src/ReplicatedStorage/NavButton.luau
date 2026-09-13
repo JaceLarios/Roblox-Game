@@ -7,7 +7,7 @@
 	mobile-game satisfying-button feel — plus a quick icon wiggle on hover
 	so the rail feels alive before anything is even clicked.
 
-	Two independent LocalScripts (GameUI and GamepassUI) each build main
+	Two independent LocalScripts (GameUI and ShopUI) each build main
 	nav buttons, so this lives here instead of being copy-pasted twice —
 	that duplication was fine for a plain hover/press tween, but not once
 	the animation grew a shadow layer, a lift, and a wiggle.
@@ -38,6 +38,29 @@ local function rounded(instance, radius)
 	c.CornerRadius = UDim.new(0, radius)
 	c.Parent = instance
 end
+
+-- Icon/caption defaulted to hardcoded white for years, which read great
+-- against every accent this module ever saw — all dark/saturated enough
+-- for white to pop, GOLD (luminance ~0.8, the Rewards button) included.
+-- The signature palette's WHITE accent broke that assumption (white text
+-- on a white button is unreadable), so this picks by perceived luminance
+-- instead — but only for genuinely light accents. The 0.85 cutoff sits
+-- above GOLD on purpose: it catches WHITE (and anything comparably light)
+-- without also flipping GOLD/GREEN/every other already-tested button
+-- over to dark text.
+local function readableTextColor(accentColor)
+	local luminance = 0.299 * accentColor.R + 0.587 * accentColor.G + 0.114 * accentColor.B
+	if luminance > 0.85 then
+		return Color3.fromRGB(30, 30, 36)
+	end
+	return Color3.fromRGB(255, 255, 255)
+end
+
+-- Exported: ShopUI's tab bar needs the exact same "is this accent light
+-- or dark" call for its own solid-fill buttons, and duplicating the
+-- heuristic (and its GOLD-tuned threshold) in a second file would just
+-- be a second place for it to drift out of sync with this one.
+NavButton.ReadableTextColor = readableTextColor
 
 -- One-shot tilt-tilt-settle, not a loop — fires again every time the mouse
 -- re-enters, which reads as "alive" without ever fighting the hover/press
@@ -96,10 +119,15 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 	gradient.Rotation = 90
 	gradient.Parent = btn
 
-	-- White, not the accent color — a thick white outline is what makes
-	-- this read as a cartoon sticker/app-icon rather than a UI chip.
+	-- Normally white, not the accent color — a thick white outline is what
+	-- makes this read as a cartoon sticker/app-icon rather than a UI chip.
+	-- Against a light accent (e.g. the signature WHITE button) that same
+	-- white outline would all but vanish, so it contrasts the same way
+	-- the text below does instead of assuming the accent is always dark.
+	local textColor = readableTextColor(accentColor)
+
 	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.fromRGB(255, 255, 255)
+	stroke.Color = textColor
 	stroke.Thickness = 3
 	stroke.Transparency = 0.5
 	stroke.Parent = btn
@@ -115,7 +143,7 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 	iconLabel.Position = UDim2.new(0, 0, 0, 8)
 	iconLabel.BackgroundTransparency = 1
 	iconLabel.Text = icon
-	iconLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	iconLabel.TextColor3 = textColor
 	iconLabel.Font = Enum.Font.FredokaOne
 	iconLabel.TextSize = 48
 	iconLabel.TextXAlignment = Enum.TextXAlignment.Center
@@ -127,7 +155,7 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 	captionLabel.Position = UDim2.new(0, 4, 0, 76)
 	captionLabel.BackgroundTransparency = 1
 	captionLabel.Text = caption
-	captionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	captionLabel.TextColor3 = textColor
 	captionLabel.Font = Enum.Font.FredokaOne
 	captionLabel.TextSize = 15
 	captionLabel.TextScaled = true
