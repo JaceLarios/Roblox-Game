@@ -878,6 +878,56 @@ local function refreshPad(player)
 	end
 end
 
+-- A small physical display behind each plot's pad, mirroring inventory
+-- 1:1 — purely decorative, no selling/picking-up here, since that's what
+-- the Inventory popup is for. This exists so a player (and anyone walking
+-- by) can actually SEE what's earning them money instead of it only ever
+-- being a number in a list. Rebuilt from scratch on every call rather
+-- than diffed, same as the Inventory popup's own grid — simplest thing
+-- that's correct, and inventory tops out at 15 items so it's cheap.
+local DISPLAY_COLS = 5
+local DISPLAY_SPACING = 6
+local DISPLAY_START_Z = 14 -- clears the 16-stud pad before the grid begins
+
+local function clearInventoryDisplay(plot)
+	if not plot.displayParts then return end
+	for _, part in ipairs(plot.displayParts) do
+		part:Destroy()
+	end
+	plot.displayParts = nil
+end
+
+local function refreshInventoryDisplay(player)
+	local s = state[player]
+	if not s then return end
+	local plot = plots[s.plotIndex]
+	if not plot then return end
+
+	clearInventoryDisplay(plot)
+	plot.displayParts = {}
+
+	for i, itemName in ipairs(s.inventory) do
+		local baseName, mutationId = Mutations.Unwrap(itemName)
+		local col = (i - 1) % DISPLAY_COLS
+		local row = math.floor((i - 1) / DISPLAY_COLS)
+		local offset = Vector3.new(
+			(col - (DISPLAY_COLS - 1) / 2) * DISPLAY_SPACING,
+			0,
+			DISPLAY_START_Z + row * DISPLAY_SPACING
+		)
+		local part = ItemVisuals.Create(baseName, plot.centre + offset + Vector3.new(0, 1, 0), 0.6)
+		local mutationColor = Mutations.Color(mutationId)
+		if mutationColor then part.Color = mutationColor end
+		part.Parent = plot.model
+
+		local info = itemTierInfo(itemName)
+		local itemColor = mutationColor or ItemRarity.Color(info.tier, info.isSecret)
+		makeLabel(part, string.format("%s\n+%.1f/sec", instanceTag(itemName), info.value / PLACEMENT_PAYBACK_SECONDS), 1.6, 130, itemColor, 40)
+
+		table.insert(plot.displayParts, part)
+	end
+end
+
 local function addCoins(player, amount)
 	local stats = player:FindFirstChild("leaderstats")
 	if not stats then return end
@@ -1029,6 +1079,7 @@ local function attemptFusion(player)
 		toast(player, string.format("Inventory's full — %s auto-sold for %d coins instead.", resultTag, payout))
 	end
 	updateWalkSpeed(player)
+	refreshInventoryDisplay(player)
 
 	playSound(plot.pad, (mutationId or info.isSecret or info.tier >= 4) and "big" or "fuse")
 	checkGoals(player)
@@ -1186,6 +1237,7 @@ rebirthRemote.OnServerEvent:Connect(function(player)
 	s.upgrades = { luck = 1, carry = 1, magnet = 0, value = 1 }
 	s.inventory = {}
 	updateWalkSpeed(player)
+	refreshInventoryDisplay(player)
 	Rebirth.Increment(player)
 
 	local level = Rebirth.Get(player)
@@ -1365,6 +1417,7 @@ local function removeTradedItem(player, ref)
 	elseif ref.source == "inventory" then
 		table.remove(s.inventory, ref.index)
 		updateWalkSpeed(player)
+		refreshInventoryDisplay(player)
 	end
 end
 
@@ -1376,6 +1429,7 @@ local function giveTradedItem(player, itemName, source)
 	elseif source == "inventory" then
 		table.insert(s.inventory, itemName)
 		updateWalkSpeed(player)
+		refreshInventoryDisplay(player)
 	end
 end
 
@@ -1803,6 +1857,7 @@ local function onPlayerAdded(player)
 
 	refreshPad(player)
 	updateWalkSpeed(player)
+	refreshInventoryDisplay(player)
 
 	-- A dedicated, invisible spawn point right on their plot, so the
 	-- character appears there from frame one instead of flashing at the
@@ -1933,6 +1988,7 @@ Players.PlayerRemoving:Connect(function(player)
 			plot.owner = nil
 			plot.signLabel.Text = "UNCLAIMED PLOT"
 			plot.padLabel.Text = "FUSION PAD"
+			clearInventoryDisplay(plot)
 		end
 	end
 	state[player] = nil
