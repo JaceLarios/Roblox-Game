@@ -18,6 +18,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
+local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 
 local remote = ReplicatedStorage:WaitForChild("GameUpdate")
@@ -78,6 +79,7 @@ local function label(parent, text, offsetY, size, color, maxDistance)
 	lbl.TextStrokeTransparency = 0.3
 	lbl.TextScaled = true
 	lbl.Font = Enum.Font.GothamBold
+	lbl.RichText = true
 	lbl.Parent = gui
 	return lbl
 end
@@ -300,7 +302,8 @@ collectionFolder.ChildAdded:Connect(attachPickup)
 local function dropNearIsland(itemName)
 	local itemPart = ItemVisuals.Create(itemName, randomSpawnPosition(), 1)
 	itemPart:SetAttribute("ItemName", itemName)
-	label(itemPart, itemName, 2, 150, Color3.fromRGB(255, 220, 255), 45)
+	local itemColor = ItemRarity.Color(BrainrotRecipes.GetTier(itemName), BrainrotRecipes.IsSecretResult(itemName))
+	label(itemPart, itemName, 2, 150, itemColor, 45)
 	itemPart.Parent = collectionFolder
 end
 
@@ -310,7 +313,7 @@ local function spawnCreature()
 	local itemName = BrainrotRecipes.RollBaseItem()
 	local itemPart = ItemVisuals.Create(itemName, randomSpawnPosition(), 1)
 	itemPart:SetAttribute("ItemName", itemName)
-	label(itemPart, itemName, 2, 150, Color3.fromRGB(255, 220, 255), 45)
+	label(itemPart, itemName, 2, 150, ItemRarity.Color(1, false), 45)
 	itemPart.Parent = collectionFolder
 
 	task.delay(DESPAWN_AFTER, function()
@@ -329,10 +332,15 @@ end)
 -- Fusion — pays out immediately instead of placing for passive income.
 ------------------------------------------------------------------
 
+local function tag(itemName)
+	if not itemName then return "empty" end
+	return ItemRarity.Tag(itemName, BrainrotRecipes.GetTier(itemName), BrainrotRecipes.IsSecretResult(itemName))
+end
+
 function Brainrot.RefreshPad(player)
 	local s = state[player]
 	if not s then return end
-	padLabel.Text = string.format("FUSION PAD\n[ %s ]  +  [ %s ]", s.slots[1] or "empty", s.slots[2] or "empty")
+	padLabel.Text = string.format("FUSION PAD\n[ %s ]  +  [ %s ]", tag(s.slots[1]), tag(s.slots[2]))
 end
 
 local function attemptFusion(player)
@@ -358,18 +366,20 @@ local function attemptFusion(player)
 		return
 	end
 
+	local resultTag = ItemRarity.Tag(result, info.tier, info.isSecret)
+
 	if not info.isFallback and not s.discovered[result] then
 		s.discovered[result] = true
-		toast(player, string.format(info.isSecret and "SECRET RECIPE\n%s" or "NEW DISCOVERY\n%s", result), true)
+		toast(player, string.format(info.isSecret and "SECRET RECIPE\n%s" or "NEW DISCOVERY\n%s", resultTag), true)
 	end
 
 	local payout = addCoins(player, info.value)
-	toast(player, string.format("%s sold for %d coins.", result, payout))
+	toast(player, string.format("%s sold for %d coins.", resultTag, payout))
 
 	-- Server-wide callout stays reserved for real discoveries — a generic
 	-- hybrid shouldn't announce itself with the same fanfare.
 	if not info.isFallback and (info.tier >= 3 or info.isSecret) then
-		broadcast(string.format("%s fused %s on Brainrot Island!", player.Name, result))
+		broadcast(string.format("%s fused %s on Brainrot Island!", player.Name, resultTag))
 	end
 end
 

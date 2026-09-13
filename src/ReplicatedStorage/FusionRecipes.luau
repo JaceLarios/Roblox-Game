@@ -200,6 +200,13 @@ function FusionRecipes.IsFallbackResult(name)
 	return fallbackNameSet[name] == true
 end
 
+-- Tier of any name this module knows about (base item, curated result, or
+-- fallback hybrid) — used to color-code names by rarity wherever they're
+-- displayed. Defaults to 1 (common) for a name it's never seen.
+function FusionRecipes.GetTier(name)
+	return nameTier[name] or 1
+end
+
 -- Roll a random Tier 1 item using the weights above.
 function FusionRecipes.RollBaseItem()
 	local total = 0
@@ -240,40 +247,18 @@ function FusionRecipes.GetTotalDiscoveries()
 	return count
 end
 
--- Full recipe book, masked for whatever this player hasn't found yet.
--- Masking happens on the SERVER, so an exploiter reading client memory
--- still can't see the answers.
-function FusionRecipes.GetRecipeBook(discovered)
+-- How many secrets this player has found, for the "Secrets X/Y" counter.
+-- Masking (not revealing WHICH ones) happens by simply not listing them
+-- anywhere the client can read — this is just a count.
+function FusionRecipes.GetSecretProgress(discovered)
 	discovered = discovered or {}
-	local book = {}
-
-	for _, r in ipairs(RECIPE_LIST) do
-		local known = discovered[r[3]] == true
-		table.insert(book, {
-			result   = known and r[3] or "???",
-			a        = known and r[1] or "???",
-			b        = known and r[2] or "???",
-			tier     = r[4],
-			known    = known,
-			isSecret = false,
-		})
-	end
-
-	local secretsFound = 0
+	local found = 0
 	for _, r in ipairs(SECRET_LIST) do
 		if discovered[r[3]] then
-			secretsFound = secretsFound + 1
+			found = found + 1
 		end
 	end
-
-	table.sort(book, function(x, y)
-		if x.tier ~= y.tier then
-			return x.tier < y.tier
-		end
-		return x.result < y.result
-	end)
-
-	return book, secretsFound, #SECRET_LIST
+	return found, #SECRET_LIST
 end
 
 function FusionRecipes.IsSecretResult(name)
@@ -283,6 +268,43 @@ function FusionRecipes.IsSecretResult(name)
 		end
 	end
 	return false
+end
+
+-- Every REAL item in this line — base scrap plus every curated result,
+-- secrets included as masked rows — for the item index. Deliberately
+-- excludes fallback hybrids: those aren't part of the collection to hunt
+-- for, same as they're excluded from discoveries/goals.
+function FusionRecipes.GetIndex(discovered)
+	discovered = discovered or {}
+	local items = {}
+
+	for _, base in ipairs(FusionRecipes.BaseItems) do
+		table.insert(items, { name = base.name, tier = 1, isSecret = false, isBase = true, known = true })
+	end
+
+	local function addResult(r, isSecret)
+		local known = discovered[r[3]] == true
+		table.insert(items, {
+			name     = known and r[3] or "???",
+			tier     = r[4],
+			isSecret = isSecret,
+			isBase   = false,
+			known    = known,
+			a        = known and r[1] or "???",
+			b        = known and r[2] or "???",
+		})
+	end
+
+	for _, r in ipairs(RECIPE_LIST) do addResult(r, false) end
+	for _, r in ipairs(SECRET_LIST) do addResult(r, true) end
+
+	table.sort(items, function(x, y)
+		if x.tier ~= y.tier then return x.tier < y.tier end
+		if x.isSecret ~= y.isSecret then return not x.isSecret end
+		return x.name < y.name
+	end)
+
+	return items
 end
 
 return FusionRecipes

@@ -5,7 +5,7 @@
 	  • Objective card   (top left)     — the one thing to do next
 	  • Discovery panel  (top right)    — what you've found
 	  • Carry bar        (bottom)       — what's in your hands
-	  • Recipe book      (press B)      — every combo, masked until found
+	  • Item index       (press B)      — every item, masked until found
 
 	Display only. The server decides everything and sends state down;
 	this just draws it. A client that decides nothing can cheat nothing.
@@ -20,6 +20,10 @@ local player = Players.LocalPlayer
 local remote = ReplicatedStorage:WaitForChild("GameUpdate")
 local buyRemote = ReplicatedStorage:WaitForChild("BuyUpgrade")
 local claimRemote = ReplicatedStorage:WaitForChild("ClaimDaily")
+
+local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
+local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
+local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 
 local DARK   = Color3.fromRGB(18, 18, 22)
 local GOLD   = Color3.fromRGB(255, 200, 80)
@@ -740,18 +744,20 @@ carrying.TextColor3 = LIGHT
 carrying.Font = Enum.Font.GothamMedium
 carrying.TextSize = 15
 carrying.BorderSizePixel = 0
+carrying.RichText = true
 carrying.Parent = gui
 rounded(carrying)
 
 ------------------------------------------------------------------
--- Recipe book (press B)
+-- Item index (press B) — every item in the game, colored by rarity,
+-- showing what you have and haven't found yet.
 ------------------------------------------------------------------
 
 local bookBtn = Instance.new("TextButton")
 bookBtn.Size = UDim2.new(0, 150, 0, 34)
 bookBtn.Position = UDim2.new(1, -170, 1, -74)
 bookBtn.BackgroundColor3 = GOLD
-bookBtn.Text = "RECIPE BOOK  [B]"
+bookBtn.Text = "INDEX  [B]"
 bookBtn.TextColor3 = DARK
 bookBtn.Font = Enum.Font.GothamBold
 bookBtn.TextSize = 13
@@ -760,8 +766,8 @@ bookBtn.Parent = gui
 rounded(bookBtn)
 
 local bookFrame = Instance.new("Frame")
-bookFrame.Size = UDim2.new(0, 520, 0, 440)
-bookFrame.Position = UDim2.new(0.5, -260, 0.5, -220)
+bookFrame.Size = UDim2.new(0, 560, 0, 480)
+bookFrame.Position = UDim2.new(0.5, -280, 0.5, -240)
 bookFrame.BackgroundColor3 = DARK
 bookFrame.BackgroundTransparency = GLASS_PANEL
 bookFrame.BorderSizePixel = 0
@@ -769,11 +775,11 @@ bookFrame.Visible = false
 bookFrame.Parent = gui
 rounded(bookFrame, 10)
 
-local bookTitle = label(bookFrame, "RECIPE BOOK", UDim2.new(1, -30, 0, 30), GOLD, Enum.Font.GothamBlack, 20)
+local bookTitle = label(bookFrame, "ITEM INDEX", UDim2.new(0, 220, 0, 30), GOLD, Enum.Font.GothamBlack, 20)
 bookTitle.Position = UDim2.new(0, 20, 0, 14)
 
-local bookHint = label(bookFrame, "Undiscovered combos stay hidden. Experiment in the yard — failed fusions cost you nothing.", UDim2.new(1, -40, 0, 32), DIM, Enum.Font.Gotham, 12)
-bookHint.Position = UDim2.new(0, 20, 0, 42)
+local bookHint = label(bookFrame, "Undiscovered fusions stay hidden. Experimenting costs you nothing.", UDim2.new(1, -40, 0, 18), DIM, Enum.Font.Gotham, 12)
+bookHint.Position = UDim2.new(0, 20, 0, 46)
 bookHint.TextWrapped = true
 
 local bookClose = Instance.new("TextButton")
@@ -786,9 +792,31 @@ bookClose.Font = Enum.Font.GothamBold
 bookClose.TextSize = 18
 bookClose.Parent = bookFrame
 
+-- Two tabs, one per item line — each keeps its own list so switching
+-- tabs never needs a round trip to the server.
+local tabJunkyard = Instance.new("TextButton")
+tabJunkyard.Size = UDim2.new(0, 130, 0, 26)
+tabJunkyard.Position = UDim2.new(1, -280, 0, 12)
+tabJunkyard.Text = "JUNKYARD"
+tabJunkyard.Font = Enum.Font.GothamBold
+tabJunkyard.TextSize = 12
+tabJunkyard.BorderSizePixel = 0
+tabJunkyard.Parent = bookFrame
+rounded(tabJunkyard, 6)
+
+local tabBrainrot = Instance.new("TextButton")
+tabBrainrot.Size = UDim2.new(0, 130, 0, 26)
+tabBrainrot.Position = UDim2.new(1, -144, 0, 12)
+tabBrainrot.Text = "BRAINROT"
+tabBrainrot.Font = Enum.Font.GothamBold
+tabBrainrot.TextSize = 12
+tabBrainrot.BorderSizePixel = 0
+tabBrainrot.Parent = bookFrame
+rounded(tabBrainrot, 6)
+
 local bookScroll = Instance.new("ScrollingFrame")
-bookScroll.Size = UDim2.new(1, -40, 1, -100)
-bookScroll.Position = UDim2.new(0, 20, 0, 84)
+bookScroll.Size = UDim2.new(1, -40, 1, -110)
+bookScroll.Position = UDim2.new(0, 20, 0, 94)
 bookScroll.BackgroundTransparency = 1
 bookScroll.BorderSizePixel = 0
 bookScroll.ScrollBarThickness = 5
@@ -812,15 +840,26 @@ UserInputService.InputBegan:Connect(function(input, processed)
 	end
 end)
 
-local function redrawBook(book)
+local indexData = { junkyard = {}, brainrot = {} }
+local activeTab = "junkyard"
+
+local function redrawIndex()
 	for _, child in ipairs(bookScroll:GetChildren()) do
 		if not child:IsA("UIListLayout") then child:Destroy() end
 	end
 
+	local onJunkyard = activeTab == "junkyard"
+	tabJunkyard.BackgroundColor3 = onJunkyard and GOLD or Color3.fromRGB(50, 50, 58)
+	tabJunkyard.TextColor3 = onJunkyard and DARK or LIGHT
+	tabBrainrot.BackgroundColor3 = onJunkyard and Color3.fromRGB(50, 50, 58) or GOLD
+	tabBrainrot.TextColor3 = onJunkyard and LIGHT or DARK
+
+	local Recipes = onJunkyard and FusionRecipes or BrainrotRecipes
+	local items = indexData[activeTab]
 	local lastTier = nil
 	local order = 0
 
-	for _, entry in ipairs(book or {}) do
+	for _, entry in ipairs(items) do
 		order = order + 1
 
 		if entry.tier ~= lastTier then
@@ -839,16 +878,38 @@ local function redrawBook(book)
 		row.Parent = bookScroll
 		rounded(row, 5)
 
-		local text = entry.known
-			and string.format("%s  +  %s   →   %s", entry.a, entry.b, entry.result)
-			or "???   +   ???   →   ???"
+		local text
+		if entry.isBase then
+			text = ItemRarity.Tag(entry.name, entry.tier, false) .. "   (raw material)"
+		elseif entry.known then
+			text = string.format("%s  +  %s   →   %s",
+				ItemRarity.Tag(entry.a, Recipes.GetTier(entry.a), Recipes.IsSecretResult(entry.a)),
+				ItemRarity.Tag(entry.b, Recipes.GetTier(entry.b), Recipes.IsSecretResult(entry.b)),
+				ItemRarity.Tag(entry.name, entry.tier, entry.isSecret))
+		elseif entry.isSecret then
+			text = "???   SECRET RECIPE   ???"
+		else
+			text = "???   +   ???   →   ???"
+		end
 
 		local l = label(row, text, UDim2.new(1, -16, 1, 0), entry.known and LIGHT or DIM, Enum.Font.GothamMedium, 13)
 		l.Position = UDim2.new(0, 10, 0, 0)
+		l.RichText = true
 	end
 
 	bookScroll.CanvasSize = UDim2.new(0, 0, 0, bookLayout.AbsoluteContentSize.Y + 10)
 end
+
+tabJunkyard.MouseButton1Click:Connect(function()
+	activeTab = "junkyard"
+	redrawIndex()
+end)
+tabBrainrot.MouseButton1Click:Connect(function()
+	activeTab = "brainrot"
+	redrawIndex()
+end)
+
+redrawIndex()
 
 ------------------------------------------------------------------
 -- Upgrade shop (press U)
@@ -987,6 +1048,7 @@ local function showToast(message, big)
 	toast.TextSize = big and 20 or 15
 	toast.TextWrapped = true
 	toast.BorderSizePixel = 0
+	toast.RichText = true
 	toast.Parent = gui
 	rounded(toast)
 
@@ -1021,6 +1083,7 @@ local function showAnnounce(message)
 	banner.TextSize = 17
 	banner.TextWrapped = true
 	banner.BorderSizePixel = 0
+	banner.RichText = true
 	banner.Parent = gui
 	rounded(banner)
 
@@ -1052,7 +1115,8 @@ local function redrawList(names)
 	end
 
 	for i, name in ipairs(names or {}) do
-		local entry = label(list, "• " .. name, UDim2.new(1, 0, 0, 20), Color3.fromRGB(215, 215, 225), Enum.Font.Gotham, 13)
+		local itemColor = ItemRarity.Color(FusionRecipes.GetTier(name), FusionRecipes.IsSecretResult(name))
+		local entry = label(list, "• " .. name, UDim2.new(1, 0, 0, 20), itemColor, Enum.Font.Gotham, 13)
 		entry.LayoutOrder = i
 	end
 
@@ -1074,7 +1138,12 @@ remote.OnClientEvent:Connect(function(data)
 		local parts = {}
 		local maxSlots = data.maxSlots or 2
 		for i = 1, maxSlots do
-			table.insert(parts, "[ " .. (data.slots[i] or "empty") .. " ]")
+			local name = data.slots[i]
+			if name then
+				table.insert(parts, "[ " .. ItemRarity.Tag(name, FusionRecipes.GetTier(name), FusionRecipes.IsSecretResult(name)) .. " ]")
+			else
+				table.insert(parts, "[ empty ]")
+			end
 		end
 		carrying.Text = "CARRYING:  " .. table.concat(parts, "  ")
 	end
@@ -1110,8 +1179,14 @@ remote.OnClientEvent:Connect(function(data)
 		redrawList(data.list)
 	end
 
-	if data.book then
-		redrawBook(data.book)
+	if data.index then
+		indexData.junkyard = data.index
+		redrawIndex()
+	end
+
+	if data.brainrotIndex then
+		indexData.brainrot = data.brainrotIndex
+		redrawIndex()
 	end
 end)
 

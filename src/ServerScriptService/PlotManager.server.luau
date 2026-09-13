@@ -19,7 +19,9 @@ local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
+local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local ItemVisuals   = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
+local ItemRarity    = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local DataManager   = require(script.Parent:WaitForChild("DataManager"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Brainrot = require(script.Parent:WaitForChild("BrainrotService"))
@@ -245,6 +247,10 @@ local function makeLabel(parent, text, offsetY, size, color, maxDistance)
 	label.TextStrokeTransparency = 0.3
 	label.TextScaled = true
 	label.Font = Enum.Font.GothamBold
+	-- Lets a caller color individual item names within a shared label (the
+	-- pad's "[a] + [b]" preview) via <font color="..."> tags. Plain text
+	-- without tags renders identically either way.
+	label.RichText = true
 	label.Parent = gui
 
 	return label
@@ -475,7 +481,7 @@ local function pushUI(player)
 	local s = state[player]
 	if not s then return end
 
-	local book, secretsFound, secretTotal = FusionRecipes.GetRecipeBook(s.discovered)
+	local secretsFound, secretTotal = FusionRecipes.GetSecretProgress(s.discovered)
 	local goal = GOALS[s.goalIndex]
 
 	local shop = {}
@@ -507,13 +513,19 @@ local function pushUI(player)
 	local dailyRewards = {}
 	for _, reward in ipairs(DAILY_REWARDS) do table.insert(dailyRewards, rewardInfo(player, reward)) end
 
+	local brainrotDiscovered = {}
+	for _, name in ipairs(Brainrot.Snapshot(player)) do
+		brainrotDiscovered[name] = true
+	end
+
 	remote:FireClient(player, {
 		slots = s.slots,
 		maxSlots = capacity(player, s),
 		discoveredCount = s.count,
 		total = FusionRecipes.GetTotalDiscoveries(),
 		list = s.discoveredList,
-		book = book,
+		index = FusionRecipes.GetIndex(s.discovered),
+		brainrotIndex = BrainrotRecipes.GetIndex(brainrotDiscovered),
 		secretsFound = secretsFound,
 		secretTotal = secretTotal,
 		goalText = goal and goal.text or "All objectives complete",
@@ -580,10 +592,15 @@ local function refreshPad(player)
 	local plot = plots[s.plotIndex]
 	if not plot then return end
 
+	local function tag(itemName)
+		if not itemName then return "empty" end
+		return ItemRarity.Tag(itemName, FusionRecipes.GetTier(itemName), FusionRecipes.IsSecretResult(itemName))
+	end
+
 	plot.padLabel.Text = string.format(
 		"FUSION PAD\n[ %s ]  +  [ %s ]",
-		s.slots[1] or "empty",
-		s.slots[2] or "empty"
+		tag(s.slots[1]),
+		tag(s.slots[2])
 	)
 
 	-- Physical items sitting in the two slots on the pad.
@@ -600,7 +617,8 @@ local function refreshPad(player)
 			local slotPart = ItemVisuals.Create(itemName, plot.pad.Position + Vector3.new(offset, 2.4, 0), 0.85)
 			slotPart.Name = "Slot" .. i
 			slotPart.Parent = plot.model
-			makeLabel(slotPart, itemName, 1.8, 140, Color3.fromRGB(255, 235, 190), 45)
+			local itemColor = ItemRarity.Color(FusionRecipes.GetTier(itemName), FusionRecipes.IsSecretResult(itemName))
+			makeLabel(slotPart, itemName, 1.8, 140, itemColor, 45)
 			plot.slotParts[i] = slotPart
 		end
 	end
@@ -646,7 +664,8 @@ local function dropItemNearYard(itemName)
 	local position = Vector3.new(math.random(-40, 40), 3, math.random(-40, 40))
 	local part = ItemVisuals.Create(itemName, position, 1)
 	part:SetAttribute("ItemName", itemName)
-	makeLabel(part, itemName, 2, 150, nil, 45)
+	local itemColor = ItemRarity.Color(FusionRecipes.GetTier(itemName), FusionRecipes.IsSecretResult(itemName))
+	makeLabel(part, itemName, 2, 150, itemColor, 45)
 	part.Parent = getScrapFolder()
 end
 
@@ -662,6 +681,7 @@ local function renderInSlot(plot, slot, itemName, value)
 	-- isSecret = false and lose a restored secret's color on rejoin).
 	local isSecret = FusionRecipes.IsSecretResult(itemName)
 	local isFallback = FusionRecipes.IsFallbackResult(itemName)
+	local tier = FusionRecipes.GetTier(itemName)
 
 	local position = slot.base.Position + Vector3.new(0, 2.5, 0)
 	local part
@@ -697,6 +717,7 @@ local function renderInSlot(plot, slot, itemName, value)
 	slot.itemName = itemName
 	slot.value = value
 	slot.label.Text = string.format("%s\n+%.1f coins/sec", itemName, value / PLACEMENT_PAYBACK_SECONDS)
+	slot.label.TextColor3 = ItemRarity.Color(tier, isSecret)
 	slot.sellPrompt.Enabled = true
 end
 
@@ -743,6 +764,7 @@ local function sellSlot(plot, zoneKey, slotIndex, player)
 	slot.itemName = nil
 	slot.value = nil
 	slot.label.Text = "empty"
+	slot.label.TextColor3 = plot.zones[zoneKey].def.color
 	slot.sellPrompt.Enabled = false
 	updateWalkSpeed(player)
 
@@ -786,25 +808,29 @@ local function attemptFusion(player)
 		return
 	end
 
+	local resultTag = ItemRarity.Tag(result, info.tier, info.isSecret)
+	local aTag = ItemRarity.Tag(a, FusionRecipes.GetTier(a), FusionRecipes.IsSecretResult(a))
+	local bTag = ItemRarity.Tag(b, FusionRecipes.GetTier(b), FusionRecipes.IsSecretResult(b))
+
 	if info.isFallback then
 		-- A generic hybrid, not a curated recipe — still worth having and
 		-- placing, but doesn't count toward discoveries/goals.
-		toast(player, string.format("%s + %s = %s", a, b, result))
+		toast(player, string.format("%s + %s = %s", aTag, bTag, resultTag))
 	elseif not s.discovered[result] then
 		s.discovered[result] = true
 		s.count = s.count + 1
 		table.insert(s.discoveredList, result)
 		if info.tier > s.bestTier then s.bestTier = info.tier end
 		if info.isSecret then s.secrets = s.secrets + 1 end
-		toast(player, string.format("NEW DISCOVERY\n%s", result), true)
+		toast(player, string.format("NEW DISCOVERY\n%s", resultTag), true)
 		print(string.format("[Fusion] %s discovered %s (%d/%d)",
 			player.Name, result, s.count, FusionRecipes.GetTotalDiscoveries()))
 	else
-		toast(player, string.format("%s + %s = %s", a, b, result))
+		toast(player, string.format("%s + %s = %s", aTag, bTag, resultTag))
 	end
 
 	if info.isSecret then
-		toast(player, string.format("SECRET RECIPE\n%s", result), true)
+		toast(player, string.format("SECRET RECIPE\n%s", resultTag), true)
 	end
 
 	local placed = placeFusedItem(plot, result, info)
@@ -834,13 +860,16 @@ local function grabItem(player, part)
 
 	if isGolden then
 		grabbed = rollRareItem()
-		broadcast(string.format("%s claimed the GOLDEN SCRAP — %s!", player.Name, grabbed))
+		local grabbedTag = ItemRarity.Tag(grabbed, FusionRecipes.GetTier(grabbed), false)
+		broadcast(string.format("%s claimed the GOLDEN SCRAP — %s!", player.Name, grabbedTag))
 	else
 		local chance = math.min(LUCK_MAX_CHANCE, (s.upgrades.luck * boostMult(s, "luck") - 1) * LUCK_PER_LEVEL)
 		if math.random() < chance then
 			local upgraded = rarerThan(grabbed)
 			if upgraded then
-				toast(player, string.format("LUCKY FIND\n%s → %s", grabbed, upgraded), true)
+				local fromTag = ItemRarity.Tag(grabbed, FusionRecipes.GetTier(grabbed), false)
+				local toTag = ItemRarity.Tag(upgraded, FusionRecipes.GetTier(upgraded), false)
+				toast(player, string.format("LUCKY FIND\n%s → %s", fromTag, toTag), true)
 				grabbed = upgraded
 			end
 		end
@@ -1339,6 +1368,7 @@ Players.PlayerRemoving:Connect(function(player)
 					slot.itemName = nil
 					slot.value = nil
 					slot.label.Text = "empty"
+					slot.label.TextColor3 = zoneDef.color
 					slot.sellPrompt.Enabled = false
 				end
 			end

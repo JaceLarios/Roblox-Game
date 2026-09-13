@@ -7,6 +7,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
+local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 
 -- Shared with PlotManager and the client UI.
 local remote = ReplicatedStorage:FindFirstChild("GameUpdate")
@@ -62,7 +63,9 @@ local function addLabel(part, itemName)
 	label.Size = UDim2.new(1, 0, 1, 0)
 	label.BackgroundTransparency = 1
 	label.Text = itemName
-	label.TextColor3 = Color3.fromRGB(255, 255, 255)
+	label.TextColor3 = itemName == "GOLDEN SCRAP"
+		and ItemRarity.GoldenScrapColor()
+		or ItemRarity.Color(FusionRecipes.GetTier(itemName), false)
 	label.TextStrokeTransparency = 0.4
 	label.TextScaled = true
 	label.Parent = billboard

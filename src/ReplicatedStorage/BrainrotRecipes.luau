@@ -172,6 +172,10 @@ function BrainrotRecipes.IsFallbackResult(name)
 	return fallbackNameSet[name] == true
 end
 
+function BrainrotRecipes.GetTier(name)
+	return nameTier[name] or 1
+end
+
 -- Roll a random Tier 1 item using the weights above.
 function BrainrotRecipes.RollBaseItem()
 	local total = 0
@@ -207,6 +211,41 @@ function BrainrotRecipes.IsSecretResult(name)
 		end
 	end
 	return false
+end
+
+-- Mirrors FusionRecipes.GetIndex — every real creature, secrets included
+-- as masked rows, fallback hybrids excluded.
+function BrainrotRecipes.GetIndex(discovered)
+	discovered = discovered or {}
+	local items = {}
+
+	for _, base in ipairs(BrainrotRecipes.BaseItems) do
+		table.insert(items, { name = base.name, tier = 1, isSecret = false, isBase = true, known = true })
+	end
+
+	local function addResult(r, isSecret)
+		local known = discovered[r[3]] == true
+		table.insert(items, {
+			name     = known and r[3] or "???",
+			tier     = r[4],
+			isSecret = isSecret,
+			isBase   = false,
+			known    = known,
+			a        = known and r[1] or "???",
+			b        = known and r[2] or "???",
+		})
+	end
+
+	for _, r in ipairs(RECIPE_LIST) do addResult(r, false) end
+	for _, r in ipairs(SECRET_LIST) do addResult(r, true) end
+
+	table.sort(items, function(x, y)
+		if x.tier ~= y.tier then return x.tier < y.tier end
+		if x.isSecret ~= y.isSecret then return not x.isSecret end
+		return x.name < y.name
+	end)
+
+	return items
 end
 
 return BrainrotRecipes
