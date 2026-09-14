@@ -1,4 +1,16 @@
-# Latest handoff — Illustrated UI and Salvage Yard palette
+# Latest handoff — Two name-overflow bugs fixed in Codex's new Inventory UI (2026-09-14)
+
+Twenty-sixth pass. Pulled Codex's "Illustrated UI and Salvage Yard palette" commit (below) from GitHub — pushed directly there, not synced through this session, confirmed byte-identical to what was already live in Studio before touching anything. The user then reported "names running off the page not fitting and overlapping issues" with two screenshots.
+
+**Found by comparing the new Inventory against the structurally-identical Index a few hundred lines away in the same file, which doesn't have the bug**: both render a grid of item cards with a name label underneath, but only the Index's label has `TextScaled = true`. The Inventory card's name label (`redrawInventory`) and the item-details stat panel's name label (`statName`) both had `TextScaled = false` (or, for `statName`, simply never set — same effective default) paired with `TextWrapped = true` and a small fixed height, with no `ClipsDescendants` anywhere in the ancestry to even contain the spillover. A short name ("Jet Engine," "Monster Truck") fits fine, which is exactly why this wasn't caught in Codex's own validation pass — a mutation-prefixed name ("[Cosmic] Monster Truck") or a longer curated result had nowhere to go but past the label's edges into whatever's next to it.
+
+**Fixed both the same way the Index already solves it: added `TextScaled = true`.** Deliberately the smallest correct diff — didn't touch `ClipsDescendants`, didn't switch to `TextTruncate`, didn't touch anything Codex owns (colors, fonts, card sizing) — just the one property this specific bug needed.
+
+**Verified concretely, not just reasoned about:** built a throwaway test card in a live Play session, sized exactly like a real inventory card (120×120, confirmed by reading the actual `UIGridLayout.CellSize`), with the exact patched name-label config and the text `"[Cosmic] Monster Truck"` — wrapped cleanly to two lines and shrank to fit inside the card, no overflow. Also re-opened the real Inventory and stat panel afterward with a normal short name ("Jet Engine") to confirm the fix doesn't regress the common case — renders exactly as before. Clean Play-mode start throughout, matching Codex's own "no game-script errors" finding.
+
+---
+
+# Previous handoff — Illustrated UI and Salvage Yard palette
 
 The approved UI redesign is backed up by this commit. It is based on main at c3d2ed83b796014b8a05d71b972d9baff53501dc and preserves Claude's newer secret-pet egg, fusion, receipt and save work. The four UI scripts were read back from the current Studio place before uploading.
 

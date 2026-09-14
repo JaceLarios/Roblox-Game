@@ -1567,6 +1567,10 @@ local statName = label(statPanel, "Select an item", UDim2.new(1, -28, 0, 50), LI
 statName.Position = UDim2.new(0, 14, 0, 130)
 statName.Size=UDim2.new(1,-28,0,38)
 statName.TextWrapped = true
+-- Same fixed-height-with-no-scaling issue as the inventory cards: a long
+-- mutation-prefixed or curated name had nowhere to go but past this
+-- label's 38px height once it wrapped to a second line.
+statName.TextScaled = true
 statName.RichText = true
 
 local statValue = label(statPanel, "", UDim2.new(1, -28, 0, 20), GOLD, Enum.Font.FredokaOne, 15)
@@ -1743,7 +1747,11 @@ function redrawInventory(items, capacity)
 		nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 		nameLbl.TextStrokeTransparency = 0.4
 		nameLbl.Font = Enum.Font.FredokaOne
-		nameLbl.TextScaled = false
+		-- Was TextScaled=false with a fixed TextSize — a long name (a
+		-- mutation prefix, a longer curated result) had nowhere to go but
+		-- past the label's edges into whatever's next to it. TextScaled
+		-- is the same fix already used for the near-identical Index cards.
+		nameLbl.TextScaled = true
 		nameLbl.TextSize=20
 		nameLbl.TextWrapped = true
 		nameLbl.Parent = card
