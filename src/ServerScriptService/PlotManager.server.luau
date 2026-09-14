@@ -2005,12 +2005,19 @@ local function grantSecretPet(player, entry)
 	if not s then return false end
 
 	table.insert(s.inventory, entry.name)
-	toast(player, string.format("SECRET PET UNLOCKED\n%s", instanceTag(entry.name)), true)
+	toast(player, string.format("EGG OPENED\n%s", instanceTag(entry.name)), true)
 	pushUI(player)
 	return true
 end
 
 MarketplaceService.ProcessReceipt = function(receiptInfo)
+	if receiptInfo.ProductId ~= SecretPets.EggProductId then
+		-- Not the secret-pet egg — some other Developer Product this
+		-- codebase doesn't have yet. Nothing to grant, but still say so,
+		-- rather than leaving Roblox retrying forever.
+		return Enum.ProductPurchaseDecision.PurchaseGranted
+	end
+
 	local player = Players:GetPlayerByUserId(receiptInfo.PlayerId)
 	local s = player and state[player]
 	if not s then
@@ -2024,12 +2031,10 @@ MarketplaceService.ProcessReceipt = function(receiptInfo)
 		return Enum.ProductPurchaseDecision.PurchaseGranted
 	end
 
-	local entry = SecretPets.ByProductId[receiptInfo.ProductId]
-	if not entry then
-		warn("[SecretPets] ProcessReceipt for unrecognized ProductId " .. tostring(receiptInfo.ProductId))
-		return Enum.ProductPurchaseDecision.PurchaseGranted -- nothing to map this to; stop the retry storm
-	end
-
+	-- Rolled fresh per purchase, not per receipt-retry: grantedPurchaseIds
+	-- below guards against ever re-rolling (and re-granting) the same
+	-- purchase twice, so this only ever runs once per real transaction.
+	local entry = SecretPets.Roll()
 	grantSecretPet(player, entry)
 	s.grantedPurchaseIds[receiptInfo.PurchaseId] = true
 	return Enum.ProductPurchaseDecision.PurchaseGranted

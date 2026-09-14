@@ -1,4 +1,18 @@
-# Latest handoff — Secret pets: the mechanism is fully built (Robux, un-fusable, best-in-game value), the pets themselves are not (2026-09-14)
+# Latest handoff — Secret pets became an egg: one purchase, 5 weighted outcomes, odds exposed for disclosure (2026-09-14)
+
+Twenty-fourth pass, same day as the last one, refining it before it ever shipped: "id like to make it an egg that people have to buy where you get 5 options and what you could get but the better the pet the harder it is to get." Changes the *shape* of the purchase, not the two rules from last pass (still Robux, still permanently un-fusable) — those didn't need to move.
+
+**One Developer Product, not five.** The previous pass gave each pet its own product id (`SecretPets.ByProductId`); an egg only needs one — you buy the egg, the server decides which of the 5 pets you got. Replaced `ByProductId` with a single `SecretPets.EggProductId`, and `ProcessReceipt` now checks `receiptInfo.ProductId == SecretPets.EggProductId` instead of looking one up.
+
+**Weighted so the better the pet, the harder it is to get** — a straight port of the weighted-random shape `FusionRecipes.RollBaseItem` already uses (sum the weights, pick a random point along the total, walk the list until it's covered), just as `SecretPets.Roll()` over this separate list. Placeholder curve: 50/25/15/7/3 percent across the 5 slots, values 70k → 200k — every single outcome still clears the old best-in-game fusion result (50k), so even the "common" pull from a premium egg is a real win, not a consolation prize; the 3%-odds top pull is meant to feel like a real moment.
+
+**"What you could get" turned into a real requirement, not just a nice-to-have: Roblox requires disclosing the odds of any randomized paid item before purchase.** Added `SecretPets.Odds()` — returns `{name, value, percent}` per pet, percent pre-computed from the weights — specifically so Codex's eventual purchase UI has a ready-made source for that disclosure instead of re-deriving the math. Whatever that UI ends up looking like, it needs to actually show these numbers somewhere in the buy flow; this isn't optional polish.
+
+**Verified thoroughly, since a wrong weighted-roll is the kind of bug that's easy to ship and expensive to notice:** `SecretPets.Odds()` confirmed producing exactly 50.0/25.0/15.0/7.0/3.0 percent; then, separately, `SecretPets.Roll()` sampled 20,000 times and tallied — 50.37/24.90/15.09/6.88/2.77 percent, comfortably within normal statistical noise of the intended weights. `ByName` (unchanged in shape, still what the fusion-exclusion guards and `itemTierInfo` key off) reconfirmed correctly excluding a real item name. Clean Play-mode start, zero console errors. **Still not verified, for the same structural reason as last pass**: the real `ProcessReceipt` path end to end — that still needs an actual Developer Product id, which still doesn't exist.
+
+---
+
+# Previous handoff — Secret pets: the mechanism is fully built (Robux, un-fusable, best-in-game value), the pets themselves are not (2026-09-14)
 
 Twenty-third pass. The user asked for secret pets: bought by players, "very good," and explicitly "cant be fused together" — plus, unprompted, confirmation that Claude designs mechanics and Codex designs graphics is a standing rule for the whole project now, not just the one feature it started on.
 
