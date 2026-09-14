@@ -13,6 +13,15 @@ local TIER_COLORS = {
 	[3] = Color3.fromRGB(90, 170, 255),   -- blue
 	[4] = Color3.fromRGB(210, 110, 255),  -- purple
 }
+-- Same tiers as TIER_COLORS, same order the Index's rarity tabs already
+-- use — kept here too now that server-side text (the fusion result
+-- announcement) needs to say a rarity out loud, not just imply it by color.
+local TIER_NAMES = {
+	[1] = "COMMON",
+	[2] = "UNCOMMON",
+	[3] = "RARE",
+	[4] = "EPIC",
+}
 local MAX_TIER = 4
 
 local SECRET_COLOR = Color3.fromRGB(255, 205, 40)   -- gold
@@ -23,6 +32,13 @@ function ItemRarity.Color(tier, isSecret)
 		return SECRET_COLOR
 	end
 	return TIER_COLORS[math.clamp(tier or 1, 1, MAX_TIER)]
+end
+
+function ItemRarity.Name(tier, isSecret)
+	if isSecret then
+		return "SECRET"
+	end
+	return TIER_NAMES[math.clamp(tier or 1, 1, MAX_TIER)]
 end
 
 -- Rich-text color codes don't take a Color3 directly — this saves every

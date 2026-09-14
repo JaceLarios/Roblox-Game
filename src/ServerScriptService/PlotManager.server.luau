@@ -53,8 +53,13 @@ local PLOT_SIZE   = 70
 -- count and the cap on how many pets can ever be earning money for one
 -- player at once, so there's only the one number to keep in sync.
 local PET_PAD_COUNT = 5
-local PET_PAD_SPACING = 7
-local PET_PAD_Z = 16 -- clears the 16-stud fusion pad
+local PET_PAD_SIZE = 7
+local PET_PAD_SPACING = 10
+-- Pushed well back from the 16-stud fusion pad (its own back edge sits at
+-- Z=8) toward the plot's actual back edge (Z=35) — plots had a lot of
+-- unused ground behind this row before; this uses most of it instead of
+-- leaving it empty.
+local PET_PAD_Z = 27
 
 -- Luck: applied when you GRAB, not when scrap spawns. The yard is shared,
 -- so a per-player spawn table is impossible — but a per-player reroll at
@@ -489,6 +494,78 @@ local function playSound(parent, key)
 	task.delay(5, function() if sound.Parent then sound:Destroy() end end)
 end
 
+------------------------------------------------------------------
+-- Effects — a one-shot burst on the pad when two items fuse, and a
+-- continuous soft glow on whatever's currently earning on a pet pad.
+-- Both are plain ParticleEmitters on a throwaway Attachment rather than
+-- anything persistent, so cleanup is just "destroy the Attachment" (the
+-- glow's Attachment is parented to the item part itself, so it's already
+-- destroyed for free the moment that part is — see redrawPetPad).
+------------------------------------------------------------------
+
+local function fusionShimmer(pad)
+	local attachment = Instance.new("Attachment")
+	attachment.Position = Vector3.new(0, 1, 0)
+	attachment.Parent = pad
+
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	-- White-to-gold (the original pairing) all but disappears against the pad's
+	-- own bright yellow surface — confirmed visually close-up in Studio. Signature
+	-- BLUE instead of gold keeps the sparkle high-contrast on any pad color.
+	emitter.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(70, 150, 255))
+	emitter.Lifetime = NumberRange.new(0.5, 1.0)
+	emitter.Speed = NumberRange.new(8, 16)
+	emitter.SpreadAngle = Vector2.new(180, 180)
+	emitter.Rate = 0
+	emitter.LightEmission = 0.75
+	emitter.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.9),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	emitter.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	emitter.Parent = attachment
+
+	emitter:Emit(70)
+	task.delay(2, function()
+		if attachment.Parent then attachment:Destroy() end
+	end)
+end
+
+-- Parented to the item part itself (not the pad), so it lives and dies
+-- with that part — no separate bookkeeping needed when a pet gets taken
+-- back off, since redrawPetPad already destroys the old itemPart outright.
+local function attachPlacedGlow(part, color)
+	local attachment = Instance.new("Attachment")
+	attachment.Parent = part
+
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	emitter.Color = ColorSequence.new(color)
+	emitter.Lifetime = NumberRange.new(1.0, 1.6)
+	emitter.Speed = NumberRange.new(1.5, 3)
+	emitter.SpreadAngle = Vector2.new(180, 180)
+	-- Rate/Size/LightEmission/starting-Transparency tuned up from an initial
+	-- pass that was confirmed (via a cranked-up debug emitter) to render
+	-- fine but was too faint to read at normal play distance — matches the
+	-- "bright, big, no dull colors" standing art direction instead of a
+	-- barely-there ambient hint.
+	emitter.Rate = 16
+	emitter.LightEmission = 0.75
+	emitter.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.65),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	emitter.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	emitter.Parent = attachment
+end
+
 local function playerRoot(player)
 	local char = player.Character
 	return char and char:FindFirstChild("HumanoidRootPart")
@@ -583,13 +660,13 @@ for i = 1, PLOT_COUNT do
 
 		local petPadPart = makePart({
 			Name = "PetPad" .. slot,
-			Size = Vector3.new(5, 1, 5),
+			Size = Vector3.new(PET_PAD_SIZE, 1, PET_PAD_SIZE),
 			Position = padCentre + Vector3.new(0, 0.5, 0),
 			Material = Enum.Material.SmoothPlastic,
 			Color = Color3.fromRGB(210, 210, 220),
 			Parent = model,
 		})
-		local petPadLabel = makeLabel(petPadPart, "EMPTY PAD", 2, 130, Color3.fromRGB(150, 150, 165), 40)
+		local petPadLabel = makeLabel(petPadPart, "EMPTY PAD", 3, 150, Color3.fromRGB(150, 150, 165), 45)
 
 		local takeOffPrompt = Instance.new("ProximityPrompt")
 		takeOffPrompt.ActionText = "Take Off"
@@ -1062,6 +1139,7 @@ local function redrawPetPad(plot, slot, itemName)
 
 	local info = itemTierInfo(itemName)
 	local itemColor = mutationColor or ItemRarity.Color(info.tier, info.isSecret)
+	attachPlacedGlow(part, itemColor)
 	pad.label.Text = string.format("%s\n+%.1f coins/sec", instanceTag(itemName), info.value / PLACEMENT_PAYBACK_SECONDS)
 	pad.label.TextColor3 = itemColor
 	pad.prompt.Enabled = true
@@ -1191,21 +1269,27 @@ local function attemptFusion(player)
 	local aTag = instanceTag(a)
 	local bTag = instanceTag(b)
 
+	-- The "how much money it'll make you" half of the fusion pop-up — a
+	-- rate, not the flat sell value, since a fused item only ever earns
+	-- once actually placed on a pad (see PLACEMENT_PAYBACK_SECONDS above).
+	local rateLine = string.format("%s — +%.1f coins/sec if placed",
+		ItemRarity.Name(info.tier, info.isSecret), instanceValue / PLACEMENT_PAYBACK_SECONDS)
+
 	if info.isFallback then
 		-- A generic hybrid, not a curated recipe — still worth having and
 		-- placing, but doesn't count toward discoveries/goals.
-		toast(player, string.format("%s + %s = %s", aTag, bTag, resultTag))
+		toast(player, string.format("%s + %s = %s\n%s", aTag, bTag, resultTag, rateLine), true)
 	elseif not s.discovered[result] then
 		s.discovered[result] = true
 		s.count = s.count + 1
 		table.insert(s.discoveredList, result)
 		if info.tier > s.bestTier then s.bestTier = info.tier end
 		if info.isSecret then s.secrets = s.secrets + 1 end
-		toast(player, string.format("NEW DISCOVERY\n%s", resultTag), true)
+		toast(player, string.format("NEW DISCOVERY\n%s\n%s", resultTag, rateLine), true)
 		print(string.format("[Fusion] %s discovered %s (%d/%d)",
 			player.Name, result, s.count, FusionRecipes.GetTotalDiscoveries()))
 	else
-		toast(player, string.format("%s + %s = %s", aTag, bTag, resultTag))
+		toast(player, string.format("%s + %s = %s\n%s", aTag, bTag, resultTag, rateLine), true)
 	end
 
 	if info.isSecret then
@@ -1215,6 +1299,8 @@ local function attemptFusion(player)
 	if mutationId then
 		toast(player, string.format("MUTATION!\n%s", resultTag), true)
 	end
+
+	fusionShimmer(plot.pad)
 
 	-- Straight into inventory — the pad is the only place a new item
 	-- enters a player's hands now. Fusing always nets -1 slot overall
