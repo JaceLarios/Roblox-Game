@@ -20,6 +20,7 @@ local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage     = game:GetService("ServerStorage")
 local RunService        = game:GetService("RunService")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 local FusionEffects = require(ServerStorage:WaitForChild("FusionEffects"))
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
@@ -28,7 +29,7 @@ local ItemVisuals   = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local ItemRarity    = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local Mutations     = require(ReplicatedStorage:WaitForChild("Mutations"))
 local PromoCodes    = require(ReplicatedStorage:WaitForChild("PromoCodes"))
-local ShopPets      = require(ReplicatedStorage:WaitForChild("ShopPets"))
+local SecretPets    = require(ReplicatedStorage:WaitForChild("SecretPets"))
 local DataManager   = require(script.Parent:WaitForChild("DataManager"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
@@ -303,13 +304,6 @@ if not redeemCodeRemote then
 	redeemCodeRemote.Parent = ReplicatedStorage
 end
 
-local buyShopPetRemote = ReplicatedStorage:FindFirstChild("BuyShopPet")
-if not buyShopPetRemote then
-	buyShopPetRemote = Instance.new("RemoteEvent")
-	buyShopPetRemote.Name = "BuyShopPet"
-	buyShopPetRemote.Parent = ReplicatedStorage
-end
-
 -- Retention rewards.
 -- Deliberately mixed: coins are the boring baseline, and the days that
 -- aren't coins are the ones people remember. Day 7 stacks all three.
@@ -410,6 +404,22 @@ end
 -- also uses it) is defined.
 local function itemTierInfo(itemName)
 	local baseName, mutationId = Mutations.Unwrap(itemName)
+
+	-- Secret pets aren't in FusionRecipes/BrainrotRecipes at all (bought,
+	-- never fused, never a fusion result) — FusionRecipes.GetValue would
+	-- silently return 0 for a name it's never seen, so this has to be
+	-- checked first, not folded into the tables below.
+	local secretPet = SecretPets.ByName[baseName]
+	if secretPet then
+		-- tier is a don't-care here — ItemRarity.Color/.Name both check
+		-- isSecret first and never look at tier when it's true.
+		return {
+			tier = 4,
+			isSecret = true,
+			value = secretPet.value * Mutations.ValueMultiplier(mutationId),
+		}
+	end
+
 	return {
 		tier = FusionRecipes.GetTier(baseName),
 		isSecret = FusionRecipes.IsSecretResult(baseName),
@@ -1168,6 +1178,15 @@ local function attemptFusion(player)
 		return
 	end
 
+	-- Belt-and-suspenders: canReceiveTradedItem already refuses to let a
+	-- secret pet reach a carry slot at all, so this should be unreachable
+	-- — but a paid item accidentally getting consumed by a fusion would be
+	-- bad enough to check for again right here, cheaply, before it happens.
+	if SecretPets.ByName[(Mutations.Unwrap(a))] or SecretPets.ByName[(Mutations.Unwrap(b))] then
+		toast(player, "Secret pets can't be fused.")
+		return
+	end
+
 	-- An item sent back from Inventory can still carry its mutation prefix
 	-- — recipe lookups need the bare name, or a "[Shiny] Trail Blazer"
 	-- would never match the curated recipe for "Trail Blazer" and would
@@ -1595,6 +1614,10 @@ local function canReceiveTradedItem(player, itemName, source, outgoingRef)
 	if not s then return false end
 
 	if source == "carry" then
+		-- Secret pets are bought, not fused — block every path onto a
+		-- carry slot (move-to-carry, receiving one mid-trade), since the
+		-- carry slots are the only way anything ever reaches the fuse pad.
+		if SecretPets.ByName[(Mutations.Unwrap(itemName))] then return false end
 		local freeSlots = capacity(player, s) - #s.slots
 		if outgoingRef and outgoingRef.source == "carry" then
 			freeSlots = freeSlots + 1
@@ -1964,32 +1987,53 @@ redeemCodeRemote.OnServerEvent:Connect(function(player, rawCode)
 	pushUI(player)
 end)
 
-buyShopPetRemote.OnServerEvent:Connect(function(player, index)
+------------------------------------------------------------------
+-- Secret pets — bought with real money (Developer Products), never
+-- fused. The client prompts the purchase directly
+-- (MarketplaceService:PromptProductPurchase), so there's no RemoteEvent
+-- here — the server only cares about the result, via ProcessReceipt.
+--
+-- grantSecretPet does the actual work as its own function specifically
+-- so it's directly callable/testable without needing a real purchase.
+-- Granted regardless of inventory space — a paid purchase should never
+-- silently fail to deliver — and recorded in s.grantedPurchaseIds so a
+-- Roblox retry of an already-handled receipt never double-grants.
+------------------------------------------------------------------
+
+local function grantSecretPet(player, entry)
 	local s = state[player]
-	if not s then return end
+	if not s then return false end
 
-	local entry = type(index) == "number" and ShopPets[index]
-	if not entry then return end
-
-	local stats = player:FindFirstChild("leaderstats")
-	local coins = stats and stats:FindFirstChild("Coins")
-	if not coins then return end
-
-	if coins.Value < entry.cost then
-		toast(player, string.format("Not enough coins. Need %d.", entry.cost))
-		return
-	end
-
-	if #s.inventory >= INVENTORY_CAPACITY then
-		toast(player, "Inventory's full — sell or place something first.")
-		return
-	end
-
-	coins.Value = coins.Value - entry.cost
-	table.insert(s.inventory, entry.item)
-	toast(player, string.format("Bought %s!", instanceTag(entry.item)), true)
+	table.insert(s.inventory, entry.name)
+	toast(player, string.format("SECRET PET UNLOCKED\n%s", instanceTag(entry.name)), true)
 	pushUI(player)
-end)
+	return true
+end
+
+MarketplaceService.ProcessReceipt = function(receiptInfo)
+	local player = Players:GetPlayerByUserId(receiptInfo.PlayerId)
+	local s = player and state[player]
+	if not s then
+		-- Not here right now, or still mid-join — ask Roblox to retry
+		-- later rather than losing the purchase.
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+
+	if s.grantedPurchaseIds[receiptInfo.PurchaseId] then
+		-- Already handled — Roblox re-delivering a receipt we already granted.
+		return Enum.ProductPurchaseDecision.PurchaseGranted
+	end
+
+	local entry = SecretPets.ByProductId[receiptInfo.ProductId]
+	if not entry then
+		warn("[SecretPets] ProcessReceipt for unrecognized ProductId " .. tostring(receiptInfo.ProductId))
+		return Enum.ProductPurchaseDecision.PurchaseGranted -- nothing to map this to; stop the retry storm
+	end
+
+	grantSecretPet(player, entry)
+	s.grantedPurchaseIds[receiptInfo.PurchaseId] = true
+	return Enum.ProductPurchaseDecision.PurchaseGranted
+end
 
 ------------------------------------------------------------------
 -- Scrap magnet
@@ -2220,6 +2264,7 @@ local function onPlayerAdded(player)
 		playMinutes = 0,
 		playtimeMilestonesClaimed = {},
 		redeemedCodes = data.redeemedCodes or {},
+		grantedPurchaseIds = data.grantedPurchaseIds or {},
 		plotIndex = index,
 		mutationPity = 0,
 	}
@@ -2302,6 +2347,7 @@ local function snapshot(player)
 		lifetimeCoins = Leaderboard.Snapshot(player),
 		totalPlaytimeMinutes = PlaytimeLeaderboard.Snapshot(player),
 		redeemedCodes = s.redeemedCodes,
+		grantedPurchaseIds = s.grantedPurchaseIds,
 	}
 end
 

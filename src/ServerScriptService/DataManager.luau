@@ -52,6 +52,7 @@ local function defaultData()
 		lifetimeCoins = 0,
 		totalPlaytimeMinutes = 0,
 		redeemedCodes = {},
+		grantedPurchaseIds = {}, -- Developer Product receipts already granted (secret pets) — keyed by PurchaseId, never re-grant on a Roblox retry.
 	}
 end
 
