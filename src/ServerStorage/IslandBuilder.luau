@@ -76,6 +76,7 @@ function IslandBuilder.Build(theme)
 		Position = center,
 		Material = theme.groundMaterial or Enum.Material.SmoothPlastic,
 		Color = theme.groundColor,
+		CanCollide = true,
 		Parent = folder,
 	})
 

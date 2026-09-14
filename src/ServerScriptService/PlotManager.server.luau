@@ -2320,6 +2320,13 @@ end)
 -- Joining and leaving
 ------------------------------------------------------------------
 
+-- CharacterAutoLoads is off (see the top of this file), so Roblox never
+-- auto-respawns a dead player on its own — this is the only thing that
+-- does, on every character's Humanoid.Died. Sends them back to their own
+-- plot (RespawnLocation), never wherever they died, same as any normal
+-- Roblox respawn.
+local RESPAWN_DELAY = 3
+
 local function assignPlot(player)
 	for i, plot in ipairs(plots) do
 		if plot.owner == nil then
@@ -2419,13 +2426,20 @@ local function onPlayerAdded(player)
 	player.RespawnLocation = plot.spawnPoint
 
 	player.CharacterAdded:Connect(function(character)
-		character:WaitForChild("Humanoid")
+		local humanoid = character:WaitForChild("Humanoid")
 		updateWalkSpeed(player)
 		updateCompanionVisual(player)
 		attachTradePrompt(player, character)
 		task.wait(1)
 		pushUI(player)
 		toast(player, "Plot " .. index .. " is yours. Scrap spawns in the centre.")
+
+		humanoid.Died:Connect(function()
+			task.wait(RESPAWN_DELAY)
+			if player.Parent then
+				player:LoadCharacter()
+			end
+		end)
 	end)
 
 	-- CharacterAutoLoads is off, so this is what actually spawns them —

@@ -2103,6 +2103,11 @@ local WORLDS = {
 		blurb = "A separate island with its own creatures to fuse.",
 		gradientColors = { Color3.fromRGB(255, 110, 210), Color3.fromRGB(170, 80, 255) },
 	},
+	{
+		key = "haunted", name = "HAUNTED HOLLOW", emoji = "👻",
+		blurb = "A cursed graveyard with its own ghosts to fuse.",
+		gradientColors = { Color3.fromRGB(120, 80, 190), Color3.fromRGB(45, 45, 60) },
+	},
 }
 
 -- Right rail, slot 1 (top).
