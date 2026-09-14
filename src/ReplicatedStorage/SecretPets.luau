@@ -48,12 +48,14 @@ local SecretPets = { List = {} }
 SecretPets.EggProductId = 0
 
 -- weight is relative, not a percentage — Odds() below turns these into
--- real percentages. Higher value = lower weight = harder to get.
-table.insert(SecretPets.List, { key = "secret_pet_1", name = "TBD Secret Pet 1", value = 70000,  weight = 50 })
+-- real percentages. Higher value = lower weight = harder to get. These
+-- five weights deliberately sum to 100, so weight and percent are the
+-- same number — Secret Pet 5, the best, sits at a hard-required 1%.
+table.insert(SecretPets.List, { key = "secret_pet_1", name = "TBD Secret Pet 1", value = 70000,  weight = 55 })
 table.insert(SecretPets.List, { key = "secret_pet_2", name = "TBD Secret Pet 2", value = 95000,  weight = 25 })
-table.insert(SecretPets.List, { key = "secret_pet_3", name = "TBD Secret Pet 3", value = 125000, weight = 15 })
+table.insert(SecretPets.List, { key = "secret_pet_3", name = "TBD Secret Pet 3", value = 125000, weight = 12 })
 table.insert(SecretPets.List, { key = "secret_pet_4", name = "TBD Secret Pet 4", value = 160000, weight = 7 })
-table.insert(SecretPets.List, { key = "secret_pet_5", name = "TBD Secret Pet 5", value = 200000, weight = 3 })
+table.insert(SecretPets.List, { key = "secret_pet_5", name = "TBD Secret Pet 5", value = 200000, weight = 1 })
 
 SecretPets.ByName = {}
 for _, entry in ipairs(SecretPets.List) do

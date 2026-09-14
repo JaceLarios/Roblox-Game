@@ -1,4 +1,14 @@
-# Latest handoff — Secret pets became an egg: one purchase, 5 weighted outcomes, odds exposed for disclosure (2026-09-14)
+# Latest handoff — The rarest secret pet locked to a hard 1% (2026-09-14)
+
+Twenty-fifth pass, same day, one number: "i want the best pet to be a 1% seeming its the best it has to be the hardest get." Re-tuned the five weights to `55/25/12/7/1` — chosen to sum to exactly 100 specifically so `weight` and `percent` are the same number by construction, not something that happens to round close (no fuzzy floating-point odds hiding behind the display). Values (70k–200k) untouched; only the drop chances moved.
+
+Also directly answered "can you make the percentages show": ran `SecretPets.Odds()` for real rather than just asserting the math worked, and — since 1% is a thin tail that a small sample can't really confirm — sampled `Roll()` 100,000 times (up from 20,000 last pass) specifically to get a stable read on that one thin case. Landed at 0.994%, 994 raw hits out of 100,000, against a target of 1.0%.
+
+**Verified:** `Odds()` returns exactly 55.0/25.0/12.0/7.0/1.0 percent; the 100k-sample empirical roll matches all five within normal statistical noise, the rarest included. Clean Play-mode start. **Not verified, unchanged from the last two passes:** the real `ProcessReceipt` path — still blocked on a real Developer Product id that doesn't exist yet.
+
+---
+
+# Previous handoff — Secret pets became an egg: one purchase, 5 weighted outcomes, odds exposed for disclosure (2026-09-14)
 
 Twenty-fourth pass, same day as the last one, refining it before it ever shipped: "id like to make it an egg that people have to buy where you get 5 options and what you could get but the better the pet the harder it is to get." Changes the *shape* of the purchase, not the two rules from last pass (still Robux, still permanently un-fusable) — those didn't need to move.
 
