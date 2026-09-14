@@ -1,3 +1,13 @@
+# Latest handoff — Open Gallery Item Index
+
+The approved Open Gallery design is now installed in Studio and backed up in this repository. Read [docs/index-open-gallery.md](docs/index-open-gallery.md) for changes, verification and remaining visual checks.
+
+Changed only `src/StarterPlayer/StarterPlayerScripts/GameUI.client.luau` and the new `src/ReplicatedStorage/IndexGallery.luau`. Existing models, original names, discovery data, companion selection callbacks, Claude's area-specific fusion routing, island unlock and daily-reward work are preserved. No Roblox publication was performed.
+
+Startup, search, discovery counts, unknown-item masking and desktop/portrait layout bounds passed. Actual screenshot review and genuine click tests remain pending: Studio reported a 1x1 camera viewport and screen/mouse tools did not complete during the unattended run. Bring Studio forward, press Play then B, and visually check area/rarity tabs, search and close before publishing.
+
+---
+
 # Latest handoff — Brainrot Island now costs coins to unlock; Day 7's icon lost its crown (2026-09-14)
 
 Thirtieth pass, same day. Three items: "id like to make it where you need to unlock the next area by using coins to buy your way in," "I want the day 7 icon to be of the secret pet so lets remove the crown," and a question — "what does the scrap do in this game exactly?" (answered in chat, not a code change).
