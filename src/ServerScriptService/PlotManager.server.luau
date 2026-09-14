@@ -319,7 +319,7 @@ local DAILY_REWARDS = {
 	{ kind = "item",  label = "RARE CRATE",   sub = "guaranteed rare" },
 	{ kind = "boost", stat = "value", mult = 2, minutes = 15, label = "2x SELL",   sub = "15 minutes" },
 	{ kind = "coins", amount = 3000, label = "3,000 Coins",      sub = "" },
-	{ kind = "jackpot", amount = 7500, label = "JACKPOT",        sub = "coins + luck + jet engine" },
+	{ kind = "jackpot", amount = 7500, label = "JACKPOT",        sub = "coins + luck + secret pet" },
 }
 local DAILY_MAX_STREAK = #DAILY_REWARDS
 
@@ -1630,6 +1630,11 @@ local function canReceiveTradedItem(player, itemName, source, outgoingRef)
 		end
 		return freeSlots > 0
 	elseif source == "inventory" then
+		-- Untradeable secret pets (the Day-7 streak pet) can't reach a
+		-- player via trade at all, not just via carry/fusion — the whole
+		-- point is you can only get one by playing 7 days yourself.
+		local secretPet = SecretPets.ByName[(Mutations.Unwrap(itemName))]
+		if secretPet and secretPet.untradeable then return false end
 		local freeSlots = INVENTORY_CAPACITY - #s.inventory
 		if outgoingRef and outgoingRef.source == "inventory" then
 			freeSlots = freeSlots + 1
@@ -2144,7 +2149,11 @@ local function grantReward(player, reward)
 	elseif reward.kind == "jackpot" then
 		addCoins(player, reward.amount)
 		giveBoost(player, "luck", 3, 20)
-		giveItem(player, "Jet Engine")
+		-- Straight into inventory, never a carry slot — same as the egg's
+		-- own grant (grantSecretPet, above), since a secret pet can never
+		-- be carried to a pad. The claim handler's own Day-7 toast covers
+		-- telling the player what they got, so no toast here.
+		table.insert(s.inventory, SecretPets.StreakPet.name)
 	end
 end
 
@@ -2172,7 +2181,7 @@ claimRemote.OnServerEvent:Connect(function(player)
 
 	if nextDay == DAILY_MAX_STREAK then
 		broadcast(string.format("%s completed a 7-day streak and hit the JACKPOT!", player.Name))
-		toast(player, string.format("DAY 7 JACKPOT\n%d coins + 3x Luck + Jet Engine", displayReward.amount), true)
+		toast(player, string.format("DAY 7 JACKPOT\n%d coins + 3x Luck\n%s", displayReward.amount, instanceTag(SecretPets.StreakPet.name)), true)
 	else
 		toast(player, string.format("DAY %d CLAIMED\n%s", nextDay, displayReward.label), true)
 	end

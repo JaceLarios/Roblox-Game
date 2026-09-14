@@ -2,18 +2,32 @@
 	SecretPets (ModuleScript, ReplicatedStorage) — Junkyard Fusion
 
 	A single Robux egg (SecretPets.EggProductId, one Developer Product)
-	that rolls one of the 5 pets below, weighted so the better the pet,
-	the harder it is to get — same weighted-random shape as
+	that rolls one of the 5 egg pets below, weighted so the better the
+	pet, the harder it is to get — same weighted-random shape as
 	FusionRecipes.RollBaseItem, just over this separate list. Two hard
-	rules the rest of the codebase enforces around whatever lives here
-	(see PlotManager.server.luau: itemTierInfo, canReceiveTradedItem,
-	attemptFusion, and the ProcessReceipt handler):
+	rules the rest of the codebase enforces around every entry in this
+	file, egg pets and the streak pet alike (see PlotManager.server.luau:
+	itemTierInfo, canReceiveTradedItem, attemptFusion, and the
+	ProcessReceipt handler):
 	  1. Never fusable — can't be carried to a pad, in or out, so they can
 	     never be an ingredient, and since they're not in FusionRecipes or
 	     BrainrotRecipes at all, they can never be a fusion result either.
 	  2. Every outcome is still worth more than the best fusion result
 	     (FusionRecipes.SecretValue, 50000) — even the "common" pull from
 	     this egg should feel like a real win, not a consolation prize.
+
+	A 6th entry, StreakPet, is a Day-7-daily-streak reward, not part of
+	the egg at all — granted once by PlotManager.server.luau's Day 7
+	jackpot (see DAILY_REWARDS/grantReward there), never purchasable.
+	It lives in this same List/ByName so it automatically inherits rule 1
+	above (un-fusable) and correct itemTierInfo valuation, but two flags
+	keep it out of the egg's own mechanics: `streakOnly = true` excludes
+	it from Roll()/Odds() (it must never be a possible or disclosed egg
+	outcome), and `untradeable = true` blocks it from being received via
+	a player-to-player inventory trade (see canReceiveTradedItem) — the
+	user's ask was specifically "a secret pet you can only get for
+	playing the game for 7 days," which a tradeable/giftable pet would
+	break.
 
 	Replaces the old direct-buy version of this file (one Developer
 	Product per pet) — the user wants an egg instead: one purchase, 5
@@ -57,6 +71,16 @@ table.insert(SecretPets.List, { key = "secret_pet_3", name = "TBD Secret Pet 3",
 table.insert(SecretPets.List, { key = "secret_pet_4", name = "TBD Secret Pet 4", value = 160000, weight = 7 })
 table.insert(SecretPets.List, { key = "secret_pet_5", name = "TBD Secret Pet 5", value = 200000, weight = 1 })
 
+-- The Day-7 streak reward — no weight, since streakOnly keeps it out of
+-- the weighted pool entirely (Roll()/Odds() below skip it on purpose).
+-- Value is a placeholder like everything else here: comfortably above
+-- the fusion best (50000) and above most egg pets, but below the egg's
+-- rarest pull (200000) — the paid egg's jackpot stays the single best
+-- item in the game, and this free 7-day pet is the clear second-best.
+local streakPet = { key = "streak_pet_1", name = "TBD 7-Day Pet", value = 150000, streakOnly = true, untradeable = true }
+table.insert(SecretPets.List, streakPet)
+SecretPets.StreakPet = streakPet
+
 SecretPets.ByName = {}
 for _, entry in ipairs(SecretPets.List) do
 	SecretPets.ByName[entry.name] = entry
@@ -68,19 +92,25 @@ end
 
 -- Same shape as FusionRecipes.RollBaseItem: sum the weights, pick a
 -- random point along that total, walk the list until it's covered.
+-- Skips streakOnly entries entirely — the egg must never be able to roll
+-- the Day-7 streak pet.
 function SecretPets.Roll()
 	local total = 0
 	for _, entry in ipairs(SecretPets.List) do
-		total = total + entry.weight
+		if not entry.streakOnly then
+			total = total + entry.weight
+		end
 	end
 
 	local roll = math.random() * total
 	local running = 0
 
 	for _, entry in ipairs(SecretPets.List) do
-		running = running + entry.weight
-		if roll <= running then
-			return entry
+		if not entry.streakOnly then
+			running = running + entry.weight
+			if roll <= running then
+				return entry
+			end
 		end
 	end
 
@@ -90,20 +120,26 @@ end
 -- {name, value, percent} per pet, for a purchase UI to disclose odds
 -- with — required by Roblox for any randomized paid item, not just good
 -- practice. percent is rounded to 1 decimal; the raw weights above are
--- the source of truth if the two ever look inconsistent.
+-- the source of truth if the two ever look inconsistent. Skips
+-- streakOnly entries — disclosing "odds" for a pet the egg can never
+-- actually roll would be misleading, not accurate.
 function SecretPets.Odds()
 	local total = 0
 	for _, entry in ipairs(SecretPets.List) do
-		total = total + entry.weight
+		if not entry.streakOnly then
+			total = total + entry.weight
+		end
 	end
 
 	local odds = {}
 	for _, entry in ipairs(SecretPets.List) do
-		table.insert(odds, {
-			name = entry.name,
-			value = entry.value,
-			percent = math.floor((entry.weight / total) * 1000 + 0.5) / 10,
-		})
+		if not entry.streakOnly then
+			table.insert(odds, {
+				name = entry.name,
+				value = entry.value,
+				percent = math.floor((entry.weight / total) * 1000 + 0.5) / 10,
+			})
+		end
 	end
 	return odds
 end

@@ -1,11 +1,13 @@
 --[[
 	GameUI (LocalScript, StarterPlayerScripts) — Junkyard Fusion v1
 
-	Four pieces:
-	  • Objective card   (top left)     — the one thing to do next
-	  • Discovery panel  (top right)    — what you've found
+	Two pieces:
 	  • Carry bar        (bottom)       — what's in your hands
-	  • Item index       (press B)      — every item, masked until found
+	  • Item index       (press B)      — every item, masked until found, and what you've discovered
+
+	(The on-screen objective card and discoveries panel were removed
+	2026-09-14 at the user's request — the Index already covers "what
+	have I found," and there's no need to say it twice.)
 
 	Display only. The server decides everything and sends state down;
 	this just draws it. A client that decides nothing can cheat nothing.
@@ -90,39 +92,7 @@ local function label(parent, text, size, color, font, textSize)
 end
 
 ------------------------------------------------------------------
--- Objective card (top left) — the structure that was missing
-------------------------------------------------------------------
-
-local objCard = Instance.new("Frame")
-objCard.Size = UDim2.new(0, 300, 0, 92)
-objCard.Position = UDim2.new(0, 20, 0, 20)
-objCard.BackgroundColor3 = DARK
-objCard.BackgroundTransparency = GLASS_HUD
-objCard.BorderSizePixel = 0
-objCard.Parent = gui
-UIStyle.Navigation(objCard)
-rounded(objCard)
-
-local objStripe = Instance.new("Frame")
-objStripe.Size = UDim2.new(0, 5, 1, -16)
-objStripe.Position = UDim2.new(0, 8, 0, 8)
-objStripe.BackgroundColor3 = BLUE
-objStripe.BorderSizePixel = 0
-objStripe.Parent = objCard
-rounded(objStripe, 3)
-
-local objHeader = label(objCard, "OBJECTIVE 1 / 9", UDim2.new(1, -30, 0, 20), BLUE, Enum.Font.FredokaOne, 12)
-objHeader.Position = UDim2.new(0, 22, 0, 10)
-
-local objText = label(objCard, "...", UDim2.new(1, -34, 0, 38), LIGHT, Enum.Font.FredokaOne, 17)
-objText.Position = UDim2.new(0, 22, 0, 30)
-objText.TextWrapped = true
-
-local objReward = label(objCard, "", UDim2.new(1, -30, 0, 18), DIM, Enum.Font.FredokaOne, 13)
-objReward.Position = UDim2.new(0, 22, 0, 68)
-
-------------------------------------------------------------------
--- Coin counter (under the objective card)
+-- Coin counter (top left)
 ------------------------------------------------------------------
 
 local coinCard = Instance.new("Frame")
@@ -720,39 +690,6 @@ local function redrawDaily(rewards, claimed, nextDay, available)
 		dailyStatus.TextColor3 = Color3.fromRGB(110, 110, 130)
 	end
 end
-
-------------------------------------------------------------------
--- Discovery panel (top right)
-------------------------------------------------------------------
-
-local panel = Instance.new("Frame")
-panel.Size = UDim2.new(0, 240, 0, 300)
-panel.Position = UDim2.new(1, -260, 0, 20)
-panel.BackgroundColor3 = DARK
-panel.BackgroundTransparency = GLASS_HUD
-panel.BorderSizePixel = 0
-panel.Parent = gui
-UIStyle.Navigation(panel)
-rounded(panel)
-
-local header = label(panel, "DISCOVERIES  0 / 0", UDim2.new(1, -20, 0, 34), PURPLE, Enum.Font.FredokaOne, 15)
-header.Position = UDim2.new(0, 12, 0, 8)
-
-local secretLine = label(panel, "Secrets  0 / 3", UDim2.new(1, -20, 0, 16), DIM, Enum.Font.FredokaOne, 12)
-secretLine.Position = UDim2.new(0, 12, 0, 34)
-
-local list = Instance.new("ScrollingFrame")
-list.Size = UDim2.new(1, -20, 1, -66)
-list.Position = UDim2.new(0, 12, 0, 56)
-list.BackgroundTransparency = 1
-list.BorderSizePixel = 0
-list.ScrollBarThickness = 4
-list.CanvasSize = UDim2.new(0, 0, 0, 0)
-list.Parent = panel
-
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 3)
-layout.Parent = list
 
 ------------------------------------------------------------------
 -- Carry bar (bottom centre)
@@ -2371,20 +2308,6 @@ end
 -- Draw whatever the server sends
 ------------------------------------------------------------------
 
-local function redrawList(names)
-	for _, child in ipairs(list:GetChildren()) do
-		if child:IsA("TextLabel") then child:Destroy() end
-	end
-
-	for i, name in ipairs(names or {}) do
-		local itemColor = ItemRarity.Color(FusionRecipes.GetTier(name), FusionRecipes.IsSecretResult(name))
-		local entry = label(list, "• " .. name, UDim2.new(1, 0, 0, 20), itemColor, Enum.Font.FredokaOne, 13)
-		entry.LayoutOrder = i
-	end
-
-	list.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 8)
-end
-
 remote.OnClientEvent:Connect(function(data)
 	if data.announce then
 		showAnnounce(data.announce)
@@ -2438,22 +2361,8 @@ remote.OnClientEvent:Connect(function(data)
 		redrawTrade(data.trade or nil)
 	end
 
-	if data.goalText then
-		objHeader.Text = string.format("OBJECTIVE %d / %d", data.goalNumber or 1, data.goalTotal or 9)
-		objText.Text = data.goalText
-		objReward.Text = (data.goalReward or 0) > 0
-			and string.format("Reward: %d coins", data.goalReward)
-			or ""
-	end
-
 	if data.luck then
 		luckText.Text = "LUCK " .. tostring(data.luck)
-	end
-
-	if data.discoveredCount then
-		header.Text = string.format("DISCOVERIES  %d / %d", data.discoveredCount, data.total or 0)
-		secretLine.Text = string.format("Secrets  %d / %d", data.secretsFound or 0, data.secretTotal or 3)
-		redrawList(data.list)
 	end
 
 	if data.index then
