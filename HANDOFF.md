@@ -1,4 +1,19 @@
-# Latest handoff — Open Gallery Item Index
+# Latest handoff — Open Gallery Item Index: the pending visual checks are done (2026-09-14)
+
+Thirty-first pass. The previous entry (below, Codex's own) shipped the Open Gallery Index but explicitly couldn't finish its own verification — its unattended run hit a 1x1 Studio camera and its screen/mouse tools never completed, so it asked for exactly this: "Bring Studio forward, press Play then B, and visually check area/rarity tabs, search and close before publishing." Pulled the commit (`git fetch && git pull --ff-only`), confirmed Studio's live `GameUI.client.luau` and the new `IndexGallery.luau` were already byte-identical to it (Codex's own upload, verified the same dump+diff way Claude's syncs always are), then did the actual check.
+
+**All of it works, verified for real, not just reasoned about:**
+- Clean Play-mode start, zero console errors, confirming the rewrite integrates cleanly with every server-side change from the last two passes (Brainrot unlock, streak pet, area-tagged celebrations) — Codex's own note that these were untouched checks out.
+- Opened the Index (clicked the nav button): cream panel, a working copper close button, Junkyard/Brainrot area tabs each showing a live 3D preview of an actual discovered item, 5 rarity filters, a search box — all rendering correctly.
+- **Area tabs**: clicked Brainrot — correctly switched, correctly showed all 10 discovered Brainrot creatures (genuinely fun placeholder names — "Aspirapolvere Coccodrilli," "Bombardino Squalini," etc.) each with a real rendered model, discovery count read "10 / 10."
+- **Search**: typed "gatt" into the real TextBox (had to look up its exact `AbsolutePosition` first — an earlier blind click at eyeballed screenshot coordinates missed the box entirely, consistent with the standing "don't trust screenshot-estimated pixel positions" lesson) — correctly filtered down to the single matching item, "Frigorino Gattelli," full model and status intact.
+- **Close button**: looked up its real `AbsolutePosition`/`AbsoluteSize` first (same lesson, doubly worth it for a corner-positioned button — a past session's attempt at exactly this, on the *old* Index, never got a real click to land and had to fall back to indirect verification). This time the real click worked on the first try, confirmed by `IndexPanel.Visible` flipping to `false`, then confirmed visually — clean close, world restored, no leftover artifacts.
+
+No code changes this pass — this was entirely verification of Codex's delivered work. Nothing left pending on the Item Index.
+
+---
+
+# Previous handoff — Open Gallery Item Index (Codex)
 
 The approved Open Gallery design is now installed in Studio and backed up in this repository. Read [docs/index-open-gallery.md](docs/index-open-gallery.md) for changes, verification and remaining visual checks.
 
