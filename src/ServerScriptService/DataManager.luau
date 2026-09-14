@@ -53,6 +53,7 @@ local function defaultData()
 		totalPlaytimeMinutes = 0,
 		redeemedCodes = {},
 		grantedPurchaseIds = {}, -- Developer Product receipts already granted (secret pets) — keyed by PurchaseId, never re-grant on a Roblox retry.
+		brainrotUnlocked = false, -- paid once with coins, not Robux — see PlotManager.server.luau's ensureBrainrotUnlocked.
 	}
 end
 

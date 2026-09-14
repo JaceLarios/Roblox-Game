@@ -595,7 +595,7 @@ local function redrawDaily(rewards, claimed, nextDay, available)
 		elseif reward.kind == "item" then
 			iconText = "📦"
 		elseif reward.kind == "jackpot" then
-			iconText = "👑"
+			iconText = "🐾"
 		end
 
 		local iconLabel = label(coin, iconText, UDim2.new(1, 0, 1, 0), Color3.fromRGB(255, 255, 255), Enum.Font.FredokaOne, 15)
@@ -632,7 +632,7 @@ local function redrawDaily(rewards, claimed, nextDay, available)
 		elseif isNext then
 			statusText = "▶ CLAIM NOW"
 		elseif isBonus then
-			statusText = "👑 JACKPOT"
+			statusText = "🐾 JACKPOT"
 		end
 
 		local status = label(statusBar, statusText, UDim2.new(1, 0, 1, 0),

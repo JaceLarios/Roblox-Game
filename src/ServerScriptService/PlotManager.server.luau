@@ -1478,6 +1478,37 @@ end)
 -- Travel menu — the side panel's teleport buttons
 ------------------------------------------------------------------
 
+local BRAINROT_UNLOCK_COST = 5000
+
+-- The one real choke point for entering Brainrot Island, whether the
+-- player got here via the physical gate (BrainrotService.luau, injected
+-- into it right below) or the travel menu (right below that). A one-time
+-- coin cost, not a per-visit toll: persisted as s.brainrotUnlocked, so
+-- once it's paid it's paid for good.
+local function ensureBrainrotUnlocked(player)
+	local s = state[player]
+	if not s then return false end
+	if s.brainrotUnlocked then return true end
+
+	local stats = player:FindFirstChild("leaderstats")
+	local coins = stats and stats:FindFirstChild("Coins")
+	if not coins then return false end
+
+	if coins.Value < BRAINROT_UNLOCK_COST then
+		toast(player, string.format("Brainrot Island costs %d coins to unlock. Need %d more.", BRAINROT_UNLOCK_COST, BRAINROT_UNLOCK_COST - coins.Value))
+		return false
+	end
+
+	coins.Value = coins.Value - BRAINROT_UNLOCK_COST
+	s.brainrotUnlocked = true
+	playSound(playerRoot(player), "big")
+	toast(player, string.format("BRAINROT ISLAND UNLOCKED\n-%d coins", BRAINROT_UNLOCK_COST), true)
+	pushUI(player)
+	return true
+end
+
+Brainrot.ConfigureUnlock(ensureBrainrotUnlocked, BRAINROT_UNLOCK_COST)
+
 travelRemote.OnServerEvent:Connect(function(player, destination)
 	local character = player.Character
 	if not character then return end
@@ -1489,6 +1520,7 @@ travelRemote.OnServerEvent:Connect(function(player, destination)
 			character:PivotTo(CFrame.new(plot.centre + Vector3.new(0, 5, -20)))
 		end
 	elseif destination == "brainrot" then
+		if not ensureBrainrotUnlocked(player) then return end
 		character:PivotTo(CFrame.new(Brainrot.GetArrivalPosition()))
 	end
 end)
@@ -2285,6 +2317,7 @@ local function onPlayerAdded(player)
 		playtimeMilestonesClaimed = {},
 		redeemedCodes = data.redeemedCodes or {},
 		grantedPurchaseIds = data.grantedPurchaseIds or {},
+		brainrotUnlocked = data.brainrotUnlocked or false,
 		plotIndex = index,
 		mutationPity = 0,
 	}
@@ -2368,6 +2401,7 @@ local function snapshot(player)
 		totalPlaytimeMinutes = PlaytimeLeaderboard.Snapshot(player),
 		redeemedCodes = s.redeemedCodes,
 		grantedPurchaseIds = s.grantedPurchaseIds,
+		brainrotUnlocked = s.brainrotUnlocked,
 	}
 end
 

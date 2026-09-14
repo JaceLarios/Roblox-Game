@@ -7,6 +7,12 @@
 	lines from ever crossing, and keeps this a small, low-risk add-on to
 	an already-complex live script.
 
+	One deliberate exception, added 2026-09-14: entering the island costs
+	coins (see ConfigureUnlock below), and the "have they paid" flag has
+	to live in PlotManager's own per-player state, since that's what
+	actually gets saved/loaded. PlotManager injects the check function
+	after requiring this module — see ConfigureUnlock's own comment.
+
 	Fusing pays out immediately (no placement zones here yet — see
 	HANDOFF.md for why). PlotManager owns the DataStore load/save
 	lifecycle for the whole player, so this module never touches
@@ -227,7 +233,7 @@ local islandGate = part({
 })
 label(islandGate, "To the Junkyard", 4, 220, Color3.fromRGB(255, 255, 255), 70)
 
-local function attachTeleport(gatePart, destination)
+local function attachTeleport(gatePart, destination, requireUnlock)
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ActionText = "Travel"
 	prompt.ObjectText = gatePart.Name
@@ -237,18 +243,35 @@ local function attachTeleport(gatePart, destination)
 	prompt.Parent = gatePart
 
 	prompt.Triggered:Connect(function(player)
+		if requireUnlock and not (Brainrot.UnlockGate and Brainrot.UnlockGate(player)) then
+			return
+		end
 		local character = player.Character
 		if character then
 			character:PivotTo(CFrame.new(destination))
 		end
 	end)
+
+	return prompt
 end
 
 -- Where the travel menu (and the physical gate) actually drop you.
 local ARRIVAL_POSITION = ISLAND_CENTER + Vector3.new(0, 5, -AREA_SIZE / 2 + 12)
 
-attachTeleport(mainGate, ARRIVAL_POSITION)
+-- Only the trip INTO the island can cost anything — coming back to the
+-- mainland (islandGate) is always free. PlotManager.server.luau (which
+-- owns coins/state/save data, none of which belongs in this
+-- self-contained module) calls Brainrot.ConfigureUnlock once it has
+-- everything that needs; safe to reference Brainrot.UnlockGate here
+-- before that injection happens, since a real player can't trigger this
+-- prompt until the whole server script has finished loading.
+local mainGatePrompt = attachTeleport(mainGate, ARRIVAL_POSITION, true)
 attachTeleport(islandGate, Vector3.new(0, 5, 305))
+
+function Brainrot.ConfigureUnlock(checkFn, cost)
+	Brainrot.UnlockGate = checkFn
+	mainGatePrompt.ObjectText = string.format("Brainrot Island (%d coins to unlock)", cost)
+end
 
 function Brainrot.GetArrivalPosition()
 	return ARRIVAL_POSITION
