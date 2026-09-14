@@ -1,304 +1,215 @@
---[[
-	FusionCelebrationView (ModuleScript, StarterPlayerScripts) — Junkyard Fusion
-
-	ALL visual design for the fusion celebration lives here: layout,
-	colors, fonts, card shape, decorations, motion/easing, hold duration,
-	sound choices and timing feel. This is the Codex-owned half — redesign
-	this file as freely as you want, including completely replacing how
-	View.Play builds and animates things, as long as the one contract
-	below still holds.
-
-	The controller, FusionCelebration.client.luau (a sibling script, not
-	this one), only ever calls one thing:
-
-		View.Play(data)
-
-	It must SHOW the celebration and only RETURN once it's fully done
-	(shown, held, and hidden again) — the controller uses that to know
-	when it's safe to play the next queued fusion. Everything about how
-	long that takes, what it looks like, and how it moves is entirely up
-	to this module.
-
-	`data` (sent by PlotManager.server.luau's attemptFusion, and separately
-	by BrainrotService.luau's own attemptFusion for Brainrot Island's own
-	fuse pad, both over the shared FusionCelebration RemoteEvent) is a
-	plain table:
-		area         - string, "junkyard" or "brainrot" - which fuse pad
-		               this came from. Picks which entry of `Variants`
-		               (below) plays; unrecognized/missing falls back to
-		               "junkyard".
-		headerText   - string, e.g. "NEW DISCOVERY", "FUSION COMPLETE"
-		aTag, bTag   - strings, the two ingredient names (RichText, already
-		               rarity-colored via ItemRarity.Tag)
-		resultTag    - string, the fused result's name (RichText, colored)
-		rarityName   - string, e.g. "RARE", "SECRET"
-		color        - Color3, the result's rarity/mutation color
-		rateLine     - string, a short reward subtitle whose exact wording
-		               depends on area - "RARE — +2.3 coins/sec if placed"
-		               on the Junkyard side (that result gets placed for
-		               passive income), "Sold instantly for 480 coins" on
-		               Brainrot Island (that island pays out immediately
-		               instead)
-
-	Two areas, two fuse pads, and per the user: each should eventually get
-	its own distinct celebration animation. `Variants` below is the slot
-	for that — one entry per area, each a self-contained
-	function(data) that must follow the exact same contract View.Play
-	does (show, hold, hide, THEN return). Today both entries point at the
-	same `makeCardVariant()` build, since only one visual exists yet; give
-	Brainrot Island its own look by replacing `Variants.brainrot` with a
-	new, independent implementation — it doesn't need to share anything
-	with `Variants.junkyard`, including layout or GUI structure, since
-	each variant instance below already keeps its own private `ui` state
-	rather than sharing one screen between areas.
-
-	Everything below this point is a working placeholder (ported from an
-	earlier single-file version), not a final design — it exists so the
-	feature is testable end-to-end before a real visual pass.
---]]
-
+-- Area-specific fusion presentation. Contract: Play(data) yields until fully
+-- hidden, including skip/cleanup. Claude's controller owns the queue and the
+-- server owns all fusion outcomes. This module never writes player data.
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
+local RS = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local SoundService = game:GetService("SoundService")
-
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
-local WHITE = Color3.fromRGB(255, 255, 255)
-local GOLD = Color3.fromRGB(255, 200, 80)
-local CARD_BG = Color3.fromRGB(24, 22, 32)
-local PILL_BG = Color3.fromRGB(0, 0, 0)
-local SPARKLE_EMOJI = "✨"
-
-local SHOW_TIME = 0.45
-local HOLD_TIME = 2.6
-local HIDE_TIME = 0.3
-
+local Mutations = require(RS:WaitForChild("Mutations"))
+local Models = RS:WaitForChild("ItemModels")
 local View = {}
-
-local function label(parent, order, size, font, color)
-	local lbl = Instance.new("TextLabel")
-	lbl.BackgroundTransparency = 1
-	lbl.Size = UDim2.new(1, 0, 0, size)
-	lbl.Font = font
-	lbl.TextColor3 = color
-	lbl.TextScaled = true
-	lbl.RichText = true
-	lbl.LayoutOrder = order
-	lbl.ZIndex = 3
-	lbl.Parent = parent
-	return lbl
-end
-
-local function playUiSound(id, pitch, volume, delaySeconds)
-	task.delay(delaySeconds or 0, function()
-		local sound = Instance.new("Sound")
-		sound.SoundId = id
-		sound.PlaybackSpeed = pitch
-		sound.Volume = volume
-		sound.Parent = SoundService
-		sound:Play()
-		sound.Ended:Connect(function() sound:Destroy() end)
-		task.delay(5, function() if sound.Parent then sound:Destroy() end end)
-	end)
-end
-
--- Builds one independent instance of the placeholder celebration card:
--- its own GUI tree, its own lazily-built `ui`, its own play(data). Two
--- separate calls to this (below, one per area) give Junkyard and Brainrot
--- Island fully independent variants that never share a screen or any
--- instance state — even though, today, they look identical.
-local function makeCardVariant()
-	local ui -- built lazily on first play() call, reused after that
-
-	local function build()
-		local gui = Instance.new("ScreenGui")
-		gui.Name = "FusionCelebrationGui"
-		gui.ResetOnSpawn = false
-		gui.IgnoreGuiInset = true
-		gui.DisplayOrder = 100
-		gui.Parent = playerGui
-
-		local backdrop = Instance.new("Frame")
-		backdrop.Name = "Backdrop"
-		backdrop.Size = UDim2.fromScale(1, 1)
-		backdrop.BackgroundColor3 = Color3.new(0, 0, 0)
-		backdrop.BackgroundTransparency = 1
-		backdrop.BorderSizePixel = 0
-		backdrop.Visible = false
-		backdrop.ZIndex = 1
-		backdrop.Parent = gui
-
-		local card = Instance.new("Frame")
-		card.Name = "Card"
-		card.AnchorPoint = Vector2.new(0.5, 0.5)
-		card.Position = UDim2.fromScale(0.5, 0.48)
-		card.Size = UDim2.fromScale(0, 0)
-		card.BackgroundColor3 = CARD_BG
-		card.BorderSizePixel = 0
-		card.ZIndex = 2
-		card.Parent = backdrop
-
-		local cardCorner = Instance.new("UICorner")
-		cardCorner.CornerRadius = UDim.new(0, 32)
-		cardCorner.Parent = card
-
-		local cardStroke = Instance.new("UIStroke")
-		cardStroke.Thickness = 6
-		cardStroke.Color = WHITE
-		cardStroke.Parent = card
-
-		local strokeGradient = Instance.new("UIGradient")
-		strokeGradient.Color = ColorSequence.new(WHITE, WHITE)
-		strokeGradient.Parent = cardStroke
-
-		local cardPadding = Instance.new("UIPadding")
-		cardPadding.PaddingTop = UDim.new(0, 28)
-		cardPadding.PaddingBottom = UDim.new(0, 28)
-		cardPadding.PaddingLeft = UDim.new(0, 40)
-		cardPadding.PaddingRight = UDim.new(0, 40)
-		cardPadding.Parent = card
-
-		local layout = Instance.new("UIListLayout")
-		layout.FillDirection = Enum.FillDirection.Vertical
-		layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-		layout.VerticalAlignment = Enum.VerticalAlignment.Center
-		layout.SortOrder = Enum.SortOrder.LayoutOrder
-		layout.Padding = UDim.new(0, 10)
-		layout.Parent = card
-
-		local headerLabel = label(card, 1, 34, Enum.Font.FredokaOne, GOLD)
-		local ingredientsLabel = label(card, 2, 26, Enum.Font.FredokaOne, WHITE)
-		ingredientsLabel.TextTransparency = 0.15
-
-		local resultLabel = label(card, 3, 78, Enum.Font.LuckiestGuy, WHITE)
-		resultLabel.Size = UDim2.new(1, 0, 0, 90)
-
-		local pill = Instance.new("Frame")
-		pill.BackgroundColor3 = PILL_BG
-		pill.BackgroundTransparency = 0.25
-		pill.Size = UDim2.new(0, 0, 0, 44)
-		pill.AutomaticSize = Enum.AutomaticSize.X
-		pill.LayoutOrder = 4
-		pill.ZIndex = 3
-		pill.Parent = card
-
-		local pillCorner = Instance.new("UICorner")
-		pillCorner.CornerRadius = UDim.new(1, 0)
-		pillCorner.Parent = pill
-
-		local pillPadding = Instance.new("UIPadding")
-		pillPadding.PaddingLeft = UDim.new(0, 28)
-		pillPadding.PaddingRight = UDim.new(0, 28)
-		pillPadding.Parent = pill
-
-		local rarityLabel = Instance.new("TextLabel")
-		rarityLabel.BackgroundTransparency = 1
-		rarityLabel.Font = Enum.Font.FredokaOne
-		rarityLabel.TextColor3 = WHITE
-		rarityLabel.TextScaled = true
-		rarityLabel.Size = UDim2.new(0, 200, 1, 0)
-		rarityLabel.Parent = pill
-
-		local rateLabel = label(card, 5, 30, Enum.Font.FredokaOne, GOLD)
-
-		for i = 1, 10 do
-			local spark = Instance.new("TextLabel")
-			spark.BackgroundTransparency = 1
-			spark.Text = SPARKLE_EMOJI
-			spark.Font = Enum.Font.SourceSans
-			spark.TextColor3 = WHITE
-			spark.TextScaled = true
-			spark.AnchorPoint = Vector2.new(0.5, 0.5)
-			spark.Size = UDim2.fromOffset(24 + math.random(0, 20), 24 + math.random(0, 20))
-			spark.Position = UDim2.fromScale(math.random(0, 100) / 100, math.random(0, 100) / 100)
-			spark.Rotation = math.random(0, 360)
-			spark.ZIndex = 2
-			spark.Parent = backdrop
-
-			local tween = TweenService:Create(spark,
-				TweenInfo.new(1.4 + math.random() * 1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-				{ Position = spark.Position + UDim2.fromScale(0, 0.04), Rotation = spark.Rotation + 25 })
-			tween:Play()
-		end
-
-		return {
-			backdrop = backdrop,
-			card = card,
-			cardStroke = cardStroke,
-			strokeGradient = strokeGradient,
-			headerLabel = headerLabel,
-			ingredientsLabel = ingredientsLabel,
-			resultLabel = resultLabel,
-			rarityLabel = rarityLabel,
-			ratePill = pill,
-			rateLabel = rateLabel,
-		}
-	end
-
-	local function play(data)
-		ui = ui or build()
-
-		ui.headerLabel.Text = data.headerText or "FUSION COMPLETE"
-		ui.ingredientsLabel.Text = string.format("%s  +  %s", data.aTag or "", data.bTag or "")
-		ui.resultLabel.Text = data.resultTag or ""
-		ui.rarityLabel.Text = data.rarityName or ""
-		ui.rateLabel.Text = data.rateLine or ""
-
-		local color = data.color or GOLD
-		ui.cardStroke.Color = color
-		ui.strokeGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, WHITE),
-			ColorSequenceKeypoint.new(0.5, color),
-			ColorSequenceKeypoint.new(1, WHITE),
-		})
-		ui.ratePill.BackgroundColor3 = color
-		ui.ratePill.BackgroundTransparency = 0.1
-
-		ui.backdrop.Visible = true
-		ui.backdrop.BackgroundTransparency = 1
-		ui.card.Size = UDim2.fromScale(0, 0)
-
-		TweenService:Create(ui.backdrop, TweenInfo.new(SHOW_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-			{ BackgroundTransparency = 0.55 }):Play()
-		TweenService:Create(ui.card, TweenInfo.new(SHOW_TIME, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-			{ Size = UDim2.fromScale(0.66, 0.56) }):Play()
-
-		local rotateTween = TweenService:Create(ui.strokeGradient,
-			TweenInfo.new(2.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, false),
-			{ Rotation = 360 })
-		rotateTween:Play()
-
-		playUiSound("rbxasset://sounds/electronicpingshort.wav", 0.9, 0.55, 0)
-		playUiSound("rbxasset://sounds/bass.wav", 1.0, 0.8, 0.05)
-
-		task.wait(SHOW_TIME + HOLD_TIME)
-
-		rotateTween:Cancel()
-		TweenService:Create(ui.backdrop, TweenInfo.new(HIDE_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-			{ BackgroundTransparency = 1 }):Play()
-		local shrink = TweenService:Create(ui.card, TweenInfo.new(HIDE_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-			{ Size = UDim2.fromScale(0, 0) })
-		shrink:Play()
-		shrink.Completed:Wait()
-		ui.backdrop.Visible = false
-	end
-
-	return play
-end
-
--- One independent variant instance per area. Replace Variants.brainrot
--- with a new implementation (own layout, own colors, own motion — it
--- does not need to call makeCardVariant at all) to give Brainrot Island
--- its own celebration; View.Play's dispatch below never needs to change.
-local Variants = {
-	junkyard = makeCardVariant(),
-	brainrot = makeCardVariant(),
+local INK = Color3.fromRGB(28,39,58)
+local CREAM = Color3.fromRGB(255,251,234)
+local CYAN = Color3.fromRGB(65,225,240)
+local GOLD = Color3.fromRGB(255,208,88)
+local PINK = Color3.fromRGB(255,123,189)
+local THEMES = {
+	junkyard = {title="MAGNETIC FUSION",phase="MAGNETIZING",base=Color3.fromRGB(22,62,72),colors={CYAN,GOLD},symbol="✦"},
+	brainrot = {title="BRAINROT OVERLOAD",phase="GETTING A LITTLE WEIRD...",base=Color3.fromRGB(117,151,211),colors={CYAN,PINK,GOLD},symbol="★"},
 }
-
-function View.Play(data)
-	local variant = Variants[data.area] or Variants.junkyard
-	variant(data)
+local function make(class,parent,name,props)
+	local o=Instance.new(class) o.Name=name
+	for k,v in pairs(props or {}) do o[k]=v end
+	o.Parent=parent return o
 end
-
+local function round(o,r) make("UICorner",o,"Corner",{CornerRadius=UDim.new(0,r)}) end
+local function label(parent,name,value,pos,size,fontSize)
+	local o=make("TextLabel",parent,name,{Text=value,Position=pos,Size=size,BackgroundTransparency=1,
+		Font=Enum.Font.FredokaOne,TextColor3=CREAM,TextScaled=true,TextWrapped=true,ZIndex=6})
+	make("UITextSizeConstraint",o,"TextLimit",{MinTextSize=10,MaxTextSize=fontSize})
+	make("UIStroke",o,"Outline",{Color=INK,Thickness=2,ApplyStrokeMode=Enum.ApplyStrokeMode.Contextual})
+	return o
+end
+local function plain(tag)
+	local s=tostring(tag or ""):gsub("<[^>]*>","")
+	return (s:gsub("&lt;","<"):gsub("&gt;",">"):gsub("&quot;",'"'):gsub("&apos;","'"):gsub("&amp;","&"))
+end
+local function item(parent,tag,name)
+	local v=make("ViewportFrame",parent,name,{AnchorPoint=Vector2.new(.5,.5),BackgroundTransparency=1,
+		Size=UDim2.fromScale(.34,.45),Position=UDim2.fromScale(.5,.46),ZIndex=4,
+		Ambient=Color3.fromRGB(210,215,230),LightColor=Color3.new(1,1,1),LightDirection=Vector3.new(-1,-1,-1)})
+	local base,mutation=Mutations.Unwrap(plain(tag))
+	local template=Models:FindFirstChild(base or "")
+	if template then
+		local world=make("WorldModel",v,"World")
+		local model=make("Model",world,"Item")
+		local clone=template:Clone() clone.Parent=model
+		for _,p in ipairs(model:GetDescendants()) do
+			if p:IsA("BasePart") then p.Anchored=true p.CanCollide=false if mutation then p.Color=Mutations.Color(mutation) end end
+		end
+		local cf,size=model:GetBoundingBox()
+		model:PivotTo(CFrame.new(-cf.Position)*model:GetPivot())
+		model:ScaleTo(4.5/math.max(size.X,size.Y,size.Z,.01))
+		local cam=make("Camera",v,"Camera",{FieldOfView=35})
+		cam.CFrame=CFrame.lookAt(Vector3.new(7,4.5,10),Vector3.zero)
+		v.CurrentCamera=cam
+		v:SetAttribute("ModelName",base)
+		return v,cam
+	end
+	-- Generic hybrid recipes may have no authored mesh. Keep their exact
+	-- result name rather than inventing a replacement collectible model.
+	label(v,"MissingModel","★",UDim2.fromScale(.1,.1),UDim2.fromScale(.8,.7),100)
+	return v,nil
+end
+local function run(data,area)
+	local theme=THEMES[area]
+	local rarity=string.upper(tostring(data.rarityName or "COMMON"))
+	local rank=({COMMON=1,UNCOMMON=1,RARE=2,EPIC=3,SECRET=4})[rarity] or 1
+	local gather=1.25+(rank-1)*.24
+	local revealAt=gather+.38
+	local duration=({2.9,4.1,4.9,5.8})[rank]
+	local gui=make("ScreenGui",Players.LocalPlayer:WaitForChild("PlayerGui"),"FusionCelebrationGui",{
+		ResetOnSpawn=false,IgnoreGuiInset=true,DisplayOrder=100,ZIndexBehavior=Enum.ZIndexBehavior.Sibling})
+	gui:SetAttribute("Area",area) gui:SetAttribute("Rarity",rarity) gui:SetAttribute("Duration",duration)
+	local sounds,connections={},{}
+	local alive,skip=true,false
+	local ok,err=xpcall(function()
+		local overlay=make("CanvasGroup",gui,"Backdrop",{Size=UDim2.fromScale(1,1),
+			BackgroundTransparency=1,BorderSizePixel=0,GroupTransparency=1,Active=true})
+		local background=make("Frame",overlay,"Atmosphere",{Size=UDim2.fromScale(1,1),BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=.06,BorderSizePixel=0,ZIndex=0})
+		make("UIGradient",background,"Gradient",{Rotation=75,Color=ColorSequence.new(theme.base,area=="brainrot" and Color3.fromRGB(210,175,229) or Color3.fromRGB(53,114,113))})
+		local stage=make("Frame",overlay,"Stage",{Size=UDim2.fromScale(.94,.94),Position=UDim2.fromScale(.03,.03),BackgroundTransparency=1,ZIndex=2})
+		label(stage,"AreaTitle",theme.title,UDim2.fromScale(.12,.02),UDim2.fromScale(.76,.075),44)
+		label(stage,"Announcement",plain(data.headerText or "FUSION COMPLETE"),UDim2.fromScale(.12,.10),UDim2.fromScale(.76,.05),23)
+		local phase=label(stage,"Phase",theme.phase,UDim2.fromScale(.13,.70),UDim2.fromScale(.74,.065),44)
+		local resultName=label(stage,"ResultName",plain(data.resultTag),UDim2.fromScale(.08,.78),UDim2.fromScale(.84,.075),35)
+		local reward=label(stage,"Reward",plain(data.rateLine),UDim2.fromScale(.1,.865),UDim2.fromScale(.8,.045),22)
+		local rarityLabel=label(stage,"Rarity",rarity,UDim2.fromScale(.3,.925),UDim2.fromScale(.4,.035),18)
+		resultName.Visible=false reward.Visible=false rarityLabel.Visible=false
+		local skipButton=make("TextButton",overlay,"Skip",{Text="Skip",Font=Enum.Font.FredokaOne,TextSize=19,
+			TextColor3=INK,BackgroundColor3=CREAM,Size=UDim2.fromOffset(88,44),AnchorPoint=Vector2.new(1,1),
+			Position=UDim2.new(1,-16,1,-14),ZIndex=12,BorderSizePixel=0})
+		round(skipButton,14)
+		table.insert(connections,skipButton.Activated:Connect(function() skip=true end))
+		local a,acam=item(stage,data.aTag,"IngredientA")
+		local b,bcam=item(stage,data.bTag,"IngredientB")
+		local result,rcam=item(stage,data.resultTag,"Result") result.Visible=false
+		local core=label(stage,"EnergyCore","★",UDim2.fromScale(.4,.32),UDim2.fromScale(.2,.25),140)
+		core.TextColor3=GOLD core.Visible=false
+		local rings={}
+		for r=1,(rank>=3 and 3 or 2) do
+			local lines={}
+			for j=1,48 do
+				local line=make("Frame",stage,"OrbitSegment",{AnchorPoint=Vector2.new(.5,.5),BorderSizePixel=0,
+					BackgroundColor3=theme.colors[(r-1)%#theme.colors+1],ZIndex=2})
+				round(line,5) lines[j]=line
+			end
+			rings[r]=lines
+		end
+		local particles={}
+		for i=1,rank>=3 and 24 or 16 do
+			local p=label(stage,"Spark"..i,area=="junkyard" and "★" or (i%3==0 and "ϟ" or "★"),UDim2.fromScale(.5,.45),UDim2.fromOffset(25,25),28)
+			p.AnchorPoint=Vector2.new(.5,.5) p.ZIndex=3 p.TextColor3=theme.colors[(i-1)%#theme.colors+1]
+			particles[i]=p
+		end
+		if area=="junkyard" then
+			for _,x in ipairs({.035,.965}) do
+				local magnet=make("Frame",stage,"Magnet",{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(x,.45),
+					Size=UDim2.fromScale(.07,.18),BackgroundColor3=Color3.fromRGB(236,142,63),BorderSizePixel=0,ZIndex=3})
+				round(magnet,18)
+				local inset=make("Frame",magnet,"Coil",{Position=UDim2.fromScale(.18,.12),Size=UDim2.fromScale(.64,.76),BackgroundColor3=CYAN,BorderSizePixel=0}) round(inset,14)
+			end
+		end
+		local function sound(id,pitch,volume)
+			if not alive then return end
+			local s=make("Sound",SoundService,"FusionUI",{SoundId=id,PlaybackSpeed=pitch,Volume=volume})
+			table.insert(sounds,s) s:Play()
+		end
+		local ping="rbxasset://sounds/electronicpingshort.wav"
+		local bass="rbxasset://sounds/bass.wav"
+		sound(ping,area=="brainrot" and 1.35 or .65,.24)
+		local start=os.clock()
+		local revealed,beat=false,0
+		while alive and gui.Parent do
+			local t=os.clock()-start
+			if skip or t>=duration then break end
+			overlay.GroupTransparency=1-math.clamp(t/.18,0,1)
+			local gathering=t<revealAt
+			gui:SetAttribute("Phase",gathering and (t<gather and "Gather" or "Fuse") or "Reveal")
+			local q=math.clamp(t/gather,0,1)
+			local angle=t*(3+q*3)
+			local contraction=gathering and 1-.85*q*q or 1
+			local size=stage.AbsoluteSize
+			for r,lines in ipairs(rings) do
+				local rot=(r==1 and -.25 or r==2 and .28 or -.4)+math.sin(t*1.4+r)*.05
+				local rx=size.X*.32*contraction
+				local ry=size.Y*(.075+r*.018)*contraction
+				for j,line in ipairs(lines) do
+					local aa=(j-1)/48*math.pi*2+t*.45
+					local bb=j/48*math.pi*2+t*.45
+					local function point(theta)
+						local x,y=math.cos(theta)*rx,math.sin(theta)*ry
+						return Vector2.new(size.X*.5+x*math.cos(rot)-y*math.sin(rot),size.Y*.45+x*math.sin(rot)+y*math.cos(rot))
+					end
+					local p1,p2=point(aa),point(bb) local d=p2-p1
+					line.Position=UDim2.fromOffset((p1.X+p2.X)/2,(p1.Y+p2.Y)/2)
+					line.Size=UDim2.fromOffset(d.Magnitude+2,math.clamp(size.X/240,2,6))
+					line.Rotation=math.deg(math.atan2(d.Y,d.X))
+				end
+			end
+			for i,p in ipairs(particles) do
+				local theta=i*2.399+t*(gathering and 1.4 or .18)
+				local radius=gathering and .34*contraction or .25+math.min(t-revealAt,.65)*.12
+				p.Position=UDim2.fromScale(.5+math.cos(theta)*radius,.45+math.sin(theta)*radius*.67)
+				p.Rotation=t*35+i*29 p.Visible=t>.2
+			end
+			if gathering then
+				local radius=.27*(1-q*q)
+				local shrink=1-math.clamp((q-.68)/.32,0,1)
+				local bounce=area=="brainrot" and math.abs(math.sin(t*8))*.04 or 0
+				a.Position=UDim2.fromScale(.5+math.cos(angle)*radius,.45+math.sin(angle)*.06-bounce)
+				b.Position=UDim2.fromScale(.5-math.cos(angle)*radius,.45-math.sin(angle)*.06-bounce)
+				a.Size=UDim2.fromScale(.34*shrink,.43*shrink) b.Size=a.Size
+				core.Visible=q>.7 core.Rotation=t*100
+				if t>=gather then phase.Text=area=="junkyard" and "MAGNETIC LOCK!" or "OVERLOAD!" end
+				if t>beat+.32 and t<gather then beat=t sound(ping,(area=="brainrot" and 1.1 or .55)+q*.7,.12) end
+			else
+				local u=t-revealAt
+				if not revealed then
+					revealed=true a.Visible=false b.Visible=false core.Visible=false result.Visible=true
+					phase.Text="FUSED!" resultName.Visible=true reward.Visible=true rarityLabel.Visible=true
+					skipButton.Text="Continue"
+					sound(bass,area=="brainrot" and 1.35 or .8,.4)
+					sound(ping,area=="brainrot" and 1.7 or 1.1,.32)
+					beat=t
+				end
+				local pop=math.clamp(u/.32,0,1)
+				local pulse=1+math.sin(u*12)*math.exp(-u*5)*.12
+				result.Size=UDim2.fromScale(.76*pop*pulse,.60*pop*pulse)
+				result.Position=UDim2.fromScale(.5,.43-(area=="brainrot" and math.abs(math.sin(u*5))*math.exp(-u*2)*.04 or 0))
+				if rcam then rcam.CFrame=CFrame.lookAt(Vector3.new(math.sin(.6+u*.25)*12,4.5,math.cos(.6+u*.25)*12),Vector3.zero) end
+				if rank>=2 and t>beat+.4 and u<1.3 then beat=t sound(ping,1.4+u*.25,.16) end
+			end
+			RunService.Heartbeat:Wait()
+		end
+		local fadeStart=os.clock()
+		while gui.Parent and os.clock()-fadeStart<.2 do
+			overlay.GroupTransparency=math.clamp((os.clock()-fadeStart)/.2,0,1)
+			RunService.Heartbeat:Wait()
+		end
+	end,debug.traceback)
+	alive=false
+	for _,c in ipairs(connections) do c:Disconnect() end
+	for _,s in ipairs(sounds) do s:Destroy() end
+	gui:Destroy()
+	if not ok then warn("[FusionCelebrationView] "..tostring(err)) end
+end
+local Variants={
+	junkyard=function(data) run(data,"junkyard") end,
+	brainrot=function(data) run(data,"brainrot") end,
+}
+function View.Play(data)
+	if type(data)~="table" then return end
+	(Variants[data.area] or Variants.junkyard)(data)
+end
 return View

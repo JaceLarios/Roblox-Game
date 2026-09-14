@@ -1,4 +1,14 @@
-# Latest handoff — 3rd island built: Haunted Hollow, a graveyard/ghost item line (2026-09-14)
+# Latest handoff — Junkyard and Brainrot fusion animations
+
+Both approved area animations are installed in Studio and backed up here. Only `src/StarterPlayer/StarterPlayerScripts/FusionCelebrationView.luau` changed. Claude's controller, server outcomes, Inventory backdrop, Secret Egg and Starter Pack work remain untouched.
+
+Junkyard uses Magnetic Fusion; Brainrot uses Brainrot Overload. Actual item models, mutation tint, area-specific reward text, rarity-scaled durations and Skip/Continue are supported. See [docs/fusion-animations.md](docs/fusion-animations.md) for details and testing limits.
+
+Verified Studio preview events, desktop/mobile visuals, actual Skip click advancing the queue, sound loading/playback and cleanup; no Output errors. Actual ingredient-consuming fusion and published-game testing remain untested. Not published to Roblox. Studio left in Edit with default viewport.
+
+---
+
+# Previous handoff — 3rd island built: Haunted Hollow, a graveyard/ghost item line (2026-09-14)
 
 Thirty-fourth pass, same day, immediately following the Brainrot Island expansion above. The user's ask from that same turn — "lets work on making a 3rd island" — needed one creative decision only they could make before any content could be built: asked which theme, offered four distinct directions (Space/Sci-Fi, Deep Sea, Candy/Dessert, Haunted/Cursed), and they picked **Haunted / Cursed**. Built the whole island end to end on that answer: a graveyard theme (named "Haunted Hollow" in-game), its own item line, and full integration into the save/unlock/companion systems — using the exact same architecture the Brainrot expansion just established, proving out `IslandBuilder` as a real reusable pattern on its second use, not just a nice idea from one prior pass.
 
