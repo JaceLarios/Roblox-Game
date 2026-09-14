@@ -1,4 +1,16 @@
-# Latest handoff — Split the fusion celebration into a logic-only controller + a visuals-only view module, per a new standing Claude/Codex division of labor (2026-09-13)
+# Latest handoff — Extracted the two world-space particle effects into their own Codex-owned module; repo relocated to a new drive (2026-09-13/14)
+
+Twenty-second pass. Two unrelated but same-day items.
+
+**The project's local clone moved off C: entirely**, from `C:\Users\jacel\Roblox-Game` to `E:\Roblox Game\Roblox-Game` — C: had under 1GB free. A raw verified file copy (robocopy, then a file-by-file path+size comparison, then a `git status`/`log`/`remote` match), not a fresh `git clone`, specifically because there was uncommitted work and unpushed commits a clone would have silently dropped. Confirmed this only freed ~60MB, since the repo itself is a ~3MB Lua codebase — the user's actual C: space pressure is coming from something unrelated to this project. Roblox Studio itself needed no changes; it's a live cloud-connected instance, never tied to where the local clone sits on disk.
+
+**Applied the Claude/Codex split (see [[feedback_junkyard_fusion_codex_split]]) to the two remaining hand-authored visual effects that predate that split**: `fusionShimmer` and `attachPlacedGlow` (the fusion burst and the pet-pad ambient glow, both added a few passes ago) lived as local functions inside `PlotManager.server.luau` — invisible to the "it's all in GameUI/ShopUI" framing of the split, since they're server-side `ParticleEmitter` code, not client UI, and so wouldn't have been swept up by Codex's UI rewrite on their own. Pulled both out into a new `FusionEffects.luau` ModuleScript in `ServerStorage` (same shelf as `MapRevamp.luau`), exposing `Effects.FusionShimmer(pad)` and `Effects.AttachPlacedGlow(part, color)`. `PlotManager.server.luau` now just calls these two functions at the same call sites as before and owns nothing about their appearance — same controller/view contract as `FusionCelebration`/`FusionCelebrationView`, just applied to a ModuleScript pair instead of a LocalScript pair, since these effects have no client-side trigger of their own (the server decides when they fire).
+
+**Verified:** clean Play-mode start with the new `require(ServerStorage:WaitForChild("FusionEffects"))` link (a broken require would have failed the whole script's load, so "8 plots ready" printing confirms it resolved); the ambient glow's `ParticleEmitter` on an already-placed item confirmed still correctly configured (`Enabled=true`, `Rate=16`, `LightEmission=0.75`) after the split, run through the new module path. Did not re-verify the shimmer burst specifically this pass — its underlying code is byte-identical to what was already confirmed working several passes ago, only its file location changed.
+
+---
+
+# Previous handoff — Split the fusion celebration into a logic-only controller + a visuals-only view module, per a new standing Claude/Codex division of labor (2026-09-13)
 
 Twenty-first pass, same day. Direct feedback from the user after seeing the previous pass's popup: **"your UI design across everything from animations to effects isnt good at all... would it be better to have you code everything and CODEX come in and help with design and animation graphics?"** — followed by confirmation of the exact split: **Claude codes how an animation works, Codex designs the graphics.** Saved as a standing project memory ([[feedback_junkyard_fusion_codex_split]]) since it changes how *every future UI ask* on this project should be approached, not just this one.
 

@@ -18,8 +18,10 @@
 
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage     = game:GetService("ServerStorage")
 local RunService        = game:GetService("RunService")
 
+local FusionEffects = require(ServerStorage:WaitForChild("FusionEffects"))
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local ItemVisuals   = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
@@ -503,78 +505,6 @@ local function playSound(parent, key)
 	-- Clean itself up so sounds don't pile up in the data model.
 	sound.Ended:Connect(function() sound:Destroy() end)
 	task.delay(5, function() if sound.Parent then sound:Destroy() end end)
-end
-
-------------------------------------------------------------------
--- Effects — a one-shot burst on the pad when two items fuse, and a
--- continuous soft glow on whatever's currently earning on a pet pad.
--- Both are plain ParticleEmitters on a throwaway Attachment rather than
--- anything persistent, so cleanup is just "destroy the Attachment" (the
--- glow's Attachment is parented to the item part itself, so it's already
--- destroyed for free the moment that part is — see redrawPetPad).
-------------------------------------------------------------------
-
-local function fusionShimmer(pad)
-	local attachment = Instance.new("Attachment")
-	attachment.Position = Vector3.new(0, 1, 0)
-	attachment.Parent = pad
-
-	local emitter = Instance.new("ParticleEmitter")
-	emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-	-- White-to-gold (the original pairing) all but disappears against the pad's
-	-- own bright yellow surface — confirmed visually close-up in Studio. Signature
-	-- BLUE instead of gold keeps the sparkle high-contrast on any pad color.
-	emitter.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(70, 150, 255))
-	emitter.Lifetime = NumberRange.new(0.5, 1.0)
-	emitter.Speed = NumberRange.new(8, 16)
-	emitter.SpreadAngle = Vector2.new(180, 180)
-	emitter.Rate = 0
-	emitter.LightEmission = 0.75
-	emitter.Size = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0.9),
-		NumberSequenceKeypoint.new(1, 0),
-	})
-	emitter.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0),
-		NumberSequenceKeypoint.new(1, 1),
-	})
-	emitter.Parent = attachment
-
-	emitter:Emit(70)
-	task.delay(2, function()
-		if attachment.Parent then attachment:Destroy() end
-	end)
-end
-
--- Parented to the item part itself (not the pad), so it lives and dies
--- with that part — no separate bookkeeping needed when a pet gets taken
--- back off, since redrawPetPad already destroys the old itemPart outright.
-local function attachPlacedGlow(part, color)
-	local attachment = Instance.new("Attachment")
-	attachment.Parent = part
-
-	local emitter = Instance.new("ParticleEmitter")
-	emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-	emitter.Color = ColorSequence.new(color)
-	emitter.Lifetime = NumberRange.new(1.0, 1.6)
-	emitter.Speed = NumberRange.new(1.5, 3)
-	emitter.SpreadAngle = Vector2.new(180, 180)
-	-- Rate/Size/LightEmission/starting-Transparency tuned up from an initial
-	-- pass that was confirmed (via a cranked-up debug emitter) to render
-	-- fine but was too faint to read at normal play distance — matches the
-	-- "bright, big, no dull colors" standing art direction instead of a
-	-- barely-there ambient hint.
-	emitter.Rate = 16
-	emitter.LightEmission = 0.75
-	emitter.Size = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0.65),
-		NumberSequenceKeypoint.new(1, 0),
-	})
-	emitter.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0.05),
-		NumberSequenceKeypoint.new(1, 1),
-	})
-	emitter.Parent = attachment
 end
 
 local function playerRoot(player)
@@ -1150,7 +1080,7 @@ local function redrawPetPad(plot, slot, itemName)
 
 	local info = itemTierInfo(itemName)
 	local itemColor = mutationColor or ItemRarity.Color(info.tier, info.isSecret)
-	attachPlacedGlow(part, itemColor)
+	FusionEffects.AttachPlacedGlow(part, itemColor)
 	pad.label.Text = string.format("%s\n+%.1f coins/sec", instanceTag(itemName), info.value / PLACEMENT_PAYBACK_SECONDS)
 	pad.label.TextColor3 = itemColor
 	pad.prompt.Enabled = true
@@ -1333,7 +1263,7 @@ local function attemptFusion(player)
 		})
 	end
 
-	fusionShimmer(plot.pad)
+	FusionEffects.FusionShimmer(plot.pad)
 
 	-- Straight into inventory — the pad is the only place a new item
 	-- enters a player's hands now. Fusing always nets -1 slot overall
