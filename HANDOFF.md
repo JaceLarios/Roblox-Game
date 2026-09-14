@@ -1,3 +1,22 @@
+# Latest handoff — Illustrated UI and Salvage Yard palette
+
+The approved UI redesign is backed up by this commit. It is based on main at c3d2ed83b796014b8a05d71b972d9baff53501dc and preserves Claude's newer secret-pet egg, fusion, receipt and save work. The four UI scripts were read back from the current Studio place before uploading.
+
+- Large shop/inventory panels, outlined headings, illustrated navigation icons, and a searchable open inventory grid.
+- Three-column gamepass cards, separate Pets/Boosts sections and code redemption last.
+- Final user-approved palette: warm cream, copper, teal, steel blue and mint.
+- New shared module: src/ReplicatedStorage/UIStyle.luau. Include it when syncing the other UI scripts.
+- Original icon atlas: assets/ui/ui-icons.png, Roblox image asset 82552057143764. Sprite rectangles account for Roblox's 1024px texture rescaling.
+- Shop-exclusive Pets is still a non-purchasable Coming Soon section. Claude's SecretPets.Odds() / EggProductId mechanics remain intact but are NOT wired to this shop yet. Future egg UI must show actual odds and preserve the existing purchase restrictions; do not mistake this visual placeholder for a finished egg purchase flow.
+- Pass IDs remain unconfigured and disabled. Existing code redemption, upgrade, inventory and trading handlers were retained.
+- Verified in Studio: startup without game-script errors, desktop visuals, portrait shop, inventory search and selection, section order, inactive pass buttons, Boosts-to-Rewards link. Final palette checked visually in Shop and Inventory. No real purchase/redemption/sell/rebirth/trade transaction tests or published-client tests.
+- No server scripts or save data were edited by the UI work. Normal earnings and saves continued in Play.
+- These game changes have NOT been published to Roblox. Studio was returned to Edit mode.
+
+See docs/ui-refresh.md for file details and validation limits. Earlier handoff history is preserved below.
+
+---
+
 # Latest handoff — The rarest secret pet locked to a hard 1% (2026-09-14)
 
 Twenty-fifth pass, same day, one number: "i want the best pet to be a 1% seeming its the best it has to be the hardest get." Re-tuned the five weights to `55/25/12/7/1` — chosen to sum to exactly 100 specifically so `weight` and `percent` are the same number by construction, not something that happens to round close (no fuzzy floating-point odds hiding behind the display). Values (70k–200k) untouched; only the drop chances moved.

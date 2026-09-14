@@ -1,326 +1,101 @@
---[[
-	ShopUI (LocalScript, StarterPlayerScripts) — Junkyard Fusion v1
-
-	One continuous scrollable panel, no tab bar: a "redeem a code" banner
-	up top, then one big animated gradient banner per gamepass, built
-	generically from GamepassConfig so a brand new pass just needs a new
-	config entry, not new UI code (see addFloatingIcons below).
-
-	Pets were pulled out entirely — the old coin-purchasable pets were
-	just existing discoverable items with a price tag, which undercut the
-	point of a "shop exclusive." A future pass adds real shop-only pets
-	that don't exist anywhere else in the game.
---]]
-
-local Players = game:GetService("Players")
-local MarketplaceService = game:GetService("MarketplaceService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
-local player = Players.LocalPlayer
-
-local Config = require(ReplicatedStorage:WaitForChild("GamepassConfig"))
-local NavButton = require(ReplicatedStorage:WaitForChild("NavButton"))
-
-local redeemCodeRemote = ReplicatedStorage:WaitForChild("RedeemCode")
-
-local gui = Instance.new("ScreenGui")
-gui.Name = "ShopUI"
-gui.ResetOnSpawn = false
-gui.DisplayOrder = 20
-gui.Parent = player:WaitForChild("PlayerGui")
-
-local function corner(parent, radius)
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, radius or 10)
-	c.Parent = parent
+-- Reference-guided shop: illustrated offer grid, white shell, code redemption last.
+local Players=game:GetService("Players")
+local MarketplaceService=game:GetService("MarketplaceService")
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local player=Players.LocalPlayer
+local Config=require(ReplicatedStorage:WaitForChild("GamepassConfig"))
+local NavButton=require(ReplicatedStorage:WaitForChild("NavButton"))
+local Style=require(ReplicatedStorage:WaitForChild("UIStyle"))
+local redeemCodeRemote=ReplicatedStorage:WaitForChild("RedeemCode")
+local WHITE=Style.Palette.Cream
+local GOLD=Style.Palette.Gold
+local BLACK=Style.Palette.Ink
+local gui=Instance.new("ScreenGui")
+gui.Name="ShopUI"
+gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+gui.ResetOnSpawn=false
+gui.DisplayOrder=20
+gui:SetAttribute("Designed",true)
+gui.Parent=player:WaitForChild("PlayerGui")
+local function corner(p,r)
+	local c=Instance.new("UICorner") c.CornerRadius=UDim.new(0,r or 16) c.Parent=p
 end
-local function text(parent, name, value, pos, size, fontSize, color)
-	local t = Instance.new("TextLabel")
-	t.Name = name
-	t.Text = value
-	t.Position = pos
-	t.Size = size
-	t.BackgroundTransparency = 1
-	t.TextColor3 = color or Color3.fromRGB(235, 235, 240)
-	t.Font = Enum.Font.FredokaOne
-	t.TextSize = fontSize
-	t.TextWrapped = true
-	t.TextXAlignment = Enum.TextXAlignment.Left
-	t.ZIndex = 2
-	t.Parent = parent
-	return t
+local function text(p,n,t,pos,size,fontSize,outline)
+	local l=Instance.new("TextLabel")
+	l.Name=n l.BackgroundTransparency=1 l.Text=t l.Position=pos l.Size=size
+	l.Font=Enum.Font.FredokaOne l.TextColor3=BLACK l.TextSize=fontSize
+	l.TextWrapped=true l.ZIndex=3 l.Parent=p
+	if outline then Style.Outline(l,fontSize) end
+	return l
 end
-
--- Same signature palette as GameUI.client.luau.
-local WHITE = Color3.fromRGB(255, 255, 255)
-local BLUE  = Color3.fromRGB(70, 150, 255)
-local GREEN = Color3.fromRGB(80, 220, 120)
-local GOLD  = Color3.fromRGB(255, 200, 80)
-
--- Right rail, slot 3 (bottom) — same shared module GameUI.client.luau's
--- nav buttons use, so this one reads as part of the same rail even
--- though it's a completely separate script/ScreenGui underneath.
-local open = NavButton.Create(gui, "🛒", "SHOP", WHITE, NavButton.RailPosition("right", 3))
-
-local overlay = Instance.new("Frame")
-overlay.Name = "Overlay"
-overlay.Size = UDim2.fromScale(1, 1)
-overlay.BackgroundColor3 = Color3.new(0, 0, 0)
-overlay.BackgroundTransparency = 0.3
-overlay.Visible = false
-overlay.Active = true
-overlay.Parent = gui
-
-local panel = Instance.new("Frame")
-panel.Name = "ShopPanel"
-panel.AnchorPoint = Vector2.new(0.5, 0.5)
-panel.Position = UDim2.fromScale(0.5, 0.5)
-panel.Size = UDim2.fromOffset(780, 660)
-panel.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
-panel.Parent = overlay
-corner(panel, 18)
-
-local panelStroke = Instance.new("UIStroke")
-panelStroke.Color = Color3.fromRGB(255, 255, 255)
-panelStroke.Transparency = 0.7
-panelStroke.Thickness = 2
-panelStroke.Parent = panel
-
-local scale = Instance.new("UIScale")
-scale.Parent = panel
+local open=NavButton.Create(gui,"","SHOP",WHITE,NavButton.RailPosition("right",3))
+local overlay=Instance.new("Frame")
+overlay.Name="Overlay" overlay.Size=UDim2.fromScale(1,1)
+overlay.BackgroundColor3=BLACK overlay.BackgroundTransparency=.7 overlay.Visible=false
+overlay.Parent=gui
+Style.Modal(overlay)
+local panel=Instance.new("Frame")
+panel.Name="ShopPanel" panel.AnchorPoint=Vector2.new(.5,.5) panel.Position=UDim2.fromScale(.5,.55)
+panel.Parent=overlay corner(panel,24) Style.Surface(panel,WHITE,5)
+local scale=Instance.new("UIScale") scale.Parent=panel
 local function fit()
-	local size = overlay.AbsoluteSize
-	scale.Scale = math.min(1, math.max(0.1, (size.X - 24) / 780), math.max(0.1, (size.Y - 24) / 660))
+	local size=overlay.AbsoluteSize
+	local compact=size.X<650
+	local width=compact and 600 or 1200
+	scale.Scale=math.min((size.X-70)/width,1.4)
+	panel.Size=UDim2.fromOffset(width,(size.Y*.80)/scale.Scale)
+	panel:SetAttribute("Compact",compact)
 end
-overlay:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
-fit()
-
-text(panel, "Title", "🛒 SHOP", UDim2.fromOffset(24, 16), UDim2.fromOffset(440, 36), 26, GOLD)
-
-local close = Instance.new("TextButton")
-close.Name = "Close"
-close.Size = UDim2.fromOffset(36, 36)
-close.Position = UDim2.new(1, -46, 0, 16)
-close.Text = "X"
-close.TextColor3 = Color3.fromRGB(235, 235, 240)
-close.BackgroundTransparency = 1
-close.Font = Enum.Font.FredokaOne
-close.TextSize = 20
-close.ZIndex = 2
-close.Parent = panel
-
--- One continuous scroll — no tab bar. Everything is a big bright banner
--- card stacked vertically, Pet-Simulator-shop style.
-local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, -44, 1, -140)
-scroll.Position = UDim2.fromOffset(22, 66)
-scroll.BackgroundTransparency = 1
-scroll.BorderSizePixel = 0
-scroll.ScrollBarThickness = 8
-scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-scroll.Parent = panel
-
-local listLayout = Instance.new("UIListLayout")
-listLayout.Padding = UDim.new(0, 16)
-listLayout.Parent = scroll
-
-local message = text(panel, "Message", "", UDim2.fromOffset(24, 620), UDim2.fromOffset(732, 30), 12, GOLD)
-message.TextXAlignment = Enum.TextXAlignment.Center
-
-------------------------------------------------------------------
--- A handful of emoji drifting slowly and looping within a card's own
--- bounds — purely decorative, the "alive" background other games use
--- behind currency/gamepass banners. Reusable: a future gamepass just
--- lists icons in GamepassConfig's bgIcons field and calls this once.
-------------------------------------------------------------------
-local function addFloatingIcons(parent, icons)
-	if not icons then return end
-	parent.ClipsDescendants = true
-	for _, icon in ipairs(icons) do
-		local lbl = Instance.new("TextLabel")
-		lbl.BackgroundTransparency = 1
-		lbl.Text = icon
-		lbl.Font = Enum.Font.FredokaOne
-		lbl.TextSize = math.random(26, 42)
-		lbl.TextTransparency = 0.6
-		lbl.Rotation = math.random(-18, 18)
-		lbl.Size = UDim2.fromOffset(50, 50)
-		lbl.ZIndex = 1
-		local startX = math.random(0, 100) / 100
-		local startY = math.random(0, 100) / 100
-		lbl.Position = UDim2.fromScale(startX, startY)
-		lbl.Parent = parent
-
-		-- Slow independent drift per icon, Reverse-looped so nothing snaps
-		-- back to its start — it just glides back and forth forever.
-		local duration = math.random(28, 48) / 10
-		local dx = math.random(-14, 14) / 100
-		local dy = math.random(-14, 14) / 100
-		TweenService:Create(lbl, TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
-			Position = UDim2.fromScale(math.clamp(startX + dx, 0, 1), math.clamp(startY + dy, 0, 1)),
-		}):Play()
-	end
+overlay:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit) fit()
+Style.Art(panel,"SHOP",UDim2.fromOffset(-20,-78),UDim2.fromOffset(114,114))
+local title=text(panel,"Title","Scrap Shop!",UDim2.fromOffset(90,-61),UDim2.fromOffset(570,88),60,true)
+title.TextXAlignment=Enum.TextXAlignment.Left
+local close=Instance.new("TextButton") close.Name="Close" close.Parent=panel Style.Close(close)
+local scroll=Instance.new("ScrollingFrame")
+scroll.Name="Sections" scroll.Size=UDim2.new(1,-38,1,-50) scroll.Position=UDim2.fromOffset(19,24)
+scroll.BackgroundTransparency=1 scroll.BorderSizePixel=0 scroll.ScrollBarThickness=7
+scroll.ScrollBarImageColor3=BLACK scroll.AutomaticCanvasSize=Enum.AutomaticSize.Y scroll.CanvasSize=UDim2.new()
+scroll.Parent=panel Style.ScrollPadding(scroll)
+local list=Instance.new("UIListLayout") list.Padding=UDim.new(0,18) list.SortOrder=Enum.SortOrder.LayoutOrder list.Parent=scroll
+local message=text(panel,"Message","",UDim2.new(0,18,1,-26),UDim2.new(1,-36,0,24),16,false)
+local function section(name,order)
+	local h=Instance.new("Frame") h.Name=name.."Section" h.BackgroundTransparency=1
+	h.Size=UDim2.new(1,-10,0,50) h.LayoutOrder=order h.Parent=scroll
+	local label=text(h,"Heading",name,UDim2.fromOffset(0,0),UDim2.fromOffset(260,42),30,false)
+	label.TextXAlignment=Enum.TextXAlignment.Left
+	local line=Instance.new("Frame") line.BorderSizePixel=0 line.BackgroundColor3=Color3.fromRGB(207,216,209)
+	line.Position=UDim2.new(0,270,.5,0) line.Size=UDim2.new(1,-270,0,3) line.Parent=h
 end
-
-------------------------------------------------------------------
--- Redeem a code — its own bright banner instead of a separate tab.
-------------------------------------------------------------------
-
-local codeBanner = Instance.new("Frame")
-codeBanner.Name = "CodeBanner"
-codeBanner.Size = UDim2.new(1, 0, 0, 130)
-codeBanner.LayoutOrder = 1
-codeBanner.BackgroundColor3 = GREEN
-codeBanner.BorderSizePixel = 0
-codeBanner.Parent = scroll
-corner(codeBanner, 18)
-
-local codeGradient = Instance.new("UIGradient")
-codeGradient.Color = ColorSequence.new(GREEN:Lerp(Color3.new(1, 1, 1), 0.25), GREEN:Lerp(Color3.new(0, 0, 0), 0.25))
-codeGradient.Rotation = 25
-codeGradient.Parent = codeBanner
-
-local codeStroke = Instance.new("UIStroke")
-codeStroke.Color = Color3.new(1, 1, 1)
-codeStroke.Thickness = 3
-codeStroke.Transparency = 0.3
-codeStroke.Parent = codeBanner
-
-addFloatingIcons(codeBanner, { "🎁", "⭐", "🎁" })
-
-local codeIconBadge = Instance.new("Frame")
-codeIconBadge.Size = UDim2.fromOffset(90, 90)
-codeIconBadge.Position = UDim2.fromOffset(18, 20)
-codeIconBadge.BackgroundColor3 = Color3.new(1, 1, 1)
-codeIconBadge.BackgroundTransparency = 0.15
-codeIconBadge.ZIndex = 2
-codeIconBadge.Parent = codeBanner
-corner(codeIconBadge, 45)
-
-local codeIcon = text(codeIconBadge, "Icon", "🎁", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), 48)
-codeIcon.TextXAlignment = Enum.TextXAlignment.Center
-codeIcon.TextYAlignment = Enum.TextYAlignment.Center
-
-local codeTitle = text(codeBanner, "Title", "REDEEM A CODE", UDim2.fromOffset(124, 18), UDim2.fromOffset(300, 30), 22, Color3.new(1, 1, 1))
-codeTitle.TextStrokeTransparency = 0.5
-
-local codeSub = text(codeBanner, "Sub", "Got a code? Type it in and redeem it.", UDim2.fromOffset(124, 50), UDim2.fromOffset(300, 20), 13, Color3.new(1, 1, 1))
-codeSub.TextTransparency = 0.1
-
-local codeBox = Instance.new("TextBox")
-codeBox.Size = UDim2.fromOffset(320, 46)
-codeBox.Position = UDim2.fromOffset(124, 76)
-codeBox.BackgroundColor3 = Color3.new(1, 1, 1)
-codeBox.Text = "" -- Instance.new("TextBox") defaults Text to "TextBox", which
--- would otherwise mask PlaceholderText below entirely.
-codeBox.TextColor3 = Color3.fromRGB(30, 30, 36)
-codeBox.PlaceholderText = "Enter code"
-codeBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 158)
-codeBox.Font = Enum.Font.FredokaOne
-codeBox.TextSize = 18
-codeBox.ClearTextOnFocus = false
-codeBox.BorderSizePixel = 0
-codeBox.ZIndex = 2
-codeBox.Parent = codeBanner
-corner(codeBox, 10)
-
-local redeemBtn = Instance.new("TextButton")
-redeemBtn.Size = UDim2.fromOffset(150, 46)
-redeemBtn.Position = UDim2.fromOffset(456, 76)
-redeemBtn.BackgroundColor3 = GOLD
-redeemBtn.TextColor3 = Color3.fromRGB(30, 30, 36)
-redeemBtn.Font = Enum.Font.LuckiestGuy
-redeemBtn.TextSize = 16
-redeemBtn.Text = "REDEEM"
-redeemBtn.BorderSizePixel = 0
-redeemBtn.ZIndex = 2
-redeemBtn.Parent = codeBanner
-corner(redeemBtn, 10)
-
-local function submitCode()
-	local code = codeBox.Text
-	if code == "" then return end
-	redeemCodeRemote:FireServer(code)
-	codeBox.Text = ""
+section("Gamepasses",10)
+local passGrid=Instance.new("Frame") passGrid.Name="GamepassesGrid" passGrid.BackgroundTransparency=1
+passGrid.LayoutOrder=11 passGrid.Parent=scroll
+local grid=Instance.new("UIGridLayout") grid.SortOrder=Enum.SortOrder.LayoutOrder grid.CellPadding=UDim2.fromOffset(12,12) grid.Parent=passGrid
+local function gridFit()
+	local compact=panel:GetAttribute("Compact")
+	grid.FillDirectionMaxCells=compact and 1 or 3
+	grid.CellSize=compact and UDim2.new(1,-12,0,340) or UDim2.new(1/3,-12,0,354)
+	passGrid.Size=UDim2.new(1,-6,0,compact and 1086 or 360)
 end
-
-redeemBtn.Activated:Connect(submitCode)
-codeBox.FocusLost:Connect(function(enterPressed)
-	if enterPressed then submitCode() end
-end)
-
-------------------------------------------------------------------
--- Gamepasses — one big animated banner each, built generically from
--- GamepassConfig so a new pass just needs a new config entry.
-------------------------------------------------------------------
-
-local PASS_ORDER = { "DoubleCoins", "ExtraCarry", "AutoCollect" }
-local PASS_ACCENTS = {
-	DoubleCoins = GOLD,
-	ExtraCarry = BLUE,
-	AutoCollect = GREEN,
-}
-
-local refreshers = {}
-local pendingId = nil
-
-for i, key in ipairs(PASS_ORDER) do
-	local item = Config[key]
-	local accent = PASS_ACCENTS[key] or WHITE
-
-	local banner = Instance.new("Frame")
-	banner.Name = key
-	banner.Size = UDim2.new(1, 0, 0, 150)
-	banner.LayoutOrder = i + 1
-	banner.BackgroundColor3 = accent
-	banner.BorderSizePixel = 0
-	banner.Parent = scroll
-	corner(banner, 18)
-
-	local gradient = Instance.new("UIGradient")
-	gradient.Color = ColorSequence.new(accent:Lerp(Color3.new(1, 1, 1), 0.3), accent:Lerp(Color3.new(0, 0, 0), 0.25))
-	gradient.Rotation = 25
-	gradient.Parent = banner
-
-	local bannerStroke = Instance.new("UIStroke")
-	bannerStroke.Color = Color3.new(1, 1, 1)
-	bannerStroke.Thickness = 3
-	bannerStroke.Transparency = 0.25
-	bannerStroke.Parent = banner
-
-	addFloatingIcons(banner, item.bgIcons)
-
-	local iconBadge = Instance.new("Frame")
-	iconBadge.Size = UDim2.fromOffset(96, 96)
-	iconBadge.Position = UDim2.fromOffset(18, 27)
-	iconBadge.BackgroundColor3 = Color3.new(1, 1, 1)
-	iconBadge.BackgroundTransparency = 0.15
-	iconBadge.ZIndex = 2
-	iconBadge.Parent = banner
-	corner(iconBadge, 48)
-
-	local iconLbl = text(iconBadge, "Icon", item.icon or "⭐", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), 52)
-	iconLbl.TextXAlignment = Enum.TextXAlignment.Center
-	iconLbl.TextYAlignment = Enum.TextYAlignment.Center
-
-	local nameLbl = text(banner, "Title", item.name, UDim2.fromOffset(130, 20), UDim2.fromOffset(360, 32), 24, Color3.new(1, 1, 1))
-	nameLbl.TextStrokeTransparency = 0.5
-
-	local descLbl = text(banner, "Description", item.description, UDim2.fromOffset(130, 56), UDim2.fromOffset(360, 74), 13, Color3.new(1, 1, 1))
-	descLbl.TextTransparency = 0.1
-
-	local buy = Instance.new("TextButton")
-	buy.Name = "Buy"
-	buy.Size = UDim2.fromOffset(160, 52)
-	buy.Position = UDim2.new(1, -178, 0.5, -26)
-	buy.Font = Enum.Font.FredokaOne
-	buy.TextSize = 14
-	buy.TextWrapped = true
-	buy.ZIndex = 2
-	buy.Parent = banner
-	corner(buy, 12)
-
+panel:GetAttributeChangedSignal("Compact"):Connect(gridFit) gridFit()
+local PASS_ORDER={"DoubleCoins","ExtraCarry","AutoCollect"}
+local PASS_ACCENTS={DoubleCoins=Color3.fromRGB(243,162,101),ExtraCarry=Color3.fromRGB(95,185,174),AutoCollect=Color3.fromRGB(129,164,194)}
+local BENEFITS={DoubleCoins="Double your sale and reward coins!",ExtraCarry="Carry 2 extra items every trip!",AutoCollect="Collect nearby scrap automatically!"}
+local refreshers={}
+local pendingId=nil
+for i,key in ipairs(PASS_ORDER) do
+	local item=Config[key]
+	local banner=Instance.new("Frame") banner.Name=key banner.LayoutOrder=i banner.ClipsDescendants=true banner.Parent=passGrid
+	corner(banner,17) Style.Surface(banner,WHITE,3)
+	local gradient=Instance.new("UIGradient")
+	gradient.Color=ColorSequence.new(PASS_ACCENTS[key]:Lerp(WHITE,.6),PASS_ACCENTS[key])
+	gradient.Rotation=65 gradient.Parent=banner
+	text(banner,"Title",item.name,UDim2.fromOffset(10,13),UDim2.new(1,-20,0,58),36,true)
+	Style.Art(banner,key,UDim2.new(0,5,0,84),UDim2.new(.51,0,0,186))
+	text(banner,"Description",BENEFITS[key],UDim2.new(.51,0,0,90),UDim2.new(.46,0,0,165),25,true)
+	local buy=Instance.new("TextButton")
+	buy.Name="Purchase" buy.Size=UDim2.new(1,-28,0,60) buy.Position=UDim2.new(0,14,1,-76)
+	buy.Font=Enum.Font.FredokaOne buy.TextSize=27 buy.TextWrapped=true buy.ZIndex=3 buy.Parent=banner
+	corner(buy,12) Style.Surface(buy,WHITE,2)
 	local info, loading = nil, false
 	local function refresh()
 		local owns = player:GetAttribute("Pass_" .. key) == true
@@ -329,7 +104,7 @@ for i, key in ipairs(PASS_ORDER) do
 		local enabled = not owns and available and status == "Ready" and pendingId == nil
 		buy.Active = enabled == true
 		buy.AutoButtonColor = enabled == true
-		buy.BackgroundColor3 = enabled and GOLD or Color3.new(1, 1, 1)
+		buy.BackgroundColor3 = enabled and GOLD or WHITE
 		buy.TextColor3 = Color3.fromRGB(30, 30, 36)
 		if owns then
 			buy.Text = "OWNED"
@@ -384,10 +159,64 @@ MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(who, id, purc
 	for _, f in pairs(refreshers) do f() end
 end)
 
-------------------------------------------------------------------
-
-open.Activated:Connect(function()
-	overlay.Visible = not overlay.Visible
-	if overlay.Visible then fit() end
+local function feature(name,kind,titleValue,description,order,color,action)
+	local card=Instance.new("Frame") card.Name=name card.LayoutOrder=order card.Size=UDim2.new(1,-12,0,220)
+	card.Parent=scroll corner(card,18) Style.Surface(card,color,3)
+	Style.Art(card,kind,UDim2.fromOffset(18,18),UDim2.fromOffset(180,180))
+	local heading=text(card,"Title",titleValue,UDim2.fromOffset(218,24),UDim2.new(1,-440,0,52),34,true)
+	heading.TextXAlignment=Enum.TextXAlignment.Left
+	local desc=text(card,"Description",description,UDim2.fromOffset(218,84),UDim2.new(1,-440,0,110),22,false)
+	desc.TextXAlignment=Enum.TextXAlignment.Left
+	local button=Instance.new("TextButton") button.Name="Action" button.Size=UDim2.fromOffset(180,64)
+	button.Position=UDim2.new(1,-200,.5,-32) button.Text=action and "View Rewards" or "Coming Soon"
+	button.TextSize=24 button.TextWrapped=true button.Font=Enum.Font.FredokaOne button.Active=action~=nil
+	button.AutoButtonColor=action~=nil button.Parent=card corner(button,12) Style.Surface(button,WHITE,2)
+	if action then button.Activated:Connect(action) end
+	return card
+end
+section("Pets",100)
+feature("ExclusivePets","PETS","New companions!","Shop-exclusive pets are coming soon.",110,Color3.fromRGB(206,234,220))
+section("Boosts",200)
+feature("RewardBoosts","DoubleCoins","Reward Boosts!","Find timed boosts in your daily rewards.",210,Color3.fromRGB(245,218,174),function()
+	overlay.Visible=false
+	local e=player.PlayerGui:FindFirstChild("OpenDailyRewards") if e then e:Fire() end
 end)
-close.Activated:Connect(function() overlay.Visible = false end)
+section("Redeem a Code",300)
+local codeBanner=Instance.new("Frame") codeBanner.Name="CodeBanner" codeBanner.LayoutOrder=310
+codeBanner.Size=UDim2.new(1,-12,0,168) codeBanner.Parent=scroll corner(codeBanner,18)
+Style.Surface(codeBanner,Color3.fromRGB(237,233,223),2)
+Style.Art(codeBanner,"CODE",UDim2.fromOffset(12,10),UDim2.fromOffset(144,144))
+local codeBox=Instance.new("TextBox") codeBox.Name="Code" codeBox.Text="" codeBox.PlaceholderText="Enter your code..."
+codeBox.Size=UDim2.new(1,-370,0,66) codeBox.Position=UDim2.new(0,164,.5,-33)
+codeBox.Font=Enum.Font.FredokaOne codeBox.TextSize=25 codeBox.ClearTextOnFocus=false
+codeBox.Parent=codeBanner corner(codeBox,12) Style.Surface(codeBox,WHITE,2)
+local redeemBtn=Instance.new("TextButton") redeemBtn.Name="Redeem" redeemBtn.Text="Redeem!"
+redeemBtn.Size=UDim2.fromOffset(170,66) redeemBtn.Position=UDim2.new(1,-190,.5,-33)
+redeemBtn.Font=Enum.Font.FredokaOne redeemBtn.Parent=codeBanner corner(redeemBtn,12)
+Style.Surface(redeemBtn,Style.Palette.Teal,3) Style.Outline(redeemBtn,28)
+local function submitCode()
+	local code=codeBox.Text if code=="" then return end
+	redeemCodeRemote:FireServer(code) codeBox.Text=""
+end
+redeemBtn.Activated:Connect(submitCode)
+codeBox.FocusLost:Connect(function(enter) if enter then submitCode() end end)
+local function reflowFeatures()
+	local compact=panel:GetAttribute("Compact")
+	title.TextSize=compact and 44 or 60
+	title.Size=UDim2.fromOffset(compact and 430 or 570,88)
+	for _,card in ipairs(scroll:GetChildren()) do
+		if card.Name=="ExclusivePets" or card.Name=="RewardBoosts" then
+			card.Size=UDim2.new(1,-12,0,compact and 320 or 220)
+			card.Title.Size=UDim2.new(1,compact and -180 or -440,0,64)
+			card.Title.Position=UDim2.fromOffset(compact and 160 or 218,20)
+			card.Description.Size=UDim2.new(1,compact and -180 or -440,0,112)
+			card.Description.Position=UDim2.fromOffset(compact and 160 or 218,92)
+			card.Illustration.Size=UDim2.fromOffset(compact and 132 or 180,180)
+			card.Action.Position=compact and UDim2.new(0,18,1,-86) or UDim2.new(1,-200,.5,-32)
+			card.Action.Size=compact and UDim2.new(1,-36,0,64) or UDim2.fromOffset(180,64)
+		end
+	end
+end
+panel:GetAttributeChangedSignal("Compact"):Connect(reflowFeatures) reflowFeatures()
+open.Activated:Connect(function() overlay.Visible=not overlay.Visible if overlay.Visible then fit() end end)
+close.Activated:Connect(function() overlay.Visible=false end)

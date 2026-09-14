@@ -38,10 +38,11 @@ local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local EventConfig = require(ReplicatedStorage:WaitForChild("EventConfig"))
 local Mutations = require(ReplicatedStorage:WaitForChild("Mutations"))
 local NavButton = require(ReplicatedStorage:WaitForChild("NavButton"))
+local UIStyle = require(ReplicatedStorage:WaitForChild("UIStyle"))
 local itemModels = ReplicatedStorage:WaitForChild("ItemModels")
 
 local DARK   = Color3.fromRGB(18, 18, 22)
-local GOLD   = Color3.fromRGB(255, 200, 80)
+local GOLD   = UIStyle.Palette.Gold
 local LIGHT  = Color3.fromRGB(235, 235, 240)
 local DIM    = Color3.fromRGB(120, 120, 132)
 
@@ -50,11 +51,11 @@ local DIM    = Color3.fromRGB(120, 120, 132)
 -- instead of a grab-bag of random accent colors. Each panel/button below
 -- claims one of these five as its own identity; GOLD stays reserved for
 -- currency, since that convention reads instantly to any player.
-local BLUE   = Color3.fromRGB(70, 150, 255)
-local WHITE  = Color3.fromRGB(255, 255, 255)
-local PURPLE = Color3.fromRGB(180, 110, 255)
-local GREEN  = Color3.fromRGB(80, 220, 120)
-local RED    = Color3.fromRGB(255, 80, 80)
+local BLUE   = UIStyle.Palette.Teal
+local WHITE  = UIStyle.Palette.Cream
+local PURPLE = UIStyle.Palette.Steel
+local GREEN  = UIStyle.Palette.Mint
+local RED    = UIStyle.Palette.Copper
 
 -- Glass look: panels let the world through, text stays fully opaque.
 -- Readability comes from the stroke and the text contrast, not from
@@ -64,6 +65,7 @@ local GLASS_HUD   = 0.28   -- always-on HUD cards
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "JunkyardUI"
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
@@ -98,6 +100,7 @@ objCard.BackgroundColor3 = DARK
 objCard.BackgroundTransparency = GLASS_HUD
 objCard.BorderSizePixel = 0
 objCard.Parent = gui
+UIStyle.Navigation(objCard)
 rounded(objCard)
 
 local objStripe = Instance.new("Frame")
@@ -124,51 +127,31 @@ objReward.Position = UDim2.new(0, 22, 0, 68)
 
 local coinCard = Instance.new("Frame")
 coinCard.Size = UDim2.new(0, 300, 0, 76)
-coinCard.Position = UDim2.new(0, 20, 0, 122)
+coinCard.Position = UDim2.new(0, 20, 1, -136)
+coinCard:SetAttribute("Floating",true)
 coinCard.BackgroundColor3 = DARK
 coinCard.BackgroundTransparency = GLASS_HUD
 coinCard.BorderSizePixel = 0
 coinCard.Parent = gui
+UIStyle.Navigation(coinCard)
 rounded(coinCard)
 
--- A polished little coin badge — gradient fill, bright outline, an
--- actual coin glyph — instead of a flat tinted circle, so the currency
--- reads as a real icon at a glance instead of a colored dot next to a
--- number.
-local coinIconBadge = Instance.new("Frame")
-coinIconBadge.Size = UDim2.new(0, 40, 0, 40)
-coinIconBadge.Position = UDim2.new(0, 12, 0, 12)
-coinIconBadge.BackgroundColor3 = GOLD
-coinIconBadge.BorderSizePixel = 0
-coinIconBadge.Parent = coinCard
-rounded(coinIconBadge, 20)
-
-local coinIconGradient = Instance.new("UIGradient")
-coinIconGradient.Color = ColorSequence.new(GOLD:Lerp(Color3.new(1, 1, 1), 0.35), GOLD:Lerp(Color3.new(0, 0, 0), 0.2))
-coinIconGradient.Rotation = 90
-coinIconGradient.Parent = coinIconBadge
-
-local coinIconStroke = Instance.new("UIStroke")
-coinIconStroke.Color = Color3.new(1, 1, 1)
-coinIconStroke.Thickness = 2.5
-coinIconStroke.Transparency = 0.2
-coinIconStroke.Parent = coinIconBadge
-
-local coinIconGlyph = label(coinIconBadge, "💰", UDim2.new(1, 0, 1, 0), Color3.new(1, 1, 1), Enum.Font.FredokaOne, 22)
-coinIconGlyph.TextXAlignment = Enum.TextXAlignment.Center
-coinIconGlyph.TextYAlignment = Enum.TextYAlignment.Center
+UIStyle.Art(coinCard,"DoubleCoins",UDim2.fromOffset(0,-10),UDim2.fromOffset(84,84))
 
 local coinText = label(coinCard, "0", UDim2.new(1, -72, 0, 40), GOLD, Enum.Font.LuckiestGuy, 28)
-coinText.Position = UDim2.new(0, 60, 0, 12)
+coinText.Position = UDim2.new(0, 88, 0, 8)
+UIStyle.Outline(coinText,42)
 coinText.TextYAlignment = Enum.TextYAlignment.Center
 coinText.TextStrokeTransparency = 0.5
 
 local luckText = label(coinCard, "LUCK 1", UDim2.new(0, 90, 0, 18), DIM, Enum.Font.FredokaOne, 12)
-luckText.Position = UDim2.new(1, -96, 0, 17)
+luckText.Position = UDim2.new(0, 88, 0, 56)
+UIStyle.Outline(luckText,14)
 luckText.TextXAlignment = Enum.TextXAlignment.Right
 
 local companionText = label(coinCard, "No companion equipped", UDim2.new(1, -32, 0, 18), PURPLE, Enum.Font.FredokaOne, 12)
-companionText.Position = UDim2.new(0, 16, 0, 54)
+companionText.Position = UDim2.new(0, 16, 0, 80)
+UIStyle.Outline(companionText,14)
 
 local function commas(n)
 	local formatted = tostring(n)
@@ -206,8 +189,8 @@ local function watchCoins()
 	coins.Changed:Connect(function()
 		update()
 		-- Quick pop so gains are felt, not just read.
-		coinText.TextSize = 30
-		TweenService:Create(coinText, TweenInfo.new(0.25), { TextSize = 24 }):Play()
+		coinText.TextSize = 46
+		TweenService:Create(coinText, TweenInfo.new(0.25), { TextSize = 42 }):Play()
 	end)
 end
 
@@ -222,6 +205,7 @@ boostBar.Size = UDim2.new(0, 300, 0, 34)
 boostBar.Position = UDim2.new(0, 20, 0, 182)
 boostBar.BackgroundTransparency = 1
 boostBar.Parent = gui
+UIStyle.Navigation(boostBar)
 
 local boostLayout = Instance.new("UIListLayout")
 boostLayout.FillDirection = Enum.FillDirection.Horizontal
@@ -326,6 +310,8 @@ badgeMark.ZIndex = 4
 
 -- Dimmed backdrop
 local dimmer = Instance.new("TextButton")
+dimmer.Name = "RewardsOverlay"
+dimmer:SetAttribute("KeepOverlay",true)
 dimmer.Size = UDim2.new(1, 0, 1, 0)
 dimmer.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 dimmer.BackgroundTransparency = 0.35
@@ -333,6 +319,7 @@ dimmer.Text = ""
 dimmer.AutoButtonColor = false
 dimmer.BorderSizePixel = 0
 dimmer.Visible = false
+UIStyle.Modal(dimmer)
 dimmer.ZIndex = 5
 dimmer.Parent = gui
 
@@ -345,6 +332,7 @@ dailyFrame.BorderSizePixel = 0
 dailyFrame.ZIndex = 6
 dailyFrame.Parent = dimmer
 rounded(dailyFrame, 16)
+UIStyle.FixedFit(dailyFrame,600,470)
 
 local frameGradient = Instance.new("UIGradient")
 frameGradient.Color = ColorSequence.new({
@@ -397,7 +385,7 @@ dailySub.ZIndex = 7
 -- Streak pill
 local streakPill = Instance.new("Frame")
 streakPill.Size = UDim2.new(0, 132, 0, 34)
-streakPill.Position = UDim2.new(1, -170, 0, 30)
+streakPill.Position = UDim2.new(1, -190, 0, 30)
 streakPill.BackgroundColor3 = Color3.fromRGB(58, 44, 30)
 streakPill.BorderSizePixel = 0
 streakPill.ZIndex = 7
@@ -415,10 +403,10 @@ streakLabel.TextXAlignment = Enum.TextXAlignment.Center
 streakLabel.ZIndex = 8
 
 local dailyClose = Instance.new("TextButton")
-dailyClose.Size = UDim2.new(0, 32, 0, 32)
-dailyClose.Position = UDim2.new(1, -46, 0, 74)
+dailyClose.Size = UDim2.new(0, 50, 0, 50)
+dailyClose.Position = UDim2.new(1, -54, 0, 20)
 dailyClose.BackgroundTransparency = 1
-dailyClose.Text = "✕"
+dailyClose.Text = "X"
 dailyClose.TextColor3 = DIM
 dailyClose.Font = Enum.Font.FredokaOne
 dailyClose.TextSize = 18
@@ -484,16 +472,22 @@ end
 local function openDaily()
 	dimmer.Visible = true
 	dailyFrame.Size = UDim2.new(0, 560, 0, 440)
-	dailyFrame.Position = UDim2.new(0.5, -280, 0.5, -220)
+	dailyFrame.Position = UDim2.fromScale(0.5, 0.5)
 	TweenService:Create(dailyFrame, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 		Size = UDim2.new(0, 600, 0, 470),
-		Position = UDim2.new(0.5, -300, 0.5, -235),
+		Position = UDim2.fromScale(0.5, 0.5),
 	}):Play()
 end
 
 dailyClose.MouseButton1Click:Connect(closeDaily)
 dimmer.MouseButton1Click:Connect(closeDaily)
 dailyBtn.MouseButton1Click:Connect(openDaily)
+do
+	local openRewards = Instance.new("BindableEvent")
+	openRewards.Name = "OpenDailyRewards"
+	openRewards.Parent = player.PlayerGui
+	openRewards.Event:Connect(openDaily)
+end
 
 local autoOpened = false
 local pulseCard = nil
@@ -738,6 +732,7 @@ panel.BackgroundColor3 = DARK
 panel.BackgroundTransparency = GLASS_HUD
 panel.BorderSizePixel = 0
 panel.Parent = gui
+UIStyle.Navigation(panel)
 rounded(panel)
 
 local header = label(panel, "DISCOVERIES  0 / 0", UDim2.new(1, -20, 0, 34), PURPLE, Enum.Font.FredokaOne, 15)
@@ -770,6 +765,7 @@ carryingFrame.BackgroundColor3 = DARK
 carryingFrame.BackgroundTransparency = GLASS_HUD
 carryingFrame.BorderSizePixel = 0
 carryingFrame.Parent = gui
+UIStyle.Navigation(carryingFrame)
 rounded(carryingFrame)
 
 local carryingStroke = Instance.new("UIStroke")
@@ -851,6 +847,7 @@ bookFrame.BorderSizePixel = 0
 bookFrame.Visible = false
 bookFrame.Parent = gui
 rounded(bookFrame, 18)
+UIStyle.Modal(bookFrame)
 
 local bookTitle = label(bookFrame, "ITEM INDEX", UDim2.new(0, 360, 0, 50), GOLD, Enum.Font.LuckiestGuy, 40)
 bookTitle.Position = UDim2.new(0, 32, 0, 22)
@@ -966,10 +963,15 @@ local function buildItemViewport(parent, itemName, tintColor)
 	local viewport = Instance.new("ViewportFrame")
 	viewport.Size = UDim2.new(1, -16, 1, -46)
 	viewport.Position = UDim2.new(0, 8, 0, 8)
+	viewport.BorderSizePixel = 0
+	viewport.BackgroundColor3 = Color3.new(1,1,1)
 	viewport.BackgroundTransparency = 1
+	viewport.Ambient = Color3.fromRGB(195,195,205)
+	viewport.LightColor = Color3.new(1,1,1)
 	viewport.Parent = parent
 
 	local cam = Instance.new("Camera")
+	cam.FieldOfView = 35
 	viewport.CurrentCamera = cam
 	cam.Parent = viewport
 
@@ -982,7 +984,7 @@ local function buildItemViewport(parent, itemName, tintColor)
 		clone.Parent = viewport
 
 		local size = clone.Size
-		local reach = math.max(size.X, size.Y, size.Z) * 1.5 + 1.5
+		local reach = math.max(size.X, size.Y, size.Z) * 1.5 + 0.2
 		cam.CFrame = CFrame.new(Vector3.new(reach * 0.6, reach * 0.5, reach * 0.85), Vector3.new(0, 0, 0))
 	end
 end
@@ -1016,6 +1018,10 @@ local function redrawIndex()
 	tabJunkyard.TextColor3 = onJunkyard and DARK or LIGHT
 	tabBrainrot.BackgroundColor3 = onJunkyard and Color3.fromRGB(50, 50, 58) or GOLD
 	tabBrainrot.TextColor3 = onJunkyard and LIGHT or DARK
+	UIStyle.Surface(tabJunkyard)
+	UIStyle.Surface(tabBrainrot)
+	tabJunkyard:FindFirstChildOfClass("UIStroke").Thickness = onJunkyard and 4 or 1
+	tabBrainrot:FindFirstChildOfClass("UIStroke").Thickness = onJunkyard and 1 or 4
 
 	local buckets = {}
 	for _, key in ipairs(SECTION_ORDER) do buckets[key] = {} end
@@ -1032,6 +1038,8 @@ local function redrawIndex()
 		-- you click anything.
 		rarityTabs[key].BackgroundColor3 = isActive and info.color or info.color:Lerp(Color3.fromRGB(30, 30, 36), 0.75)
 		rarityTabs[key].TextColor3 = isActive and Color3.fromRGB(20, 20, 26) or info.color:Lerp(Color3.fromRGB(255, 255, 255), 0.25)
+		UIStyle.Surface(rarityTabs[key])
+		rarityTabs[key]:FindFirstChildOfClass("UIStroke").Thickness = isActive and 4 or 1
 	end
 
 	local bucket = buckets[activeRarity]
@@ -1167,27 +1175,35 @@ redrawIndex()
 local shopBtn = NavButton.Create(gui, "🔧", "UPGRADES", GREEN, NavButton.RailPosition("right", 2))
 
 local shopFrame = Instance.new("Frame")
-shopFrame.Size = UDim2.new(0, 520, 0, 510)
+shopFrame.Name = "UpgradesPanel"
+shopFrame.Size = UDim2.new(0, 1100, 0, 760)
 shopFrame.Position = UDim2.new(0.5, -260, 0.5, -255)
 shopFrame.BackgroundColor3 = DARK
 shopFrame.BackgroundTransparency = GLASS_PANEL
 shopFrame.BorderSizePixel = 0
 shopFrame.Visible = false
 shopFrame.Parent = gui
-rounded(shopFrame, 10)
+rounded(shopFrame, 18)
+UIStyle.Fit(shopFrame, 1100, 760)
+UIStyle.Surface(shopFrame,UIStyle.Palette.Cream,5)
 
-local shopTitle = label(shopFrame, "UPGRADES", UDim2.new(1, -30, 0, 30), Color3.fromRGB(90, 200, 255), Enum.Font.LuckiestGuy, 20)
-shopTitle.Position = UDim2.new(0, 20, 0, 14)
+local shopTitle = label(shopFrame, "UPGRADES", UDim2.new(1, -30, 0, 30), Color3.fromRGB(90, 200, 255), Enum.Font.LuckiestGuy, 30)
+shopTitle.Position = UDim2.fromOffset(94,-64)
+shopTitle.Size=UDim2.fromOffset(520,88)
+shopTitle.Text="Upgrades!"
+UIStyle.Outline(shopTitle,60)
+UIStyle.Art(shopFrame,"UPGRADES",UDim2.fromOffset(-12,-76),UDim2.fromOffset(112,112))
 
 local shopClose = Instance.new("TextButton")
-shopClose.Size = UDim2.new(0, 30, 0, 30)
-shopClose.Position = UDim2.new(1, -44, 0, 14)
+shopClose.Size = UDim2.new(0, 64, 0, 50)
+shopClose.Position = UDim2.new(1, -76, 0, 4)
 shopClose.BackgroundTransparency = 1
 shopClose.Text = "X"
 shopClose.TextColor3 = DIM
 shopClose.Font = Enum.Font.FredokaOne
 shopClose.TextSize = 18
 shopClose.Parent = shopFrame
+UIStyle.Close(shopClose)
 
 local rebirthRow = Instance.new("Frame")
 rebirthRow.Size = UDim2.new(1, -40, 0, 90)
@@ -1237,6 +1253,10 @@ shopScroll.Parent = shopFrame
 local shopLayout = Instance.new("UIListLayout")
 shopLayout.Padding = UDim.new(0, 8)
 shopLayout.Parent = shopScroll
+UIStyle.ScrollPadding(shopScroll)
+
+shopScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+shopFrame:GetAttributeChangedSignal("Compact"):Connect(function() UIStyle.UpgradeLayout(shopFrame, shopScroll) end)
 
 local function toggleShop()
 	shopFrame.Visible = not shopFrame.Visible
@@ -1266,45 +1286,52 @@ local UPGRADE_COLORS = {
 
 local function redrawShop(shop)
 	for _, child in ipairs(shopScroll:GetChildren()) do
-		if not child:IsA("UIListLayout") then child:Destroy() end
+		if not child:IsA("UIListLayout") and not child:IsA("UIPadding") then child:Destroy() end
 	end
 
 	for i, entry in ipairs(shop or {}) do
 		local accent = UPGRADE_COLORS[entry.key] or LIGHT
 
 		local row = Instance.new("Frame")
-		row.Size = UDim2.new(1, -6, 0, 78)
+		row.Size = UDim2.new(1, -10, 0, 156)
+		row.Name = entry.key
 		row.LayoutOrder = i
-		row.BackgroundColor3 = accent:Lerp(Color3.fromRGB(20, 20, 26), 0.82)
+		row.BackgroundColor3 = accent:Lerp(Color3.new(1,1,1),.72)
 		row.BorderSizePixel = 0
 		row.Parent = shopScroll
 		rounded(row, 6)
 
 		local rowStroke = Instance.new("UIStroke")
 		rowStroke.Color = accent
-		rowStroke.Transparency = 0.55
+		rowStroke.Transparency = 0
+		rowStroke.Color=Color3.fromRGB(35,35,43)
 		rowStroke.Thickness = 1.5
 		rowStroke.Parent = row
+		UIStyle.Art(row, entry.key, UDim2.fromOffset(10,8), UDim2.fromOffset(140,140))
 
 		local name = label(row, string.format("%s  —  Lv %d / %d", entry.name, entry.level, entry.max),
-			UDim2.new(1, -160, 0, 22), accent, Enum.Font.FredokaOne, 15)
-		name.Position = UDim2.new(0, 14, 0, 10)
+			UDim2.new(1, -360, 0, 32), accent, Enum.Font.FredokaOne, 24)
+		name.Name = "UpgradeName"
+		name.Position = UDim2.new(0, 166, 0, 20)
 
-		local now = label(row, "Now: " .. entry.effect, UDim2.new(1, -160, 0, 18), DIM, Enum.Font.FredokaOne, 12)
-		now.Position = UDim2.new(0, 14, 0, 32)
+		local now = label(row, "Now: " .. entry.effect, UDim2.new(1, -360, 0, 28), DIM, Enum.Font.FredokaOne, 18)
+		now.Name = "UpgradeNow"
+		now.Position = UDim2.new(0, 166, 0, 62)
 
 		if entry.nextEffect then
-			local nxt = label(row, "Next: " .. entry.nextEffect, UDim2.new(1, -160, 0, 18),
-				Color3.fromRGB(150, 220, 160), Enum.Font.FredokaOne, 12)
-			nxt.Position = UDim2.new(0, 14, 0, 50)
+			local nxt = label(row, "Next: " .. entry.nextEffect, UDim2.new(1, -360, 0, 28),
+				Color3.fromRGB(150, 220, 160), Enum.Font.FredokaOne, 18)
+			nxt.Name = "UpgradeNext"
+			nxt.Position = UDim2.new(0, 166, 0, 98)
 		end
 
 		local buy = Instance.new("TextButton")
-		buy.Size = UDim2.new(0, 128, 0, 40)
-		buy.Position = UDim2.new(1, -142, 0, 19)
+		buy.Size = UDim2.new(0, 170, 0, 60)
+		buy.Position = UDim2.new(1, -184, .5, -30)
 		buy.BorderSizePixel = 0
 		buy.Font = Enum.Font.FredokaOne
-		buy.TextSize = 14
+		buy.TextSize = 18
+		buy.Name = "UpgradeBuy"
 		buy.Parent = row
 		rounded(buy, 6)
 
@@ -1322,7 +1349,8 @@ local function redrawShop(shop)
 		end
 	end
 
-	shopScroll.CanvasSize = UDim2.new(0, 0, 0, shopLayout.AbsoluteContentSize.Y + 10)
+	UIStyle.UpgradeLayout(shopFrame, shopScroll)
+	shopScroll.CanvasSize = UDim2.new(0, 0, 0, shopLayout.AbsoluteContentSize.Y + 16)
 end
 
 ------------------------------------------------------------------
@@ -1414,40 +1442,53 @@ local currentPlacedCapacity = 5
 local inventoryBtn = NavButton.Create(gui, "📦", "INVENTORY", BLUE, NavButton.RailPosition("left", 2))
 
 local inventoryFrame = Instance.new("Frame")
-inventoryFrame.Size = UDim2.new(0, 860, 0, 640)
+inventoryFrame.Name = "InventoryPanel"
+inventoryFrame.Size = UDim2.new(0, 1100, 0, 800)
 inventoryFrame.Position = UDim2.new(0.5, -430, 0.5, -320)
 inventoryFrame.BackgroundColor3 = DARK
 inventoryFrame.BackgroundTransparency = GLASS_PANEL
 inventoryFrame.BorderSizePixel = 0
 inventoryFrame.Visible = false
 inventoryFrame.Parent = gui
-rounded(inventoryFrame, 14)
+rounded(inventoryFrame, 18)
+UIStyle.Fit(inventoryFrame, 1200, 800)
+UIStyle.Surface(inventoryFrame,UIStyle.Palette.Cream,5)
+UIStyle.Art(inventoryFrame,"INVENTORY",UDim2.fromOffset(-16,-80),UDim2.fromOffset(112,112))
 
-local inventoryTitle = label(inventoryFrame, "📦 INVENTORY", UDim2.new(0, 280, 0, 34), BLUE, Enum.Font.LuckiestGuy, 24)
-inventoryTitle.Position = UDim2.new(0, 24, 0, 16)
+local inventoryTitle = label(inventoryFrame, "INVENTORY", UDim2.new(0, 280, 0, 40), BLUE, Enum.Font.LuckiestGuy, 30)
+inventoryTitle.Position = UDim2.fromOffset(92,-64)
+inventoryTitle.Size = UDim2.fromOffset(480,88)
+inventoryTitle.Text = "Inventory!"
+UIStyle.Outline(inventoryTitle,60)
 
 local inventoryCount = label(inventoryFrame, "0 / 15", UDim2.new(0, 110, 0, 34), DIM, Enum.Font.FredokaOne, 16)
-inventoryCount.Position = UDim2.new(0, 310, 0, 20)
+inventoryCount.Position = UDim2.new(.5,-55,0,18)
+inventoryCount.TextSize = 22
 
 local inventoryClose = Instance.new("TextButton")
-inventoryClose.Size = UDim2.new(0, 34, 0, 34)
-inventoryClose.Position = UDim2.new(1, -50, 0, 16)
+inventoryClose.Size = UDim2.new(0, 64, 0, 54)
+inventoryClose.Position = UDim2.new(1, -76, 0, 8)
 inventoryClose.BackgroundTransparency = 1
 inventoryClose.Text = "X"
 inventoryClose.TextColor3 = DIM
 inventoryClose.Font = Enum.Font.FredokaOne
 inventoryClose.TextSize = 20
 inventoryClose.Parent = inventoryFrame
+UIStyle.Close(inventoryClose)
 
 -- A strip across the top showing the five pads at your plot — the only
 -- things actually earning you money. Click an occupied one to take it
 -- off (same as walking up to its physical pad and pressing the prompt).
 local placedLabel = label(inventoryFrame, "🐾 YOUR PETS — EARNING (0 / 5)", UDim2.new(0, 400, 0, 22), GREEN, Enum.Font.LuckiestGuy, 16)
-placedLabel.Position = UDim2.new(0, 24, 0, 58)
+placedLabel.Position = UDim2.new(.5,-250,0,52)
+placedLabel.Size = UDim2.fromOffset(500,30)
+placedLabel.TextSize=23
+placedLabel.TextXAlignment=Enum.TextXAlignment.Center
 
 local placedRow = Instance.new("Frame")
-placedRow.Size = UDim2.new(1, -48, 0, 108)
-placedRow.Position = UDim2.new(0, 24, 0, 82)
+placedRow.Size = UDim2.new(.72, 0, 0, 150)
+placedRow:SetAttribute("Floating",true)
+placedRow.Position = UDim2.new(.14, 0, 0, 94)
 placedRow.BackgroundColor3 = Color3.fromRGB(20, 26, 22)
 placedRow.BorderSizePixel = 0
 placedRow.Parent = inventoryFrame
@@ -1458,6 +1499,7 @@ placedLayout.FillDirection = Enum.FillDirection.Horizontal
 placedLayout.Padding = UDim.new(0, 10)
 placedLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 placedLayout.Parent = placedRow
+placedRow.ClipsDescendants = true
 
 local placedPadding = Instance.new("UIPadding")
 placedPadding.PaddingLeft = UDim.new(0, 10)
@@ -1466,49 +1508,76 @@ placedPadding.Parent = placedRow
 
 -- Left pane: everything you're holding.
 local inventoryScroll = Instance.new("ScrollingFrame")
-inventoryScroll.Size = UDim2.new(0, 500, 1, -214)
-inventoryScroll.Position = UDim2.new(0, 24, 0, 206)
+inventoryScroll.Name = "Items"
+inventoryScroll.Size = UDim2.new(1, -48, 1, -280)
+inventoryScroll.Position = UDim2.new(0, 24, 0, 260)
 inventoryScroll.BackgroundTransparency = 1
 inventoryScroll.BorderSizePixel = 0
 inventoryScroll.ScrollBarThickness = 6
 inventoryScroll.Parent = inventoryFrame
 
 local inventoryLayout = Instance.new("UIGridLayout")
-inventoryLayout.CellSize = UDim2.new(0, 138, 0, 168)
+inventoryLayout.CellSize = UDim2.new(0, 224, 0, 250)
+UIStyle.ScrollPadding(inventoryScroll)
 inventoryLayout.CellPadding = UDim2.new(0, 10, 0, 10)
 inventoryLayout.Parent = inventoryScroll
+do
+	local function reflow()
+		local compact = inventoryFrame:GetAttribute("Compact")
+		inventoryScroll.Size = UDim2.new(1,inventoryFrame:GetAttribute("DetailsOpen") and (compact and -292 or -386) or -48,1,-280)
+		inventoryLayout.CellSize = compact and UDim2.fromOffset(158,190) or UDim2.fromOffset(184,206)
+	end
+	inventoryFrame:GetAttributeChangedSignal("Compact"):Connect(reflow)
+	inventoryFrame:GetAttributeChangedSignal("DetailsOpen"):Connect(reflow)
+	reflow()
+end
 
 -- Right pane: stats for whichever item is currently selected.
 local statPanel = Instance.new("Frame")
-statPanel.Size = UDim2.new(0, 290, 1, -214)
-statPanel.Position = UDim2.new(0, 540, 0, 206)
+statPanel.Name = "ItemDetails"
+statPanel.Size = UDim2.new(0, 320, 1, -236)
+statPanel.Position = UDim2.new(1, -344, 0, 222)
 statPanel.BackgroundColor3 = Color3.fromRGB(26, 26, 32)
 statPanel.BorderSizePixel = 0
 statPanel.Parent = inventoryFrame
 rounded(statPanel, 12)
+UIStyle.ScrollDetails(statPanel, 350)
+statPanel.Parent.Visible=false
+do
+	local wrapper = statPanel.Parent
+	local function reflow()
+		local compact = inventoryFrame:GetAttribute("Compact")
+		wrapper.Size = UDim2.new(0,compact and 240 or 320,1,-280)
+		wrapper.Position = UDim2.new(1,compact and -264 or -344,0,260)
+	end
+	inventoryFrame:GetAttributeChangedSignal("Compact"):Connect(reflow)
+	reflow()
+end
 
 local statViewportHolder = Instance.new("Frame")
-statViewportHolder.Size = UDim2.new(1, -28, 0, 150)
+statViewportHolder.Size = UDim2.new(1, -28, 0, 116)
 statViewportHolder.Position = UDim2.new(0, 14, 0, 14)
 statViewportHolder.BackgroundColor3 = Color3.fromRGB(36, 36, 44)
+statViewportHolder:SetAttribute("Floating",true)
 statViewportHolder.BorderSizePixel = 0
 statViewportHolder.Parent = statPanel
 rounded(statViewportHolder, 10)
 
 local statName = label(statPanel, "Select an item", UDim2.new(1, -28, 0, 50), LIGHT, Enum.Font.FredokaOne, 19)
-statName.Position = UDim2.new(0, 14, 0, 172)
+statName.Position = UDim2.new(0, 14, 0, 130)
+statName.Size=UDim2.new(1,-28,0,38)
 statName.TextWrapped = true
 statName.RichText = true
 
 local statValue = label(statPanel, "", UDim2.new(1, -28, 0, 20), GOLD, Enum.Font.FredokaOne, 15)
-statValue.Position = UDim2.new(0, 14, 0, 228)
+statValue.Position = UDim2.new(0, 14, 0, 172)
 
 local statPerSecond = label(statPanel, "", UDim2.new(1, -28, 0, 20), Color3.fromRGB(120, 220, 140), Enum.Font.FredokaOne, 15)
-statPerSecond.Position = UDim2.new(0, 14, 0, 252)
+statPerSecond.Position = UDim2.new(0, 14, 0, 198)
 
 local placeBtn = Instance.new("TextButton")
-placeBtn.Size = UDim2.new(1, -28, 0, 42)
-placeBtn.Position = UDim2.new(0, 14, 1, -146)
+placeBtn.Size = UDim2.new(1, -28, 0, 36)
+placeBtn.Position = UDim2.new(0, 14, 1, -122)
 placeBtn.BackgroundColor3 = GREEN
 placeBtn.Text = "PLACE ON PAD"
 placeBtn.TextColor3 = DARK
@@ -1520,8 +1589,8 @@ placeBtn.Parent = statPanel
 rounded(placeBtn)
 
 local moveToCarryBtn = Instance.new("TextButton")
-moveToCarryBtn.Size = UDim2.new(1, -28, 0, 42)
-moveToCarryBtn.Position = UDim2.new(0, 14, 1, -96)
+moveToCarryBtn.Size = UDim2.new(1, -28, 0, 36)
+moveToCarryBtn.Position = UDim2.new(0, 14, 1, -80)
 moveToCarryBtn.BackgroundColor3 = PURPLE
 moveToCarryBtn.Text = "CARRY TO FUSE"
 moveToCarryBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1533,8 +1602,8 @@ moveToCarryBtn.Parent = statPanel
 rounded(moveToCarryBtn)
 
 local sellBtn = Instance.new("TextButton")
-sellBtn.Size = UDim2.new(1, -28, 0, 42)
-sellBtn.Position = UDim2.new(0, 14, 1, -46)
+sellBtn.Size = UDim2.new(1, -28, 0, 36)
+sellBtn.Position = UDim2.new(0, 14, 1, -38)
 sellBtn.BackgroundColor3 = RED
 sellBtn.Text = "SELL"
 sellBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1546,9 +1615,31 @@ sellBtn.Parent = statPanel
 rounded(sellBtn)
 
 local selectedIndex = nil
+local searchBox = Instance.new("TextBox")
+searchBox.Name="Search" searchBox.Text="" searchBox.PlaceholderText="Search items..."
+searchBox.ClearTextOnFocus=false searchBox.Font=Enum.Font.FredokaOne searchBox.TextSize=24
+searchBox.Position=UDim2.new(1,-332,0,-28) searchBox.Size=UDim2.fromOffset(260,50)
+searchBox.Parent=inventoryFrame rounded(searchBox,22) UIStyle.Surface(searchBox,Color3.new(1,1,1),3)
+do
+	local function reflowHeader()
+		local compact=inventoryFrame:GetAttribute("Compact")
+		inventoryTitle.TextSize=compact and 44 or 60
+		inventoryTitle.Size=UDim2.fromOffset(compact and 370 or 480,88)
+		searchBox.Position=compact and UDim2.fromOffset(22,16) or UDim2.new(1,-332,0,-28)
+		searchBox.Size=compact and UDim2.new(1,-160,0,46) or UDim2.fromOffset(260,50)
+		inventoryCount.Position=compact and UDim2.new(1,-124,0,22) or UDim2.new(.5,-55,0,18)
+		placedLabel.Position=UDim2.new(.5,-250,0,compact and 78 or 52)
+		placedRow.Position=UDim2.new(.14,0,0,compact and 114 or 94)
+	end
+	inventoryFrame:GetAttributeChangedSignal("Compact"):Connect(reflowHeader)
+	reflowHeader()
+end
+
 
 local function showStatsFor(entry)
 	selectedIndex = entry and entry.index
+	statPanel.Parent.Visible = entry ~= nil
+	inventoryFrame:SetAttribute("DetailsOpen",entry~=nil)
 	for _, c in ipairs(statViewportHolder:GetChildren()) do c:Destroy() end
 
 	if not entry then
@@ -1574,6 +1665,14 @@ local function showStatsFor(entry)
 	placeBtn.BackgroundColor3 = #currentPlaced >= currentPlacedCapacity and DIM or GREEN
 end
 
+do
+	local back=Instance.new("TextButton")
+	back.Name="CloseDetails" back.Text="X" back.Font=Enum.Font.FredokaOne back.TextSize=18
+	back.BackgroundTransparency=1 back.Size=UDim2.fromOffset(34,34)
+	back.Position=UDim2.new(1,-38,0,2) back.ZIndex=4 back.Parent=statPanel
+	back.Activated:Connect(function() showStatsFor(nil) end)
+end
+
 -- redrawPlaced (below) and redrawInventory each need to re-run the
 -- other whenever a selection or count changes — both are already
 -- predeclared above (see the `do` block comment), so neither needs its
@@ -1591,7 +1690,7 @@ function redrawInventory(items, capacity)
 	inventoryCount.Text = string.format("%d / %d", #items, currentInventoryCapacity)
 
 	for _, child in ipairs(inventoryScroll:GetChildren()) do
-		if not child:IsA("UIGridLayout") then child:Destroy() end
+		if not child:IsA("UIGridLayout") and not child:IsA("UIPadding") then child:Destroy() end
 	end
 
 	if #items == 0 then
@@ -1608,6 +1707,7 @@ function redrawInventory(items, capacity)
 
 	local stillSelected = false
 	for i, entry in ipairs(items) do
+		if searchBox.Text ~= "" and not string.find(string.lower(entry.name),string.lower(searchBox.Text),1,true) then continue end
 		local baseName, mutationId = Mutations.Unwrap(entry.name)
 		local tintColor = Mutations.Color(mutationId)
 		local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret)
@@ -1623,9 +1723,14 @@ function redrawInventory(items, capacity)
 		card.Parent = inventoryScroll
 		rounded(card, 12)
 
+		card:SetAttribute("Selected", isSelected)
+		card:SetAttribute("Floating",true)
+		card.BackgroundTransparency=1
 		local stroke = Instance.new("UIStroke")
 		stroke.Color = isSelected and Color3.fromRGB(255, 255, 255) or rarityColor
-		stroke.Thickness = isSelected and 3 or 2
+		stroke.Color=Color3.fromRGB(32,192,240)
+		stroke.Thickness = isSelected and 3 or 0
+		stroke.Transparency=isSelected and 0 or 1
 		stroke.Parent = card
 
 		buildItemViewport(card, baseName, tintColor)
@@ -1638,7 +1743,8 @@ function redrawInventory(items, capacity)
 		nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 		nameLbl.TextStrokeTransparency = 0.4
 		nameLbl.Font = Enum.Font.FredokaOne
-		nameLbl.TextScaled = true
+		nameLbl.TextScaled = false
+		nameLbl.TextSize=20
 		nameLbl.TextWrapped = true
 		nameLbl.Parent = card
 
@@ -1674,7 +1780,7 @@ function redrawPlaced(items, capacity)
 		local entry = items[slot]
 
 		local card = Instance.new("TextButton")
-		card.Size = UDim2.new(0, 88, 0, 88)
+		card.Size = UDim2.new(0.2, -12, 0, 142)
 		card.LayoutOrder = slot
 		card.Text = ""
 		card.AutoButtonColor = false
@@ -1682,6 +1788,7 @@ function redrawPlaced(items, capacity)
 		card.Parent = placedRow
 
 		if entry then
+			card:SetAttribute("Floating",true)
 			local baseName, mutationId = Mutations.Unwrap(entry.name)
 			local tintColor = Mutations.Color(mutationId)
 			local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret)
@@ -1699,7 +1806,7 @@ function redrawPlaced(items, capacity)
 				unplacePetRemote:FireServer(slot)
 			end)
 		else
-			card.BackgroundColor3 = Color3.fromRGB(30, 38, 33)
+			card.BackgroundColor3 = UIStyle.Palette.Mint
 			rounded(card, 16)
 
 			local stroke = Instance.new("UIStroke")
@@ -1731,6 +1838,7 @@ local function toggleInventory()
 	inventoryFrame.Visible = not inventoryFrame.Visible
 end
 
+searchBox:GetPropertyChangedSignal("Text"):Connect(function() redrawInventory(currentInventory,currentInventoryCapacity) end)
 inventoryBtn.MouseButton1Click:Connect(toggleInventory)
 inventoryClose.MouseButton1Click:Connect(toggleInventory)
 
@@ -1810,6 +1918,7 @@ tradeFrame.BorderSizePixel = 0
 tradeFrame.Visible = false
 tradeFrame.Parent = gui
 rounded(tradeFrame, 10)
+UIStyle.Modal(tradeFrame)
 
 local tradeTitle = label(tradeFrame, "TRADING", UDim2.new(1, -30, 0, 30), WHITE, Enum.Font.LuckiestGuy, 20)
 tradeTitle.Position = UDim2.new(0, 20, 0, 14)
@@ -2035,6 +2144,7 @@ tradeListFrame.BorderSizePixel = 0
 tradeListFrame.Visible = false
 tradeListFrame.Parent = gui
 rounded(tradeListFrame, 14)
+UIStyle.Modal(tradeListFrame)
 
 local tradeListTitle = label(tradeListFrame, "🤝 TRADE WITH", UDim2.new(1, -70, 0, 34), GREEN, Enum.Font.LuckiestGuy, 22)
 tradeListTitle.Position = UDim2.new(0, 22, 0, 18)
@@ -2350,6 +2460,7 @@ travelFrame.BorderSizePixel = 0
 travelFrame.Visible = false
 travelFrame.Parent = gui
 rounded(travelFrame, 18)
+UIStyle.Modal(travelFrame)
 
 local travelTitle = label(travelFrame, "WHERE TO?", UDim2.new(1, -40, 0, 50), GOLD, Enum.Font.LuckiestGuy, 40)
 travelTitle.Position = UDim2.new(0, 32, 0, 22)
@@ -2453,3 +2564,6 @@ end
 for _, world in ipairs(WORLDS) do
 	buildWorldRow(world)
 end
+
+-- Apply presentation after construction; future inventory/reward rows inherit it.
+UIStyle.Attach(gui)

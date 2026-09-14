@@ -1,212 +1,81 @@
---[[
-	NavButton (ModuleScript, ReplicatedStorage) — Junkyard Fusion v1
-
-	The shared "chunky cartoon button" look for every main HUD nav trigger:
-	a solid drop-shadow block sits behind the button, which visibly pops up
-	off it at rest and pushes flush into it on click — the classic
-	mobile-game satisfying-button feel — plus a quick icon wiggle on hover
-	so the rail feels alive before anything is even clicked.
-
-	Two independent LocalScripts (GameUI and ShopUI) each build main
-	nav buttons, so this lives here instead of being copy-pasted twice —
-	that duplication was fine for a plain hover/press tween, but not once
-	the animation grew a shadow layer, a lift, and a wiggle.
---]]
-
+-- Shared white illustration tiles. Return values preserve Rewards integration.
 local TweenService = game:GetService("TweenService")
-
-local NavButton = {}
-
-NavButton.SIZE = 120
-NavButton.GAP = 20
-
-local DEPTH = 10
--- The tallest either rail gets — right now that's the right rail's 4
--- (Travel/Upgrades/Shop/Trade); the left rail only fills 3 of these 4
--- slots, which just leaves its last slot's worth of space empty rather
--- than needing its own separate count.
-local RAIL_COUNT = 4
-local RAIL_HEIGHT = RAIL_COUNT * NavButton.SIZE + (RAIL_COUNT - 1) * NavButton.GAP
-
--- Four tiles per side, vertically centered as one group.
+local Style = require(script.Parent:WaitForChild("UIStyle"))
+local NavButton = { SIZE = 120, GAP = 20 }
 function NavButton.RailPosition(side, slot)
-	local yOffset = (slot - 1) * (NavButton.SIZE + NavButton.GAP) - RAIL_HEIGHT / 2
-	if side == "left" then
-		return UDim2.new(0, 20, 0.5, yOffset)
-	end
-	return UDim2.new(1, -20 - NavButton.SIZE, 0.5, yOffset)
+	return UDim2.new(side == "left" and 0 or 1, side == "left" and 20 or -140, .5, (slot-1)*140-270)
 end
-
-local function rounded(instance, radius)
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, radius)
-	c.Parent = instance
+function NavButton.ReadableTextColor()
+	return Color3.fromRGB(20,23,30)
 end
-
--- Icon/caption defaulted to hardcoded white for years, which read great
--- against every accent this module ever saw — all dark/saturated enough
--- for white to pop, GOLD (luminance ~0.8, the Rewards button) included.
--- The signature palette's WHITE accent broke that assumption (white text
--- on a white button is unreadable), so this picks by perceived luminance
--- instead — but only for genuinely light accents. The 0.85 cutoff sits
--- above GOLD on purpose: it catches WHITE (and anything comparably light)
--- without also flipping GOLD/GREEN/every other already-tested button
--- over to dark text.
-local function readableTextColor(accentColor)
-	local luminance = 0.299 * accentColor.R + 0.587 * accentColor.G + 0.114 * accentColor.B
-	if luminance > 0.85 then
-		return Color3.fromRGB(30, 30, 36)
-	end
-	return Color3.fromRGB(255, 255, 255)
-end
-
--- Exported: ShopUI's tab bar needs the exact same "is this accent light
--- or dark" call for its own solid-fill buttons, and duplicating the
--- heuristic (and its GOLD-tuned threshold) in a second file would just
--- be a second place for it to drift out of sync with this one.
-NavButton.ReadableTextColor = readableTextColor
-
--- One-shot tilt-tilt-settle, not a loop — fires again every time the mouse
--- re-enters, which reads as "alive" without ever fighting the hover/press
--- tweens for control of the same property.
-local function wiggle(target)
-	TweenService:Create(target, TweenInfo.new(0.08), { Rotation = -12 }):Play()
-	task.delay(0.08, function()
-		if target.Parent then
-			TweenService:Create(target, TweenInfo.new(0.08), { Rotation = 10 }):Play()
-			task.delay(0.08, function()
-				if target.Parent then
-					TweenService:Create(target, TweenInfo.new(0.1), { Rotation = 0 }):Play()
-				end
-			end)
-		end
-	end)
-end
-
--- Returns btn, iconLabel, captionLabel, stroke, gradient — the last two so
--- a caller that needs to re-theme the button later (Daily Rewards lights
--- up green when a reward's ready) can reach in without rebuilding it.
 function NavButton.Create(gui, icon, caption, accentColor, position)
-	local SIZE = NavButton.SIZE
-	local restPosition = position
-	local liftPosition = position - UDim2.new(0, 0, 0, 6)
-	local pressedPosition = position + UDim2.new(0, 0, 0, DEPTH)
-
-	-- The solid block peeking out from behind/below — this is what makes
-	-- the button read as a raised, pressable 3D object instead of a flat
-	-- rectangle with a color on it.
-	local shadow = Instance.new("Frame")
-	shadow.Size = UDim2.new(0, SIZE, 0, SIZE)
-	shadow.Position = pressedPosition
-	shadow.BackgroundColor3 = accentColor:Lerp(Color3.new(0, 0, 0), 0.72)
-	shadow.BorderSizePixel = 0
-	shadow.ZIndex = 1
-	shadow.Parent = gui
-	rounded(shadow, 26)
-
+	local holder = Instance.new("Frame")
+	holder.Name = caption .. "Navigation"
+	holder.BackgroundTransparency = 1
+	holder.Size = UDim2.fromOffset(140,148)
+	holder.ZIndex = 2
+	holder.Parent = gui
+	Style.Navigation(holder)
+	local scale = Instance.new("UIScale")
+	scale.Parent = holder
+	local slot = math.round((position.Y.Offset+270)/140)
+	local right = position.X.Scale == 1
+	local function fit()
+		local size = workspace.CurrentCamera.ViewportSize
+		local top = right and 340 or 240
+		if size.Y < 650 then top = 90 end
+		local factor = math.min(1.1, math.max(.3,(size.Y-top-65)/624))
+		scale.Scale = factor
+		holder.Position = UDim2.new(right and 1 or 0, right and (-16-140*factor) or 16, 0, top+slot*156*factor)
+	end
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fit)
+	fit()
 	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(0, SIZE, 0, SIZE)
-	btn.Position = restPosition
-	btn.ZIndex = 2
-	btn.BackgroundColor3 = accentColor:Lerp(Color3.new(0, 0, 0), 0.68)
+	btn.Name = caption
+	btn.Size = UDim2.fromScale(1,1)
 	btn.Text = ""
 	btn.AutoButtonColor = false
-	btn.BorderSizePixel = 0
-	btn.Parent = gui
-	rounded(btn, 26)
-
+	btn.ZIndex = 2
+	btn.Parent = holder
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0,20)
+	corner.Parent = btn
+	btn.BackgroundTransparency = 1
+	btn:SetAttribute("Designed",true)
+	Style.Surface(btn)
+	btn.BackgroundTransparency = 1
+	local stroke = btn:FindFirstChildOfClass("UIStroke")
+	stroke.Thickness = 0
 	local gradient = Instance.new("UIGradient")
-	gradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, accentColor:Lerp(Color3.new(1, 1, 1), 0.2)),
-		ColorSequenceKeypoint.new(1, accentColor:Lerp(Color3.new(0, 0, 0), 0.45)),
-	})
-	gradient.Rotation = 90
+	gradient.Enabled = false
 	gradient.Parent = btn
-
-	-- Normally white, not the accent color — a thick white outline is what
-	-- makes this read as a cartoon sticker/app-icon rather than a UI chip.
-	-- Against a light accent (e.g. the signature WHITE button) that same
-	-- white outline would all but vanish, so it contrasts the same way
-	-- the text below does instead of assuming the accent is always dark.
-	local textColor = readableTextColor(accentColor)
-
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = textColor
-	stroke.Thickness = 3
-	stroke.Transparency = 0.5
-	stroke.Parent = btn
-
-	-- The ScreenGui these mount into runs ZIndexBehavior.Global, where a
-	-- child's default ZIndex (1) does NOT automatically win over its own
-	-- parent the way it would under the default Sibling behavior — btn
-	-- sits at ZIndex 2 (to clear the shadow behind it), so anything drawn
-	-- on top of btn needs a higher ZIndex explicitly, or btn's own opaque
-	-- background paints right over it.
+	local art = Style.Art(btn,caption,UDim2.fromOffset(2,0),UDim2.new(1,-4,0,118))
 	local iconLabel = Instance.new("TextLabel")
-	iconLabel.Size = UDim2.new(1, 0, 0, 60)
-	iconLabel.Position = UDim2.new(0, 0, 0, 8)
-	iconLabel.BackgroundTransparency = 1
 	iconLabel.Text = icon
-	iconLabel.TextColor3 = textColor
-	iconLabel.Font = Enum.Font.FredokaOne
-	iconLabel.TextSize = 48
-	iconLabel.TextXAlignment = Enum.TextXAlignment.Center
-	iconLabel.ZIndex = 3
+	iconLabel.Visible = false
 	iconLabel.Parent = btn
-
-	local captionLabel = Instance.new("TextLabel")
-	captionLabel.Size = UDim2.new(1, -8, 0, 22)
-	captionLabel.Position = UDim2.new(0, 4, 0, 76)
-	captionLabel.BackgroundTransparency = 1
-	captionLabel.Text = caption
-	captionLabel.TextColor3 = textColor
-	captionLabel.Font = Enum.Font.FredokaOne
-	captionLabel.TextSize = 15
-	captionLabel.TextScaled = true
-	captionLabel.TextXAlignment = Enum.TextXAlignment.Center
-	captionLabel.ZIndex = 3
-	captionLabel.Parent = btn
-
-	local hovering = false
-
+	local label = Instance.new("TextLabel")
+	label.Name = "Caption"
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1,-8,0,28)
+	label.Position = UDim2.new(0,4,1,-34)
+	label.Text = caption
+	label.TextColor3 = NavButton.ReadableTextColor()
+	label.Font = Enum.Font.FredokaOne
+	label.TextSize = 19
+	label.ZIndex = 3
+	label.Parent = btn
+	Style.Outline(label,22)
 	btn.MouseEnter:Connect(function()
-		hovering = true
-		TweenService:Create(btn, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-			Size = UDim2.new(0, SIZE + 10, 0, SIZE + 10),
-			Position = liftPosition,
-		}):Play()
-		TweenService:Create(stroke, TweenInfo.new(0.18), { Thickness = 4, Transparency = 0.1 }):Play()
-		wiggle(iconLabel)
+		TweenService:Create(art,TweenInfo.new(.15),{Rotation=-5}):Play()
+		stroke.Thickness=0
 	end)
-
 	btn.MouseLeave:Connect(function()
-		hovering = false
-		TweenService:Create(btn, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-			Size = UDim2.new(0, SIZE, 0, SIZE),
-			Position = restPosition,
-		}):Play()
-		TweenService:Create(stroke, TweenInfo.new(0.18), { Thickness = 3, Transparency = 0.5 }):Play()
+		TweenService:Create(art,TweenInfo.new(.15),{Rotation=0}):Play()
+		stroke.Thickness=0
 	end)
-
-	btn.MouseButton1Down:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.05), {
-			Size = UDim2.new(0, SIZE - 4, 0, SIZE - 4),
-			Position = pressedPosition,
-		}):Play()
-	end)
-
-	-- Elastic on the way back up — a little overshoot-and-settle "boing"
-	-- reads as much livelier than easing straight back to rest.
-	btn.MouseButton1Up:Connect(function()
-		local size = hovering and UDim2.new(0, SIZE + 10, 0, SIZE + 10) or UDim2.new(0, SIZE, 0, SIZE)
-		local pos = hovering and liftPosition or restPosition
-		TweenService:Create(btn, TweenInfo.new(0.35, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), {
-			Size = size,
-			Position = pos,
-		}):Play()
-	end)
-
-	return btn, iconLabel, captionLabel, stroke, gradient
+	btn.MouseButton1Down:Connect(function() btn.Position=UDim2.fromOffset(0,3) end)
+	btn.MouseButton1Up:Connect(function() btn.Position=UDim2.fromOffset(0,0) end)
+	return btn,iconLabel,label,stroke,gradient
 end
-
 return NavButton
