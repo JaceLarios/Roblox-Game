@@ -1,4 +1,24 @@
-# Latest handoff — Two name-overflow bugs fixed in Codex's new Inventory UI (2026-09-14)
+# Latest handoff — Item Index: world bleed-through and invisible close button fixed (2026-09-14)
+
+Twenty-seventh pass, same day. Two more screenshots from the user: a world view with a "Muscle Car" grab prompt showing a stray "[Toxic] ...ocalypse / 2 coins/sec" label bleeding through past the Index panel's right edge, plus "i dont have an Exit button to get out of the Index."
+
+**Root cause #1 — world bleed-through:** `bookFrame` (the Index panel) only covers 88% of the screen by design (`UIStyle.Fit`'s sizing), leaving a ~6% margin on every side where the 3D world — including BillboardGui item labels on nearby pet pads — was fully visible and undimmed behind it. ShopUI already solves this with its own full-screen `overlay` Frame; `Style.Fit` itself (shared by Index, Inventory, and Shop) does not provide one — each caller is expected to add its own. Index never did.
+
+**Root cause #2 — invisible close button:** `bookClose` was manually styled with `BackgroundTransparency = 1` and `TextColor3 = DIM` (a medium gray) — readable enough against the *old* dark panel background, but `bookClose` has no `UICorner`, so it falls completely outside `Style.Attach`'s auto-repaint logic (confirmed via `bookClose:GetAttribute("Designed") == nil`, and `Style.Attach` only repaints `TextLabel`/`TextBox`, or `Frame`/`TextButton` *with* a `UICorner`). Once Codex's new cream panel background landed, the button kept its old invisible styling untouched — a gap in the compatibility shim, not a shim bug.
+
+**Fixed both with the smallest correct diff, reusing what already exists rather than inventing new styling:**
+1. Added a new `bookBackdrop` Frame (black, 35% transparent, `Designed=true` so `Style.Attach` never touches it — the whole point is to stay a dark dimmer regardless of theme), toggled alongside `bookFrame` in `toggleBook()`.
+2. Replaced `bookClose`'s manual styling with `UIStyle.Close(bookClose)` — the same solid copper/white "X" button Shop and Inventory already use, so Index now matches instead of improvising its own.
+
+**Verified:** byte-exact dump+diff sync to Studio. Screenshot with the Index open shows both fixes clearly — a bold copper close button top-right, and the world behind the panel visibly dimmed (previously undimmed). Toggle logic double-checked directly via `execute_luau` (`bookFrame.Visible`/`bookBackdrop.Visible` both flip together, confirmed `false→true→false`), and a final screenshot after closing confirms the game view returns cleanly with no leftover artifacts. Clean Play-mode start/stop, no console errors.
+
+**Honest caveat:** the close button's actual click-registration was not confirmed via a genuine simulated mouse click — `user_mouse_input` repeatedly hit a "hits CoreGUI" coordinate error for this specific corner position (a recurring quirk with corner-positioned buttons, see [[feedback_roblox_studio_workflow]]), so this pass verified the toggle *logic* directly instead. The button's connection (`bookClose.MouseButton1Click:Connect(toggleBook)`) is unchanged from before and is the same pattern Shop/Inventory's own close buttons already use successfully, which gives reasonable indirect confidence — but a real click was never the thing that was actually observed working here.
+
+**Worth checking next, not yet reported by the user:** `inventoryFrame` uses the same `UIStyle.Fit` as the Index did, with no backdrop of its own — meaning Inventory likely has the identical undimmed-world gap. Not fixed here since it wasn't reported and wasn't asked for; flagged for a future pass.
+
+---
+
+# Previous handoff — Two name-overflow bugs fixed in Codex's new Inventory UI (2026-09-14)
 
 Twenty-sixth pass. Pulled Codex's "Illustrated UI and Salvage Yard palette" commit (below) from GitHub — pushed directly there, not synced through this session, confirmed byte-identical to what was already live in Studio before touching anything. The user then reported "names running off the page not fitting and overlapping issues" with two screenshots.
 

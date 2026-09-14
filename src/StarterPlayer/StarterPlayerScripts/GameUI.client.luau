@@ -836,6 +836,23 @@ end
 
 local bookBtn = NavButton.Create(gui, "📖", "INDEX", PURPLE, NavButton.RailPosition("left", 3))
 
+-- The panel itself only covers 88% of the screen, leaving a 6% margin on
+-- every side where the 3D world (including any BillboardGui item labels
+-- on nearby pet pads) was fully visible and undimmed behind it — ShopUI's
+-- panel has its own full-screen overlay for exactly this reason; this one
+-- didn't. Explicitly opted out of Style.Attach (Designed=true) so it stays
+-- a dark dimmer regardless of the new light theme repainting everything
+-- else — the whole point is to obscure what's behind it either way.
+local bookBackdrop = Instance.new("Frame")
+bookBackdrop.Name = "IndexBackdrop"
+bookBackdrop.Size = UDim2.fromScale(1, 1)
+bookBackdrop.BackgroundColor3 = Color3.new(0, 0, 0)
+bookBackdrop.BackgroundTransparency = 0.35
+bookBackdrop.BorderSizePixel = 0
+bookBackdrop.Visible = false
+bookBackdrop:SetAttribute("Designed", true)
+bookBackdrop.Parent = gui
+
 -- Big picker modal — nearly fullscreen like the travel menu, same scale
 -- trick so it stays "almost the whole screen" on any resolution.
 local bookFrame = Instance.new("Frame")
@@ -852,15 +869,15 @@ UIStyle.Modal(bookFrame)
 local bookTitle = label(bookFrame, "ITEM INDEX", UDim2.new(0, 360, 0, 50), GOLD, Enum.Font.LuckiestGuy, 40)
 bookTitle.Position = UDim2.new(0, 32, 0, 22)
 
+-- Was fully transparent background + DIM (medium-gray) text — reasonable
+-- contrast against the old dark panel, functionally invisible against the
+-- new light cream one now that Style.Attach has repainted this panel.
+-- UIStyle.Close is the same solid, high-contrast close button Shop and
+-- Inventory already use, so this also makes it look/behave consistently.
 local bookClose = Instance.new("TextButton")
-bookClose.Size = UDim2.new(0, 42, 0, 42)
-bookClose.Position = UDim2.new(1, -60, 0, 20)
-bookClose.BackgroundTransparency = 1
-bookClose.Text = "X"
-bookClose.TextColor3 = DIM
-bookClose.Font = Enum.Font.FredokaOne
-bookClose.TextSize = 26
+bookClose.Name = "Close"
 bookClose.Parent = bookFrame
+UIStyle.Close(bookClose)
 
 -- Two big pill tabs, one per item line — each keeps its own list so
 -- switching tabs never needs a round trip to the server.
@@ -991,6 +1008,7 @@ end
 
 local function toggleBook()
 	bookFrame.Visible = not bookFrame.Visible
+	bookBackdrop.Visible = bookFrame.Visible
 end
 
 bookBtn.MouseButton1Click:Connect(toggleBook)
