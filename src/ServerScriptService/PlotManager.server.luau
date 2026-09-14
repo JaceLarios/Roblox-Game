@@ -447,7 +447,7 @@ local function updateWalkSpeed(player)
 	if not (s and humanoid) then return end
 
 	local placedBonus = math.min(#s.placed * PLACED_SPEED_PER_ITEM, PLACED_SPEED_CAP)
-	local speedMult = 1 + (s.upgrades.speed - 1) * SPEED_UPGRADE_PER_LEVEL
+	local speedMult = (1 + (s.upgrades.speed - 1) * SPEED_UPGRADE_PER_LEVEL) * Gamepasses.SpeedMultiplier(player)
 	humanoid.WalkSpeed = (BASE_WALK_SPEED + placedBonus) * speedMult
 end
 
@@ -1509,6 +1509,27 @@ end
 
 Brainrot.ConfigureUnlock(ensureBrainrotUnlocked, BRAINROT_UNLOCK_COST)
 
+-- The Starter Pack's exclusive pet is a one-time grant, not a continuous
+-- effect like its coin/speed bonuses (those just check Gamepasses.Has
+-- live, see Service.Coins/SpeedMultiplier) — so it needs its own
+-- persisted guard here, the same shape as the egg's grantedPurchaseIds.
+-- Gamepasses.Changed fires once per session when ownership first becomes
+-- known (join-time, once the async check resolves, or right after a live
+-- purchase) — but it WILL fire again in a future session for the same
+-- owner, since GamepassService's own bookkeeping is per-session, not
+-- saved. s.starterPackGranted is what actually makes this one-time
+-- forever.
+Gamepasses.Changed:Connect(function(player)
+	local s = state[player]
+	if not s or s.starterPackGranted then return end
+	if not Gamepasses.Has(player, "StarterPack") then return end
+
+	s.starterPackGranted = true
+	table.insert(s.inventory, SecretPets.PackPet.name)
+	toast(player, string.format("STARTER PACK UNLOCKED\n%s", instanceTag(SecretPets.PackPet.name)), true)
+	pushUI(player)
+end)
+
 travelRemote.OnServerEvent:Connect(function(player, destination)
 	local character = player.Character
 	if not character then return end
@@ -2318,6 +2339,7 @@ local function onPlayerAdded(player)
 		redeemedCodes = data.redeemedCodes or {},
 		grantedPurchaseIds = data.grantedPurchaseIds or {},
 		brainrotUnlocked = data.brainrotUnlocked or false,
+		starterPackGranted = data.starterPackGranted or false,
 		plotIndex = index,
 		mutationPity = 0,
 	}
@@ -2402,6 +2424,7 @@ local function snapshot(player)
 		redeemedCodes = s.redeemedCodes,
 		grantedPurchaseIds = s.grantedPurchaseIds,
 		brainrotUnlocked = s.brainrotUnlocked,
+		starterPackGranted = s.starterPackGranted,
 	}
 end
 

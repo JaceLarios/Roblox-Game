@@ -1104,6 +1104,21 @@ local currentPlacedCapacity = 5
 
 local inventoryBtn = NavButton.Create(gui, "📦", "INVENTORY", BLUE, NavButton.RailPosition("left", 2))
 
+-- Same gap the Item Index had before its backdrop fix: UIStyle.Fit alone
+-- doesn't dim the world behind the panel, so the ~6% margin around this
+-- 88%-screen panel left the yard/pads fully visible and undimmed. Fixed
+-- the same way — a dedicated Designed=true Frame so Style.Attach never
+-- re-themes it, toggled alongside the panel in toggleInventory().
+local inventoryBackdrop = Instance.new("Frame")
+inventoryBackdrop.Name = "InventoryBackdrop"
+inventoryBackdrop.Size = UDim2.fromScale(1, 1)
+inventoryBackdrop.BackgroundColor3 = Color3.new(0, 0, 0)
+inventoryBackdrop.BackgroundTransparency = 0.35
+inventoryBackdrop.BorderSizePixel = 0
+inventoryBackdrop.Visible = false
+inventoryBackdrop:SetAttribute("Designed", true)
+inventoryBackdrop.Parent = gui
+
 local inventoryFrame = Instance.new("Frame")
 inventoryFrame.Name = "InventoryPanel"
 inventoryFrame.Size = UDim2.new(0, 1100, 0, 800)
@@ -1507,6 +1522,7 @@ end)
 
 local function toggleInventory()
 	inventoryFrame.Visible = not inventoryFrame.Visible
+	inventoryBackdrop.Visible = inventoryFrame.Visible
 end
 
 searchBox:GetPropertyChangedSignal("Text"):Connect(function() redrawInventory(currentInventory,currentInventoryCapacity) end)

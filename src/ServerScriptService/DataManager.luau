@@ -54,6 +54,7 @@ local function defaultData()
 		redeemedCodes = {},
 		grantedPurchaseIds = {}, -- Developer Product receipts already granted (secret pets) — keyed by PurchaseId, never re-grant on a Roblox retry.
 		brainrotUnlocked = false, -- paid once with coins, not Robux — see PlotManager.server.luau's ensureBrainrotUnlocked.
+		starterPackGranted = false, -- true once the Starter Pack gamepass's one-time pet has been granted; the gamepass ownership itself is re-checked every session, this just guards against re-granting the pet.
 	}
 end
 

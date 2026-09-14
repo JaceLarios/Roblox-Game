@@ -57,8 +57,13 @@ function Service.Has(player, key)
 	return owned[player] ~= nil and owned[player][key] == true
 end
 
+-- StarterPack's coin bonus is deliberately modest (+15%) and stacks with
+-- DoubleCoins (+100%) rather than competing with it - it's a bundled
+-- starter perk, not a replacement for the dedicated economy gamepass.
 function Service.Coins(player, amount)
-	return math.floor(amount * (Service.Has(player, "DoubleCoins") and 2 or 1))
+	local mult = Service.Has(player, "DoubleCoins") and 2 or 1
+	if Service.Has(player, "StarterPack") then mult = mult * 1.15 end
+	return math.floor(amount * mult)
 end
 
 function Service.Capacity(player, carryLevel)
@@ -68,6 +73,13 @@ end
 function Service.Radius(player, magnetLevel)
 	local earned = magnetLevel > 0 and (10 + magnetLevel * 10) or 0
 	return math.max(earned, Service.Has(player, "AutoCollect") and 20 or 0)
+end
+
+-- StarterPack's other half of "money/speed boost" - a flat permanent
+-- multiplier PlotManager.server.luau's updateWalkSpeed applies on top of
+-- the existing Speed-upgrade multiplier, same pattern as Coins() above.
+function Service.SpeedMultiplier(player)
+	return Service.Has(player, "StarterPack") and 1.1 or 1
 end
 
 function Service.Start()

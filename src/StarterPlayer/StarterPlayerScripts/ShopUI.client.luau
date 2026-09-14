@@ -4,6 +4,7 @@ local MarketplaceService=game:GetService("MarketplaceService")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 local player=Players.LocalPlayer
 local Config=require(ReplicatedStorage:WaitForChild("GamepassConfig"))
+local SecretPets=require(ReplicatedStorage:WaitForChild("SecretPets"))
 local NavButton=require(ReplicatedStorage:WaitForChild("NavButton"))
 local Style=require(ReplicatedStorage:WaitForChild("UIStyle"))
 local redeemCodeRemote=ReplicatedStorage:WaitForChild("RedeemCode")
@@ -70,16 +71,22 @@ section("Gamepasses",10)
 local passGrid=Instance.new("Frame") passGrid.Name="GamepassesGrid" passGrid.BackgroundTransparency=1
 passGrid.LayoutOrder=11 passGrid.Parent=scroll
 local grid=Instance.new("UIGridLayout") grid.SortOrder=Enum.SortOrder.LayoutOrder grid.CellPadding=UDim2.fromOffset(12,12) grid.Parent=passGrid
+-- 4 entries now (was 3, fixed at "one row" worth of height) — StarterPack
+-- added below. gridFit computes its height from the real count so a
+-- future 5th/6th gamepass doesn't silently clip or overlap again.
+local PASS_ORDER={"DoubleCoins","ExtraCarry","AutoCollect","StarterPack"}
 local function gridFit()
 	local compact=panel:GetAttribute("Compact")
-	grid.FillDirectionMaxCells=compact and 1 or 3
-	grid.CellSize=compact and UDim2.new(1,-12,0,340) or UDim2.new(1/3,-12,0,354)
-	passGrid.Size=UDim2.new(1,-6,0,compact and 1086 or 360)
+	local cols=compact and 1 or 3
+	local rows=math.ceil(#PASS_ORDER/cols)
+	local cellH=compact and 340 or 354
+	grid.FillDirectionMaxCells=cols
+	grid.CellSize=compact and UDim2.new(1,-12,0,cellH) or UDim2.new(1/3,-12,0,cellH)
+	passGrid.Size=UDim2.new(1,-6,0,rows*cellH+(rows-1)*12+40)
 end
 panel:GetAttributeChangedSignal("Compact"):Connect(gridFit) gridFit()
-local PASS_ORDER={"DoubleCoins","ExtraCarry","AutoCollect"}
-local PASS_ACCENTS={DoubleCoins=Color3.fromRGB(243,162,101),ExtraCarry=Color3.fromRGB(95,185,174),AutoCollect=Color3.fromRGB(129,164,194)}
-local BENEFITS={DoubleCoins="Double your sale and reward coins!",ExtraCarry="Carry 2 extra items every trip!",AutoCollect="Collect nearby scrap automatically!"}
+local PASS_ACCENTS={DoubleCoins=Color3.fromRGB(243,162,101),ExtraCarry=Color3.fromRGB(95,185,174),AutoCollect=Color3.fromRGB(129,164,194),StarterPack=Color3.fromRGB(180,140,210)}
+local BENEFITS={DoubleCoins="Double your sale and reward coins!",ExtraCarry="Carry 2 extra items every trip!",AutoCollect="Collect nearby scrap automatically!",StarterPack="Exclusive pet + permanent coin & speed boost!"}
 local refreshers={}
 local pendingId=nil
 for i,key in ipairs(PASS_ORDER) do
@@ -174,8 +181,70 @@ local function feature(name,kind,titleValue,description,order,color,action)
 	if action then button.Activated:Connect(action) end
 	return card
 end
-section("Pets",100)
-feature("ExclusivePets","PETS","New companions!","Shop-exclusive pets are coming soon.",110,Color3.fromRGB(206,234,220))
+-- Top spot in the shop, ahead of Gamepasses — the user's ask specifically:
+-- "carve out a top spot in the shop to have the secret egg go into."
+section("Pets",5)
+do
+	-- Named "ExclusivePets" (the old placeholder's name) and the buy
+	-- button "Action" (not "Purchase") on purpose: reflowFeatures() below
+	-- already knows how to responsively resize a card with this exact
+	-- name/child shape for compact/portrait layouts. Renaming to match
+	-- reuses that existing system instead of duplicating it - and without
+	-- the rename, reflowFeatures would either skip this card, or worse,
+	-- error trying to index a nonexistent card.Action.
+	local card=Instance.new("Frame") card.Name="ExclusivePets" card.LayoutOrder=6 card.Size=UDim2.new(1,-12,0,220)
+	card.Parent=scroll corner(card,18) Style.Surface(card,Color3.fromRGB(206,234,220),3)
+	Style.Art(card,"PETS",UDim2.fromOffset(18,18),UDim2.fromOffset(180,180))
+	local heading=text(card,"Title","Secret Pet Egg!",UDim2.fromOffset(218,24),UDim2.new(1,-440,0,52),34,true)
+	heading.TextXAlignment=Enum.TextXAlignment.Left
+	local oddsLines={}
+	for _,o in ipairs(SecretPets.Odds()) do
+		table.insert(oddsLines,string.format("%s%% %s",tostring(o.percent),o.name))
+	end
+	-- TextScaled as a safety net, not just a shorter string: this is the
+	-- same overflow bug class fixed twice already this session (missing
+	-- TextScaled on variable-length text in a fixed box), and 5 pets'
+	-- worth of odds is exactly the kind of content that can grow.
+	local desc=text(card,"Description","Odds: "..table.concat(oddsLines,"  •  "),UDim2.fromOffset(218,84),UDim2.new(1,-440,0,120),19,false)
+	desc.TextXAlignment=Enum.TextXAlignment.Left
+	desc.TextScaled=true
+	local buy=Instance.new("TextButton") buy.Name="Action" buy.Size=UDim2.fromOffset(180,64)
+	buy.Position=UDim2.new(1,-200,.5,-32) buy.Font=Enum.Font.FredokaOne buy.TextSize=24 buy.TextWrapped=true
+	buy.ZIndex=3 buy.Parent=card corner(buy,12) Style.Surface(buy,WHITE,2)
+	local eggInfo,eggLoading,eggPending=nil,false,false
+	local function refreshEgg()
+		local configured=SecretPets.IsConfigured()
+		local available=configured and eggInfo and eggInfo.IsForSale==true and type(eggInfo.PriceInRobux)=="number"
+		local enabled=available and not eggPending
+		buy.Active=enabled buy.AutoButtonColor=enabled
+		buy.BackgroundColor3=enabled and GOLD or WHITE buy.TextColor3=Color3.fromRGB(30,30,36)
+		if not configured then buy.Text="COMING SOON"
+		elseif eggPending then buy.Text="PLEASE WAIT"
+		elseif eggLoading or not eggInfo then buy.Text="CHECKING..."
+		elseif available then buy.Text=tostring(eggInfo.PriceInRobux).." Robux"
+		else buy.Text="UNAVAILABLE" end
+	end
+	buy.Activated:Connect(function()
+		if not buy.Active then return end
+		eggPending=true message.Text="" refreshEgg()
+		local ok=pcall(function() MarketplaceService:PromptProductPurchase(player,SecretPets.EggProductId) end)
+		if not ok then eggPending=false message.Text="Purchase prompt unavailable. Please try again." refreshEgg() end
+	end)
+	local function loadEggInfo()
+		if not SecretPets.IsConfigured() or eggLoading then refreshEgg() return end
+		eggLoading=true refreshEgg()
+		local ok,result=pcall(function() return MarketplaceService:GetProductInfo(SecretPets.EggProductId,Enum.InfoType.Product) end)
+		eggInfo=ok and result or nil eggLoading=false refreshEgg()
+	end
+	open.Activated:Connect(function() task.spawn(loadEggInfo) end)
+	refreshEgg()
+	MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId,productId,purchased)
+		if userId~=player.UserId or productId~=SecretPets.EggProductId then return end
+		eggPending=false
+		message.Text=purchased and "Purchase completed! Check your inventory for your new pet." or ""
+		refreshEgg()
+	end)
+end
 section("Boosts",200)
 feature("RewardBoosts","DoubleCoins","Reward Boosts!","Find timed boosts in your daily rewards.",210,Color3.fromRGB(245,218,174),function()
 	overlay.Visible=false

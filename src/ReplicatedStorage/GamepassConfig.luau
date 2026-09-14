@@ -22,4 +22,9 @@ return {
 		description = "Collect nearby scrap within 20 studs. Earned magnet upgrades can extend this range.",
 		bgIcons = { "🧲", "✨", "🧲" },
 	},
+	StarterPack = {
+		id = 0, name = "Starter Pack", icon = "🎒",
+		description = "A one-time head start: an exclusive pet you can't get any other way, plus a permanent coin and speed boost.",
+		bgIcons = { "🎒", "💨", "💰" },
+	},
 }

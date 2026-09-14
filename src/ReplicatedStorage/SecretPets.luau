@@ -29,6 +29,14 @@
 	playing the game for 7 days," which a tradeable/giftable pet would
 	break.
 
+	A 7th entry, PackPet, is the same idea for the Robux "Starter Pack"
+	gamepass (see GamepassConfig.luau + PlotManager.server.luau's
+	Gamepasses.Changed listener) — "a semi-good pet you can only get from
+	the pack," so it gets the exact same `packOnly`/`untradeable`
+	treatment as StreakPet, just excluded for a different reason. Sits
+	deliberately below every egg pet's value: a cheap starter purchase
+	shouldn't outshine what buying the actual egg gets you.
+
 	Replaces the old direct-buy version of this file (one Developer
 	Product per pet) — the user wants an egg instead: one purchase, 5
 	possible pets, odds shown before you buy. Roblox requires disclosing
@@ -81,6 +89,14 @@ local streakPet = { key = "streak_pet_1", name = "TBD 7-Day Pet", value = 150000
 table.insert(SecretPets.List, streakPet)
 SecretPets.StreakPet = streakPet
 
+-- The Starter Pack's exclusive pet — below every egg pet's value (60000
+-- vs. the egg's 70000-200000 range) but still above the fusion best
+-- (50000), so it's a genuine, if modest, secret pet rather than a
+-- reskinned common item.
+local packPet = { key = "pack_pet_1", name = "TBD Starter Pack Pet", value = 60000, packOnly = true, untradeable = true }
+table.insert(SecretPets.List, packPet)
+SecretPets.PackPet = packPet
+
 SecretPets.ByName = {}
 for _, entry in ipairs(SecretPets.List) do
 	SecretPets.ByName[entry.name] = entry
@@ -90,14 +106,21 @@ function SecretPets.IsConfigured()
 	return type(SecretPets.EggProductId) == "number" and SecretPets.EggProductId > 0 and SecretPets.EggProductId % 1 == 0
 end
 
+-- Anything the egg's own Roll()/Odds() should never touch — currently
+-- the streak pet and the Starter Pack pet, each excluded for its own
+-- reason (see the flags themselves). Centralized here so Roll/Odds don't
+-- have to know each flag by name, and a future non-egg pet only needs
+-- its own new flag added to this one check.
+local function eggEligible(entry)
+	return not entry.streakOnly and not entry.packOnly
+end
+
 -- Same shape as FusionRecipes.RollBaseItem: sum the weights, pick a
 -- random point along that total, walk the list until it's covered.
--- Skips streakOnly entries entirely — the egg must never be able to roll
--- the Day-7 streak pet.
 function SecretPets.Roll()
 	local total = 0
 	for _, entry in ipairs(SecretPets.List) do
-		if not entry.streakOnly then
+		if eggEligible(entry) then
 			total = total + entry.weight
 		end
 	end
@@ -106,7 +129,7 @@ function SecretPets.Roll()
 	local running = 0
 
 	for _, entry in ipairs(SecretPets.List) do
-		if not entry.streakOnly then
+		if eggEligible(entry) then
 			running = running + entry.weight
 			if roll <= running then
 				return entry
@@ -120,20 +143,20 @@ end
 -- {name, value, percent} per pet, for a purchase UI to disclose odds
 -- with — required by Roblox for any randomized paid item, not just good
 -- practice. percent is rounded to 1 decimal; the raw weights above are
--- the source of truth if the two ever look inconsistent. Skips
--- streakOnly entries — disclosing "odds" for a pet the egg can never
--- actually roll would be misleading, not accurate.
+-- the source of truth if the two ever look inconsistent. Disclosing
+-- "odds" for a pet the egg can never actually roll would be misleading,
+-- not accurate, so this skips the same entries Roll() does.
 function SecretPets.Odds()
 	local total = 0
 	for _, entry in ipairs(SecretPets.List) do
-		if not entry.streakOnly then
+		if eggEligible(entry) then
 			total = total + entry.weight
 		end
 	end
 
 	local odds = {}
 	for _, entry in ipairs(SecretPets.List) do
-		if not entry.streakOnly then
+		if eggEligible(entry) then
 			table.insert(odds, {
 				name = entry.name,
 				value = entry.value,
