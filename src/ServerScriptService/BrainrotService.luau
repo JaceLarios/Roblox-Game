@@ -26,6 +26,11 @@ local Companions = require(script.Parent:WaitForChild("CompanionService"))
 local Leaderboard = require(script.Parent:WaitForChild("LeaderboardService"))
 
 local remote = ReplicatedStorage:WaitForChild("GameUpdate")
+-- PlotManager creates this before requiring this module (see its own
+-- comment there), specifically so this WaitForChild is safe to call here
+-- at module load time instead of deadlocking on a remote that doesn't
+-- exist yet.
+local fusionCelebrationRemote = ReplicatedStorage:WaitForChild("FusionCelebration")
 
 -- ---------- Tuning ----------
 local ISLAND_CENTER = Vector3.new(0, 0, 900)  -- far from the Foundry District ring
@@ -371,6 +376,13 @@ local function attemptFusion(player)
 		return
 	end
 
+	-- Captured once, up front, before s.discovered[result] gets mutated
+	-- below — otherwise the "was this new" check and the celebration
+	-- badges built later would both read the post-mutation value and
+	-- never see a discovery as new. Junkyard's attemptFusion has the same
+	-- hazard and solves it the same way.
+	local isNewDiscovery = not info.isFallback and not s.discovered[result]
+
 	-- Fusion here pays out immediately rather than placing an instance, so
 	-- (unlike the Junkyard side) a mutation never needs to be threaded
 	-- through persisted state — it's just a bigger payout and a fancier
@@ -379,12 +391,13 @@ local function attemptFusion(player)
 	-- that doesn't exist here.
 	local mutationId = Mutations.Roll(1, s.mutationPity)
 	s.mutationPity = mutationId and 0 or (s.mutationPity or 0) + 1
+	local mutationColor = Mutations.Color(mutationId)
 
 	local resultTag = mutationId
 		and Mutations.Tag(Mutations.Wrap(result, mutationId), mutationId)
 		or ItemRarity.Tag(result, info.tier, info.isSecret)
 
-	if not info.isFallback and not s.discovered[result] then
+	if isNewDiscovery then
 		s.discovered[result] = true
 		toast(player, string.format(info.isSecret and "SECRET RECIPE\n%s" or "NEW DISCOVERY\n%s", resultTag), true)
 	end
@@ -395,6 +408,32 @@ local function attemptFusion(player)
 
 	if mutationId then
 		toast(player, string.format("MUTATION!\n%s", resultTag), true)
+	end
+
+	-- The same big screen-covering popup the Junkyard's fuse pad shows —
+	-- Brainrot Island never fired this before now, so this was silent
+	-- except for the small toasts above. Tagged area="brainrot" so
+	-- FusionCelebrationView can eventually give this island its own look
+	-- (see that module's Variants table) without touching this trigger.
+	do
+		local badges = {}
+		if isNewDiscovery then table.insert(badges, "NEW DISCOVERY") end
+		if info.isSecret then table.insert(badges, "SECRET RECIPE") end
+		if mutationId then table.insert(badges, "MUTATION") end
+		local headerText = #badges > 0 and table.concat(badges, "   •   ") or "FUSION COMPLETE"
+
+		fusionCelebrationRemote:FireClient(player, {
+			area = "brainrot",
+			headerText = headerText,
+			aTag = tag(a),
+			bTag = tag(b),
+			resultTag = resultTag,
+			rarityName = ItemRarity.Name(info.tier, info.isSecret),
+			color = mutationColor or ItemRarity.Color(info.tier, info.isSecret),
+			-- Not a coins/sec rate like Junkyard's — this island pays out
+			-- immediately, so the honest equivalent is the flat payout.
+			rateLine = string.format("Sold instantly for %d coins", payout),
+		})
 	end
 
 	-- Server-wide callout stays reserved for real discoveries — a generic

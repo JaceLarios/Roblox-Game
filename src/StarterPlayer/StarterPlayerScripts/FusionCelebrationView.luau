@@ -19,15 +19,38 @@
 	long that takes, what it looks like, and how it moves is entirely up
 	to this module.
 
-	`data` (sent by PlotManager.server.luau's attemptFusion over the
-	FusionCelebration RemoteEvent) is a plain table:
+	`data` (sent by PlotManager.server.luau's attemptFusion, and separately
+	by BrainrotService.luau's own attemptFusion for Brainrot Island's own
+	fuse pad, both over the shared FusionCelebration RemoteEvent) is a
+	plain table:
+		area         - string, "junkyard" or "brainrot" - which fuse pad
+		               this came from. Picks which entry of `Variants`
+		               (below) plays; unrecognized/missing falls back to
+		               "junkyard".
 		headerText   - string, e.g. "NEW DISCOVERY", "FUSION COMPLETE"
 		aTag, bTag   - strings, the two ingredient names (RichText, already
 		               rarity-colored via ItemRarity.Tag)
 		resultTag    - string, the fused result's name (RichText, colored)
 		rarityName   - string, e.g. "RARE", "SECRET"
 		color        - Color3, the result's rarity/mutation color
-		rateLine     - string, e.g. "RARE — +2.3 coins/sec if placed"
+		rateLine     - string, a short reward subtitle whose exact wording
+		               depends on area - "RARE — +2.3 coins/sec if placed"
+		               on the Junkyard side (that result gets placed for
+		               passive income), "Sold instantly for 480 coins" on
+		               Brainrot Island (that island pays out immediately
+		               instead)
+
+	Two areas, two fuse pads, and per the user: each should eventually get
+	its own distinct celebration animation. `Variants` below is the slot
+	for that — one entry per area, each a self-contained
+	function(data) that must follow the exact same contract View.Play
+	does (show, hold, hide, THEN return). Today both entries point at the
+	same `makeCardVariant()` build, since only one visual exists yet; give
+	Brainrot Island its own look by replacing `Variants.brainrot` with a
+	new, independent implementation — it doesn't need to share anything
+	with `Variants.junkyard`, including layout or GUI structure, since
+	each variant instance below already keeps its own private `ui` state
+	rather than sharing one screen between areas.
 
 	Everything below this point is a working placeholder (ported from an
 	earlier single-file version), not a final design — it exists so the
@@ -53,8 +76,6 @@ local HIDE_TIME = 0.3
 
 local View = {}
 
-local ui -- built lazily on first Play call, reused after that
-
 local function label(parent, order, size, font, color)
 	local lbl = Instance.new("TextLabel")
 	lbl.BackgroundTransparency = 1
@@ -67,131 +88,6 @@ local function label(parent, order, size, font, color)
 	lbl.ZIndex = 3
 	lbl.Parent = parent
 	return lbl
-end
-
-local function build()
-	local gui = Instance.new("ScreenGui")
-	gui.Name = "FusionCelebrationGui"
-	gui.ResetOnSpawn = false
-	gui.IgnoreGuiInset = true
-	gui.DisplayOrder = 100
-	gui.Parent = playerGui
-
-	local backdrop = Instance.new("Frame")
-	backdrop.Name = "Backdrop"
-	backdrop.Size = UDim2.fromScale(1, 1)
-	backdrop.BackgroundColor3 = Color3.new(0, 0, 0)
-	backdrop.BackgroundTransparency = 1
-	backdrop.BorderSizePixel = 0
-	backdrop.Visible = false
-	backdrop.ZIndex = 1
-	backdrop.Parent = gui
-
-	local card = Instance.new("Frame")
-	card.Name = "Card"
-	card.AnchorPoint = Vector2.new(0.5, 0.5)
-	card.Position = UDim2.fromScale(0.5, 0.48)
-	card.Size = UDim2.fromScale(0, 0)
-	card.BackgroundColor3 = CARD_BG
-	card.BorderSizePixel = 0
-	card.ZIndex = 2
-	card.Parent = backdrop
-
-	local cardCorner = Instance.new("UICorner")
-	cardCorner.CornerRadius = UDim.new(0, 32)
-	cardCorner.Parent = card
-
-	local cardStroke = Instance.new("UIStroke")
-	cardStroke.Thickness = 6
-	cardStroke.Color = WHITE
-	cardStroke.Parent = card
-
-	local strokeGradient = Instance.new("UIGradient")
-	strokeGradient.Color = ColorSequence.new(WHITE, WHITE)
-	strokeGradient.Parent = cardStroke
-
-	local cardPadding = Instance.new("UIPadding")
-	cardPadding.PaddingTop = UDim.new(0, 28)
-	cardPadding.PaddingBottom = UDim.new(0, 28)
-	cardPadding.PaddingLeft = UDim.new(0, 40)
-	cardPadding.PaddingRight = UDim.new(0, 40)
-	cardPadding.Parent = card
-
-	local layout = Instance.new("UIListLayout")
-	layout.FillDirection = Enum.FillDirection.Vertical
-	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	layout.VerticalAlignment = Enum.VerticalAlignment.Center
-	layout.SortOrder = Enum.SortOrder.LayoutOrder
-	layout.Padding = UDim.new(0, 10)
-	layout.Parent = card
-
-	local headerLabel = label(card, 1, 34, Enum.Font.FredokaOne, GOLD)
-	local ingredientsLabel = label(card, 2, 26, Enum.Font.FredokaOne, WHITE)
-	ingredientsLabel.TextTransparency = 0.15
-
-	local resultLabel = label(card, 3, 78, Enum.Font.LuckiestGuy, WHITE)
-	resultLabel.Size = UDim2.new(1, 0, 0, 90)
-
-	local pill = Instance.new("Frame")
-	pill.BackgroundColor3 = PILL_BG
-	pill.BackgroundTransparency = 0.25
-	pill.Size = UDim2.new(0, 0, 0, 44)
-	pill.AutomaticSize = Enum.AutomaticSize.X
-	pill.LayoutOrder = 4
-	pill.ZIndex = 3
-	pill.Parent = card
-
-	local pillCorner = Instance.new("UICorner")
-	pillCorner.CornerRadius = UDim.new(1, 0)
-	pillCorner.Parent = pill
-
-	local pillPadding = Instance.new("UIPadding")
-	pillPadding.PaddingLeft = UDim.new(0, 28)
-	pillPadding.PaddingRight = UDim.new(0, 28)
-	pillPadding.Parent = pill
-
-	local rarityLabel = Instance.new("TextLabel")
-	rarityLabel.BackgroundTransparency = 1
-	rarityLabel.Font = Enum.Font.FredokaOne
-	rarityLabel.TextColor3 = WHITE
-	rarityLabel.TextScaled = true
-	rarityLabel.Size = UDim2.new(0, 200, 1, 0)
-	rarityLabel.Parent = pill
-
-	local rateLabel = label(card, 5, 30, Enum.Font.FredokaOne, GOLD)
-
-	for i = 1, 10 do
-		local spark = Instance.new("TextLabel")
-		spark.BackgroundTransparency = 1
-		spark.Text = SPARKLE_EMOJI
-		spark.Font = Enum.Font.SourceSans
-		spark.TextColor3 = WHITE
-		spark.TextScaled = true
-		spark.AnchorPoint = Vector2.new(0.5, 0.5)
-		spark.Size = UDim2.fromOffset(24 + math.random(0, 20), 24 + math.random(0, 20))
-		spark.Position = UDim2.fromScale(math.random(0, 100) / 100, math.random(0, 100) / 100)
-		spark.Rotation = math.random(0, 360)
-		spark.ZIndex = 2
-		spark.Parent = backdrop
-
-		local tween = TweenService:Create(spark,
-			TweenInfo.new(1.4 + math.random() * 1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-			{ Position = spark.Position + UDim2.fromScale(0, 0.04), Rotation = spark.Rotation + 25 })
-		tween:Play()
-	end
-
-	return {
-		backdrop = backdrop,
-		card = card,
-		cardStroke = cardStroke,
-		strokeGradient = strokeGradient,
-		headerLabel = headerLabel,
-		ingredientsLabel = ingredientsLabel,
-		resultLabel = resultLabel,
-		rarityLabel = rarityLabel,
-		ratePill = pill,
-		rateLabel = rateLabel,
-	}
 end
 
 local function playUiSound(id, pitch, volume, delaySeconds)
@@ -207,52 +103,202 @@ local function playUiSound(id, pitch, volume, delaySeconds)
 	end)
 end
 
+-- Builds one independent instance of the placeholder celebration card:
+-- its own GUI tree, its own lazily-built `ui`, its own play(data). Two
+-- separate calls to this (below, one per area) give Junkyard and Brainrot
+-- Island fully independent variants that never share a screen or any
+-- instance state — even though, today, they look identical.
+local function makeCardVariant()
+	local ui -- built lazily on first play() call, reused after that
+
+	local function build()
+		local gui = Instance.new("ScreenGui")
+		gui.Name = "FusionCelebrationGui"
+		gui.ResetOnSpawn = false
+		gui.IgnoreGuiInset = true
+		gui.DisplayOrder = 100
+		gui.Parent = playerGui
+
+		local backdrop = Instance.new("Frame")
+		backdrop.Name = "Backdrop"
+		backdrop.Size = UDim2.fromScale(1, 1)
+		backdrop.BackgroundColor3 = Color3.new(0, 0, 0)
+		backdrop.BackgroundTransparency = 1
+		backdrop.BorderSizePixel = 0
+		backdrop.Visible = false
+		backdrop.ZIndex = 1
+		backdrop.Parent = gui
+
+		local card = Instance.new("Frame")
+		card.Name = "Card"
+		card.AnchorPoint = Vector2.new(0.5, 0.5)
+		card.Position = UDim2.fromScale(0.5, 0.48)
+		card.Size = UDim2.fromScale(0, 0)
+		card.BackgroundColor3 = CARD_BG
+		card.BorderSizePixel = 0
+		card.ZIndex = 2
+		card.Parent = backdrop
+
+		local cardCorner = Instance.new("UICorner")
+		cardCorner.CornerRadius = UDim.new(0, 32)
+		cardCorner.Parent = card
+
+		local cardStroke = Instance.new("UIStroke")
+		cardStroke.Thickness = 6
+		cardStroke.Color = WHITE
+		cardStroke.Parent = card
+
+		local strokeGradient = Instance.new("UIGradient")
+		strokeGradient.Color = ColorSequence.new(WHITE, WHITE)
+		strokeGradient.Parent = cardStroke
+
+		local cardPadding = Instance.new("UIPadding")
+		cardPadding.PaddingTop = UDim.new(0, 28)
+		cardPadding.PaddingBottom = UDim.new(0, 28)
+		cardPadding.PaddingLeft = UDim.new(0, 40)
+		cardPadding.PaddingRight = UDim.new(0, 40)
+		cardPadding.Parent = card
+
+		local layout = Instance.new("UIListLayout")
+		layout.FillDirection = Enum.FillDirection.Vertical
+		layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		layout.VerticalAlignment = Enum.VerticalAlignment.Center
+		layout.SortOrder = Enum.SortOrder.LayoutOrder
+		layout.Padding = UDim.new(0, 10)
+		layout.Parent = card
+
+		local headerLabel = label(card, 1, 34, Enum.Font.FredokaOne, GOLD)
+		local ingredientsLabel = label(card, 2, 26, Enum.Font.FredokaOne, WHITE)
+		ingredientsLabel.TextTransparency = 0.15
+
+		local resultLabel = label(card, 3, 78, Enum.Font.LuckiestGuy, WHITE)
+		resultLabel.Size = UDim2.new(1, 0, 0, 90)
+
+		local pill = Instance.new("Frame")
+		pill.BackgroundColor3 = PILL_BG
+		pill.BackgroundTransparency = 0.25
+		pill.Size = UDim2.new(0, 0, 0, 44)
+		pill.AutomaticSize = Enum.AutomaticSize.X
+		pill.LayoutOrder = 4
+		pill.ZIndex = 3
+		pill.Parent = card
+
+		local pillCorner = Instance.new("UICorner")
+		pillCorner.CornerRadius = UDim.new(1, 0)
+		pillCorner.Parent = pill
+
+		local pillPadding = Instance.new("UIPadding")
+		pillPadding.PaddingLeft = UDim.new(0, 28)
+		pillPadding.PaddingRight = UDim.new(0, 28)
+		pillPadding.Parent = pill
+
+		local rarityLabel = Instance.new("TextLabel")
+		rarityLabel.BackgroundTransparency = 1
+		rarityLabel.Font = Enum.Font.FredokaOne
+		rarityLabel.TextColor3 = WHITE
+		rarityLabel.TextScaled = true
+		rarityLabel.Size = UDim2.new(0, 200, 1, 0)
+		rarityLabel.Parent = pill
+
+		local rateLabel = label(card, 5, 30, Enum.Font.FredokaOne, GOLD)
+
+		for i = 1, 10 do
+			local spark = Instance.new("TextLabel")
+			spark.BackgroundTransparency = 1
+			spark.Text = SPARKLE_EMOJI
+			spark.Font = Enum.Font.SourceSans
+			spark.TextColor3 = WHITE
+			spark.TextScaled = true
+			spark.AnchorPoint = Vector2.new(0.5, 0.5)
+			spark.Size = UDim2.fromOffset(24 + math.random(0, 20), 24 + math.random(0, 20))
+			spark.Position = UDim2.fromScale(math.random(0, 100) / 100, math.random(0, 100) / 100)
+			spark.Rotation = math.random(0, 360)
+			spark.ZIndex = 2
+			spark.Parent = backdrop
+
+			local tween = TweenService:Create(spark,
+				TweenInfo.new(1.4 + math.random() * 1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+				{ Position = spark.Position + UDim2.fromScale(0, 0.04), Rotation = spark.Rotation + 25 })
+			tween:Play()
+		end
+
+		return {
+			backdrop = backdrop,
+			card = card,
+			cardStroke = cardStroke,
+			strokeGradient = strokeGradient,
+			headerLabel = headerLabel,
+			ingredientsLabel = ingredientsLabel,
+			resultLabel = resultLabel,
+			rarityLabel = rarityLabel,
+			ratePill = pill,
+			rateLabel = rateLabel,
+		}
+	end
+
+	local function play(data)
+		ui = ui or build()
+
+		ui.headerLabel.Text = data.headerText or "FUSION COMPLETE"
+		ui.ingredientsLabel.Text = string.format("%s  +  %s", data.aTag or "", data.bTag or "")
+		ui.resultLabel.Text = data.resultTag or ""
+		ui.rarityLabel.Text = data.rarityName or ""
+		ui.rateLabel.Text = data.rateLine or ""
+
+		local color = data.color or GOLD
+		ui.cardStroke.Color = color
+		ui.strokeGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, WHITE),
+			ColorSequenceKeypoint.new(0.5, color),
+			ColorSequenceKeypoint.new(1, WHITE),
+		})
+		ui.ratePill.BackgroundColor3 = color
+		ui.ratePill.BackgroundTransparency = 0.1
+
+		ui.backdrop.Visible = true
+		ui.backdrop.BackgroundTransparency = 1
+		ui.card.Size = UDim2.fromScale(0, 0)
+
+		TweenService:Create(ui.backdrop, TweenInfo.new(SHOW_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{ BackgroundTransparency = 0.55 }):Play()
+		TweenService:Create(ui.card, TweenInfo.new(SHOW_TIME, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+			{ Size = UDim2.fromScale(0.66, 0.56) }):Play()
+
+		local rotateTween = TweenService:Create(ui.strokeGradient,
+			TweenInfo.new(2.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, false),
+			{ Rotation = 360 })
+		rotateTween:Play()
+
+		playUiSound("rbxasset://sounds/electronicpingshort.wav", 0.9, 0.55, 0)
+		playUiSound("rbxasset://sounds/bass.wav", 1.0, 0.8, 0.05)
+
+		task.wait(SHOW_TIME + HOLD_TIME)
+
+		rotateTween:Cancel()
+		TweenService:Create(ui.backdrop, TweenInfo.new(HIDE_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+			{ BackgroundTransparency = 1 }):Play()
+		local shrink = TweenService:Create(ui.card, TweenInfo.new(HIDE_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+			{ Size = UDim2.fromScale(0, 0) })
+		shrink:Play()
+		shrink.Completed:Wait()
+		ui.backdrop.Visible = false
+	end
+
+	return play
+end
+
+-- One independent variant instance per area. Replace Variants.brainrot
+-- with a new implementation (own layout, own colors, own motion — it
+-- does not need to call makeCardVariant at all) to give Brainrot Island
+-- its own celebration; View.Play's dispatch below never needs to change.
+local Variants = {
+	junkyard = makeCardVariant(),
+	brainrot = makeCardVariant(),
+}
+
 function View.Play(data)
-	ui = ui or build()
-
-	ui.headerLabel.Text = data.headerText or "FUSION COMPLETE"
-	ui.ingredientsLabel.Text = string.format("%s  +  %s", data.aTag or "", data.bTag or "")
-	ui.resultLabel.Text = data.resultTag or ""
-	ui.rarityLabel.Text = data.rarityName or ""
-	ui.rateLabel.Text = data.rateLine or ""
-
-	local color = data.color or GOLD
-	ui.cardStroke.Color = color
-	ui.strokeGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, WHITE),
-		ColorSequenceKeypoint.new(0.5, color),
-		ColorSequenceKeypoint.new(1, WHITE),
-	})
-	ui.ratePill.BackgroundColor3 = color
-	ui.ratePill.BackgroundTransparency = 0.1
-
-	ui.backdrop.Visible = true
-	ui.backdrop.BackgroundTransparency = 1
-	ui.card.Size = UDim2.fromScale(0, 0)
-
-	TweenService:Create(ui.backdrop, TweenInfo.new(SHOW_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-		{ BackgroundTransparency = 0.55 }):Play()
-	TweenService:Create(ui.card, TweenInfo.new(SHOW_TIME, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-		{ Size = UDim2.fromScale(0.66, 0.56) }):Play()
-
-	local rotateTween = TweenService:Create(ui.strokeGradient,
-		TweenInfo.new(2.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, false),
-		{ Rotation = 360 })
-	rotateTween:Play()
-
-	playUiSound("rbxasset://sounds/electronicpingshort.wav", 0.9, 0.55, 0)
-	playUiSound("rbxasset://sounds/bass.wav", 1.0, 0.8, 0.05)
-
-	task.wait(SHOW_TIME + HOLD_TIME)
-
-	rotateTween:Cancel()
-	TweenService:Create(ui.backdrop, TweenInfo.new(HIDE_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-		{ BackgroundTransparency = 1 }):Play()
-	local shrink = TweenService:Create(ui.card, TweenInfo.new(HIDE_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-		{ Size = UDim2.fromScale(0, 0) })
-	shrink:Play()
-	shrink.Completed:Wait()
-	ui.backdrop.Visible = false
+	local variant = Variants[data.area] or Variants.junkyard
+	variant(data)
 end
 
 return View

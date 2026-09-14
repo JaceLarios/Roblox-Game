@@ -758,9 +758,18 @@ layout.Parent = list
 -- Carry bar (bottom centre)
 ------------------------------------------------------------------
 
+-- Tuned for the default 2-slot loadout; a "+Carry" upgrade raises maxSlots
+-- past that, so redrawCarrySlots (below) grows the frame to match instead
+-- of leaving it fixed at 470 — which used to let the extra slot pills
+-- spill out past both the holder and the frame's own background.
+local CARRY_FRAME_BASE_WIDTH = 470
+local CARRY_FRAME_BASE_SLOTS = 2
+local CARRY_SLOT_WIDTH = 200
+local CARRY_SLOT_PADDING = 8
+
 local carryingFrame = Instance.new("Frame")
-carryingFrame.Size = UDim2.new(0, 470, 0, 58)
-carryingFrame.Position = UDim2.new(0.5, -235, 1, -92)
+carryingFrame.Size = UDim2.new(0, CARRY_FRAME_BASE_WIDTH, 0, 58)
+carryingFrame.Position = UDim2.new(0.5, -CARRY_FRAME_BASE_WIDTH / 2, 1, -92)
 carryingFrame.BackgroundColor3 = DARK
 carryingFrame.BackgroundTransparency = GLASS_HUD
 carryingFrame.BorderSizePixel = 0
@@ -798,7 +807,13 @@ carrySlotsLayout.Parent = carrySlotsHolder
 -- half of "take something off the fuse pad" (the physical pad itself gets
 -- taken off the same way, via its own ProximityPrompt, on the server).
 local function redrawCarrySlots(slots, maxSlots)
-	maxSlots = maxSlots or 2
+	maxSlots = maxSlots or CARRY_FRAME_BASE_SLOTS
+
+	local extraSlots = math.max(0, maxSlots - CARRY_FRAME_BASE_SLOTS)
+	local frameWidth = CARRY_FRAME_BASE_WIDTH + extraSlots * (CARRY_SLOT_WIDTH + CARRY_SLOT_PADDING)
+	carryingFrame.Size = UDim2.new(0, frameWidth, 0, 58)
+	carryingFrame.Position = UDim2.new(0.5, -frameWidth / 2, 1, -92)
+
 	for _, child in ipairs(carrySlotsHolder:GetChildren()) do
 		if not child:IsA("UIListLayout") then child:Destroy() end
 	end

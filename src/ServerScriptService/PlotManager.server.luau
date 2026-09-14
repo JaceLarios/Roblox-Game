@@ -37,6 +37,22 @@ local Companions = require(script.Parent:WaitForChild("CompanionService"))
 local Leaderboard = require(script.Parent:WaitForChild("LeaderboardService"))
 local PlaytimeLeaderboard = require(script.Parent:WaitForChild("PlaytimeLeaderboardService"))
 local Trade = require(script.Parent:WaitForChild("TradeService"))
+
+-- The big screen-covering celebration popup on fuse. Its own dedicated
+-- remote (not a new field on the small `GameUpdate` toast) and its own
+-- standalone client script, specifically so this doesn't touch or depend
+-- on GameUI/ShopUI while Codex is mid-rewrite on those — see HANDOFF.md.
+-- Created here, before BrainrotService loads below, so BrainrotService's
+-- own separate fuse pad on Brainrot Island can grab it at its own top
+-- level the same way it already grabs the shared `GameUpdate` remote,
+-- instead of this file having to hand it a reference after the fact.
+local fusionCelebrationRemote = ReplicatedStorage:FindFirstChild("FusionCelebration")
+if not fusionCelebrationRemote then
+	fusionCelebrationRemote = Instance.new("RemoteEvent")
+	fusionCelebrationRemote.Name = "FusionCelebration"
+	fusionCelebrationRemote.Parent = ReplicatedStorage
+end
+
 local Brainrot = require(script.Parent:WaitForChild("BrainrotService"))
 Gamepasses.Start()
 
@@ -274,17 +290,6 @@ if not removeFromCarryRemote then
 	removeFromCarryRemote = Instance.new("RemoteEvent")
 	removeFromCarryRemote.Name = "RemoveFromCarry"
 	removeFromCarryRemote.Parent = ReplicatedStorage
-end
-
--- The big screen-covering celebration popup on fuse. Its own dedicated
--- remote (not a new field on the small `GameUpdate` toast) and its own
--- standalone client script, specifically so this doesn't touch or depend
--- on GameUI/ShopUI while Codex is mid-rewrite on those — see HANDOFF.md.
-local fusionCelebrationRemote = ReplicatedStorage:FindFirstChild("FusionCelebration")
-if not fusionCelebrationRemote then
-	fusionCelebrationRemote = Instance.new("RemoteEvent")
-	fusionCelebrationRemote.Name = "FusionCelebration"
-	fusionCelebrationRemote.Parent = ReplicatedStorage
 end
 
 -- The side travel menu asks for a destination key; the server decides
@@ -1272,6 +1277,7 @@ local function attemptFusion(player)
 		local headerText = #badges > 0 and table.concat(badges, "   •   ") or "FUSION COMPLETE"
 
 		fusionCelebrationRemote:FireClient(player, {
+			area = "junkyard",
 			headerText = headerText,
 			aTag = aTag,
 			bTag = bTag,
