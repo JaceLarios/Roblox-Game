@@ -21,7 +21,9 @@
 --]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 
+local IslandBuilder = require(ServerStorage:WaitForChild("IslandBuilder"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
@@ -40,10 +42,15 @@ local fusionCelebrationRemote = ReplicatedStorage:WaitForChild("FusionCelebratio
 
 -- ---------- Tuning ----------
 local ISLAND_CENTER = Vector3.new(0, 0, 900)  -- far from the Foundry District ring
-local AREA_SIZE = 60
+-- Bumped from 60 on 2026-09-14 ("build the brainrot island out... just
+-- like the junkyard island so people can walk around") — this is the
+-- half-width of the actual creature-spawn field; IslandBuilder derives
+-- the boundary ring and outer ground plate from it, so the whole island
+-- grew along with it, not just the spawn area.
+local AREA_SIZE = 100
 local SPAWN_INTERVAL = 3
 local DESPAWN_AFTER = 60
-local MAX_ITEMS = 20
+local MAX_ITEMS = 32  -- was 20; scaled up with AREA_SIZE so density feels about the same, not sparser
 local CARRY_CAPACITY = 2
 -- ----------------------------
 
@@ -104,83 +111,117 @@ end
 -- Build the island
 ------------------------------------------------------------------
 
+-- Same alien-stalk/glowing-pod-cluster look this island already had,
+-- promoted to IslandBuilder's theme.buildCluster shape (unchanged
+-- visuals/colors), plus two new bigger landmarks. "Built out, walkable,
+-- like the Junkyard" needed more than a bigger empty field — a place to
+-- actually walk toward, not just more of the same scattered clutter.
+local BRAINROT_COLORS = {
+	Color3.fromRGB(255, 90, 210), Color3.fromRGB(130, 255, 120),
+	Color3.fromRGB(255, 220, 60), Color3.fromRGB(120, 200, 255),
+}
+
+local function buildCluster(cf, color, parent, rng)
+	if rng:NextNumber() < 0.35 then
+		-- A stylized alien stalk with a glowing pod on top.
+		local height = rng:NextNumber(6, 11)
+		part({
+			Name = "IslandStalk", Size = Vector3.new(1.4, height, 1.4),
+			CFrame = cf * CFrame.new(0, height / 2, 0),
+			Material = Enum.Material.Neon, Color = color, Parent = parent,
+		})
+		local pod = part({
+			Name = "IslandStalkPod", Size = Vector3.new(3, 3, 3),
+			CFrame = cf * CFrame.new(0, height, 0),
+			Material = Enum.Material.Neon, Color = color, Parent = parent,
+		})
+		pod.Shape = Enum.PartType.Ball
+	else
+		-- A cluster of glowing pods, like oversized berries.
+		for k = 0, 1 do
+			local size = rng:NextNumber(2, 3.4)
+			local bush = part({
+				Name = "IslandBush", Size = Vector3.new(size, size, size),
+				CFrame = cf * CFrame.new(k * 2 - 1, size / 2, k * 1.4 - 0.7),
+				Material = Enum.Material.Neon, Color = color, Parent = parent,
+			})
+			bush.Shape = Enum.PartType.Ball
+		end
+	end
+end
+
+-- Landmark 1: a tall spiraling spire, visible from across the island —
+-- something to walk toward besides the pad itself.
+local function buildSpire(cf, parent)
+	local height = 45
+	for i = 0, 8 do
+		local t = i / 8
+		local segCf = cf * CFrame.new(math.sin(t * math.pi * 3) * 3, t * height, math.cos(t * math.pi * 3) * 3)
+		local seg = part({
+			Name = "SpireSegment", Size = Vector3.new(3.2 - t * 1.6, 3, 3.2 - t * 1.6),
+			CFrame = segCf, Material = Enum.Material.Neon,
+			Color = Color3.fromRGB(255, 90, 210):Lerp(Color3.fromRGB(120, 200, 255), t), Parent = parent,
+		})
+		seg.Shape = Enum.PartType.Ball
+	end
+	local orb = part({
+		Name = "SpireOrb", Size = Vector3.new(6, 6, 6),
+		CFrame = cf * CFrame.new(0, height + 4, 0),
+		Material = Enum.Material.Neon, Color = Color3.fromRGB(255, 255, 255), Parent = parent,
+	})
+	orb.Shape = Enum.PartType.Ball
+	local spireLight = Instance.new("PointLight")
+	spireLight.Color = Color3.fromRGB(255, 200, 255)
+	spireLight.Brightness = 3
+	spireLight.Range = 50
+	spireLight.Shadows = false
+	spireLight.Parent = orb
+end
+
+-- Landmark 2: an oversized mushroom grove — a whimsical, surreal touch
+-- matching the brainrot-meme creature roster (Bombardino Squalini and
+-- friends), not a generic alien-planet cliché.
+local function buildMushroomGrove(cf, parent)
+	local capColors = { Color3.fromRGB(255, 120, 180), Color3.fromRGB(150, 255, 180), Color3.fromRGB(255, 220, 120) }
+	for i = 0, 2 do
+		local offsetCf = cf * CFrame.new(math.cos(i * 2.1) * 6, 0, math.sin(i * 2.1) * 6)
+		local h = 8 + i * 2
+		part({
+			Name = "MushroomStem", Size = Vector3.new(2, h, 2),
+			CFrame = offsetCf * CFrame.new(0, h / 2, 0),
+			Material = Enum.Material.SmoothPlastic, Color = Color3.fromRGB(245, 240, 225), Parent = parent,
+		})
+		local cap = part({
+			Name = "MushroomCap", Size = Vector3.new(9, 4, 9),
+			CFrame = offsetCf * CFrame.new(0, h + 1, 0),
+			Material = Enum.Material.Neon, Color = capColors[i + 1], Parent = parent,
+		})
+		cap.Shape = Enum.PartType.Ball
+	end
+end
+
+local SPIRE_OFFSET = Vector3.new(-AREA_SIZE / 2 + 15, 0, 0)
+local MUSHROOM_OFFSET = Vector3.new(AREA_SIZE / 2 - 20, 0, -AREA_SIZE / 2 + 20)
+
 local old = workspace:FindFirstChild("BrainrotIsland")
 if old then old:Destroy() end
 
-local islandFolder = Instance.new("Folder")
-islandFolder.Name = "BrainrotIsland"
-islandFolder.Parent = workspace
-
-part({
-	Name = "Ground",
-	Size = Vector3.new(AREA_SIZE + 40, 1, AREA_SIZE + 40),
-	Position = ISLAND_CENTER,
-	Material = Enum.Material.SmoothPlastic,
-	Color = Color3.fromRGB(60, 220, 90),
-	Parent = islandFolder,
+local built = IslandBuilder.Build({
+	name = "BrainrotIsland",
+	center = ISLAND_CENTER,
+	groundRadius = AREA_SIZE / 2,
+	groundColor = Color3.fromRGB(60, 220, 90),
+	ringColors = BRAINROT_COLORS,
+	lampColor = Color3.fromRGB(255, 150, 230),
+	clusterCount = 22,
+	buildCluster = buildCluster,
+	seed = 4242,
+	landmarks = {
+		{ position = SPIRE_OFFSET, build = buildSpire },
+		{ position = MUSHROOM_OFFSET, build = buildMushroomGrove },
+	},
 })
-
--- Decoration ring: the ground used to be one flat rectangle. Everything
--- here sits between the creature-spawn field (|x|,|z| <= AREA_SIZE/2) and
--- the edge of the ground plate, so nothing blocks a live spawn or pickup.
-do
-	local DECOR_INNER = AREA_SIZE / 2 + 2
-	local DECOR_OUTER = AREA_SIZE / 2 + 18
-	local decorColors = {
-		Color3.fromRGB(255, 90, 210), Color3.fromRGB(130, 255, 120),
-		Color3.fromRGB(255, 220, 60), Color3.fromRGB(120, 200, 255),
-	}
-	local decorRng = Random.new(4242)
-
-	for i = 0, 13 do
-		local angle = i * (math.pi * 2 / 14) + decorRng:NextNumber(-0.08, 0.08)
-		local dist = decorRng:NextNumber(DECOR_INNER, DECOR_OUTER)
-		local pos = ISLAND_CENTER + Vector3.new(math.cos(angle) * dist, 0, math.sin(angle) * dist)
-		local col = decorColors[(i % #decorColors) + 1]
-
-		if i % 3 == 0 then
-			-- A stylized alien stalk with a glowing pod on top.
-			local height = decorRng:NextNumber(6, 11)
-			part({
-				Name = "IslandStalk", Size = Vector3.new(1.4, height, 1.4),
-				Position = pos + Vector3.new(0, height / 2, 0),
-				Material = Enum.Material.Neon, Color = col, Parent = islandFolder,
-			})
-			local pod = part({
-				Name = "IslandStalkPod", Size = Vector3.new(3, 3, 3),
-				Position = pos + Vector3.new(0, height, 0),
-				Material = Enum.Material.Neon, Color = col, Parent = islandFolder,
-			})
-			pod.Shape = Enum.PartType.Ball
-		else
-			-- A cluster of glowing pods, like oversized berries.
-			for k = 0, 1 do
-				local size = decorRng:NextNumber(2, 3.4)
-				local bush = part({
-					Name = "IslandBush", Size = Vector3.new(size, size, size),
-					Position = pos + Vector3.new(k * 2 - 1, size / 2, k * 1.4 - 0.7),
-					Material = Enum.Material.Neon, Color = col, Parent = islandFolder,
-				})
-				bush.Shape = Enum.PartType.Ball
-			end
-		end
-	end
-
-	-- Ambient lighting so the island doesn't go flat and dark at dusk.
-	for _, offset in { Vector3.new(20, 6, 20), Vector3.new(-20, 6, -20) } do
-		local lamp = part({
-			Name = "IslandLamp", Size = Vector3.new(1.6, 1.6, 1.6),
-			Position = ISLAND_CENTER + offset,
-			Material = Enum.Material.Neon, Color = Color3.fromRGB(255, 120, 220),
-			Parent = islandFolder,
-		})
-		local pointLight = Instance.new("PointLight")
-		pointLight.Color = Color3.fromRGB(255, 150, 230)
-		pointLight.Range = 30
-		pointLight.Brightness = 2
-		pointLight.Parent = lamp
-	end
-end
+local islandFolder = built.folder
 
 local islandSign = part({
 	Name = "IslandSign",
@@ -275,6 +316,17 @@ end
 
 function Brainrot.GetArrivalPosition()
 	return ARRIVAL_POSITION
+end
+
+-- Paths connecting the pad to the sign and the two landmarks — the
+-- difference between "a decorated field" and "a place with somewhere to
+-- walk." IslandBuilder.Path is the same stretched-part-via-lookAt shape
+-- MapRevamp.luau's own road/beam helper uses.
+do
+	local PATH_COLOR = Color3.fromRGB(235, 225, 245)
+	IslandBuilder.Path(pad.Position, islandSign.Position, 7, PATH_COLOR, islandFolder)
+	IslandBuilder.Path(pad.Position, ISLAND_CENTER + SPIRE_OFFSET, 6, PATH_COLOR, islandFolder)
+	IslandBuilder.Path(pad.Position, ISLAND_CENTER + MUSHROOM_OFFSET, 6, PATH_COLOR, islandFolder)
 end
 
 ------------------------------------------------------------------
