@@ -1,26 +1,27 @@
 --[[
 	ShopUI (LocalScript, StarterPlayerScripts) — Junkyard Fusion v1
 
-	Replaces the old gamepass-only panel with a tabbed shop: PASSES (the
-	original real-money gamepasses, untouched purchase logic), CODES
-	(redeem a promo code for coins), and PETS (spend coins on a Tier-1
-	item instead of grinding its drop rate). Pet Simulator-style tab bar
-	across the top of one panel, rather than three separate popups.
+	One continuous scrollable panel, no tab bar: a "redeem a code" banner
+	up top, then one big animated gradient banner per gamepass, built
+	generically from GamepassConfig so a brand new pass just needs a new
+	config entry, not new UI code (see addFloatingIcons below).
+
+	Pets were pulled out entirely — the old coin-purchasable pets were
+	just existing discoverable items with a price tag, which undercut the
+	point of a "shop exclusive." A future pass adds real shop-only pets
+	that don't exist anywhere else in the game.
 --]]
 
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 
 local Config = require(ReplicatedStorage:WaitForChild("GamepassConfig"))
-local ShopPets = require(ReplicatedStorage:WaitForChild("ShopPets"))
-local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local NavButton = require(ReplicatedStorage:WaitForChild("NavButton"))
-local itemModels = ReplicatedStorage:WaitForChild("ItemModels")
 
 local redeemCodeRemote = ReplicatedStorage:WaitForChild("RedeemCode")
-local buyShopPetRemote = ReplicatedStorage:WaitForChild("BuyShopPet")
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "ShopUI"
@@ -45,21 +46,19 @@ local function text(parent, name, value, pos, size, fontSize, color)
 	t.TextSize = fontSize
 	t.TextWrapped = true
 	t.TextXAlignment = Enum.TextXAlignment.Left
+	t.ZIndex = 2
 	t.Parent = parent
 	return t
 end
 
--- Same signature palette as GameUI.client.luau — WHITE is this button's
--- own identity (Inventory/Index/Upgrades/Travel already claim the other
--- four), and BLUE/GREEN/RED double as the three tab accents inside.
+-- Same signature palette as GameUI.client.luau.
 local WHITE = Color3.fromRGB(255, 255, 255)
 local BLUE  = Color3.fromRGB(70, 150, 255)
 local GREEN = Color3.fromRGB(80, 220, 120)
-local RED   = Color3.fromRGB(255, 80, 80)
 local GOLD  = Color3.fromRGB(255, 200, 80)
 
 -- Right rail, slot 3 (bottom) — same shared module GameUI.client.luau's
--- five nav buttons use, so this one reads as part of the same rail even
+-- nav buttons use, so this one reads as part of the same rail even
 -- though it's a completely separate script/ScreenGui underneath.
 local open = NavButton.Create(gui, "🛒", "SHOP", WHITE, NavButton.RailPosition("right", 3))
 
@@ -76,10 +75,10 @@ local panel = Instance.new("Frame")
 panel.Name = "ShopPanel"
 panel.AnchorPoint = Vector2.new(0.5, 0.5)
 panel.Position = UDim2.fromScale(0.5, 0.5)
-panel.Size = UDim2.fromOffset(720, 600)
+panel.Size = UDim2.fromOffset(780, 660)
 panel.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
 panel.Parent = overlay
-corner(panel, 14)
+corner(panel, 18)
 
 local panelStroke = Instance.new("UIStroke")
 panelStroke.Color = Color3.fromRGB(255, 255, 255)
@@ -91,142 +90,237 @@ local scale = Instance.new("UIScale")
 scale.Parent = panel
 local function fit()
 	local size = overlay.AbsoluteSize
-	scale.Scale = math.min(1, math.max(0.1, (size.X - 24) / 720), math.max(0.1, (size.Y - 24) / 600))
+	scale.Scale = math.min(1, math.max(0.1, (size.X - 24) / 780), math.max(0.1, (size.Y - 24) / 660))
 end
 overlay:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
 fit()
 
-text(panel, "Title", "🛒 SHOP", UDim2.fromOffset(22, 16), UDim2.fromOffset(440, 34), 24, GOLD)
+text(panel, "Title", "🛒 SHOP", UDim2.fromOffset(24, 16), UDim2.fromOffset(440, 36), 26, GOLD)
 
 local close = Instance.new("TextButton")
 close.Name = "Close"
-close.Size = UDim2.fromOffset(34, 34)
-close.Position = UDim2.new(1, -44, 0, 14)
+close.Size = UDim2.fromOffset(36, 36)
+close.Position = UDim2.new(1, -46, 0, 16)
 close.Text = "X"
 close.TextColor3 = Color3.fromRGB(235, 235, 240)
 close.BackgroundTransparency = 1
 close.Font = Enum.Font.FredokaOne
 close.TextSize = 20
+close.ZIndex = 2
 close.Parent = panel
 
+-- One continuous scroll — no tab bar. Everything is a big bright banner
+-- card stacked vertically, Pet-Simulator-shop style.
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1, -44, 1, -140)
+scroll.Position = UDim2.fromOffset(22, 66)
+scroll.BackgroundTransparency = 1
+scroll.BorderSizePixel = 0
+scroll.ScrollBarThickness = 8
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scroll.Parent = panel
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Padding = UDim.new(0, 16)
+listLayout.Parent = scroll
+
+local message = text(panel, "Message", "", UDim2.fromOffset(24, 620), UDim2.fromOffset(732, 30), 12, GOLD)
+message.TextXAlignment = Enum.TextXAlignment.Center
+
 ------------------------------------------------------------------
--- Tabs
+-- A handful of emoji drifting slowly and looping within a card's own
+-- bounds — purely decorative, the "alive" background other games use
+-- behind currency/gamepass banners. Reusable: a future gamepass just
+-- lists icons in GamepassConfig's bgIcons field and calls this once.
 ------------------------------------------------------------------
+local function addFloatingIcons(parent, icons)
+	if not icons then return end
+	parent.ClipsDescendants = true
+	for _, icon in ipairs(icons) do
+		local lbl = Instance.new("TextLabel")
+		lbl.BackgroundTransparency = 1
+		lbl.Text = icon
+		lbl.Font = Enum.Font.FredokaOne
+		lbl.TextSize = math.random(26, 42)
+		lbl.TextTransparency = 0.6
+		lbl.Rotation = math.random(-18, 18)
+		lbl.Size = UDim2.fromOffset(50, 50)
+		lbl.ZIndex = 1
+		local startX = math.random(0, 100) / 100
+		local startY = math.random(0, 100) / 100
+		lbl.Position = UDim2.fromScale(startX, startY)
+		lbl.Parent = parent
 
-local TABS = {
-	{ key = "passes", caption = "PASSES", accent = BLUE },
-	{ key = "codes", caption = "CODES", accent = GREEN },
-	{ key = "pets", caption = "PETS", accent = RED },
-}
-
-local tabBar = Instance.new("Frame")
-tabBar.Size = UDim2.fromOffset(676, 44)
-tabBar.Position = UDim2.fromOffset(22, 60)
-tabBar.BackgroundTransparency = 1
-tabBar.Parent = panel
-
-local tabLayout = Instance.new("UIListLayout")
-tabLayout.FillDirection = Enum.FillDirection.Horizontal
-tabLayout.Padding = UDim.new(0, 10)
-tabLayout.Parent = tabBar
-
-local contentHolder = Instance.new("Frame")
-contentHolder.Size = UDim2.fromOffset(676, 420)
-contentHolder.Position = UDim2.fromOffset(22, 112)
-contentHolder.BackgroundTransparency = 1
-contentHolder.Parent = panel
-
-local message = text(panel, "Message", "", UDim2.fromOffset(22, 540), UDim2.fromOffset(676, 30), 12, GOLD)
-
-local tabButtons = {}
-local tabFrames = {}
-local tabAccent = {}
-
-local function selectTab(key)
-	for tabKey, btn in pairs(tabButtons) do
-		local isActive = tabKey == key
-		btn.BackgroundColor3 = isActive and tabAccent[tabKey] or Color3.fromRGB(40, 40, 48)
-		btn.TextColor3 = isActive and NavButton.ReadableTextColor(tabAccent[tabKey]) or Color3.fromRGB(200, 200, 210)
-	end
-	for frameKey, frame in pairs(tabFrames) do
-		frame.Visible = frameKey == key
+		-- Slow independent drift per icon, Reverse-looped so nothing snaps
+		-- back to its start — it just glides back and forth forever.
+		local duration = math.random(28, 48) / 10
+		local dx = math.random(-14, 14) / 100
+		local dy = math.random(-14, 14) / 100
+		TweenService:Create(lbl, TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
+			Position = UDim2.fromScale(math.clamp(startX + dx, 0, 1), math.clamp(startY + dy, 0, 1)),
+		}):Play()
 	end
 end
 
-for i, tab in ipairs(TABS) do
-	tabAccent[tab.key] = tab.accent
+------------------------------------------------------------------
+-- Redeem a code — its own bright banner instead of a separate tab.
+------------------------------------------------------------------
 
-	local btn = Instance.new("TextButton")
-	btn.Name = tab.key
-	btn.Size = UDim2.fromOffset(218, 44)
-	btn.LayoutOrder = i
-	btn.Font = Enum.Font.LuckiestGuy
-	btn.TextSize = 16
-	btn.Text = tab.caption
-	btn.BorderSizePixel = 0
-	btn.Parent = tabBar
-	corner(btn, 10)
-	tabButtons[tab.key] = btn
+local codeBanner = Instance.new("Frame")
+codeBanner.Name = "CodeBanner"
+codeBanner.Size = UDim2.new(1, 0, 0, 130)
+codeBanner.LayoutOrder = 1
+codeBanner.BackgroundColor3 = GREEN
+codeBanner.BorderSizePixel = 0
+codeBanner.Parent = scroll
+corner(codeBanner, 18)
 
-	local frame = Instance.new("ScrollingFrame")
-	frame.Name = tab.key .. "Content"
-	frame.Size = UDim2.fromScale(1, 1)
-	frame.CanvasSize = UDim2.new(0, 0, 0, 0)
-	frame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-	frame.BackgroundTransparency = 1
-	frame.BorderSizePixel = 0
-	frame.ScrollBarThickness = 6
-	frame.Visible = false
-	frame.Parent = contentHolder
-	tabFrames[tab.key] = frame
+local codeGradient = Instance.new("UIGradient")
+codeGradient.Color = ColorSequence.new(GREEN:Lerp(Color3.new(1, 1, 1), 0.25), GREEN:Lerp(Color3.new(0, 0, 0), 0.25))
+codeGradient.Rotation = 25
+codeGradient.Parent = codeBanner
 
-	btn.Activated:Connect(function() selectTab(tab.key) end)
+local codeStroke = Instance.new("UIStroke")
+codeStroke.Color = Color3.new(1, 1, 1)
+codeStroke.Thickness = 3
+codeStroke.Transparency = 0.3
+codeStroke.Parent = codeBanner
+
+addFloatingIcons(codeBanner, { "🎁", "⭐", "🎁" })
+
+local codeIconBadge = Instance.new("Frame")
+codeIconBadge.Size = UDim2.fromOffset(90, 90)
+codeIconBadge.Position = UDim2.fromOffset(18, 20)
+codeIconBadge.BackgroundColor3 = Color3.new(1, 1, 1)
+codeIconBadge.BackgroundTransparency = 0.15
+codeIconBadge.ZIndex = 2
+codeIconBadge.Parent = codeBanner
+corner(codeIconBadge, 45)
+
+local codeIcon = text(codeIconBadge, "Icon", "🎁", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), 48)
+codeIcon.TextXAlignment = Enum.TextXAlignment.Center
+codeIcon.TextYAlignment = Enum.TextYAlignment.Center
+
+local codeTitle = text(codeBanner, "Title", "REDEEM A CODE", UDim2.fromOffset(124, 18), UDim2.fromOffset(300, 30), 22, Color3.new(1, 1, 1))
+codeTitle.TextStrokeTransparency = 0.5
+
+local codeSub = text(codeBanner, "Sub", "Got a code? Type it in and redeem it.", UDim2.fromOffset(124, 50), UDim2.fromOffset(300, 20), 13, Color3.new(1, 1, 1))
+codeSub.TextTransparency = 0.1
+
+local codeBox = Instance.new("TextBox")
+codeBox.Size = UDim2.fromOffset(320, 46)
+codeBox.Position = UDim2.fromOffset(124, 76)
+codeBox.BackgroundColor3 = Color3.new(1, 1, 1)
+codeBox.Text = "" -- Instance.new("TextBox") defaults Text to "TextBox", which
+-- would otherwise mask PlaceholderText below entirely.
+codeBox.TextColor3 = Color3.fromRGB(30, 30, 36)
+codeBox.PlaceholderText = "Enter code"
+codeBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 158)
+codeBox.Font = Enum.Font.FredokaOne
+codeBox.TextSize = 18
+codeBox.ClearTextOnFocus = false
+codeBox.BorderSizePixel = 0
+codeBox.ZIndex = 2
+codeBox.Parent = codeBanner
+corner(codeBox, 10)
+
+local redeemBtn = Instance.new("TextButton")
+redeemBtn.Size = UDim2.fromOffset(150, 46)
+redeemBtn.Position = UDim2.fromOffset(456, 76)
+redeemBtn.BackgroundColor3 = GOLD
+redeemBtn.TextColor3 = Color3.fromRGB(30, 30, 36)
+redeemBtn.Font = Enum.Font.LuckiestGuy
+redeemBtn.TextSize = 16
+redeemBtn.Text = "REDEEM"
+redeemBtn.BorderSizePixel = 0
+redeemBtn.ZIndex = 2
+redeemBtn.Parent = codeBanner
+corner(redeemBtn, 10)
+
+local function submitCode()
+	local code = codeBox.Text
+	if code == "" then return end
+	redeemCodeRemote:FireServer(code)
+	codeBox.Text = ""
 end
 
-selectTab("passes")
+redeemBtn.Activated:Connect(submitCode)
+codeBox.FocusLost:Connect(function(enterPressed)
+	if enterPressed then submitCode() end
+end)
 
 ------------------------------------------------------------------
--- PASSES — unchanged purchase logic, just re-homed into its own tab.
+-- Gamepasses — one big animated banner each, built generically from
+-- GamepassConfig so a new pass just needs a new config entry.
 ------------------------------------------------------------------
 
-local passesFrame = tabFrames.passes
-local refreshers = {}
-local pendingId = nil
--- One accent per pass so the panel doesn't read as three identical gray
--- boxes with a price sticker — each already has a distinct effect, now it
--- has a distinct color to match.
-local ROW_COLORS = {
+local PASS_ORDER = { "DoubleCoins", "ExtraCarry", "AutoCollect" }
+local PASS_ACCENTS = {
 	DoubleCoins = GOLD,
 	ExtraCarry = BLUE,
 	AutoCollect = GREEN,
 }
 
-for i, key in ipairs({ "DoubleCoins", "ExtraCarry", "AutoCollect" }) do
+local refreshers = {}
+local pendingId = nil
+
+for i, key in ipairs(PASS_ORDER) do
 	local item = Config[key]
-	local accent = ROW_COLORS[key]
-	local row = Instance.new("Frame")
-	row.Name = key
-	row.Position = UDim2.fromOffset(4, (i - 1) * 115)
-	row.Size = UDim2.fromOffset(650, 105)
-	row.BackgroundColor3 = accent:Lerp(Color3.fromRGB(20, 20, 26), 0.82)
-	row.Parent = passesFrame
-	corner(row)
-	local rowStroke = Instance.new("UIStroke")
-	rowStroke.Color = accent
-	rowStroke.Transparency = 0.55
-	rowStroke.Thickness = 1.5
-	rowStroke.Parent = row
-	text(row, "Title", item.name, UDim2.fromOffset(14, 10), UDim2.fromOffset(468, 26), 18, accent)
-	text(row, "Description", item.description, UDim2.fromOffset(14, 38), UDim2.fromOffset(468, 58), 13)
+	local accent = PASS_ACCENTS[key] or WHITE
+
+	local banner = Instance.new("Frame")
+	banner.Name = key
+	banner.Size = UDim2.new(1, 0, 0, 150)
+	banner.LayoutOrder = i + 1
+	banner.BackgroundColor3 = accent
+	banner.BorderSizePixel = 0
+	banner.Parent = scroll
+	corner(banner, 18)
+
+	local gradient = Instance.new("UIGradient")
+	gradient.Color = ColorSequence.new(accent:Lerp(Color3.new(1, 1, 1), 0.3), accent:Lerp(Color3.new(0, 0, 0), 0.25))
+	gradient.Rotation = 25
+	gradient.Parent = banner
+
+	local bannerStroke = Instance.new("UIStroke")
+	bannerStroke.Color = Color3.new(1, 1, 1)
+	bannerStroke.Thickness = 3
+	bannerStroke.Transparency = 0.25
+	bannerStroke.Parent = banner
+
+	addFloatingIcons(banner, item.bgIcons)
+
+	local iconBadge = Instance.new("Frame")
+	iconBadge.Size = UDim2.fromOffset(96, 96)
+	iconBadge.Position = UDim2.fromOffset(18, 27)
+	iconBadge.BackgroundColor3 = Color3.new(1, 1, 1)
+	iconBadge.BackgroundTransparency = 0.15
+	iconBadge.ZIndex = 2
+	iconBadge.Parent = banner
+	corner(iconBadge, 48)
+
+	local iconLbl = text(iconBadge, "Icon", item.icon or "⭐", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), 52)
+	iconLbl.TextXAlignment = Enum.TextXAlignment.Center
+	iconLbl.TextYAlignment = Enum.TextYAlignment.Center
+
+	local nameLbl = text(banner, "Title", item.name, UDim2.fromOffset(130, 20), UDim2.fromOffset(360, 32), 24, Color3.new(1, 1, 1))
+	nameLbl.TextStrokeTransparency = 0.5
+
+	local descLbl = text(banner, "Description", item.description, UDim2.fromOffset(130, 56), UDim2.fromOffset(360, 74), 13, Color3.new(1, 1, 1))
+	descLbl.TextTransparency = 0.1
+
 	local buy = Instance.new("TextButton")
 	buy.Name = "Buy"
-	buy.Position = UDim2.fromOffset(496, 31)
-	buy.Size = UDim2.fromOffset(140, 44)
+	buy.Size = UDim2.fromOffset(160, 52)
+	buy.Position = UDim2.new(1, -178, 0.5, -26)
 	buy.Font = Enum.Font.FredokaOne
-	buy.TextSize = 13
+	buy.TextSize = 14
 	buy.TextWrapped = true
-	buy.Parent = row
-	corner(buy)
+	buy.ZIndex = 2
+	buy.Parent = banner
+	corner(buy, 12)
+
 	local info, loading = nil, false
 	local function refresh()
 		local owns = player:GetAttribute("Pass_" .. key) == true
@@ -235,8 +329,8 @@ for i, key in ipairs({ "DoubleCoins", "ExtraCarry", "AutoCollect" }) do
 		local enabled = not owns and available and status == "Ready" and pendingId == nil
 		buy.Active = enabled == true
 		buy.AutoButtonColor = enabled == true
-		buy.BackgroundColor3 = enabled and GOLD or Color3.fromRGB(54, 54, 64)
-		buy.TextColor3 = enabled and Color3.fromRGB(18, 18, 22) or Color3.fromRGB(210, 210, 220)
+		buy.BackgroundColor3 = enabled and GOLD or Color3.new(1, 1, 1)
+		buy.TextColor3 = Color3.fromRGB(30, 30, 36)
 		if owns then
 			buy.Text = "OWNED"
 		elseif item.id <= 0 then
@@ -288,159 +382,6 @@ MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(who, id, purc
 	pendingId = nil
 	message.Text = purchased and "Purchase completed. Your benefits update automatically." or ""
 	for _, f in pairs(refreshers) do f() end
-end)
-
-------------------------------------------------------------------
--- CODES — a text box, a redeem button, and the server's toast for
--- feedback (success/failure/already-redeemed) — no separate inline
--- status needed here.
-------------------------------------------------------------------
-
-local codesFrame = tabFrames.codes
-
-text(codesFrame, "Prompt", "Got a code? Type it in and redeem it below.",
-	UDim2.fromOffset(4, 10), UDim2.fromOffset(640, 30), 16, Color3.fromRGB(235, 235, 240))
-
-local codeBox = Instance.new("TextBox")
-codeBox.Size = UDim2.fromOffset(420, 50)
-codeBox.Position = UDim2.fromOffset(4, 54)
-codeBox.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
-codeBox.Text = "" -- Instance.new("TextBox") defaults Text to "TextBox", which
--- would otherwise mask PlaceholderText below entirely.
-codeBox.TextColor3 = Color3.fromRGB(235, 235, 240)
-codeBox.PlaceholderText = "Enter code"
-codeBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 132)
-codeBox.Font = Enum.Font.FredokaOne
-codeBox.TextSize = 18
-codeBox.ClearTextOnFocus = false
-codeBox.BorderSizePixel = 0
-codeBox.Parent = codesFrame
-corner(codeBox, 8)
-local codeBoxStroke = Instance.new("UIStroke")
-codeBoxStroke.Color = GREEN
-codeBoxStroke.Transparency = 0.5
-codeBoxStroke.Thickness = 1.5
-codeBoxStroke.Parent = codeBox
-
-local redeemBtn = Instance.new("TextButton")
-redeemBtn.Size = UDim2.fromOffset(200, 50)
-redeemBtn.Position = UDim2.fromOffset(440, 54)
-redeemBtn.BackgroundColor3 = GREEN
-redeemBtn.TextColor3 = Color3.fromRGB(18, 18, 22)
-redeemBtn.Font = Enum.Font.LuckiestGuy
-redeemBtn.TextSize = 16
-redeemBtn.Text = "REDEEM"
-redeemBtn.BorderSizePixel = 0
-redeemBtn.Parent = codesFrame
-corner(redeemBtn, 8)
-
-local function submitCode()
-	local code = codeBox.Text
-	if code == "" then return end
-	redeemCodeRemote:FireServer(code)
-	codeBox.Text = ""
-end
-
-redeemBtn.Activated:Connect(submitCode)
-codeBox.FocusLost:Connect(function(enterPressed)
-	if enterPressed then submitCode() end
-end)
-
-------------------------------------------------------------------
--- PETS — spend coins for a "leg up" instead of grinding the drop rate.
-------------------------------------------------------------------
-
-local petsFrame = tabFrames.pets
-local petsLayout = Instance.new("UIGridLayout")
-petsLayout.CellSize = UDim2.fromOffset(150, 210)
-petsLayout.CellPadding = UDim2.fromOffset(10, 10)
-petsLayout.Parent = petsFrame
-
-local function buildPetIcon(parent, itemName)
-	local viewport = Instance.new("ViewportFrame")
-	viewport.Size = UDim2.new(1, -16, 0, 100)
-	viewport.Position = UDim2.new(0, 8, 0, 8)
-	viewport.BackgroundTransparency = 1
-	viewport.Parent = parent
-
-	local cam = Instance.new("Camera")
-	viewport.CurrentCamera = cam
-	cam.Parent = viewport
-
-	local template = itemModels:FindFirstChild(itemName)
-	if template then
-		local clone = template:Clone()
-		clone.Anchored = true
-		clone.CFrame = CFrame.new(0, 0, 0)
-		clone.Parent = viewport
-
-		local size = clone.Size
-		local reach = math.max(size.X, size.Y, size.Z) * 1.5 + 1.5
-		cam.CFrame = CFrame.new(Vector3.new(reach * 0.6, reach * 0.5, reach * 0.85), Vector3.new(0, 0, 0))
-	end
-end
-
-local petRefreshers = {}
-
-local function refreshAllPetCards()
-	for _, f in ipairs(petRefreshers) do f() end
-end
-
-for i, entry in ipairs(ShopPets) do
-	local rarityColor = ItemRarity.Color(1, false)
-
-	local card = Instance.new("Frame")
-	card.LayoutOrder = i
-	card.BackgroundColor3 = rarityColor:Lerp(Color3.fromRGB(18, 18, 24), 0.55)
-	card.BorderSizePixel = 0
-	card.Parent = petsFrame
-	corner(card, 10)
-
-	local cardStroke = Instance.new("UIStroke")
-	cardStroke.Color = rarityColor
-	cardStroke.Thickness = 2
-	cardStroke.Parent = card
-
-	buildPetIcon(card, entry.item)
-
-	text(card, "Name", entry.item, UDim2.fromOffset(8, 112), UDim2.fromOffset(134, 36), 14,
-		Color3.fromRGB(255, 255, 255))
-
-	local buy = Instance.new("TextButton")
-	buy.Size = UDim2.fromOffset(134, 40)
-	buy.Position = UDim2.fromOffset(8, 158)
-	buy.Font = Enum.Font.LuckiestGuy
-	buy.TextSize = 14
-	buy.BorderSizePixel = 0
-	buy.Parent = card
-	corner(buy, 8)
-
-	local function refreshAfford()
-		local stats = player:FindFirstChild("leaderstats")
-		local coins = stats and stats:FindFirstChild("Coins")
-		local balance = coins and coins.Value or 0
-		local afford = balance >= entry.cost
-		buy.BackgroundColor3 = afford and GOLD or Color3.fromRGB(54, 54, 64)
-		buy.TextColor3 = afford and Color3.fromRGB(18, 18, 22) or Color3.fromRGB(210, 210, 220)
-		buy.Text = string.format("%d coins", entry.cost)
-	end
-
-	buy.Activated:Connect(function()
-		buyShopPetRemote:FireServer(i)
-	end)
-
-	table.insert(petRefreshers, refreshAfford)
-	refreshAfford()
-end
-
-open.Activated:Connect(function() task.spawn(refreshAllPetCards) end)
-
-task.spawn(function()
-	local stats = player:WaitForChild("leaderstats", 20)
-	if not stats then return end
-	local coins = stats:WaitForChild("Coins", 20)
-	if not coins then return end
-	coins.Changed:Connect(refreshAllPetCards)
 end)
 
 ------------------------------------------------------------------

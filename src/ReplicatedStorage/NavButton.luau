@@ -21,10 +21,14 @@ NavButton.SIZE = 120
 NavButton.GAP = 20
 
 local DEPTH = 10
-local RAIL_COUNT = 3
+-- The tallest either rail gets — right now that's the right rail's 4
+-- (Travel/Upgrades/Shop/Trade); the left rail only fills 3 of these 4
+-- slots, which just leaves its last slot's worth of space empty rather
+-- than needing its own separate count.
+local RAIL_COUNT = 4
 local RAIL_HEIGHT = RAIL_COUNT * NavButton.SIZE + (RAIL_COUNT - 1) * NavButton.GAP
 
--- Three tiles per side, vertically centered as one group.
+-- Four tiles per side, vertically centered as one group.
 function NavButton.RailPosition(side, slot)
 	local yOffset = (slot - 1) * (NavButton.SIZE + NavButton.GAP) - RAIL_HEIGHT / 2
 	if side == "left" then

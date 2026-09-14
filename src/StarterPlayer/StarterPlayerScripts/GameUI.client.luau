@@ -30,6 +30,7 @@ local removeFromCarryRemote = ReplicatedStorage:WaitForChild("RemoveFromCarry")
 local selectTradeOfferRemote = ReplicatedStorage:WaitForChild("SelectTradeOffer")
 local confirmTradeRemote = ReplicatedStorage:WaitForChild("ConfirmTrade")
 local cancelTradeRemote = ReplicatedStorage:WaitForChild("CancelTrade")
+local startTradeWithRemote = ReplicatedStorage:WaitForChild("StartTradeWith")
 
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
@@ -130,23 +131,44 @@ coinCard.BorderSizePixel = 0
 coinCard.Parent = gui
 rounded(coinCard)
 
-local coinIcon = Instance.new("Frame")
-coinIcon.Size = UDim2.new(0, 22, 0, 22)
-coinIcon.Position = UDim2.new(0, 14, 0, 15)
-coinIcon.BackgroundColor3 = GOLD
-coinIcon.BorderSizePixel = 0
-coinIcon.Parent = coinCard
-rounded(coinIcon, 11)
+-- A polished little coin badge — gradient fill, bright outline, an
+-- actual coin glyph — instead of a flat tinted circle, so the currency
+-- reads as a real icon at a glance instead of a colored dot next to a
+-- number.
+local coinIconBadge = Instance.new("Frame")
+coinIconBadge.Size = UDim2.new(0, 40, 0, 40)
+coinIconBadge.Position = UDim2.new(0, 12, 0, 12)
+coinIconBadge.BackgroundColor3 = GOLD
+coinIconBadge.BorderSizePixel = 0
+coinIconBadge.Parent = coinCard
+rounded(coinIconBadge, 20)
 
-local coinText = label(coinCard, "0", UDim2.new(1, -50, 1, 0), GOLD, Enum.Font.LuckiestGuy, 24)
-coinText.Position = UDim2.new(0, 46, 0, 0)
+local coinIconGradient = Instance.new("UIGradient")
+coinIconGradient.Color = ColorSequence.new(GOLD:Lerp(Color3.new(1, 1, 1), 0.35), GOLD:Lerp(Color3.new(0, 0, 0), 0.2))
+coinIconGradient.Rotation = 90
+coinIconGradient.Parent = coinIconBadge
+
+local coinIconStroke = Instance.new("UIStroke")
+coinIconStroke.Color = Color3.new(1, 1, 1)
+coinIconStroke.Thickness = 2.5
+coinIconStroke.Transparency = 0.2
+coinIconStroke.Parent = coinIconBadge
+
+local coinIconGlyph = label(coinIconBadge, "💰", UDim2.new(1, 0, 1, 0), Color3.new(1, 1, 1), Enum.Font.FredokaOne, 22)
+coinIconGlyph.TextXAlignment = Enum.TextXAlignment.Center
+coinIconGlyph.TextYAlignment = Enum.TextYAlignment.Center
+
+local coinText = label(coinCard, "0", UDim2.new(1, -72, 0, 40), GOLD, Enum.Font.LuckiestGuy, 28)
+coinText.Position = UDim2.new(0, 60, 0, 12)
+coinText.TextYAlignment = Enum.TextYAlignment.Center
+coinText.TextStrokeTransparency = 0.5
 
 local luckText = label(coinCard, "LUCK 1", UDim2.new(0, 90, 0, 18), DIM, Enum.Font.FredokaOne, 12)
 luckText.Position = UDim2.new(1, -96, 0, 17)
 luckText.TextXAlignment = Enum.TextXAlignment.Right
 
 local companionText = label(coinCard, "No companion equipped", UDim2.new(1, -32, 0, 18), PURPLE, Enum.Font.FredokaOne, 12)
-companionText.Position = UDim2.new(0, 16, 0, 50)
+companionText.Position = UDim2.new(0, 16, 0, 54)
 
 local function commas(n)
 	local formatted = tostring(n)
@@ -1420,16 +1442,16 @@ inventoryClose.Parent = inventoryFrame
 -- A strip across the top showing the five pads at your plot — the only
 -- things actually earning you money. Click an occupied one to take it
 -- off (same as walking up to its physical pad and pressing the prompt).
-local placedLabel = label(inventoryFrame, "🐾 YOUR PETS — EARNING (0 / 5)", UDim2.new(0, 400, 0, 20), GREEN, Enum.Font.FredokaOne, 14)
+local placedLabel = label(inventoryFrame, "🐾 YOUR PETS — EARNING (0 / 5)", UDim2.new(0, 400, 0, 22), GREEN, Enum.Font.LuckiestGuy, 16)
 placedLabel.Position = UDim2.new(0, 24, 0, 58)
 
 local placedRow = Instance.new("Frame")
-placedRow.Size = UDim2.new(1, -48, 0, 92)
-placedRow.Position = UDim2.new(0, 24, 0, 80)
+placedRow.Size = UDim2.new(1, -48, 0, 108)
+placedRow.Position = UDim2.new(0, 24, 0, 82)
 placedRow.BackgroundColor3 = Color3.fromRGB(20, 26, 22)
 placedRow.BorderSizePixel = 0
 placedRow.Parent = inventoryFrame
-rounded(placedRow, 10)
+rounded(placedRow, 12)
 
 local placedLayout = Instance.new("UIListLayout")
 placedLayout.FillDirection = Enum.FillDirection.Horizontal
@@ -1444,8 +1466,8 @@ placedPadding.Parent = placedRow
 
 -- Left pane: everything you're holding.
 local inventoryScroll = Instance.new("ScrollingFrame")
-inventoryScroll.Size = UDim2.new(0, 500, 1, -196)
-inventoryScroll.Position = UDim2.new(0, 24, 0, 188)
+inventoryScroll.Size = UDim2.new(0, 500, 1, -214)
+inventoryScroll.Position = UDim2.new(0, 24, 0, 206)
 inventoryScroll.BackgroundTransparency = 1
 inventoryScroll.BorderSizePixel = 0
 inventoryScroll.ScrollBarThickness = 6
@@ -1458,15 +1480,15 @@ inventoryLayout.Parent = inventoryScroll
 
 -- Right pane: stats for whichever item is currently selected.
 local statPanel = Instance.new("Frame")
-statPanel.Size = UDim2.new(0, 290, 1, -196)
-statPanel.Position = UDim2.new(0, 540, 0, 188)
+statPanel.Size = UDim2.new(0, 290, 1, -214)
+statPanel.Position = UDim2.new(0, 540, 0, 206)
 statPanel.BackgroundColor3 = Color3.fromRGB(26, 26, 32)
 statPanel.BorderSizePixel = 0
 statPanel.Parent = inventoryFrame
 rounded(statPanel, 12)
 
 local statViewportHolder = Instance.new("Frame")
-statViewportHolder.Size = UDim2.new(1, -28, 0, 166)
+statViewportHolder.Size = UDim2.new(1, -28, 0, 150)
 statViewportHolder.Position = UDim2.new(0, 14, 0, 14)
 statViewportHolder.BackgroundColor3 = Color3.fromRGB(36, 36, 44)
 statViewportHolder.BorderSizePixel = 0
@@ -1474,19 +1496,19 @@ statViewportHolder.Parent = statPanel
 rounded(statViewportHolder, 10)
 
 local statName = label(statPanel, "Select an item", UDim2.new(1, -28, 0, 50), LIGHT, Enum.Font.FredokaOne, 19)
-statName.Position = UDim2.new(0, 14, 0, 188)
+statName.Position = UDim2.new(0, 14, 0, 172)
 statName.TextWrapped = true
 statName.RichText = true
 
 local statValue = label(statPanel, "", UDim2.new(1, -28, 0, 20), GOLD, Enum.Font.FredokaOne, 15)
-statValue.Position = UDim2.new(0, 14, 0, 244)
+statValue.Position = UDim2.new(0, 14, 0, 228)
 
 local statPerSecond = label(statPanel, "", UDim2.new(1, -28, 0, 20), Color3.fromRGB(120, 220, 140), Enum.Font.FredokaOne, 15)
-statPerSecond.Position = UDim2.new(0, 14, 0, 268)
+statPerSecond.Position = UDim2.new(0, 14, 0, 252)
 
 local placeBtn = Instance.new("TextButton")
 placeBtn.Size = UDim2.new(1, -28, 0, 42)
-placeBtn.Position = UDim2.new(0, 14, 1, -148)
+placeBtn.Position = UDim2.new(0, 14, 1, -146)
 placeBtn.BackgroundColor3 = GREEN
 placeBtn.Text = "PLACE ON PAD"
 placeBtn.TextColor3 = DARK
@@ -1499,7 +1521,7 @@ rounded(placeBtn)
 
 local moveToCarryBtn = Instance.new("TextButton")
 moveToCarryBtn.Size = UDim2.new(1, -28, 0, 42)
-moveToCarryBtn.Position = UDim2.new(0, 14, 1, -98)
+moveToCarryBtn.Position = UDim2.new(0, 14, 1, -96)
 moveToCarryBtn.BackgroundColor3 = PURPLE
 moveToCarryBtn.Text = "CARRY TO FUSE"
 moveToCarryBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1512,7 +1534,7 @@ rounded(moveToCarryBtn)
 
 local sellBtn = Instance.new("TextButton")
 sellBtn.Size = UDim2.new(1, -28, 0, 42)
-sellBtn.Position = UDim2.new(0, 14, 1, -48)
+sellBtn.Position = UDim2.new(0, 14, 1, -46)
 sellBtn.BackgroundColor3 = RED
 sellBtn.Text = "SELL"
 sellBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1652,7 +1674,7 @@ function redrawPlaced(items, capacity)
 		local entry = items[slot]
 
 		local card = Instance.new("TextButton")
-		card.Size = UDim2.new(0, 70, 0, 70)
+		card.Size = UDim2.new(0, 88, 0, 88)
 		card.LayoutOrder = slot
 		card.Text = ""
 		card.AutoButtonColor = false
@@ -1664,11 +1686,11 @@ function redrawPlaced(items, capacity)
 			local tintColor = Mutations.Color(mutationId)
 			local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret)
 			card.BackgroundColor3 = rarityColor:Lerp(Color3.fromRGB(18, 18, 24), 0.3)
-			rounded(card, 10)
+			rounded(card, 16)
 
 			local stroke = Instance.new("UIStroke")
 			stroke.Color = rarityColor
-			stroke.Thickness = 2
+			stroke.Thickness = 3
 			stroke.Parent = card
 
 			buildItemViewport(card, baseName, tintColor)
@@ -1678,14 +1700,14 @@ function redrawPlaced(items, capacity)
 			end)
 		else
 			card.BackgroundColor3 = Color3.fromRGB(30, 38, 33)
-			rounded(card, 10)
+			rounded(card, 16)
 
 			local stroke = Instance.new("UIStroke")
-			stroke.Color = Color3.fromRGB(60, 75, 65)
-			stroke.Thickness = 2
+			stroke.Color = Color3.fromRGB(70, 90, 78)
+			stroke.Thickness = 2.5
 			stroke.Parent = card
 
-			local plus = label(card, "+", UDim2.new(1, 0, 1, 0), Color3.fromRGB(70, 90, 78), Enum.Font.LuckiestGuy, 28)
+			local plus = label(card, "+", UDim2.new(1, 0, 1, 0), Color3.fromRGB(85, 110, 95), Enum.Font.LuckiestGuy, 36)
 			plus.TextXAlignment = Enum.TextXAlignment.Center
 		end
 	end
@@ -1995,6 +2017,129 @@ function redrawTrade(trade)
 	confirmTradeBtn.Text = trade.myConfirmed and "WAITING..." or "CONFIRM"
 	confirmTradeBtn.BackgroundColor3 = trade.myConfirmed and Color3.fromRGB(60, 60, 68) or Color3.fromRGB(120, 220, 140)
 end
+
+------------------------------------------------------------------
+-- Trading tab — click a name instead of walking up to someone. This
+-- only replaces how a trade gets STARTED; once one's underway it's the
+-- exact same tradeFrame/redrawTrade above either way.
+------------------------------------------------------------------
+
+local tradeBtn = NavButton.Create(gui, "🤝", "TRADE", GREEN, NavButton.RailPosition("right", 4))
+
+local tradeListFrame = Instance.new("Frame")
+tradeListFrame.Size = UDim2.new(0, 460, 0, 520)
+tradeListFrame.Position = UDim2.new(0.5, -230, 0.5, -260)
+tradeListFrame.BackgroundColor3 = DARK
+tradeListFrame.BackgroundTransparency = GLASS_PANEL
+tradeListFrame.BorderSizePixel = 0
+tradeListFrame.Visible = false
+tradeListFrame.Parent = gui
+rounded(tradeListFrame, 14)
+
+local tradeListTitle = label(tradeListFrame, "🤝 TRADE WITH", UDim2.new(1, -70, 0, 34), GREEN, Enum.Font.LuckiestGuy, 22)
+tradeListTitle.Position = UDim2.new(0, 22, 0, 18)
+
+local tradeListClose = Instance.new("TextButton")
+tradeListClose.Size = UDim2.new(0, 34, 0, 34)
+tradeListClose.Position = UDim2.new(1, -50, 0, 16)
+tradeListClose.BackgroundTransparency = 1
+tradeListClose.Text = "X"
+tradeListClose.TextColor3 = DIM
+tradeListClose.Font = Enum.Font.FredokaOne
+tradeListClose.TextSize = 20
+tradeListClose.Parent = tradeListFrame
+
+local tradeListScroll = Instance.new("ScrollingFrame")
+tradeListScroll.Size = UDim2.new(1, -44, 1, -80)
+tradeListScroll.Position = UDim2.new(0, 22, 0, 64)
+tradeListScroll.BackgroundTransparency = 1
+tradeListScroll.BorderSizePixel = 0
+tradeListScroll.ScrollBarThickness = 6
+tradeListScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+tradeListScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+tradeListScroll.Parent = tradeListFrame
+
+local tradeListLayout = Instance.new("UIListLayout")
+tradeListLayout.Padding = UDim.new(0, 10)
+tradeListLayout.Parent = tradeListScroll
+
+local function redrawTradeList()
+	for _, child in ipairs(tradeListScroll:GetChildren()) do
+		if not child:IsA("UIListLayout") then child:Destroy() end
+	end
+
+	local others = {}
+	for _, other in ipairs(Players:GetPlayers()) do
+		if other ~= player then table.insert(others, other) end
+	end
+
+	if #others == 0 then
+		local empty = Instance.new("TextLabel")
+		empty.Size = UDim2.new(1, 0, 0, 60)
+		empty.BackgroundTransparency = 1
+		empty.Text = "No one else is here yet — invite a friend!"
+		empty.TextColor3 = DIM
+		empty.Font = Enum.Font.FredokaOne
+		empty.TextSize = 14
+		empty.TextWrapped = true
+		empty.Parent = tradeListScroll
+	end
+
+	for i, other in ipairs(others) do
+		local row = Instance.new("Frame")
+		row.Size = UDim2.new(1, 0, 0, 64)
+		row.LayoutOrder = i
+		row.BackgroundColor3 = GREEN:Lerp(Color3.fromRGB(20, 20, 26), 0.8)
+		row.BorderSizePixel = 0
+		row.Parent = tradeListScroll
+		rounded(row, 12)
+
+		local rowStroke = Instance.new("UIStroke")
+		rowStroke.Color = GREEN
+		rowStroke.Transparency = 0.55
+		rowStroke.Thickness = 1.5
+		rowStroke.Parent = row
+
+		local nameLbl = label(row, other.Name, UDim2.new(1, -140, 1, 0), LIGHT, Enum.Font.FredokaOne, 18)
+		nameLbl.Position = UDim2.new(0, 16, 0, 0)
+		nameLbl.TextYAlignment = Enum.TextYAlignment.Center
+
+		local tradeRowBtn = Instance.new("TextButton")
+		tradeRowBtn.Size = UDim2.new(0, 110, 0, 44)
+		tradeRowBtn.Position = UDim2.new(1, -122, 0.5, -22)
+		tradeRowBtn.BackgroundColor3 = GREEN
+		tradeRowBtn.TextColor3 = DARK
+		tradeRowBtn.Font = Enum.Font.LuckiestGuy
+		tradeRowBtn.TextSize = 14
+		tradeRowBtn.Text = "TRADE"
+		tradeRowBtn.BorderSizePixel = 0
+		tradeRowBtn.Parent = row
+		rounded(tradeRowBtn, 10)
+
+		tradeRowBtn.MouseButton1Click:Connect(function()
+			startTradeWithRemote:FireServer(other.UserId)
+			tradeListFrame.Visible = false
+		end)
+	end
+end
+
+local function toggleTradeList()
+	tradeListFrame.Visible = not tradeListFrame.Visible
+	if tradeListFrame.Visible then redrawTradeList() end
+end
+
+tradeBtn.MouseButton1Click:Connect(toggleTradeList)
+tradeListClose.MouseButton1Click:Connect(toggleTradeList)
+
+-- Deferred so the join/leave has actually finished (Players:GetPlayers()
+-- reflects it) before the list re-reads it, rather than possibly redrawing
+-- one event tick early.
+Players.PlayerAdded:Connect(function()
+	if tradeListFrame.Visible then task.defer(redrawTradeList) end
+end)
+Players.PlayerRemoving:Connect(function()
+	if tradeListFrame.Visible then task.defer(redrawTradeList) end
+end)
 
 end -- do (Event banner + Trading section)
 

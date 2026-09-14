@@ -220,6 +220,17 @@ if not cancelTradeRemote then
 	cancelTradeRemote.Parent = ReplicatedStorage
 end
 
+-- The Trading tab's player list: click a name instead of walking up to
+-- them. Sends the target's UserId (not the Player instance, and not
+-- their name — a UserId is unambiguous even if two players share a
+-- display name) and resolves it server-side.
+local startTradeRemote = ReplicatedStorage:FindFirstChild("StartTradeWith")
+if not startTradeRemote then
+	startTradeRemote = Instance.new("RemoteEvent")
+	startTradeRemote.Name = "StartTradeWith"
+	startTradeRemote.Parent = ReplicatedStorage
+end
+
 local sellInventoryRemote = ReplicatedStorage:FindFirstChild("SellInventoryItem")
 if not sellInventoryRemote then
 	sellInventoryRemote = Instance.new("RemoteEvent")
@@ -1637,6 +1648,22 @@ end
 local TRADE_PROMPT_RANGE = 10
 local tradePrompts = {} -- [player] = { prompt = ProximityPrompt, root = BasePart }
 
+-- Shared by the physical prompt (walk up, press E) and the Trading tab's
+-- player list (click a name) — both are just different ways of picking
+-- who to trade with; what happens next is identical either way.
+local function startTradeWith(initiator, target)
+	if initiator == target then return end
+	local id = Trade.Start(initiator, target)
+	if not id then
+		toast(initiator, "Can't start a trade right now — one of you is already trading.")
+		return
+	end
+	toast(initiator, "Trade started with " .. target.Name .. ".")
+	toast(target, initiator.Name .. " wants to trade with you!")
+	pushTradeUpdate(initiator)
+	pushTradeUpdate(target)
+end
+
 local function attachTradePrompt(player, character)
 	local root = character:WaitForChild("HumanoidRootPart")
 	local existing = root:FindFirstChild("TradePrompt")
@@ -1655,18 +1682,19 @@ local function attachTradePrompt(player, character)
 	tradePrompts[player] = { prompt = prompt, root = root }
 
 	prompt.Triggered:Connect(function(triggeringPlayer)
-		if triggeringPlayer == player then return end
-		local id = Trade.Start(triggeringPlayer, player)
-		if not id then
-			toast(triggeringPlayer, "Can't start a trade right now — one of you is already trading.")
-			return
-		end
-		toast(triggeringPlayer, "Trade started with " .. player.Name .. ".")
-		toast(player, triggeringPlayer.Name .. " wants to trade with you!")
-		pushTradeUpdate(triggeringPlayer)
-		pushTradeUpdate(player)
+		startTradeWith(triggeringPlayer, player)
 	end)
 end
+
+startTradeRemote.OnServerEvent:Connect(function(player, targetUserId)
+	if type(targetUserId) ~= "number" then return end
+	local target = Players:GetPlayerByUserId(targetUserId)
+	if not target then
+		toast(player, "That player isn't here anymore.")
+		return
+	end
+	startTradeWith(player, target)
+end)
 
 task.spawn(function()
 	while true do
