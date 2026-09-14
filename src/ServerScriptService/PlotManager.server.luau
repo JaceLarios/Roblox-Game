@@ -25,6 +25,7 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local FusionEffects = require(ServerStorage:WaitForChild("FusionEffects"))
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
+local HauntedRecipes = require(ReplicatedStorage:WaitForChild("HauntedRecipes"))
 local ItemVisuals   = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local ItemRarity    = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local Mutations     = require(ReplicatedStorage:WaitForChild("Mutations"))
@@ -54,6 +55,7 @@ if not fusionCelebrationRemote then
 end
 
 local Brainrot = require(script.Parent:WaitForChild("BrainrotService"))
+local Haunted = require(script.Parent:WaitForChild("HauntedService"))
 Gamepasses.Start()
 
 -- We position each character ourselves (their assigned plot, or wherever
@@ -152,11 +154,13 @@ local function isBaseItemName(itemName, Recipes)
 end
 
 local function recipesFor(island)
-	return island == "brainrot" and BrainrotRecipes or FusionRecipes
+	if island == "brainrot" then return BrainrotRecipes end
+	if island == "haunted" then return HauntedRecipes end
+	return FusionRecipes
 end
 
 -- A player can equip anything they've actually discovered, base item or
--- curated result, on either island — same "known" definition the Index
+-- curated result, on any island — same "known" definition the Index
 -- already uses, just checked here instead of read off it.
 local function playerKnowsItem(s, player, itemName, island)
 	local Recipes = recipesFor(island)
@@ -164,7 +168,8 @@ local function playerKnowsItem(s, player, itemName, island)
 	if island == "junkyard" then
 		return s.discovered[itemName] == true
 	end
-	for _, name in ipairs(Brainrot.Snapshot(player)) do
+	local snapshotFn = island == "haunted" and Haunted.Snapshot or Brainrot.Snapshot
+	for _, name in ipairs(snapshotFn(player)) do
 		if name == itemName then return true end
 	end
 	return false
@@ -899,6 +904,11 @@ local function pushUI(player)
 		brainrotDiscovered[name] = true
 	end
 
+	local hauntedDiscovered = {}
+	for _, name in ipairs(Haunted.Snapshot(player)) do
+		hauntedDiscovered[name] = true
+	end
+
 	-- Full stats per item, computed here rather than on the client, since
 	-- value/tier/mutation logic already lives entirely server-side.
 	local inventoryInfo = {}
@@ -949,6 +959,11 @@ local function pushUI(player)
 		list = s.discoveredList,
 		index = FusionRecipes.GetIndex(s.discovered),
 		brainrotIndex = BrainrotRecipes.GetIndex(brainrotDiscovered),
+		-- Not yet rendered anywhere client-side — a 3rd Index tab is a
+		-- GameUI.client.luau change, and that file is off-limits while a
+		-- Codex pass is active (see HANDOFF.md). Sent anyway so adding
+		-- that tab later is purely a client change, no server work.
+		hauntedIndex = HauntedRecipes.GetIndex(hauntedDiscovered),
 		secretsFound = secretsFound,
 		secretTotal = secretTotal,
 		goalText = goal and goal.text or "All objectives complete",
@@ -1509,6 +1524,35 @@ end
 
 Brainrot.ConfigureUnlock(ensureBrainrotUnlocked, BRAINROT_UNLOCK_COST)
 
+-- Same choke point, same shape, for the 3rd island — priced higher than
+-- Brainrot's since it's the later/harder unlock in the progression, not
+-- because the mechanism differs at all.
+local HAUNTED_UNLOCK_COST = 15000
+
+local function ensureHauntedUnlocked(player)
+	local s = state[player]
+	if not s then return false end
+	if s.hauntedUnlocked then return true end
+
+	local stats = player:FindFirstChild("leaderstats")
+	local coins = stats and stats:FindFirstChild("Coins")
+	if not coins then return false end
+
+	if coins.Value < HAUNTED_UNLOCK_COST then
+		toast(player, string.format("Haunted Hollow costs %d coins to unlock. Need %d more.", HAUNTED_UNLOCK_COST, HAUNTED_UNLOCK_COST - coins.Value))
+		return false
+	end
+
+	coins.Value = coins.Value - HAUNTED_UNLOCK_COST
+	s.hauntedUnlocked = true
+	playSound(playerRoot(player), "big")
+	toast(player, string.format("HAUNTED HOLLOW UNLOCKED\n-%d coins", HAUNTED_UNLOCK_COST), true)
+	pushUI(player)
+	return true
+end
+
+Haunted.ConfigureUnlock(ensureHauntedUnlocked, HAUNTED_UNLOCK_COST)
+
 -- The Starter Pack's exclusive pet is a one-time grant, not a continuous
 -- effect like its coin/speed bonuses (those just check Gamepasses.Has
 -- live, see Service.Coins/SpeedMultiplier) — so it needs its own
@@ -1543,6 +1587,13 @@ travelRemote.OnServerEvent:Connect(function(player, destination)
 	elseif destination == "brainrot" then
 		if not ensureBrainrotUnlocked(player) then return end
 		character:PivotTo(CFrame.new(Brainrot.GetArrivalPosition()))
+	elseif destination == "haunted" then
+		-- No travel-menu button fires this yet (that's a GameUI.client.luau
+		-- change, off-limits while Codex's pass is active) — the physical
+		-- gate at (320, 1, 0) is the only way in today. Wired up now so
+		-- adding the button later needs zero server-side changes.
+		if not ensureHauntedUnlocked(player) then return end
+		character:PivotTo(CFrame.new(Haunted.GetArrivalPosition()))
 	end
 end)
 
@@ -1598,7 +1649,7 @@ end)
 equipCompanionRemote.OnServerEvent:Connect(function(player, itemName, island)
 	local s = state[player]
 	if not s then return end
-	if type(itemName) ~= "string" or (island ~= "junkyard" and island ~= "brainrot") then return end
+	if type(itemName) ~= "string" or (island ~= "junkyard" and island ~= "brainrot" and island ~= "haunted") then return end
 
 	if not playerKnowsItem(s, player, itemName, island) then
 		toast(player, "You haven't discovered that yet.")
@@ -2286,6 +2337,7 @@ local function onPlayerAdded(player)
 	-- by the player picking something up.
 	local data = DataManager.Load(player)
 	Brainrot.Init(player, data.brainrotDiscovered)
+	Haunted.Init(player, data.hauntedDiscovered)
 	Rebirth.Init(player, data.rebirths)
 	Companions.Init(player, data.companion)
 	Leaderboard.Init(player, data.lifetimeCoins)
@@ -2339,6 +2391,7 @@ local function onPlayerAdded(player)
 		redeemedCodes = data.redeemedCodes or {},
 		grantedPurchaseIds = data.grantedPurchaseIds or {},
 		brainrotUnlocked = data.brainrotUnlocked or false,
+		hauntedUnlocked = data.hauntedUnlocked or false,
 		starterPackGranted = data.starterPackGranted or false,
 		plotIndex = index,
 		mutationPity = 0,
@@ -2413,6 +2466,7 @@ local function snapshot(player)
 		inventory = s.inventory,
 		placedPets = s.placed,
 		brainrotDiscovered = Brainrot.Snapshot(player),
+		hauntedDiscovered = Haunted.Snapshot(player),
 		upgrades = s.upgrades,
 		lastDailyDay = s.lastDailyDay,
 		dailyStreak = s.dailyStreak,
@@ -2424,6 +2478,7 @@ local function snapshot(player)
 		redeemedCodes = s.redeemedCodes,
 		grantedPurchaseIds = s.grantedPurchaseIds,
 		brainrotUnlocked = s.brainrotUnlocked,
+		hauntedUnlocked = s.hauntedUnlocked,
 		starterPackGranted = s.starterPackGranted,
 	}
 end
@@ -2492,6 +2547,7 @@ Players.PlayerRemoving:Connect(function(player)
 	end
 	state[player] = nil
 	Brainrot.Cleanup(player)
+	Haunted.Cleanup(player)
 	Rebirth.Cleanup(player)
 	Companions.Cleanup(player)
 	Leaderboard.Cleanup(player)

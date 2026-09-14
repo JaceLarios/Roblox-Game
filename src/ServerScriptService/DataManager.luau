@@ -44,6 +44,7 @@ local function defaultData()
 		inventory = {},
 		placedPets = {}, -- up to 5 items actually earning money on a pad; see PlotManager.
 		brainrotDiscovered = {},
+		hauntedDiscovered = {},
 		upgrades = { luck = 1, carry = 1, magnet = 0, value = 1, speed = 1 },
 		lastDailyDay = 0,
 		dailyStreak = 0,
@@ -54,6 +55,7 @@ local function defaultData()
 		redeemedCodes = {},
 		grantedPurchaseIds = {}, -- Developer Product receipts already granted (secret pets) — keyed by PurchaseId, never re-grant on a Roblox retry.
 		brainrotUnlocked = false, -- paid once with coins, not Robux — see PlotManager.server.luau's ensureBrainrotUnlocked.
+		hauntedUnlocked = false, -- same pattern as brainrotUnlocked, see ensureHauntedUnlocked.
 		starterPackGranted = false, -- true once the Starter Pack gamepass's one-time pet has been granted; the gamepass ownership itself is re-checked every session, this just guards against re-granting the pet.
 	}
 end
