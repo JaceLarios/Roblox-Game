@@ -273,6 +273,17 @@ if not removeFromCarryRemote then
 	removeFromCarryRemote.Parent = ReplicatedStorage
 end
 
+-- The big screen-covering celebration popup on fuse. Its own dedicated
+-- remote (not a new field on the small `GameUpdate` toast) and its own
+-- standalone client script, specifically so this doesn't touch or depend
+-- on GameUI/ShopUI while Codex is mid-rewrite on those — see HANDOFF.md.
+local fusionCelebrationRemote = ReplicatedStorage:FindFirstChild("FusionCelebration")
+if not fusionCelebrationRemote then
+	fusionCelebrationRemote = Instance.new("RemoteEvent")
+	fusionCelebrationRemote.Name = "FusionCelebration"
+	fusionCelebrationRemote.Parent = ReplicatedStorage
+end
+
 -- The side travel menu asks for a destination key; the server decides
 -- where that actually is.
 local travelRemote = ReplicatedStorage:FindFirstChild("TravelTo")
@@ -1264,6 +1275,7 @@ local function attemptFusion(player)
 	s.mutationPity = mutationId and 0 or (s.mutationPity or 0) + 1
 	local instanceName = Mutations.Wrap(result, mutationId)
 	local instanceValue = math.floor(info.value * Mutations.ValueMultiplier(mutationId))
+	local mutationColor = Mutations.Color(mutationId)
 
 	local resultTag = instanceTag(instanceName)
 	local aTag = instanceTag(a)
@@ -1274,12 +1286,13 @@ local function attemptFusion(player)
 	-- once actually placed on a pad (see PLACEMENT_PAYBACK_SECONDS above).
 	local rateLine = string.format("%s — +%.1f coins/sec if placed",
 		ItemRarity.Name(info.tier, info.isSecret), instanceValue / PLACEMENT_PAYBACK_SECONDS)
+	local isNewDiscovery = not info.isFallback and not s.discovered[result]
 
 	if info.isFallback then
 		-- A generic hybrid, not a curated recipe — still worth having and
 		-- placing, but doesn't count toward discoveries/goals.
 		toast(player, string.format("%s + %s = %s\n%s", aTag, bTag, resultTag, rateLine), true)
-	elseif not s.discovered[result] then
+	elseif isNewDiscovery then
 		s.discovered[result] = true
 		s.count = s.count + 1
 		table.insert(s.discoveredList, result)
@@ -1298,6 +1311,26 @@ local function attemptFusion(player)
 
 	if mutationId then
 		toast(player, string.format("MUTATION!\n%s", resultTag), true)
+	end
+
+	-- The big, mostly-screen-covering celebration popup — additive to the
+	-- small toasts above, not a replacement for them.
+	do
+		local badges = {}
+		if isNewDiscovery then table.insert(badges, "NEW DISCOVERY") end
+		if info.isSecret then table.insert(badges, "SECRET RECIPE") end
+		if mutationId then table.insert(badges, "MUTATION") end
+		local headerText = #badges > 0 and table.concat(badges, "   •   ") or "FUSION COMPLETE"
+
+		fusionCelebrationRemote:FireClient(player, {
+			headerText = headerText,
+			aTag = aTag,
+			bTag = bTag,
+			resultTag = resultTag,
+			rarityName = ItemRarity.Name(info.tier, info.isSecret),
+			color = mutationColor or ItemRarity.Color(info.tier, info.isSecret),
+			rateLine = rateLine,
+		})
 	end
 
 	fusionShimmer(plot.pad)
