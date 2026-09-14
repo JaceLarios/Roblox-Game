@@ -1,3 +1,13 @@
+# Latest handoff — Junkyard and Brainrot fusion animations
+
+Both approved area animations are installed in Studio and backed up here. Only `src/StarterPlayer/StarterPlayerScripts/FusionCelebrationView.luau` changed. Claude's controller, server outcomes, Inventory backdrop, Secret Egg and Starter Pack work remain untouched.
+
+Junkyard uses Magnetic Fusion; Brainrot uses Brainrot Overload. Actual item models, mutation tint, area-specific reward text, rarity-scaled durations and Skip/Continue are supported. See [docs/fusion-animations.md](docs/fusion-animations.md) for details and testing limits.
+
+Verified Studio preview events, desktop/mobile visuals, actual Skip click advancing the queue, sound loading/playback and cleanup; no Output errors. Actual ingredient-consuming fusion and published-game testing remain untested. Not published to Roblox. Studio left in Edit with default viewport.
+
+---
+
 # Latest handoff — Inventory's missing backdrop fixed; Secret Egg has a real shop card; a Robux Starter Pack exists (2026-09-14)
 
 Thirty-second pass. Three roadmap items in one message, with a heads-up first: "codex is activly working on the fuse animations" — noted, and nothing this pass touches `FusionCelebrationView.luau`/`FusionCelebration.client.luau`, per the standing constraint.
