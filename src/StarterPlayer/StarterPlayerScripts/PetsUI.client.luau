@@ -95,36 +95,20 @@ end
 
 local petsBtn = NavButton.Create(gui, "🐾", "PETS", Palette.Mint, NavButton.RailPosition("left", 4))
 
--- A stand-in icon, not the shared illustrated atlas — "PETS" would otherwise
--- land on the same cell as REWARDS/CODE (see UIStyle.luau's `cells` table),
--- and this needs to be its own distinct mark. The real illustrated egg is
--- being picked from a set of drawn concepts; when that's chosen and uploaded,
--- this whole block becomes a single ImageLabel pointed at its asset id.
-local defaultArt = petsBtn:FindFirstChild("Illustration")
-if defaultArt then
-	defaultArt.Visible = false
+-- The Pets egg, drawn to match the shared illustrated atlas rather than taken
+-- from it: every one of that atlas's nine cells is already spoken for, and
+-- "PETS" would otherwise land on the same cell as REWARDS/CODE (see
+-- UIStyle.luau's `cells` table). Repointing NavButton's own Illustration label
+-- instead of overlaying a second element keeps this icon at the exact size,
+-- position and ScaleType as every other button on the rail. Clearing
+-- ImageRectSize is what stops it still being cropped to an atlas cell.
+local PETS_ICON = "rbxassetid://98114882060104"
+local art = petsBtn:FindFirstChild("Illustration")
+if art then
+	art.Image = PETS_ICON
+	art.ImageRectOffset = Vector2.zero
+	art.ImageRectSize = Vector2.zero
 end
-
-local eggShape = designed(Instance.new("Frame"))
-eggShape.Name = "EggIcon"
-eggShape.Size = UDim2.fromOffset(58, 74)
-eggShape.AnchorPoint = Vector2.new(0.5, 0.5)
-eggShape.Position = UDim2.new(0.5, 0, 0.5, -18)
-eggShape.BackgroundColor3 = Color3.fromRGB(250, 250, 247)
-eggShape.BorderSizePixel = 0
-eggShape.ClipsDescendants = true
-eggShape.ZIndex = 3
-eggShape.Parent = petsBtn
-corner(eggShape, 999)
-stroke(eggShape, Color3.fromRGB(30, 34, 40), 3)
-
-local eggBand = designed(Instance.new("Frame"))
-eggBand.Size = UDim2.new(1, 0, 0, 11)
-eggBand.Position = UDim2.new(0, 0, 0.52, 0)
-eggBand.BackgroundColor3 = Color3.fromRGB(62, 201, 94)
-eggBand.BorderSizePixel = 0
-eggBand.ZIndex = 4
-eggBand.Parent = eggShape
 
 -- A press bounce, so the rail reacts to the click the way the panel does.
 local btnScale = Instance.new("UIScale")
@@ -349,25 +333,16 @@ local function buildEmptyState()
 	corner(empty, 16)
 	stroke(empty, Palette.Steel, 3)
 
-	local mark = designed(Instance.new("Frame"))
-	mark.Size = UDim2.fromOffset(56, 70)
+	local mark = designed(Instance.new("ImageLabel"))
+	mark.Size = UDim2.fromOffset(74, 74)
 	mark.AnchorPoint = Vector2.new(0.5, 0)
-	mark.Position = UDim2.new(0.5, 0, 0, 24)
-	mark.BackgroundColor3 = Color3.fromRGB(250, 250, 247)
-	mark.BorderSizePixel = 0
-	mark.ClipsDescendants = true
+	mark.Position = UDim2.new(0.5, 0, 0, 22)
+	mark.BackgroundTransparency = 1
+	mark.Image = PETS_ICON
+	mark.ImageTransparency = 0.25
+	mark.ScaleType = Enum.ScaleType.Fit
 	mark.ZIndex = 5
 	mark.Parent = empty
-	corner(mark, 999)
-	stroke(mark, Palette.Ink, 3)
-
-	local band = designed(Instance.new("Frame"))
-	band.Size = UDim2.new(1, 0, 0, 10)
-	band.Position = UDim2.new(0, 0, 0.52, 0)
-	band.BackgroundColor3 = Palette.Mint
-	band.BorderSizePixel = 0
-	band.ZIndex = 6
-	band.Parent = mark
 
 	local msg = label(empty, "No pets from this area yet", UDim2.new(1, -40, 0, 26),
 		UDim2.new(0, 20, 0, 106), Palette.Ink, Enum.Font.FredokaOne, 20)
