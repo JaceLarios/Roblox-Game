@@ -14,14 +14,19 @@ local RebirthService = {}
 -- Total multiplier AT that rebirth count (not additive per tier). Index 0
 -- is "never rebirthed" and has no cost — you can't buy your way into it.
 -- Capped at 6 for now; add more tiers here to raise the ceiling later.
+-- luckMultiplier added 2026-09-14 ("with every rebirth you should get
+-- some type of luck and coin multiplier") — kept gentler than the coin
+-- curve since it multiplies a chance that's already capped elsewhere
+-- (LUCK_MAX_CHANCE in PlotManager.server.luau), so it can't compound into
+-- something absurd the way an uncapped coin multiplier safely can.
 local TIERS = {
-	[0] = { cost = nil,       multiplier = 1 },
-	[1] = { cost = 100000,    multiplier = 1.25 },
-	[2] = { cost = 500000,    multiplier = 1.60 },
-	[3] = { cost = 2000000,   multiplier = 2.00 },
-	[4] = { cost = 8000000,   multiplier = 2.50 },
-	[5] = { cost = 30000000,  multiplier = 3.25 },
-	[6] = { cost = 100000000, multiplier = 4.00 },
+	[0] = { cost = nil,       multiplier = 1,    luckMultiplier = 1 },
+	[1] = { cost = 100000,    multiplier = 1.25, luckMultiplier = 1.10 },
+	[2] = { cost = 500000,    multiplier = 1.60, luckMultiplier = 1.20 },
+	[3] = { cost = 2000000,   multiplier = 2.00, luckMultiplier = 1.35 },
+	[4] = { cost = 8000000,   multiplier = 2.50, luckMultiplier = 1.50 },
+	[5] = { cost = 30000000,  multiplier = 3.25, luckMultiplier = 1.75 },
+	[6] = { cost = 100000000, multiplier = 4.00, luckMultiplier = 2.00 },
 }
 RebirthService.MaxLevel = 6
 
@@ -40,6 +45,10 @@ function RebirthService.Multiplier(player)
 	return TIERS[RebirthService.Get(player)].multiplier
 end
 
+function RebirthService.LuckMultiplier(player)
+	return TIERS[RebirthService.Get(player)].luckMultiplier
+end
+
 function RebirthService.NextCost(player)
 	local nextTier = TIERS[RebirthService.Get(player) + 1]
 	return nextTier and nextTier.cost or nil
@@ -48,6 +57,11 @@ end
 function RebirthService.NextMultiplier(player)
 	local nextTier = TIERS[RebirthService.Get(player) + 1]
 	return nextTier and nextTier.multiplier or nil
+end
+
+function RebirthService.NextLuckMultiplier(player)
+	local nextTier = TIERS[RebirthService.Get(player) + 1]
+	return nextTier and nextTier.luckMultiplier or nil
 end
 
 function RebirthService.IsMaxed(player)

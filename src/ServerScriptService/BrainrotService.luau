@@ -349,6 +349,55 @@ end
 -- established "server owns the mechanic, prompt triggers it" shape).
 ------------------------------------------------------------------
 
+-- Bigger "incubator" machines, replacing the original simple glowing-egg
+-- markers — the user's ask 2026-09-14: "3 incubatros that are a little
+-- bit bigger than a player model that will have a cool egg skin on it
+-- that ill design with codex." IncubatorEgg is deliberately its own
+-- separately-named part so a texture/decal is easy to drop onto it later
+-- without touching the machine housing around it.
+local function buildIncubator(pos, tierColor, tierLabel, parent)
+	local base = part({
+		Name = "IncubatorBase", Size = Vector3.new(3, 5, 5),
+		Position = pos + Vector3.new(0, 1.5, 0),
+		Material = Enum.Material.Metal, Color = Color3.fromRGB(60, 62, 68), Parent = parent,
+	})
+	base.Shape = Enum.PartType.Cylinder
+	base.Orientation = Vector3.new(0, 0, 90)
+
+	local rim = part({
+		Name = "IncubatorRim", Size = Vector3.new(0.6, 5.6, 5.6),
+		Position = pos + Vector3.new(0, 3.1, 0),
+		Material = Enum.Material.Neon, Color = tierColor, Parent = parent,
+	})
+	rim.Shape = Enum.PartType.Cylinder
+	rim.Orientation = Vector3.new(0, 0, 90)
+
+	local rimLight = Instance.new("PointLight")
+	rimLight.Color = tierColor
+	rimLight.Brightness = 2
+	rimLight.Range = 20
+	rimLight.Shadows = false
+	rimLight.Parent = rim
+
+	-- ~8.5 studs tall overall (base+egg) — "a little bit bigger than a
+	-- player model" (a default rig stands roughly 5-6 studs).
+	local egg = part({
+		Name = "IncubatorEgg", Size = Vector3.new(3.4, 5, 3.4),
+		Position = pos + Vector3.new(0, 6, 0),
+		Material = Enum.Material.SmoothPlastic, Color = tierColor:Lerp(Color3.new(1, 1, 1), 0.6), Parent = parent,
+	})
+	egg.Shape = Enum.PartType.Ball
+
+	local eggLight = Instance.new("PointLight")
+	eggLight.Color = tierColor
+	eggLight.Brightness = 1.5
+	eggLight.Range = 22
+	eggLight.Shadows = false
+	eggLight.Parent = egg
+
+	label(egg, tierLabel, 6, 200, tierColor, 70)
+end
+
 local EGG_TIERS = {
 	{ label = "OKAY EGG", color = Color3.fromRGB(140, 160, 200) },
 	{ label = "GOOD EGG", color = Color3.fromRGB(90, 200, 190) },
@@ -357,21 +406,8 @@ local EGG_TIERS = {
 
 for i, tier in ipairs(EGG_TIERS) do
 	local angle = (i - 1) * (math.pi * 2 / 3)
-	local eggPos = ISLAND_CENTER + Vector3.new(math.cos(angle) * 6, 2.75, math.sin(angle) * 6)
-	local egg = part({
-		Name = "AreaPetsEgg", Size = Vector3.new(4, 5.5, 4),
-		Position = eggPos, Material = Enum.Material.Neon, Color = tier.color, Parent = islandFolder,
-	})
-	egg.Shape = Enum.PartType.Ball
-
-	local eggLight = Instance.new("PointLight")
-	eggLight.Color = tier.color
-	eggLight.Brightness = 2
-	eggLight.Range = 25
-	eggLight.Shadows = false
-	eggLight.Parent = egg
-
-	label(egg, tier.label, 5, 200, tier.color, 60)
+	local eggPos = ISLAND_CENTER + Vector3.new(math.cos(angle) * 9, 0, math.sin(angle) * 9)
+	buildIncubator(eggPos, tier.color, tier.label, islandFolder)
 end
 
 ------------------------------------------------------------------

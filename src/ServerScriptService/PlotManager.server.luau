@@ -965,6 +965,12 @@ local function pushUI(player)
 	for _, key in ipairs(AreaPetsService.Snapshot(player)) do
 		ownedAreaPetKeys[key] = true
 	end
+	-- Real total odds, matching grabItem's own formula exactly (upgrade
+	-- level, any active boost, AND the rebirth luck multiplier) — the
+	-- bottom-left HUD tracker shows this, not just the raw upgrade level.
+	local luckPercent = math.floor(math.min(LUCK_MAX_CHANCE,
+		(s.upgrades.luck * boostMult(s, "luck") - 1) * LUCK_PER_LEVEL * Rebirth.LuckMultiplier(player)) * 100 + 0.5)
+
 	local equippedPetKey = AreaPetsService.GetEquipped(player)
 	local equippedPet = equippedPetKey and AreaPets.GetPet(equippedPetKey)
 	local equippedAreaPetInfo = equippedPet and {
@@ -994,6 +1000,7 @@ local function pushUI(player)
 		goalNumber = math.min(s.goalIndex, #GOALS),
 		goalTotal = #GOALS,
 		luck = s.upgrades.luck,
+		luckPercent = luckPercent,
 		shop = shop,
 		dailyAvailable = dailyAvailable,
 		dailyNext = dailyNext,
@@ -1004,8 +1011,10 @@ local function pushUI(player)
 			level = Rebirth.Get(player),
 			maxLevel = Rebirth.MaxLevel,
 			multiplier = Rebirth.Multiplier(player),
+			luckMultiplier = Rebirth.LuckMultiplier(player),
 			nextCost = Rebirth.NextCost(player),
 			nextMultiplier = Rebirth.NextMultiplier(player),
+			nextLuckMultiplier = Rebirth.NextLuckMultiplier(player),
 			maxed = Rebirth.IsMaxed(player),
 		},
 		companion = companionInfo,
@@ -1361,27 +1370,21 @@ local function grabItem(player, part)
 	if #s.slots >= capacity(player, s) then return false end
 
 	local grabbed = part:GetAttribute("ItemName") or part.Name
-	local isGolden = part:GetAttribute("Golden")
 
-	if isGolden then
-		grabbed = rollRareItem()
-		local grabbedTag = ItemRarity.Tag(grabbed, FusionRecipes.GetTier(grabbed), false)
-		broadcast(string.format("%s claimed the GOLDEN SCRAP — %s!", player.Name, grabbedTag))
-	else
-		local chance = math.min(LUCK_MAX_CHANCE, (s.upgrades.luck * boostMult(s, "luck") - 1) * LUCK_PER_LEVEL)
-		if math.random() < chance then
-			local upgraded = rarerThan(grabbed)
-			if upgraded then
-				local fromTag = ItemRarity.Tag(grabbed, FusionRecipes.GetTier(grabbed), false)
-				local toTag = ItemRarity.Tag(upgraded, FusionRecipes.GetTier(upgraded), false)
-				toast(player, string.format("LUCKY FIND\n%s → %s", fromTag, toTag), true)
-				grabbed = upgraded
-			end
+	-- Silent — no popup on a lucky upgrade anymore (see the "remove pickup
+	-- popups" note by grabItem's own header comment above); the upgrade
+	-- itself still happens, you just notice by looking at what you're
+	-- carrying rather than a toast interrupting you.
+	local chance = math.min(LUCK_MAX_CHANCE, (s.upgrades.luck * boostMult(s, "luck") - 1) * LUCK_PER_LEVEL * Rebirth.LuckMultiplier(player))
+	if math.random() < chance then
+		local upgraded = rarerThan(grabbed)
+		if upgraded then
+			grabbed = upgraded
 		end
 	end
 
 	table.insert(s.slots, grabbed)
-	playSound(playerRoot(player), isGolden and "big" or "pickup")
+	playSound(playerRoot(player), "pickup")
 	local root = playerRoot(player)
 	PickupEffects.Play(part, root and root.Position or part.Position)
 	refreshPad(player)
@@ -1521,6 +1524,11 @@ end)
 ------------------------------------------------------------------
 
 local BRAINROT_UNLOCK_COST = 5000
+-- Added 2026-09-14 ("id like to lock island behind rebriths and then
+-- needing to purschse them") — both islands now need a minimum Rebirth
+-- count on top of the existing coin cost, Haunted's set higher than
+-- Brainrot's to match its already-higher coin price in the progression.
+local BRAINROT_REBIRTH_REQUIRED = 1
 
 -- The one real choke point for entering Brainrot Island, whether the
 -- player got here via the physical gate (BrainrotService.luau, injected
@@ -1531,6 +1539,11 @@ local function ensureBrainrotUnlocked(player)
 	local s = state[player]
 	if not s then return false end
 	if s.brainrotUnlocked then return true end
+
+	if Rebirth.Get(player) < BRAINROT_REBIRTH_REQUIRED then
+		toast(player, string.format("Brainrot Island needs Rebirth %d first.", BRAINROT_REBIRTH_REQUIRED))
+		return false
+	end
 
 	local stats = player:FindFirstChild("leaderstats")
 	local coins = stats and stats:FindFirstChild("Coins")
@@ -1555,11 +1568,17 @@ Brainrot.ConfigureUnlock(ensureBrainrotUnlocked, BRAINROT_UNLOCK_COST)
 -- Brainrot's since it's the later/harder unlock in the progression, not
 -- because the mechanism differs at all.
 local HAUNTED_UNLOCK_COST = 15000
+local HAUNTED_REBIRTH_REQUIRED = 2
 
 local function ensureHauntedUnlocked(player)
 	local s = state[player]
 	if not s then return false end
 	if s.hauntedUnlocked then return true end
+
+	if Rebirth.Get(player) < HAUNTED_REBIRTH_REQUIRED then
+		toast(player, string.format("Haunted Hollow needs Rebirth %d first.", HAUNTED_REBIRTH_REQUIRED))
+		return false
+	end
 
 	local stats = player:FindFirstChild("leaderstats")
 	local coins = stats and stats:FindFirstChild("Coins")

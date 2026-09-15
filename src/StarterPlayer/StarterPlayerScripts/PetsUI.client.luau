@@ -49,6 +49,60 @@ local selectedArea = "junkyard"
 
 local petsBtn = NavButton.Create(gui, "🐾", "PETS", Palette.Mint, NavButton.RailPosition("left", 4))
 
+-- A custom icon, not the shared illustrated atlas — "PETS" would
+-- otherwise land on the same cell as REWARDS/CODE (see UIStyle.luau's
+-- `cells` table), and the user was explicit 2026-09-14 this needs to be
+-- its own distinct icon, "a cartoon photo of an egg... following the
+-- trend" of the rest of the UI. There's no tool available here to paint
+-- a new sprite into that existing illustrated atlas, so this builds a
+-- clean cartoon egg — cream shell, dark outline, a few playful speckles
+-- in the game's own accent colors — entirely out of GUI primitives
+-- instead. Swap this whole block for real illustrated art whenever
+-- Codex has one, same as any other placeholder this session.
+local defaultArt = petsBtn:FindFirstChild("Illustration")
+if defaultArt then
+	defaultArt.Visible = false
+end
+
+local eggShape = Instance.new("Frame")
+eggShape.Name = "EggIcon"
+eggShape.Size = UDim2.fromOffset(58, 76)
+eggShape.AnchorPoint = Vector2.new(0.5, 0.5)
+eggShape.Position = UDim2.new(0.5, 0, 0.5, -18)
+eggShape.BackgroundColor3 = Color3.fromRGB(255, 250, 235)
+eggShape.BorderSizePixel = 0
+eggShape.ZIndex = 3
+eggShape.Parent = petsBtn
+
+local eggCorner = Instance.new("UICorner")
+eggCorner.CornerRadius = UDim.new(0.5, 0)
+eggCorner.Parent = eggShape
+
+local eggStroke = Instance.new("UIStroke")
+eggStroke.Color = Palette.Ink
+eggStroke.Thickness = 3
+eggStroke.Parent = eggShape
+
+local speckles = {
+	{ color = Palette.Copper, x = 0.32, y = 0.32, size = 11 },
+	{ color = Palette.Teal, x = 0.66, y = 0.46, size = 9 },
+	{ color = Palette.Gold, x = 0.48, y = 0.68, size = 13 },
+}
+for _, spot in ipairs(speckles) do
+	local speckle = Instance.new("Frame")
+	speckle.Size = UDim2.fromOffset(spot.size, spot.size)
+	speckle.AnchorPoint = Vector2.new(0.5, 0.5)
+	speckle.Position = UDim2.new(spot.x, 0, spot.y, 0)
+	speckle.BackgroundColor3 = spot.color
+	speckle.BorderSizePixel = 0
+	speckle.ZIndex = 4
+	speckle.Parent = eggShape
+
+	local speckleCorner = Instance.new("UICorner")
+	speckleCorner.CornerRadius = UDim.new(0.5, 0)
+	speckleCorner.Parent = speckle
+end
+
 -- Style.Fit alone leaves no dimming backdrop behind the panel — the same
 -- gap the Item Index and Inventory both had before being fixed. Adding
 -- one here from the start rather than repeating that discovery a 4th time.
@@ -135,15 +189,18 @@ end)
 
 local TIER_ACCENTS = { okay = Palette.Steel, good = Palette.Teal, great = Palette.Gold }
 
+-- Only ever called for a pet the player actually owns — this tab shows
+-- your collection, not a browsable catalog. The user's own correction
+-- 2026-09-14: "its not an index it should only show the pets i have
+-- bought from the eggs or from the store it shouldnt show anything else."
 local function buildPetCard(parent, pet, accent)
-	local owned = ownedAreaPets[pet.key] == true
 	local isEquipped = equippedPetKey == pet.key
 
 	local card = Instance.new("TextButton")
 	card.Size = UDim2.new(0, 164, 0, 150)
 	card.AutoButtonColor = false
 	card.Text = ""
-	card.BackgroundColor3 = owned and Palette.Cream or Color3.fromRGB(214, 208, 196)
+	card.BackgroundColor3 = Palette.Cream
 	card.Parent = parent
 	UIStyle.Surface(card, card.BackgroundColor3, isEquipped and 5 or 2)
 	local corner = Instance.new("UICorner")
@@ -169,23 +226,22 @@ local function buildPetCard(parent, pet, accent)
 		secretTag.TextXAlignment = Enum.TextXAlignment.Left
 	end
 
-	local nameLbl = label(card, owned and pet.name or "???", UDim2.new(1, -16, 0, 52), UDim2.new(0, 8, 0, pet.secret and 36 or 22), Palette.Ink, Enum.Font.FredokaOne, 15)
+	local nameLbl = label(card, pet.name, UDim2.new(1, -16, 0, 52), UDim2.new(0, 8, 0, pet.secret and 36 or 22), Palette.Ink, Enum.Font.FredokaOne, 15)
 	nameLbl.TextWrapped = true
 	nameLbl.TextXAlignment = Enum.TextXAlignment.Left
 	nameLbl.TextYAlignment = Enum.TextYAlignment.Top
 
 	local statText = string.format("+%d%% coins\n+%d%% speed",
 		math.floor((pet.coinMult - 1) * 100 + 0.5), math.floor((pet.speedMult - 1) * 100 + 0.5))
-	local statLbl = label(card, statText, UDim2.new(1, -16, 0, 40), UDim2.new(0, 8, 1, -76), owned and Palette.Teal or Palette.Ink, Enum.Font.FredokaOne, 13)
+	local statLbl = label(card, statText, UDim2.new(1, -16, 0, 40), UDim2.new(0, 8, 1, -76), Palette.Teal, Enum.Font.FredokaOne, 13)
 	statLbl.TextXAlignment = Enum.TextXAlignment.Left
-	statLbl.TextTransparency = owned and 0 or 0.4
 
 	local stateLbl = Instance.new("TextLabel")
 	stateLbl.Size = UDim2.new(1, -16, 0, 28)
 	stateLbl.Position = UDim2.new(0, 8, 1, -32)
-	stateLbl.BackgroundColor3 = isEquipped and accent or (owned and Palette.Ink or Color3.fromRGB(150, 145, 135))
+	stateLbl.BackgroundColor3 = isEquipped and accent or Palette.Ink
 	stateLbl.BorderSizePixel = 0
-	stateLbl.Text = isEquipped and "EQUIPPED" or (owned and "TAP TO EQUIP" or "LOCKED")
+	stateLbl.Text = isEquipped and "EQUIPPED" or "TAP TO EQUIP"
 	stateLbl.TextColor3 = Palette.Cream
 	stateLbl.Font = Enum.Font.FredokaOne
 	stateLbl.TextSize = 13
@@ -194,11 +250,9 @@ local function buildPetCard(parent, pet, accent)
 	stateCorner.CornerRadius = UDim.new(0, 8)
 	stateCorner.Parent = stateLbl
 
-	if owned then
-		card.MouseButton1Click:Connect(function()
-			equipRemote:FireServer(pet.key)
-		end)
-	end
+	card.MouseButton1Click:Connect(function()
+		equipRemote:FireServer(pet.key)
+	end)
 
 	return card
 end
@@ -211,30 +265,56 @@ local function redrawPets()
 	local area = AreaPets.Areas[selectedArea]
 	if not area then return end
 
+	local anyOwned = false
+
 	for _, egg in ipairs(area.eggs) do
-		local section = Instance.new("Frame")
-		section.BackgroundTransparency = 1
-		section.Size = UDim2.new(1, 0, 0, 210)
-		section.LayoutOrder = egg.tier
-		section.Parent = scroll
-
-		local sectionTitle = label(section, egg.name:upper(), UDim2.new(1, 0, 0, 26), UDim2.new(0, 0, 0, 0), TIER_ACCENTS[egg.key] or Palette.Ink, Enum.Font.FredokaOne, 20)
-		sectionTitle.TextXAlignment = Enum.TextXAlignment.Left
-
-		local row = Instance.new("Frame")
-		row.BackgroundTransparency = 1
-		row.Size = UDim2.new(1, 0, 0, 158)
-		row.Position = UDim2.new(0, 0, 0, 34)
-		row.Parent = section
-
-		local rowLayout = Instance.new("UIListLayout")
-		rowLayout.FillDirection = Enum.FillDirection.Horizontal
-		rowLayout.Padding = UDim.new(0, 12)
-		rowLayout.Parent = row
-
+		local ownedPets = {}
 		for _, pet in ipairs(egg.pets) do
-			buildPetCard(row, pet, TIER_ACCENTS[egg.key] or Palette.Ink)
+			if ownedAreaPets[pet.key] then
+				table.insert(ownedPets, pet)
+			end
 		end
+		if #ownedPets > 0 then
+			anyOwned = true
+
+			local section = Instance.new("Frame")
+			section.BackgroundTransparency = 1
+			section.Size = UDim2.new(1, 0, 0, 210)
+			section.LayoutOrder = egg.tier
+			section.Parent = scroll
+
+			local sectionTitle = label(section, egg.name:upper(), UDim2.new(1, 0, 0, 26), UDim2.new(0, 0, 0, 0), TIER_ACCENTS[egg.key] or Palette.Ink, Enum.Font.FredokaOne, 20)
+			sectionTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+			local row = Instance.new("Frame")
+			row.BackgroundTransparency = 1
+			row.Size = UDim2.new(1, 0, 0, 158)
+			row.Position = UDim2.new(0, 0, 0, 34)
+			row.Parent = section
+
+			local rowLayout = Instance.new("UIListLayout")
+			rowLayout.FillDirection = Enum.FillDirection.Horizontal
+			rowLayout.Padding = UDim.new(0, 12)
+			rowLayout.Parent = row
+
+			for _, pet in ipairs(ownedPets) do
+				buildPetCard(row, pet, TIER_ACCENTS[egg.key] or Palette.Ink)
+			end
+		end
+	end
+
+	if not anyOwned then
+		local empty = Instance.new("Frame")
+		empty.BackgroundTransparency = 1
+		empty.Size = UDim2.new(1, 0, 0, 160)
+		empty.LayoutOrder = 99
+		empty.Parent = scroll
+
+		local msg = label(empty, "No pets from this area yet — buy an egg in the shop to get started!",
+			UDim2.new(1, 0, 0, 60), UDim2.new(0, 0, 0, 40), Palette.Ink, Enum.Font.FredokaOne, 18)
+		msg.TextXAlignment = Enum.TextXAlignment.Center
+		msg.TextWrapped = true
+		msg.TextTransparency = 0.3
 	end
 end
 

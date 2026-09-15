@@ -24,10 +24,14 @@ local MAX_ITEMS      = 45     -- hard cap, so the yard never floods
 local AREA_CENTER    = Vector3.new(0, 1.2, 0)  -- Y is the yard's ground surface, not an item's center
 local AREA_SIZE      = 130    -- studs wide/deep (the central shared yard)
 
--- Golden scrap: the event that makes the shared yard competitive.
--- One spawn in 40 at a 2s interval works out to roughly every 80 seconds.
-local GOLDEN_CHANCE  = 0.025
-local GOLDEN_DESPAWN = 20     -- short, so it's a sprint and not a stroll
+-- Golden Scrap removed 2026-09-14 ("its litteary worthless now, get rid
+-- of the gold scrap idea in general") — its old role as "the exciting
+-- thing to chase" is replaced below by just announcing it when the
+-- regular roll itself lands on a naturally rare base item.
+-- Anything at or under this weight gets the same "come get it" broadcast
+-- Golden Scrap used to have — Jet Engine (3) and Monster Truck (8) both
+-- qualify at the current BaseItems weights.
+local RARE_SPAWN_WEIGHT_THRESHOLD = 10
 -- ---------------------------------------------------------------------
 
 -- All spawned scrap lives in one folder. Keeps Explorer readable
@@ -63,12 +67,22 @@ local function addLabel(part, itemName)
 	label.Size = UDim2.new(1, 0, 1, 0)
 	label.BackgroundTransparency = 1
 	label.Text = itemName
-	label.TextColor3 = itemName == "GOLDEN SCRAP"
-		and ItemRarity.GoldenScrapColor()
-		or ItemRarity.Color(FusionRecipes.GetTier(itemName), false)
+	label.TextColor3 = ItemRarity.Color(FusionRecipes.GetTier(itemName), false)
 	label.TextStrokeTransparency = 0.4
 	label.TextScaled = true
 	label.Parent = billboard
+end
+
+-- The lowest-weight (rarest) base items — Golden Scrap's old "worth
+-- announcing" role, now just surfacing when the regular roll itself
+-- lands on something already rare instead of a separate spawn type.
+local function isRareRoll(itemName)
+	for _, item in ipairs(FusionRecipes.BaseItems) do
+		if item.name == itemName then
+			return item.weight <= RARE_SPAWN_WEIGHT_THRESHOLD
+		end
+	end
+	return false
 end
 
 local function spawnScrap()
@@ -77,68 +91,37 @@ local function spawnScrap()
 		return
 	end
 
-	local isGolden = math.random() < GOLDEN_CHANCE
-	local itemName = isGolden and "GOLDEN SCRAP" or FusionRecipes.RollBaseItem()
+	local itemName = FusionRecipes.RollBaseItem()
 	local position = randomSpawnPosition()
 
-	local part
-	if isGolden then
-		local goldenSize = Vector3.new(6, 3, 8)
-		part = Instance.new("Part")
-		part.Name = itemName
-		part.Size = goldenSize
-		-- Doesn't go through ItemVisuals.Create, so it needs the same
-		-- surface-to-center offset applied by hand.
-		part.Position = Vector3.new(position.X, position.Y + goldenSize.Y / 2, position.Z)
-		part.Anchored = true          -- v1: no physics. Simpler and cheaper.
-		part.Material = Enum.Material.Neon
-		part.Color = Color3.fromRGB(255, 205, 60)
-	else
-		-- Detailed mesh when one exists in ItemModels, else the old block.
-		part = ItemVisuals.Create(itemName, position, 1)
-	end
+	-- Detailed mesh when one exists in ItemModels, else the old block.
+	local part = ItemVisuals.Create(itemName, position, 1)
 
 	-- Stores the item's identity as data, not just a display name.
 	-- The fusion pad will read this attribute later, so renaming
 	-- the part in Explorer won't break anything.
 	part:SetAttribute("ItemName", itemName)
 	part:SetAttribute("Tier", 1)
-	if isGolden then
-		part:SetAttribute("Golden", true)
-	end
 
 	addLabel(part, itemName)
 	part.Parent = scrapFolder
 
-	if isGolden then
-		-- A beacon so people can find it from across the map.
-		local light = Instance.new("PointLight")
-		light.Color = Color3.fromRGB(255, 205, 60)
-		light.Range = 60
-		light.Brightness = 5
-		light.Parent = part
-
-		local beam = Instance.new("Part")
-		beam.Name = "GoldenBeacon"
-		beam.Size = Vector3.new(3, 300, 3)
-		beam.Position = part.Position + Vector3.new(0, 150, 0)
-		beam.Anchored = true
-		beam.CanCollide = false
-		beam.Material = Enum.Material.Neon
-		beam.Color = Color3.fromRGB(255, 205, 60)
-		beam.Transparency = 0.6
-		beam.Parent = part
-
+	-- Worth announcing on its own merits — no separate "golden" spawn
+	-- type needed to make a rare drop feel exciting. Keep this one (per
+	-- the user's own call, "keep the one for when something rare spawns
+	-- like a jet engine"); it's the sole surviving world-spawn announcement.
+	if isRareRoll(itemName) then
+		local rareTag = ItemRarity.Tag(itemName, FusionRecipes.GetTier(itemName), false)
 		remote:FireAllClients({
-			announce = "GOLDEN SCRAP has appeared in the yard — first one there keeps it!",
+			announce = string.format("%s just dropped in the yard — grab it before it's gone!", rareTag),
 		})
-		print("[ScrapSpawner] GOLDEN SCRAP spawned at", part.Position)
+		print("[ScrapSpawner] RARE spawn:", itemName)
 	else
 		print("[ScrapSpawner] Dropped:", itemName)
 	end
 
 	-- Clean itself up later. task.delay doesn't block this loop.
-	task.delay(isGolden and GOLDEN_DESPAWN or DESPAWN_AFTER, function()
+	task.delay(DESPAWN_AFTER, function()
 		if part and part.Parent then
 			part:Destroy()
 		end

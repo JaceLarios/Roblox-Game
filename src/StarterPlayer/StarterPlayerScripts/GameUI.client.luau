@@ -114,7 +114,7 @@ UIStyle.Outline(coinText,42)
 coinText.TextYAlignment = Enum.TextYAlignment.Center
 coinText.TextStrokeTransparency = 0.5
 
-local luckText = label(coinCard, "LUCK 1", UDim2.new(0, 90, 0, 18), DIM, Enum.Font.FredokaOne, 12)
+local luckText = label(coinCard, "LUCK 0%", UDim2.new(0, 90, 0, 18), DIM, Enum.Font.FredokaOne, 12)
 luckText.Position = UDim2.new(0, 88, 0, 56)
 UIStyle.Outline(luckText,14)
 luckText.TextXAlignment = Enum.TextXAlignment.Right
@@ -913,13 +913,19 @@ shopScroll.BorderSizePixel = 0
 shopScroll.ScrollBarThickness = 5
 shopScroll.Parent = shopFrame
 
-local shopLayout = Instance.new("UIListLayout")
-shopLayout.Padding = UDim.new(0, 8)
+-- 2026-09-14 redesign: a grid of square-ish cards instead of a list of
+-- wide rows (the concept the user picked from 3 options). A UIGridLayout
+-- with a fixed CellSize wraps to fewer columns on its own as the panel
+-- narrows (2 columns wide, 1 in compact mode) — no separate compact-mode
+-- relayout function needed the way the old row design required.
+local shopLayout = Instance.new("UIGridLayout")
+shopLayout.CellSize = UDim2.fromOffset(320, 232)
+shopLayout.CellPadding = UDim2.fromOffset(16, 16)
+shopLayout.SortOrder = Enum.SortOrder.LayoutOrder
 shopLayout.Parent = shopScroll
 UIStyle.ScrollPadding(shopScroll)
 
 shopScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-shopFrame:GetAttributeChangedSignal("Compact"):Connect(function() UIStyle.UpgradeLayout(shopFrame, shopScroll) end)
 
 local function toggleShop()
 	shopFrame.Visible = not shopFrame.Visible
@@ -946,61 +952,93 @@ local UPGRADE_COLORS = {
 	speed = WHITE,
 }
 
+-- Filled/empty pip row for the level, e.g. "●●●●○○○○○○" for Lv 4/10 —
+-- reads the gap to max at a glance, faster than parsing "4 / 10".
+local function levelDots(level, max)
+	level = math.clamp(level, 0, max)
+	return string.rep("●", level) .. string.rep("○", max - level)
+end
+
 local function redrawShop(shop)
 	for _, child in ipairs(shopScroll:GetChildren()) do
-		if not child:IsA("UIListLayout") and not child:IsA("UIPadding") then child:Destroy() end
+		if not child:IsA("UIGridLayout") and not child:IsA("UIPadding") then child:Destroy() end
 	end
 
 	for i, entry in ipairs(shop or {}) do
 		local accent = UPGRADE_COLORS[entry.key] or LIGHT
 
-		local row = Instance.new("Frame")
-		row.Size = UDim2.new(1, -10, 0, 156)
-		row.Name = entry.key
-		row.LayoutOrder = i
-		row.BackgroundColor3 = accent:Lerp(Color3.new(1,1,1),.72)
-		row.BorderSizePixel = 0
-		row.Parent = shopScroll
-		rounded(row, 6)
+		local card = Instance.new("Frame")
+		card.Name = entry.key
+		card.LayoutOrder = i
+		card.BackgroundColor3 = WHITE
+		card.BorderSizePixel = 0
+		card.ClipsDescendants = true
+		card.Parent = shopScroll
+		rounded(card, 16)
 
-		local rowStroke = Instance.new("UIStroke")
-		rowStroke.Color = accent
-		rowStroke.Transparency = 0
-		rowStroke.Color=Color3.fromRGB(35,35,43)
-		rowStroke.Thickness = 1.5
-		rowStroke.Parent = row
-		UIStyle.Art(row, entry.key, UDim2.fromOffset(10,8), UDim2.fromOffset(140,140))
+		local cardStroke = Instance.new("UIStroke")
+		cardStroke.Color = DARK
+		cardStroke.Thickness = 2
+		cardStroke.Parent = card
 
-		local name = label(row, string.format("%s  —  Lv %d / %d", entry.name, entry.level, entry.max),
-			UDim2.new(1, -360, 0, 32), accent, Enum.Font.FredokaOne, 24)
+		-- Colored header strip — each upgrade's own accent color doing the
+		-- "reads as four distinct things" job the old row tint used to do,
+		-- now bolder since it owns the whole top of the card.
+		local header = Instance.new("Frame")
+		header.Size = UDim2.new(1, 0, 0, 52)
+		header.BackgroundColor3 = accent
+		header.BorderSizePixel = 0
+		header.Parent = card
+
+		UIStyle.Art(header, entry.key, UDim2.fromOffset(4, -6), UDim2.fromOffset(60, 60))
+
+		local name = label(header, entry.name, UDim2.new(1, -70, 1, 0), DARK, Enum.Font.FredokaOne, 20)
 		name.Name = "UpgradeName"
-		name.Position = UDim2.new(0, 166, 0, 20)
+		name.Position = UDim2.new(0, 62, 0, 0)
+		name.TextXAlignment = Enum.TextXAlignment.Left
+		name.TextTruncate = Enum.TextTruncate.AtEnd
 
-		local now = label(row, "Now: " .. entry.effect, UDim2.new(1, -360, 0, 28), DIM, Enum.Font.FredokaOne, 18)
+		local dots = label(card, levelDots(entry.level, entry.max), UDim2.new(1, -24, 0, 22), accent, Enum.Font.FredokaOne, 15)
+		dots.Name = "UpgradeLevel"
+		dots.Position = UDim2.new(0, 12, 0, 62)
+		dots.TextXAlignment = Enum.TextXAlignment.Left
+		dots.TextTruncate = Enum.TextTruncate.AtEnd
+
+		local levelNum = label(card, string.format("Lv %d / %d", entry.level, entry.max), UDim2.new(1, -24, 0, 16), DIM, Enum.Font.FredokaOne, 12)
+		levelNum.Position = UDim2.new(0, 12, 0, 82)
+		levelNum.TextXAlignment = Enum.TextXAlignment.Left
+
+		local now = label(card, entry.effect, UDim2.new(1, -24, 0, 44), DARK, Enum.Font.FredokaOne, 15)
 		now.Name = "UpgradeNow"
-		now.Position = UDim2.new(0, 166, 0, 62)
+		now.Position = UDim2.new(0, 12, 0, 104)
+		now.TextWrapped = true
+		now.TextXAlignment = Enum.TextXAlignment.Left
+		now.TextYAlignment = Enum.TextYAlignment.Top
 
 		if entry.nextEffect then
-			local nxt = label(row, "Next: " .. entry.nextEffect, UDim2.new(1, -360, 0, 28),
-				Color3.fromRGB(150, 220, 160), Enum.Font.FredokaOne, 18)
+			local nxt = label(card, "Next: " .. entry.nextEffect, UDim2.new(1, -24, 0, 36),
+				accent, Enum.Font.FredokaOne, 13)
 			nxt.Name = "UpgradeNext"
-			nxt.Position = UDim2.new(0, 166, 0, 98)
+			nxt.Position = UDim2.new(0, 12, 0, 148)
+			nxt.TextWrapped = true
+			nxt.TextXAlignment = Enum.TextXAlignment.Left
+			nxt.TextYAlignment = Enum.TextYAlignment.Top
 		end
 
 		local buy = Instance.new("TextButton")
-		buy.Size = UDim2.new(0, 170, 0, 60)
-		buy.Position = UDim2.new(1, -184, .5, -30)
+		buy.Size = UDim2.new(1, -24, 0, 42)
+		buy.Position = UDim2.new(0, 12, 1, -54)
 		buy.BorderSizePixel = 0
 		buy.Font = Enum.Font.FredokaOne
-		buy.TextSize = 18
+		buy.TextSize = 16
 		buy.Name = "UpgradeBuy"
-		buy.Parent = row
-		rounded(buy, 6)
+		buy.Parent = card
+		rounded(buy, 10)
 
 		if entry.cost then
 			buy.BackgroundColor3 = GOLD
 			buy.TextColor3 = DARK
-			buy.Text = string.format("%s coins", entry.cost)
+			buy.Text = string.format("Buy · %s coins", entry.cost)
 			buy.MouseButton1Click:Connect(function()
 				buyRemote:FireServer(entry.key)
 			end)
@@ -1011,7 +1049,6 @@ local function redrawShop(shop)
 		end
 	end
 
-	UIStyle.UpgradeLayout(shopFrame, shopScroll)
 	shopScroll.CanvasSize = UDim2.new(0, 0, 0, shopLayout.AbsoluteContentSize.Y + 16)
 end
 
@@ -1044,7 +1081,7 @@ local function redrawRebirth(info)
 	rebirthTitle.Text = info.maxed
 		and string.format("REBIRTH — MAX (%d)", info.level)
 		or string.format("REBIRTH — Level %d / %d", info.level, info.maxLevel)
-	rebirthNow.Text = string.format("Current multiplier: x%.2f coins", info.multiplier)
+	rebirthNow.Text = string.format("Current: x%.2f coins, x%.2f luck", info.multiplier, info.luckMultiplier)
 
 	if info.maxed then
 		rebirthNext.Text = "You've hit the ceiling — nothing left to cash in for."
@@ -1054,8 +1091,8 @@ local function redrawRebirth(info)
 		rebirthBtn.Active = false
 	else
 		rebirthNext.Text = string.format(
-			"Next: x%.2f — %d coins (clears inventory/upgrades only)",
-			info.nextMultiplier, info.nextCost)
+			"Next: x%.2f coins, x%.2f luck — %d coins (clears inventory/upgrades only)",
+			info.nextMultiplier, info.nextLuckMultiplier, info.nextCost)
 		rebirthBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 		rebirthBtn.Active = true
 		setRebirthArmed(rebirthArmed)
@@ -2069,8 +2106,11 @@ remote.OnClientEvent:Connect(function(data)
 		redrawTrade(data.trade or nil)
 	end
 
-	if data.luck then
-		luckText.Text = "LUCK " .. tostring(data.luck)
+	if data.luckPercent then
+		-- Shows your real total odds (upgrade + rebirth + any active boost),
+		-- not the raw upgrade level — the user's ask 2026-09-14: "a luck
+		-- tracker... showing your luck percentage in the game."
+		luckText.Text = "LUCK " .. tostring(data.luckPercent) .. "%"
 	end
 
 	if data.index then
