@@ -32,6 +32,7 @@ local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
 local Companions = require(script.Parent:WaitForChild("CompanionService"))
 local Leaderboard = require(script.Parent:WaitForChild("LeaderboardService"))
+local AreaPetsService = require(script.Parent:WaitForChild("AreaPetsService"))
 
 local remote = ReplicatedStorage:WaitForChild("GameUpdate")
 -- PlotManager creates this before requiring this module (see its own
@@ -42,15 +43,16 @@ local fusionCelebrationRemote = ReplicatedStorage:WaitForChild("FusionCelebratio
 
 -- ---------- Tuning ----------
 local ISLAND_CENTER = Vector3.new(0, 0, 900)  -- far from the Foundry District ring
--- Bumped from 60 on 2026-09-14 ("build the brainrot island out... just
--- like the junkyard island so people can walk around") — this is the
--- half-width of the actual creature-spawn field; IslandBuilder derives
--- the boundary ring and outer ground plate from it, so the whole island
--- grew along with it, not just the spawn area.
-local AREA_SIZE = 100
+-- Bumped 60->100 on 2026-09-14 ("build the brainrot island out... just
+-- like the junkyard island so people can walk around"), then 100->150
+-- the same day ("id like the map to be bigger for each of the new
+-- areas") — this is the half-width of the actual creature-spawn field;
+-- IslandBuilder derives the boundary ring and outer ground plate from
+-- it, so the whole island grows along with it, not just the spawn area.
+local AREA_SIZE = 150
 local SPAWN_INTERVAL = 3
 local DESPAWN_AFTER = 60
-local MAX_ITEMS = 32  -- was 20; scaled up with AREA_SIZE so density feels about the same, not sparser
+local MAX_ITEMS = 48  -- scaled up with AREA_SIZE (32 at 100) so density feels about the same, not sparser
 local CARRY_CAPACITY = 2
 -- ----------------------------
 
@@ -71,6 +73,7 @@ local function addCoins(player, amount)
 	local coins = stats and stats:FindFirstChild("Coins")
 	if not coins then return 0 end
 	amount = Gamepasses.Coins(player, amount)
+	amount = AreaPetsService.Coins(player, amount)
 	coins.Value = coins.Value + amount
 	Leaderboard.Record(player, amount)
 	return amount
@@ -324,9 +327,13 @@ end
 -- MapRevamp.luau's own road/beam helper uses.
 do
 	local PATH_COLOR = Color3.fromRGB(235, 225, 245)
-	IslandBuilder.Path(pad.Position, islandSign.Position, 7, PATH_COLOR, islandFolder)
-	IslandBuilder.Path(pad.Position, ISLAND_CENTER + SPIRE_OFFSET, 6, PATH_COLOR, islandFolder)
-	IslandBuilder.Path(pad.Position, ISLAND_CENTER + MUSHROOM_OFFSET, 6, PATH_COLOR, islandFolder)
+	-- IslandBuilder's Ground is 1 stud thick, centered on built.center.Y —
+	-- +0.5 is its top surface, so paths lie flush on the grass instead of
+	-- poking through it (see IslandBuilder.Path's own comment for why).
+	local PATH_Y = built.center.Y + 0.5
+	IslandBuilder.Path(pad.Position, islandSign.Position, 7, PATH_COLOR, islandFolder, PATH_Y)
+	IslandBuilder.Path(pad.Position, ISLAND_CENTER + SPIRE_OFFSET, 6, PATH_COLOR, islandFolder, PATH_Y)
+	IslandBuilder.Path(pad.Position, ISLAND_CENTER + MUSHROOM_OFFSET, 6, PATH_COLOR, islandFolder, PATH_Y)
 end
 
 ------------------------------------------------------------------

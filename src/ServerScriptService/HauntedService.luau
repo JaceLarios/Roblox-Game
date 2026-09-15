@@ -40,6 +40,7 @@ local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
 local Companions = require(script.Parent:WaitForChild("CompanionService"))
 local Leaderboard = require(script.Parent:WaitForChild("LeaderboardService"))
+local AreaPetsService = require(script.Parent:WaitForChild("AreaPetsService"))
 
 local remote = ReplicatedStorage:WaitForChild("GameUpdate")
 
@@ -49,13 +50,14 @@ local remote = ReplicatedStorage:WaitForChild("GameUpdate")
 -- the Foundry District's own ambient decoration (checked live: nothing
 -- closer than ~57 studs to this island's mainland gate).
 local ISLAND_CENTER = Vector3.new(1000, 0, 900)
--- Launches at the same built-out scale Brainrot Island grew to the same
--- day, rather than starting small and needing its own later expansion
--- pass — "same basic layout" per the standing directive.
-local AREA_SIZE = 100
+-- Launched at Brainrot's own just-expanded scale (100), then bumped to
+-- 150 the same day ("id like the map to be bigger for each of the new
+-- areas") — kept identical to Brainrot's AREA_SIZE so both new islands
+-- stay the same size, per the "same basic layout" directive.
+local AREA_SIZE = 150
 local SPAWN_INTERVAL = 3
 local DESPAWN_AFTER = 60
-local MAX_ITEMS = 32
+local MAX_ITEMS = 48
 local CARRY_CAPACITY = 2
 -- ----------------------------
 
@@ -76,6 +78,7 @@ local function addCoins(player, amount)
 	local coins = stats and stats:FindFirstChild("Coins")
 	if not coins then return 0 end
 	amount = Gamepasses.Coins(player, amount)
+	amount = AreaPetsService.Coins(player, amount)
 	coins.Value = coins.Value + amount
 	Leaderboard.Record(player, amount)
 	return amount
@@ -370,9 +373,12 @@ end
 -- walk." Same IslandBuilder.Path helper Brainrot Island's own paths use.
 do
 	local PATH_COLOR = Color3.fromRGB(90, 80, 100)
-	IslandBuilder.Path(pad.Position, islandSign.Position, 7, PATH_COLOR, islandFolder)
-	IslandBuilder.Path(pad.Position, ISLAND_CENTER + CRYPT_OFFSET, 6, PATH_COLOR, islandFolder)
-	IslandBuilder.Path(pad.Position, ISLAND_CENTER + TREE_OFFSET, 6, PATH_COLOR, islandFolder)
+	-- See IslandBuilder.Path's own comment: pins the path flush to the
+	-- ground's actual top surface instead of tilting/poking through it.
+	local PATH_Y = built.center.Y + 0.5
+	IslandBuilder.Path(pad.Position, islandSign.Position, 7, PATH_COLOR, islandFolder, PATH_Y)
+	IslandBuilder.Path(pad.Position, ISLAND_CENTER + CRYPT_OFFSET, 6, PATH_COLOR, islandFolder, PATH_Y)
+	IslandBuilder.Path(pad.Position, ISLAND_CENTER + TREE_OFFSET, 6, PATH_COLOR, islandFolder, PATH_Y)
 end
 
 ------------------------------------------------------------------

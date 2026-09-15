@@ -144,12 +144,25 @@ end
 -- uses for roads and structural members. Kept generic (not tied to any
 -- one island's palette) so every island's own script can lay its own
 -- paths between its pad, sign and landmarks after building them.
-function IslandBuilder.Path(a, b, width, color, parent)
-	local mid = (a + b) / 2
+--
+-- `surfaceY` pins the path to a specific height and forces both
+-- endpoints flat to it before orienting — earlier this took whatever Y
+-- each endpoint's own position happened to have (a pad/sign/landmark's
+-- own Y, not necessarily ground height), which both tilted the path
+-- slightly toward whichever end was higher and let it poke up to half
+-- its own thickness above the ground. Neither was dramatic on its own,
+-- but together they caught the light at a steep, near-ground viewing
+-- angle and read as a raised ramp rather than a flat walkway. Defaults
+-- to the higher endpoint's Y if omitted, matching the old behavior.
+function IslandBuilder.Path(a, b, width, color, parent, surfaceY)
+	local y = surfaceY or math.max(a.Y, b.Y)
+	local flatA = Vector3.new(a.X, y, a.Z)
+	local flatB = Vector3.new(b.X, y, b.Z)
+	local mid = (flatA + flatB) / 2
 	return part({
 		Name = "IslandPath",
-		Size = Vector3.new(width, 0.2, (a - b).Magnitude),
-		CFrame = CFrame.lookAt(mid, b),
+		Size = Vector3.new(width, 0.2, (flatA - flatB).Magnitude),
+		CFrame = CFrame.lookAt(mid, flatB),
 		Material = Enum.Material.Concrete,
 		Color = color,
 		Parent = parent,

@@ -31,12 +31,14 @@ local ItemRarity    = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local Mutations     = require(ReplicatedStorage:WaitForChild("Mutations"))
 local PromoCodes    = require(ReplicatedStorage:WaitForChild("PromoCodes"))
 local SecretPets    = require(ReplicatedStorage:WaitForChild("SecretPets"))
+local AreaPets      = require(ReplicatedStorage:WaitForChild("AreaPets"))
 local DataManager   = require(script.Parent:WaitForChild("DataManager"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
 local Companions = require(script.Parent:WaitForChild("CompanionService"))
 local Leaderboard = require(script.Parent:WaitForChild("LeaderboardService"))
 local PlaytimeLeaderboard = require(script.Parent:WaitForChild("PlaytimeLeaderboardService"))
+local AreaPetsService = require(script.Parent:WaitForChild("AreaPetsService"))
 local Trade = require(script.Parent:WaitForChild("TradeService"))
 
 -- The big screen-covering celebration popup on fuse. Its own dedicated
@@ -452,7 +454,7 @@ local function updateWalkSpeed(player)
 	if not (s and humanoid) then return end
 
 	local placedBonus = math.min(#s.placed * PLACED_SPEED_PER_ITEM, PLACED_SPEED_CAP)
-	local speedMult = (1 + (s.upgrades.speed - 1) * SPEED_UPGRADE_PER_LEVEL) * Gamepasses.SpeedMultiplier(player)
+	local speedMult = (1 + (s.upgrades.speed - 1) * SPEED_UPGRADE_PER_LEVEL) * Gamepasses.SpeedMultiplier(player) * AreaPetsService.SpeedMultiplier(player)
 	humanoid.WalkSpeed = (BASE_WALK_SPEED + placedBonus) * speedMult
 end
 
@@ -1133,6 +1135,7 @@ local function addCoins(player, amount)
 	local coins = stats:FindFirstChild("Coins")
 	if coins then
 		amount = Gamepasses.Coins(player, amount)
+		amount = AreaPetsService.Coins(player, amount)
 		coins.Value = coins.Value + amount
 		Leaderboard.Record(player, amount)
 		return amount
@@ -2125,11 +2128,25 @@ local function grantSecretPet(player, entry)
 	return true
 end
 
+-- Same shape as grantSecretPet, but for an AreaPets egg: the pet is a
+-- permanent owned-set entry (a stacking coin/speed multiplier — see
+-- AreaPetsService), never an inventory item, so there's no fusable name
+-- to tag/insert, just the toast.
+local function grantAreaPet(player, areaKey, eggKey)
+	local pet = AreaPets.Roll(areaKey, eggKey)
+	if not pet then return end
+	AreaPetsService.Grant(player, pet.key)
+	toast(player, string.format("EGG OPENED\n%s", pet.name), true)
+	pushUI(player)
+end
+
 MarketplaceService.ProcessReceipt = function(receiptInfo)
-	if receiptInfo.ProductId ~= SecretPets.EggProductId then
-		-- Not the secret-pet egg — some other Developer Product this
-		-- codebase doesn't have yet. Nothing to grant, but still say so,
-		-- rather than leaving Roblox retrying forever.
+	local isSecretPetsEgg = receiptInfo.ProductId == SecretPets.EggProductId
+	local areaKey, areaEgg = AreaPets.FindEgg(receiptInfo.ProductId)
+
+	if not isSecretPetsEgg and not areaEgg then
+		-- Not a product this codebase has yet. Nothing to grant, but
+		-- still say so, rather than leaving Roblox retrying forever.
 		return Enum.ProductPurchaseDecision.PurchaseGranted
 	end
 
@@ -2149,8 +2166,11 @@ MarketplaceService.ProcessReceipt = function(receiptInfo)
 	-- Rolled fresh per purchase, not per receipt-retry: grantedPurchaseIds
 	-- below guards against ever re-rolling (and re-granting) the same
 	-- purchase twice, so this only ever runs once per real transaction.
-	local entry = SecretPets.Roll()
-	grantSecretPet(player, entry)
+	if isSecretPetsEgg then
+		grantSecretPet(player, SecretPets.Roll())
+	else
+		grantAreaPet(player, areaKey, areaEgg.key)
+	end
 	s.grantedPurchaseIds[receiptInfo.PurchaseId] = true
 	return Enum.ProductPurchaseDecision.PurchaseGranted
 end
@@ -2345,6 +2365,7 @@ local function onPlayerAdded(player)
 	local data = DataManager.Load(player)
 	Brainrot.Init(player, data.brainrotDiscovered)
 	Haunted.Init(player, data.hauntedDiscovered)
+	AreaPetsService.Init(player, data.ownedAreaPets)
 	Rebirth.Init(player, data.rebirths)
 	Companions.Init(player, data.companion)
 	Leaderboard.Init(player, data.lifetimeCoins)
@@ -2481,6 +2502,7 @@ local function snapshot(player)
 		placedPets = s.placed,
 		brainrotDiscovered = Brainrot.Snapshot(player),
 		hauntedDiscovered = Haunted.Snapshot(player),
+		ownedAreaPets = AreaPetsService.Snapshot(player),
 		upgrades = s.upgrades,
 		lastDailyDay = s.lastDailyDay,
 		dailyStreak = s.dailyStreak,
@@ -2562,6 +2584,7 @@ Players.PlayerRemoving:Connect(function(player)
 	state[player] = nil
 	Brainrot.Cleanup(player)
 	Haunted.Cleanup(player)
+	AreaPetsService.Cleanup(player)
 	Rebirth.Cleanup(player)
 	Companions.Cleanup(player)
 	Leaderboard.Cleanup(player)

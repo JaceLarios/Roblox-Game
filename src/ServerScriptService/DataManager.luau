@@ -45,6 +45,7 @@ local function defaultData()
 		placedPets = {}, -- up to 5 items actually earning money on a pad; see PlotManager.
 		brainrotDiscovered = {},
 		hauntedDiscovered = {},
+		ownedAreaPets = {}, -- keys into AreaPets.luau's flat pet lookup; each owned pet is a permanent stacking coin/speed multiplier, see AreaPetsService.
 		upgrades = { luck = 1, carry = 1, magnet = 0, value = 1, speed = 1 },
 		lastDailyDay = 0,
 		dailyStreak = 0,
