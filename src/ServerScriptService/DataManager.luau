@@ -46,7 +46,8 @@ local function defaultData()
 		brainrotDiscovered = {},
 		hauntedDiscovered = {},
 		ownedAreaPets = {}, -- keys into AreaPets.luau's flat pet lookup; each owned pet is a permanent stacking coin/speed multiplier, see AreaPetsService.
-		upgrades = { luck = 1, carry = 1, magnet = 0, value = 1, speed = 1 },
+		equippedAreaPet = false, -- which owned pet (if any) currently follows the player; see AreaPetsService.SetEquipped.
+		upgrades = { luck = 1, carry = 1, value = 1, speed = 1 }, -- magnet removed 2026-09-14; a stray old save's magnet field is simply never read again.
 		lastDailyDay = 0,
 		dailyStreak = 0,
 		boosts = {},

@@ -24,6 +24,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
 local IslandBuilder = require(ServerStorage:WaitForChild("IslandBuilder"))
+local PickupEffects = require(ServerStorage:WaitForChild("PickupEffects"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
@@ -334,6 +335,43 @@ do
 	IslandBuilder.Path(pad.Position, islandSign.Position, 7, PATH_COLOR, islandFolder, PATH_Y)
 	IslandBuilder.Path(pad.Position, ISLAND_CENTER + SPIRE_OFFSET, 6, PATH_COLOR, islandFolder, PATH_Y)
 	IslandBuilder.Path(pad.Position, ISLAND_CENTER + MUSHROOM_OFFSET, 6, PATH_COLOR, islandFolder, PATH_Y)
+	IslandBuilder.Path(pad.Position, ISLAND_CENTER, 6, PATH_COLOR, islandFolder, PATH_Y)
+end
+
+------------------------------------------------------------------
+-- AreaPets egg cluster — the 3 Robux eggs for this island (see
+-- AreaPets.luau), placed dead-center per the user's ask 2026-09-14:
+-- "id like to have the Egg placemnt in the middle of the island so its
+-- easy for eveyone to see." Visual only for now, same honest gap as the
+-- eggs' own shop UI — no real product ids exist yet, so there's nothing
+-- to wire a purchase ProximityPrompt to. Adding one is a small, obvious
+-- follow-up once that exists (see PickupEffects/AreaPetsService for the
+-- established "server owns the mechanic, prompt triggers it" shape).
+------------------------------------------------------------------
+
+local EGG_TIERS = {
+	{ label = "OKAY EGG", color = Color3.fromRGB(140, 160, 200) },
+	{ label = "GOOD EGG", color = Color3.fromRGB(90, 200, 190) },
+	{ label = "GREAT EGG", color = Color3.fromRGB(235, 190, 90) },
+}
+
+for i, tier in ipairs(EGG_TIERS) do
+	local angle = (i - 1) * (math.pi * 2 / 3)
+	local eggPos = ISLAND_CENTER + Vector3.new(math.cos(angle) * 6, 2.75, math.sin(angle) * 6)
+	local egg = part({
+		Name = "AreaPetsEgg", Size = Vector3.new(4, 5.5, 4),
+		Position = eggPos, Material = Enum.Material.Neon, Color = tier.color, Parent = islandFolder,
+	})
+	egg.Shape = Enum.PartType.Ball
+
+	local eggLight = Instance.new("PointLight")
+	eggLight.Color = tier.color
+	eggLight.Brightness = 2
+	eggLight.Range = 25
+	eggLight.Shadows = false
+	eggLight.Parent = egg
+
+	label(egg, tier.label, 5, 200, tier.color, 60)
 end
 
 ------------------------------------------------------------------
@@ -384,7 +422,8 @@ local function attachPickup(itemPart)
 		end
 
 		table.insert(s.slots, itemName)
-		itemPart:Destroy()
+		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+		PickupEffects.Play(itemPart, root and root.Position or itemPart.Position)
 		Brainrot.RefreshPad(player)
 	end)
 end

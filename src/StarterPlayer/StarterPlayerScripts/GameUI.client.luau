@@ -942,7 +942,6 @@ end)
 local UPGRADE_COLORS = {
 	luck = GREEN,
 	carry = BLUE,
-	magnet = PURPLE,
 	value = RED,
 	speed = WHITE,
 }

@@ -23,6 +23,7 @@ local RunService        = game:GetService("RunService")
 local MarketplaceService = game:GetService("MarketplaceService")
 
 local FusionEffects = require(ServerStorage:WaitForChild("FusionEffects"))
+local PickupEffects = require(ServerStorage:WaitForChild("PickupEffects"))
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local HauntedRecipes = require(ReplicatedStorage:WaitForChild("HauntedRecipes"))
@@ -106,14 +107,6 @@ local UPGRADES = {
 		key = "carry", name = "Bigger Truck", start = 1, max = 5,
 		baseCost = 800, mult = 2.4,
 		describe = function(lv) return string.format("Carry %d items per trip", lv + 1) end,
-	},
-	{
-		key = "magnet", name = "Scrap Magnet", start = 0, max = 6,
-		baseCost = 1200, mult = 2.2,
-		describe = function(lv)
-			if lv == 0 then return "Not installed" end
-			return string.format("Auto-grabs scrap within %d studs", 10 + lv * 10)
-		end,
 	},
 	{
 		key = "value", name = "Haggler", start = 1, max = 8,
@@ -228,6 +221,16 @@ if not equipCompanionRemote then
 	equipCompanionRemote = Instance.new("RemoteEvent")
 	equipCompanionRemote.Name = "EquipCompanion"
 	equipCompanionRemote.Parent = ReplicatedStorage
+end
+
+-- Separate from EquipCompanion — an AreaPets egg pet, not a fusion result,
+-- and its own equip slot (see AreaPetsService.SetEquipped's own comment
+-- on why the two coexist instead of sharing one slot).
+local equipAreaPetRemote = ReplicatedStorage:FindFirstChild("EquipAreaPet")
+if not equipAreaPetRemote then
+	equipAreaPetRemote = Instance.new("RemoteEvent")
+	equipAreaPetRemote.Name = "EquipAreaPet"
+	equipAreaPetRemote.Parent = ReplicatedStorage
 end
 
 local selectTradeOfferRemote = ReplicatedStorage:FindFirstChild("SelectTradeOffer")
@@ -953,6 +956,24 @@ local function pushUI(player)
 		bonusPercent = math.floor((Companions.Bonus(player) - 1) * 100 + 0.5),
 	} or false
 
+	-- Just the owned-key set + which one's equipped — PetsUI.client.luau
+	-- requires AreaPets.luau directly for the full 45-pet catalog (name,
+	-- area, tier, multipliers), same as the client already does for
+	-- FusionRecipes/BrainrotRecipes, rather than resending that whole
+	-- catalog on every UI push.
+	local ownedAreaPetKeys = {}
+	for _, key in ipairs(AreaPetsService.Snapshot(player)) do
+		ownedAreaPetKeys[key] = true
+	end
+	local equippedPetKey = AreaPetsService.GetEquipped(player)
+	local equippedPet = equippedPetKey and AreaPets.GetPet(equippedPetKey)
+	local equippedAreaPetInfo = equippedPet and {
+		key = equippedPet.key,
+		name = equippedPet.name,
+		coinMult = equippedPet.coinMult,
+		speedMult = equippedPet.speedMult,
+	} or false
+
 	remote:FireClient(player, {
 		slots = s.slots,
 		maxSlots = capacity(player, s),
@@ -988,6 +1009,8 @@ local function pushUI(player)
 			maxed = Rebirth.IsMaxed(player),
 		},
 		companion = companionInfo,
+		ownedAreaPets = ownedAreaPetKeys,
+		equippedAreaPet = equippedAreaPetInfo,
 		inventory = inventoryInfo,
 		inventoryCapacity = INVENTORY_CAPACITY,
 		placed = placedInfo,
@@ -1328,7 +1351,7 @@ local function attemptFusion(player)
 end
 
 ------------------------------------------------------------------
--- Grabbing scrap (used by both the E prompt and the magnet)
+-- Grabbing scrap (used by both the E prompt and the Auto-Collect gamepass)
 ------------------------------------------------------------------
 
 local function grabItem(player, part)
@@ -1359,7 +1382,8 @@ local function grabItem(player, part)
 
 	table.insert(s.slots, grabbed)
 	playSound(playerRoot(player), isGolden and "big" or "pickup")
-	part:Destroy()
+	local root = playerRoot(player)
+	PickupEffects.Play(part, root and root.Position or part.Position)
 	refreshPad(player)
 	pushUI(player)
 	return true
@@ -1477,7 +1501,7 @@ rebirthRemote.OnServerEvent:Connect(function(player)
 	end
 
 	coins.Value = 0
-	s.upgrades = { luck = 1, carry = 1, magnet = 0, value = 1, speed = 1 }
+	s.upgrades = { luck = 1, carry = 1, value = 1, speed = 1 }
 	s.inventory = {}
 	s.placed = {}
 	updateWalkSpeed(player)
@@ -1605,6 +1629,7 @@ end)
 ------------------------------------------------------------------
 
 local companionParts = {} -- [player] = part
+local equippedPetParts = {} -- [player] = part (an equipped AreaPets pet — see "Pets UI" below)
 
 local function updateCompanionVisual(player)
 	local old = companionParts[player]
@@ -1617,7 +1642,13 @@ local function updateCompanionVisual(player)
 	if not companion then return end
 
 	local Recipes = recipesFor(companion.island)
-	local part = ItemVisuals.Create(companion.name, Vector3.new(0, 5, 0), COMPANION_SCALE)
+	-- Spawn right next to the player rather than a fixed world position —
+	-- with the ground-following lerp below, spawning far from wherever the
+	-- player actually is (Brainrot/Haunted sit 900+ studs from the origin)
+	-- would otherwise look like the pet slowly wandering in from across the map.
+	local root = playerRoot(player)
+	local spawnPos = root and (root.Position + Vector3.new(-4, 0, -3)) or Vector3.new(0, 5, 0)
+	local part = ItemVisuals.Create(companion.name, spawnPos, COMPANION_SCALE)
 	part.Anchored = true
 	part.CanCollide = false
 	part.Parent = workspace
@@ -1631,6 +1662,74 @@ local function updateCompanionVisual(player)
 	companionParts[player] = part
 end
 
+-- Same shape as updateCompanionVisual above, for the separate AreaPets
+-- equip slot (see AreaPetsService.SetEquipped).
+local function updateEquippedPetVisual(player)
+	local old = equippedPetParts[player]
+	if old then
+		old:Destroy()
+		equippedPetParts[player] = nil
+	end
+
+	local petKey = AreaPetsService.GetEquipped(player)
+	if not petKey then return end
+	local pet = AreaPets.GetPet(petKey)
+	if not pet then return end
+
+	local root = playerRoot(player)
+	local spawnPos = root and (root.Position + Vector3.new(4, 0, -3)) or Vector3.new(0, 5, 0)
+	local part = ItemVisuals.Create(pet.name, spawnPos, COMPANION_SCALE)
+	part.Anchored = true
+	part.CanCollide = false
+	part.Parent = workspace
+
+	local light = Instance.new("PointLight")
+	-- A real per-pet/rarity color can replace this once real egg pet
+	-- models/tiers exist — every pet is still a TBD placeholder name.
+	light.Color = Color3.fromRGB(255, 215, 120)
+	light.Range = 10
+	light.Brightness = 1.5
+	light.Parent = part
+
+	equippedPetParts[player] = part
+end
+
+-- Shared by the fusion companion above and the equipped AreaPets pet
+-- below — both "a little creature follows you," just from two different
+-- systems. Runs it on the ground (raycast down to find the real surface,
+-- since different islands sit at different heights) with a light running
+-- hop and facing its direction of travel, replacing the original fixed
+-- floating orbit — the user's call 2026-09-14: "lets have the pets run on
+-- the floor rather than float."
+local function updateGroundFollower(part, root, t, seed, offsetX, offsetZ, hoverHeight)
+	local behind = root.CFrame:VectorToWorldSpace(Vector3.new(offsetX, 0, offsetZ))
+	local targetXZ = Vector3.new(root.Position.X + behind.X, 0, root.Position.Z + behind.Z)
+
+	local rayParams = RaycastParams.new()
+	rayParams.FilterDescendantsInstances = { part }
+	rayParams.FilterType = Enum.RaycastFilterType.Exclude
+	local result = workspace:Raycast(targetXZ + Vector3.new(0, 20, 0), Vector3.new(0, -60, 0), rayParams)
+	local groundY = result and result.Position.Y or (root.Position.Y - 3)
+
+	local currentPos = part.Position
+	local desiredPos = Vector3.new(targetXZ.X, groundY + hoverHeight, targetXZ.Z)
+	-- Lerped, not snapped straight to the target — reads as running to
+	-- keep up rather than teleporting every frame.
+	local newPos = currentPos:Lerp(desiredPos, 0.12)
+
+	local flatMove = Vector3.new(newPos.X - currentPos.X, 0, newPos.Z - currentPos.Z)
+	local hop = flatMove.Magnitude > 0.02 and math.abs(math.sin(t * 10 + seed)) * 0.4 or 0
+	local finalPos = newPos + Vector3.new(0, hop, 0)
+
+	if flatMove.Magnitude > 0.05 then
+		part.CFrame = CFrame.lookAt(finalPos, finalPos + flatMove)
+	else
+		-- Not moving — keep whatever direction it last faced instead of
+		-- snapping back to a default rotation.
+		part.CFrame = CFrame.new(finalPos) * part.CFrame.Rotation
+	end
+end
+
 -- Runs every frame (unlike the other background loops below, which only
 -- need to tick every second or two) because a companion that visibly
 -- stutters while following is worse than not having one at all.
@@ -1639,12 +1738,22 @@ RunService.Heartbeat:Connect(function()
 	for player, part in pairs(companionParts) do
 		local root = part.Parent and playerRoot(player)
 		if root then
-			local bob = math.sin(t * 2 + player.UserId) * 0.6
-			local orbit = root.CFrame:VectorToWorldSpace(Vector3.new(-4, 3 + bob, -3))
-			part.CFrame = CFrame.new(root.Position + orbit) * CFrame.Angles(0, t * 1.5, 0)
-		elseif not root then
+			updateGroundFollower(part, root, t, player.UserId, -4, -3, 1.2)
+		else
 			part:Destroy()
 			companionParts[player] = nil
+		end
+	end
+	-- Offset to the opposite side from the fusion companion (+X vs -X)
+	-- and a different sine seed, so both can be active at once without
+	-- overlapping or hopping in lockstep.
+	for player, part in pairs(equippedPetParts) do
+		local root = part.Parent and playerRoot(player)
+		if root then
+			updateGroundFollower(part, root, t, player.UserId + 10000, 4, -3, 1.0)
+		else
+			part:Destroy()
+			equippedPetParts[player] = nil
 		end
 	end
 end)
@@ -1670,6 +1779,35 @@ equipCompanionRemote.OnServerEvent:Connect(function(player, itemName, island)
 	end
 
 	updateCompanionVisual(player)
+	pushUI(player)
+end)
+
+-- Clicking the currently-equipped pet again unequips it, same UX as the
+-- companion equip above. `petKey == false` from the client also means
+-- "unequip" (PetsUI.client.luau sends false for its own "no selection").
+equipAreaPetRemote.OnServerEvent:Connect(function(player, petKey)
+	local s = state[player]
+	if not s then return end
+	if petKey ~= nil and petKey ~= false and type(petKey) ~= "string" then return end
+	if petKey == false then petKey = nil end
+
+	if petKey and AreaPetsService.GetEquipped(player) == petKey then
+		petKey = nil
+	end
+
+	if not AreaPetsService.SetEquipped(player, petKey) then
+		toast(player, "You don't own that pet yet.")
+		return
+	end
+
+	if petKey then
+		local pet = AreaPets.GetPet(petKey)
+		toast(player, string.format("%s is now following you.", pet and pet.name or "Your pet"))
+	else
+		toast(player, "Pet unequipped.")
+	end
+
+	updateEquippedPetVisual(player)
 	pushUI(player)
 end)
 
@@ -2176,7 +2314,12 @@ MarketplaceService.ProcessReceipt = function(receiptInfo)
 end
 
 ------------------------------------------------------------------
--- Scrap magnet
+-- Auto-Collect gamepass — the old coin-bought "Scrap Magnet" upgrade
+-- (auto-grabbed the nearest scrap every tick, whether you wanted it or
+-- not) was removed 2026-09-14 at the user's request: "the upgrade is
+-- useless it pick up everything you get near even if you dont want
+-- to." The paid Auto-Collect gamepass keeps working exactly as before —
+-- this loop is unchanged for it, only the upgrade-driven radius is gone.
 ------------------------------------------------------------------
 
 task.spawn(function()
@@ -2185,10 +2328,10 @@ task.spawn(function()
 
 		for _, player in ipairs(Players:GetPlayers()) do
 			local s = state[player]
-			if s and Gamepasses.Radius(player, s.upgrades.magnet) > 0 and #s.slots < capacity(player, s) then
+			if s and Gamepasses.Radius(player) > 0 and #s.slots < capacity(player, s) then
 				local root = playerRoot(player)
 				if root then
-					local radius = Gamepasses.Radius(player, s.upgrades.magnet)
+					local radius = Gamepasses.Radius(player)
 					local nearest, nearestDist = nil, radius
 
 					for _, part in ipairs(getScrapFolder():GetChildren()) do
@@ -2365,7 +2508,7 @@ local function onPlayerAdded(player)
 	local data = DataManager.Load(player)
 	Brainrot.Init(player, data.brainrotDiscovered)
 	Haunted.Init(player, data.hauntedDiscovered)
-	AreaPetsService.Init(player, data.ownedAreaPets)
+	AreaPetsService.Init(player, data.ownedAreaPets, data.equippedAreaPet)
 	Rebirth.Init(player, data.rebirths)
 	Companions.Init(player, data.companion)
 	Leaderboard.Init(player, data.lifetimeCoins)
@@ -2395,7 +2538,7 @@ local function onPlayerAdded(player)
 		discovered[name] = true
 	end
 
-	local upgrades = data.upgrades or { luck = 1, carry = 1, magnet = 0, value = 1, speed = 1 }
+	local upgrades = data.upgrades or { luck = 1, carry = 1, value = 1, speed = 1 }
 	upgrades.speed = upgrades.speed or 1 -- fills in for a save from before Speed Boots existed
 
 	state[player] = {
@@ -2450,6 +2593,7 @@ local function onPlayerAdded(player)
 		local humanoid = character:WaitForChild("Humanoid")
 		updateWalkSpeed(player)
 		updateCompanionVisual(player)
+		updateEquippedPetVisual(player)
 		attachTradePrompt(player, character)
 		task.wait(1)
 		pushUI(player)
@@ -2503,6 +2647,7 @@ local function snapshot(player)
 		brainrotDiscovered = Brainrot.Snapshot(player),
 		hauntedDiscovered = Haunted.Snapshot(player),
 		ownedAreaPets = AreaPetsService.Snapshot(player),
+		equippedAreaPet = AreaPetsService.GetEquipped(player) or false,
 		upgrades = s.upgrades,
 		lastDailyDay = s.lastDailyDay,
 		dailyStreak = s.dailyStreak,
@@ -2595,6 +2740,12 @@ Players.PlayerRemoving:Connect(function(player)
 	if companionPart then
 		companionPart:Destroy()
 		companionParts[player] = nil
+	end
+
+	local equippedPetPart = equippedPetParts[player]
+	if equippedPetPart then
+		equippedPetPart:Destroy()
+		equippedPetParts[player] = nil
 	end
 end)
 

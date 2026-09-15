@@ -184,7 +184,7 @@ end
 
 -- Original illustrated atlas; nine transparent sprites, loaded as one texture.
 Style.Atlas = "rbxassetid://82552057143764"
-local cells={DoubleCoins=0,value=0,ExtraCarry=1,INVENTORY=1,carry=1,AutoCollect=2,magnet=2,REWARDS=3,CODE=3,PETS=3,TRAVEL=4,speed=4,INDEX=5,SHOP=6,UPGRADES=7,luck=7,TRADE=8}
+local cells={DoubleCoins=0,value=0,ExtraCarry=1,INVENTORY=1,carry=1,AutoCollect=2,REWARDS=3,CODE=3,PETS=3,TRAVEL=4,speed=4,INDEX=5,SHOP=6,UPGRADES=7,luck=7,TRADE=8}
 function Style.Art(parent,kind,position,size)
 	local image=Instance.new("ImageLabel")
 	image.Name="Illustration"

@@ -70,9 +70,8 @@ function Service.Capacity(player, carryLevel)
 	return carryLevel + 1 + (Service.Has(player, "ExtraCarry") and 2 or 0)
 end
 
-function Service.Radius(player, magnetLevel)
-	local earned = magnetLevel > 0 and (10 + magnetLevel * 10) or 0
-	return math.max(earned, Service.Has(player, "AutoCollect") and 20 or 0)
+function Service.Radius(player)
+	return Service.Has(player, "AutoCollect") and 20 or 0
 end
 
 -- StarterPack's other half of "money/speed boost" - a flat permanent
