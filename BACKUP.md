@@ -1,3 +1,11 @@
+# Latest model backup — 2026-09-14
+
+The 38 installed Junkyard models now have a [final asset manifest](assets/junkyard-models/asset-manifest.json) and [Studio recovery script](assets/junkyard-models/restore-from-assets.luau). The [original template inventory](assets/junkyard-models/original-models.json) also records the earlier mesh/texture IDs and sizes. This supersedes the historical statement below that no item IDs are recorded in GitHub.
+
+This is a reference-based backup: actual mesh/texture binaries remain hosted on Roblox and restoration requires access to those assets. It is not a native .rbxl/.rbxlx export or a DataStore backup. Other unpushed Studio script edits are outside this model-only commit. See the [model handoff](assets/junkyard-models/HANDOFF.md) for verification and limits.
+
+---
+
 # Backup status
 
 All current scripts are backed up, including the original map geometry snapshot, the deterministic Foundry District builder, and the new Brainrot Island (`BrainrotService.luau` + `BrainrotRecipes.luau`). Read [map reconstruction and verification](docs/map-refresh.md) and [latest handoff](HANDOFF.md).

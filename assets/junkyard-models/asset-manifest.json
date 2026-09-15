@@ -1,0 +1,463 @@
+{
+  "placeId": "94136201094216",
+  "revision": "Junkyard_20260914",
+  "installed": true,
+  "models": [
+    {
+      "name": "Rusted Sedan",
+      "replaced": true,
+      "size": [
+        2.9789962768554688,
+        2.0747878551483154,
+        4.269338607788086
+      ],
+      "mesh": "rbxassetid://138164174641624",
+      "texture": "rbxassetid://80362812878058",
+      "assetId": "100600116921933"
+    },
+    {
+      "name": "Dirt Bike",
+      "replaced": true,
+      "size": [
+        1.6389567852020264,
+        2.4625449180603027,
+        3.8890252113342285
+      ],
+      "mesh": "rbxassetid://112343504662970",
+      "texture": "rbxassetid://87004264142214",
+      "assetId": "134564730883544"
+    },
+    {
+      "name": "Golf Cart",
+      "replaced": true,
+      "size": [
+        3.109337091445923,
+        4.964999198913574,
+        5.093301773071289
+      ],
+      "mesh": "rbxassetid://95404217610365",
+      "texture": "rbxassetid://115325866524323",
+      "assetId": "111364246323001"
+    },
+    {
+      "name": "Muscle Car",
+      "replaced": true,
+      "size": [
+        2.1630492210388184,
+        1.44154953956604,
+        4.5
+      ],
+      "mesh": "rbxassetid://104037409243987",
+      "texture": "rbxassetid://139113278351104",
+      "assetId": "82741408536940"
+    },
+    {
+      "name": "Cop Cruiser",
+      "replaced": true,
+      "size": [
+        2.552804708480835,
+        2.15450382232666,
+        5.191882610321045
+      ],
+      "mesh": "rbxassetid://74126131845414",
+      "texture": "rbxassetid://106628610880261",
+      "assetId": "111153973131351"
+    },
+    {
+      "name": "Box Truck",
+      "replaced": true,
+      "size": [
+        4.02410364151001,
+        4.8967108726501465,
+        6.450238227844238
+      ],
+      "mesh": "rbxassetid://127646128151853",
+      "texture": "rbxassetid://87869825223492",
+      "assetId": "129727140211602"
+    },
+    {
+      "name": "Monster Truck",
+      "replaced": true,
+      "size": [
+        2.2091407775878906,
+        2.309786558151245,
+        3.8872032165527344
+      ],
+      "mesh": "rbxassetid://86633207975800",
+      "texture": "rbxassetid://115815803616117",
+      "assetId": "91888969164832"
+    },
+    {
+      "name": "Jet Engine",
+      "replaced": true,
+      "size": [
+        3.298999309539795,
+        2.5270721912384033,
+        4.534169673919678
+      ],
+      "mesh": "rbxassetid://117128957282927",
+      "texture": "rbxassetid://91837713336319",
+      "assetId": "109709206471203"
+    },
+    {
+      "name": "Lifted Cart",
+      "replaced": true,
+      "size": [
+        4.044156551361084,
+        5.759180545806885,
+        5.403830528259277
+      ],
+      "mesh": "rbxassetid://138098074623936",
+      "texture": "rbxassetid://89218782313687",
+      "assetId": "122616695962225"
+    },
+    {
+      "name": "Highway Overlord",
+      "replaced": true,
+      "size": [
+        3.7804343700408936,
+        4.344156265258789,
+        6.291418075561523
+      ],
+      "mesh": "rbxassetid://134158288508305",
+      "texture": "rbxassetid://100344170258781",
+      "assetId": "75396314044912"
+    },
+    {
+      "name": "Redline Reaper",
+      "replaced": true,
+      "size": [
+        3.015213966369629,
+        2.065328598022461,
+        4.356049537658691
+      ],
+      "mesh": "rbxassetid://113464602209568",
+      "texture": "rbxassetid://115141663870040",
+      "assetId": "72230500661276"
+    },
+    {
+      "name": "Trail Blazer",
+      "replaced": false,
+      "size": [
+        3.6160073280334473,
+        3.075030565261841,
+        5.299999713897705
+      ],
+      "mesh": "rbxassetid://115269347846651",
+      "texture": "rbxassetid://119393774332186",
+      "assetId": "71565635507233"
+    },
+    {
+      "name": "THE LAWNLORD",
+      "replaced": true,
+      "size": [
+        4.249810695648193,
+        5.915003299713135,
+        7
+      ],
+      "mesh": "rbxassetid://96227744650563",
+      "texture": "rbxassetid://136454501995519",
+      "assetId": "105916772774718"
+    },
+    {
+      "name": "Chrome Sentinel",
+      "replaced": false,
+      "size": [
+        4.014759063720703,
+        2.463994264602661,
+        6
+      ],
+      "mesh": "rbxassetid://117781356824165",
+      "texture": "rbxassetid://106235652894947",
+      "assetId": "131197731281846"
+    },
+    {
+      "name": "Sonic Scrapheap",
+      "replaced": true,
+      "size": [
+        5.844078540802002,
+        2.896815776824951,
+        7
+      ],
+      "mesh": "rbxassetid://110007181438913",
+      "texture": "rbxassetid://100684793450329",
+      "assetId": "116025182117974"
+    },
+    {
+      "name": "Yard Destroyer",
+      "replaced": true,
+      "size": [
+        4.056917190551758,
+        4.593681335449219,
+        7
+      ],
+      "mesh": "rbxassetid://112901240595281",
+      "texture": "rbxassetid://117833651163701",
+      "assetId": "83739390750561"
+    },
+    {
+      "name": "Undercover Muscle",
+      "replaced": false,
+      "size": [
+        2.6099045276641846,
+        1.8664789199829102,
+        5.299999713897705
+      ],
+      "mesh": "rbxassetid://78271118409313",
+      "texture": "rbxassetid://109683636248666",
+      "assetId": "111514857715254"
+    },
+    {
+      "name": "Street Menace",
+      "replaced": true,
+      "size": [
+        3.977038860321045,
+        3.682744026184082,
+        6.929446220397949
+      ],
+      "mesh": "rbxassetid://95796154913767",
+      "texture": "rbxassetid://135771628723227",
+      "assetId": "86361118230595"
+    },
+    {
+      "name": "Boosted Beater",
+      "replaced": true,
+      "size": [
+        3.502501964569092,
+        3.5690512657165527,
+        5.4967427253723145
+      ],
+      "mesh": "rbxassetid://117045311383698",
+      "texture": "rbxassetid://111550178073860",
+      "assetId": "112469212446292"
+    },
+    {
+      "name": "Pursuit Bike",
+      "replaced": true,
+      "size": [
+        1.4727427959442139,
+        2.3707194328308105,
+        3.799999952316284
+      ],
+      "mesh": "rbxassetid://95727248585366",
+      "texture": "rbxassetid://106175690906955",
+      "assetId": "81946492152572"
+    },
+    {
+      "name": "Scrapyard God",
+      "replaced": true,
+      "size": [
+        4.33057975769043,
+        5.082792282104492,
+        7
+      ],
+      "mesh": "rbxassetid://72594352708835",
+      "texture": "rbxassetid://134927762406203",
+      "assetId": "84518828585379"
+    },
+    {
+      "name": "Cartpocalypse",
+      "replaced": true,
+      "size": [
+        3.569877862930298,
+        5.3651838302612305,
+        6
+      ],
+      "mesh": "rbxassetid://129422262252025",
+      "texture": "rbxassetid://96560547374594",
+      "assetId": "90690656973352"
+    },
+    {
+      "name": "Turbo Interceptor",
+      "replaced": false,
+      "size": [
+        3.539520502090454,
+        2.7618165016174316,
+        6
+      ],
+      "mesh": "rbxassetid://108745354845624",
+      "texture": "rbxassetid://118765060462677",
+      "assetId": "93738068315959"
+    },
+    {
+      "name": "Fairway Fighter",
+      "replaced": true,
+      "size": [
+        3.1963133811950684,
+        2.268697500228882,
+        5.0482497215271
+      ],
+      "mesh": "rbxassetid://112282182165175",
+      "texture": "rbxassetid://134412408369270",
+      "assetId": "140468092115141"
+    },
+    {
+      "name": "Jet Hauler",
+      "replaced": true,
+      "size": [
+        2.533139228820801,
+        2.4519643783569336,
+        4.021328926086426
+      ],
+      "mesh": "rbxassetid://90142005552248",
+      "texture": "rbxassetid://118664521722657",
+      "assetId": "138816889177055"
+    },
+    {
+      "name": "Suburban Assault",
+      "replaced": true,
+      "size": [
+        4.566988945007324,
+        6.1401238441467285,
+        7
+      ],
+      "mesh": "rbxassetid://71851046073172",
+      "texture": "rbxassetid://124393201666820",
+      "assetId": "109950315222722"
+    },
+    {
+      "name": "Hauler Hemi",
+      "replaced": false,
+      "size": [
+        3.418617010116577,
+        3.6736831665039062,
+        5.299999713897705
+      ],
+      "mesh": "rbxassetid://81186973079149",
+      "texture": "rbxassetid://128974423553382",
+      "assetId": "134672412502255"
+    },
+    {
+      "name": "Scrap Hybrid",
+      "replaced": true,
+      "size": [
+        2.957141399383545,
+        2.903045415878296,
+        3.799999952316284
+      ],
+      "mesh": "rbxassetid://87321822258483",
+      "texture": "rbxassetid://103963801028969",
+      "assetId": "102014531607768"
+    },
+    {
+      "name": "Junk Mashup",
+      "replaced": true,
+      "size": [
+        2.7834317684173584,
+        3.7029542922973633,
+        4.5
+      ],
+      "mesh": "rbxassetid://86165987001916",
+      "texture": "rbxassetid://117898941430156",
+      "assetId": "109340220116583"
+    },
+    {
+      "name": "Bent Fusion",
+      "replaced": true,
+      "size": [
+        2.491896867752075,
+        2.302079677581787,
+        4.007541179656982
+      ],
+      "mesh": "rbxassetid://140549353426242",
+      "texture": "rbxassetid://107318248933775",
+      "assetId": "140019085121720"
+    },
+    {
+      "name": "Rusty Splice",
+      "replaced": true,
+      "size": [
+        2.333646297454834,
+        2.389521598815918,
+        3.799999952316284
+      ],
+      "mesh": "rbxassetid://116384048967781",
+      "texture": "rbxassetid://126103603060074",
+      "assetId": "82707393943210"
+    },
+    {
+      "name": "Twisted Wreck",
+      "replaced": true,
+      "size": [
+        3.698194980621338,
+        3.251418352127075,
+        5.5
+      ],
+      "mesh": "rbxassetid://117328347747876",
+      "texture": "rbxassetid://128090783525765",
+      "assetId": "125266148217308"
+    },
+    {
+      "name": "Chaos Hybrid",
+      "replaced": true,
+      "size": [
+        3.148472547531128,
+        4.471209526062012,
+        5.464056968688965
+      ],
+      "mesh": "rbxassetid://107396951230560",
+      "texture": "rbxassetid://73757039360975",
+      "assetId": "70381121942511"
+    },
+    {
+      "name": "Scrap Titan",
+      "replaced": true,
+      "size": [
+        2.4582059383392334,
+        3.0940752029418945,
+        3.799999952316284
+      ],
+      "mesh": "rbxassetid://75028486074568",
+      "texture": "rbxassetid://120569576919492",
+      "assetId": "98430504072993"
+    },
+    {
+      "name": "Junkyard Brute",
+      "replaced": true,
+      "size": [
+        2.888587236404419,
+        3.3397305011749268,
+        5.02750301361084
+      ],
+      "mesh": "rbxassetid://111969333557807",
+      "texture": "rbxassetid://81397676873693",
+      "assetId": "80191180887797"
+    },
+    {
+      "name": "Mangled Overlord",
+      "replaced": true,
+      "size": [
+        2.2256507873535156,
+        2.573094606399536,
+        3.84964656829834
+      ],
+      "mesh": "rbxassetid://72095119672352",
+      "texture": "rbxassetid://105423622556452",
+      "assetId": "94187696133936"
+    },
+    {
+      "name": "Junkyard Behemoth",
+      "replaced": true,
+      "size": [
+        3.089564085006714,
+        3.807343006134033,
+        4.901902198791504
+      ],
+      "mesh": "rbxassetid://108876354766863",
+      "texture": "rbxassetid://137602165470823",
+      "assetId": "123239323654265"
+    },
+    {
+      "name": "Wreck Kraken",
+      "replaced": true,
+      "size": [
+        5.5,
+        5.1239824295043945,
+        3.3169901371002197
+      ],
+      "mesh": "rbxassetid://99273344521333",
+      "texture": "rbxassetid://88693535486389",
+      "assetId": "77625656394861"
+    }
+  ]
+}
