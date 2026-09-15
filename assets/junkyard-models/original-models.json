@@ -1,0 +1,849 @@
+[
+  {
+    "name": "Rusted Sedan",
+    "texture": "rbxassetid://79267477863498",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://114101478419522",
+    "size": [
+      2.5676212310791016,
+      2.3000001907348633,
+      4.269338607788086
+    ]
+  },
+  {
+    "name": "Traffic Cone",
+    "texture": "rbxassetid://134470319718128",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://103176054102093",
+    "size": [
+      2,
+      2.6018052101135254,
+      1.9987035989761353
+    ]
+  },
+  {
+    "name": "Shopping Cart",
+    "texture": "rbxassetid://93041727716021",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://131165563424607",
+    "size": [
+      1.8954353332519531,
+      3.5,
+      2.7982001304626465
+    ]
+  },
+  {
+    "name": "Riding Mower",
+    "texture": "rbxassetid://74993638762472",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://80476914724758",
+    "size": [
+      2.198856830596924,
+      2.8000001907348633,
+      3.223374843597412
+    ]
+  },
+  {
+    "name": "Golf Cart",
+    "texture": "rbxassetid://95233787872582",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://84675146370589",
+    "size": [
+      3.3307032585144043,
+      4.5,
+      5.093301773071289
+    ]
+  },
+  {
+    "name": "Dirt Bike",
+    "texture": "rbxassetid://139796508873442",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://120224519746608",
+    "size": [
+      1.7999999523162842,
+      2.4772634506225586,
+      3.8890252113342285
+    ]
+  },
+  {
+    "name": "Minivan",
+    "texture": "rbxassetid://129605202063632",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://95513858263084",
+    "size": [
+      2.845722198486328,
+      2.799999952316284,
+      4.983250617980957
+    ]
+  },
+  {
+    "name": "Cop Cruiser",
+    "texture": "rbxassetid://111254635654708",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://121503751932326",
+    "size": [
+      2.5822410583496094,
+      2.299999952316284,
+      5.191882610321045
+    ]
+  },
+  {
+    "name": "Box Truck",
+    "texture": "rbxassetid://117992581431788",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://105674810784221",
+    "size": [
+      4.303519248962402,
+      4.5,
+      6.450238227844238
+    ]
+  },
+  {
+    "name": "Monster Truck Tire",
+    "texture": "rbxassetid://127263621709063",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://86468675161157",
+    "size": [
+      3.5,
+      3.489206552505493,
+      1.8448240756988525
+    ]
+  },
+  {
+    "name": "Nitrous Tank",
+    "texture": "rbxassetid://118408309444593",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://126433593638034",
+    "size": [
+      1.600000023841858,
+      2.601651191711426,
+      0.9425480365753174
+    ]
+  },
+  {
+    "name": "Jet Engine",
+    "texture": "rbxassetid://79933640987706",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://115412991709706",
+    "size": [
+      2.1999998092651367,
+      2.1077938079833984,
+      4.534169673919678
+    ]
+  },
+  {
+    "name": "Boosted Beater",
+    "texture": "rbxassetid://130004611127994",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://126754386264257",
+    "size": [
+      3.1796727180480957,
+      2.5,
+      5.4967427253723145
+    ]
+  },
+  {
+    "name": "Lifted Cart",
+    "texture": "rbxassetid://100481376789528",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://138623488683962",
+    "size": [
+      4,
+      4.899106979370117,
+      5.403830528259277
+    ]
+  },
+  {
+    "name": "Cart Rocket",
+    "texture": "rbxassetid://130763483415227",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://102338680528107",
+    "size": [
+      2.077756881713867,
+      2.954023838043213,
+      4.5
+    ]
+  },
+  {
+    "name": "Undercover Van",
+    "texture": "rbxassetid://79493654027358",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://123865074459362",
+    "size": [
+      2.660274028778076,
+      2.799999952316284,
+      4.389850616455078
+    ]
+  },
+  {
+    "name": "Lawn Missile",
+    "texture": "rbxassetid://70396180823275",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://103597440767625",
+    "size": [
+      2.1446096897125244,
+      2.13134765625,
+      5
+    ]
+  },
+  {
+    "name": "Jet Hauler",
+    "texture": "rbxassetid://112150492159380",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://138260007269675",
+    "size": [
+      3.9246740341186523,
+      5,
+      4.021328926086426
+    ]
+  },
+  {
+    "name": "Soccer Mom Monster",
+    "texture": "rbxassetid://127896401495701",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://82324488655889",
+    "size": [
+      4.5,
+      5.081413269042969,
+      5.952418804168701
+    ]
+  },
+  {
+    "name": "Pursuit Bike",
+    "texture": "rbxassetid://129932945868455",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://71060047528805",
+    "size": [
+      2,
+      2.40502667427063,
+      3.7214436531066895
+    ]
+  },
+  {
+    "name": "Street Menace",
+    "texture": "rbxassetid://89419028012799",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://107566813530392",
+    "size": [
+      3.8941657543182373,
+      3,
+      6.929446220397949
+    ]
+  },
+  {
+    "name": "Fairway Fighter",
+    "texture": "rbxassetid://81302258945564",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://96208876458244",
+    "size": [
+      3.467191219329834,
+      3.5,
+      5.0482497215271
+    ]
+  },
+  {
+    "name": "Cone Cruiser",
+    "texture": "rbxassetid://136439911863253",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://129978094134503",
+    "size": [
+      3.249629020690918,
+      2.799999952316284,
+      4.911033630371094
+    ]
+  },
+  {
+    "name": "Yard Destroyer",
+    "texture": "rbxassetid://106444666867981",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://75490365920001",
+    "size": [
+      5.194038391113281,
+      5.5,
+      9.536478996276855
+    ]
+  },
+  {
+    "name": "Construction Cartel",
+    "texture": "rbxassetid://78070453563248",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://117601762531715",
+    "size": [
+      2.9591426849365234,
+      3.200000047683716,
+      5.346457481384277
+    ]
+  },
+  {
+    "name": "Redline Reaper",
+    "texture": "rbxassetid://88119918402451",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://89038842833220",
+    "size": [
+      2.9958889484405518,
+      2.799999952316284,
+      4.356049537658691
+    ]
+  },
+  {
+    "name": "Trolley Interceptor",
+    "texture": "rbxassetid://79093820061530",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://87313325378069",
+    "size": [
+      3.0420947074890137,
+      3.799999952316284,
+      4.522683143615723
+    ]
+  },
+  {
+    "name": "Cone Sentinel",
+    "texture": "rbxassetid://125380115243633",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://81544320826197",
+    "size": [
+      4,
+      5.522837162017822,
+      1.9370718002319336
+    ]
+  },
+  {
+    "name": "Cartpocalypse",
+    "texture": "rbxassetid://122899324839034",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://111554343743200",
+    "size": [
+      3.43522310256958,
+      5.631137847900391,
+      6
+    ]
+  },
+  {
+    "name": "Scrapyard God",
+    "texture": "rbxassetid://84671489542640",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://108001159485746",
+    "size": [
+      7.555069923400879,
+      9,
+      3.9855198860168457
+    ]
+  },
+  {
+    "name": "Sonic Scrapheap",
+    "texture": "rbxassetid://113687362088017",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://88041422685511",
+    "size": [
+      4.759395599365234,
+      3.1999998092651367,
+      7.503706455230713
+    ]
+  },
+  {
+    "name": "Highway Overlord",
+    "texture": "rbxassetid://102765880703180",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://114766138069253",
+    "size": [
+      3.008270263671875,
+      6,
+      6.291418075561523
+    ]
+  },
+  {
+    "name": "THE LAWNLORD",
+    "texture": "rbxassetid://93175355369763",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://133216702905149",
+    "size": [
+      6.963431358337402,
+      7,
+      9.019784927368164
+    ]
+  },
+  {
+    "name": "Suburban Assault",
+    "texture": "rbxassetid://129321869471676",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://124125385209136",
+    "size": [
+      5.290427207946777,
+      6.367485046386719,
+      9
+    ]
+  },
+  {
+    "name": "Waffronio Pigeonelli",
+    "texture": "rbxassetid://132974615505045",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://74858262078731",
+    "size": [
+      2.111558437347412,
+      2.5,
+      2.2167739868164062
+    ]
+  },
+  {
+    "name": "Spaghettuccio Wormanini",
+    "texture": "rbxassetid://108199238646175",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://113552537834520",
+    "size": [
+      0.872197151184082,
+      1.7999999523162842,
+      2.1379570960998535
+    ]
+  },
+  {
+    "name": "Toastarino Frogolini",
+    "texture": "rbxassetid://134551775971531",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://93643719372612",
+    "size": [
+      1.9264357089996338,
+      1.7999999523162842,
+      1.4444143772125244
+    ]
+  },
+  {
+    "name": "Meatballo Snailini",
+    "texture": "rbxassetid://97626729309736",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://74932318536059",
+    "size": [
+      2.200000047683716,
+      1.852874517440796,
+      2.952711582183838
+    ]
+  },
+  {
+    "name": "Croissantino Batusso",
+    "texture": "rbxassetid://73433470841923",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://105967511383583",
+    "size": [
+      3,
+      1.5993194580078125,
+      1.344179630279541
+    ]
+  },
+  {
+    "name": "Espressimo Direwolfini",
+    "texture": "rbxassetid://113302022897495",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://90173093166181",
+    "size": [
+      1.7505630254745483,
+      2.5,
+      1.617170810699463
+    ]
+  },
+  {
+    "name": "Donutello Sharkanini",
+    "texture": "rbxassetid://111271203620153",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://100754125129504",
+    "size": [
+      2.201700210571289,
+      2.200000047683716,
+      2.0945076942443848
+    ]
+  },
+  {
+    "name": "Turbowaffle Espressoni",
+    "texture": "rbxassetid://115154912858268",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://79692530604666",
+    "size": [
+      1.9691568613052368,
+      3,
+      3.623065948486328
+    ]
+  },
+  {
+    "name": "Spagmeato Chaosini",
+    "texture": "rbxassetid://80316146420935",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://137513103766558",
+    "size": [
+      3.1999998092651367,
+      2.478382110595703,
+      3.183718681335449
+    ]
+  },
+  {
+    "name": "Pretzoissant Skyterror",
+    "texture": "rbxassetid://122814755369085",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://119873782301686",
+    "size": [
+      3.2484512329101562,
+      2.5,
+      2.5421714782714844
+    ]
+  },
+  {
+    "name": "Toastdonut Frenzicane",
+    "texture": "rbxassetid://128777405160529",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://132517977851190",
+    "size": [
+      2.780935525894165,
+      1.7110931873321533,
+      3.5
+    ]
+  },
+  {
+    "name": "Meatballzilla Supremo",
+    "texture": "rbxassetid://122240749258860",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://118508064683435",
+    "size": [
+      5,
+      4.993119239807129,
+      6.310626983642578
+    ]
+  },
+  {
+    "name": "Pretzeletto Owlbini",
+    "texture": "rbxassetid://126807825731095",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://109515472784146",
+    "size": [
+      2.299999952316284,
+      2.306941509246826,
+      1.810319423675537
+    ]
+  },
+  {
+    "name": "OMEGA BRAINO REX",
+    "texture": "rbxassetid://89357990435653",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://101735763378905",
+    "size": [
+      2.275639533996582,
+      5,
+      4.940741539001465
+    ]
+  },
+  {
+    "name": "Scrap Hybrid",
+    "texture": "rbxassetid://138934676103146",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://119360074224918",
+    "size": [
+      2.0102128982543945,
+      2.5,
+      1.993382215499878
+    ]
+  },
+  {
+    "name": "Junk Mashup",
+    "texture": "rbxassetid://80855655681262",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://92420389825823",
+    "size": [
+      2.9638304710388184,
+      2.36643385887146,
+      4.5
+    ]
+  },
+  {
+    "name": "Bent Fusion",
+    "texture": "rbxassetid://87265597108081",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://135981282159471",
+    "size": [
+      2.8876044750213623,
+      2.5,
+      4.007541179656982
+    ]
+  },
+  {
+    "name": "Rusty Splice",
+    "texture": "rbxassetid://122473391398842",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://94039132335405",
+    "size": [
+      1.9938912391662598,
+      2.5,
+      3.7442197799682617
+    ]
+  },
+  {
+    "name": "Twisted Wreck",
+    "texture": "rbxassetid://71331309372251",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://126956697680111",
+    "size": [
+      3.3328113555908203,
+      2.8513612747192383,
+      5.5
+    ]
+  },
+  {
+    "name": "Chaos Hybrid",
+    "texture": "rbxassetid://106806858957323",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://77204030957304",
+    "size": [
+      2.3310599327087402,
+      3,
+      5.464056968688965
+    ]
+  },
+  {
+    "name": "Scrap Titan",
+    "texture": "rbxassetid://124028066834806",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://137124226742681",
+    "size": [
+      1.0937236547470093,
+      3,
+      1.0951735973358154
+    ]
+  },
+  {
+    "name": "Junkyard Brute",
+    "texture": "rbxassetid://91212092520430",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://107632227021861",
+    "size": [
+      4,
+      2.8545751571655273,
+      5.027502536773682
+    ]
+  },
+  {
+    "name": "Mangled Overlord",
+    "texture": "rbxassetid://132020519741421",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://75326003795724",
+    "size": [
+      3.84964656829834,
+      4.5,
+      3.3113675117492676
+    ]
+  },
+  {
+    "name": "Junkyard Behemoth",
+    "texture": "rbxassetid://100164292346748",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://136639282957776",
+    "size": [
+      3.1355762481689453,
+      4.5,
+      4.901902198791504
+    ]
+  },
+  {
+    "name": "Wreck Kraken",
+    "texture": "rbxassetid://78681805766853",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://116728768971515",
+    "size": [
+      5.5,
+      4.296121597290039,
+      3.011861801147461
+    ]
+  },
+  {
+    "name": "Scraprino Mutantelli",
+    "texture": "rbxassetid://99197931007870",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://139823354242421",
+    "size": [
+      2.080395460128784,
+      2.5,
+      1.7209659814834595
+    ]
+  },
+  {
+    "name": "Feralino Snacktoni",
+    "texture": "rbxassetid://94354098326076",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://97834166402748",
+    "size": [
+      2.5,
+      1.1486589908599854,
+      2.4927010536193848
+    ]
+  },
+  {
+    "name": "Bentaccio Wobblini",
+    "texture": "rbxassetid://103116929860148",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://86067298811142",
+    "size": [
+      1.5563304424285889,
+      2.5,
+      1.574561595916748
+    ]
+  },
+  {
+    "name": "Chaosaurus Blobbini",
+    "texture": "rbxassetid://102454064997317",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://103271734223176",
+    "size": [
+      1.8877460956573486,
+      2.669769287109375,
+      4
+    ]
+  },
+  {
+    "name": "Titanello Munchzilla",
+    "texture": "rbxassetid://98225971380911",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://110368926441076",
+    "size": [
+      2.6447086334228516,
+      3.1999998092651367,
+      2.1803977489471436
+    ]
+  },
+  {
+    "name": "Ferocibro Chompanini",
+    "texture": "rbxassetid://93760268352406",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://80866633928579",
+    "size": [
+      1.904226303100586,
+      3.200000047683716,
+      3.7688708305358887
+    ]
+  },
+  {
+    "name": "Muscle Car",
+    "texture": "rbxassetid://136561635004168",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://114458623694717",
+    "size": [
+      2.3706607818603516,
+      1.9312677383422852,
+      4.5
+    ]
+  },
+  {
+    "name": "Monster Truck",
+    "texture": "rbxassetid://91557752613981",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://137362146957533",
+    "size": [
+      3.1999998092651367,
+      2.760040044784546,
+      3.8872034549713135
+    ]
+  },
+  {
+    "name": "Trattorino Rexini",
+    "texture": "rbxassetid://110653388785295",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://87255970294697",
+    "size": [
+      1.4521383047103882,
+      2.3000001907348633,
+      2.639491558074951
+    ]
+  },
+  {
+    "name": "Saxofonio Serpentoni",
+    "texture": "rbxassetid://80563590193005",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://135272935833590",
+    "size": [
+      2,
+      2.3131678104400635,
+      1.7179205417633057
+    ]
+  },
+  {
+    "name": "Frigorino Gattelli",
+    "texture": "rbxassetid://139355193031410",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://135514059689952",
+    "size": [
+      1.482653260231018,
+      2.5,
+      1.097625970840454
+    ]
+  },
+  {
+    "name": "Chitarrino Lupini",
+    "texture": "rbxassetid://105848863874133",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://94889652767306",
+    "size": [
+      1.2956867218017578,
+      2.5,
+      1.1881797313690186
+    ]
+  },
+  {
+    "name": "Elicottero Ranini",
+    "texture": "rbxassetid://129700708121863",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://85777678852211",
+    "size": [
+      2.0610318183898926,
+      1.7508544921875,
+      2.5
+    ]
+  },
+  {
+    "name": "Bombardino Squalini",
+    "texture": "rbxassetid://103410399464810",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://81343714090010",
+    "size": [
+      2.2664902210235596,
+      2.0022599697113037,
+      3.5
+    ]
+  },
+  {
+    "name": "Aspirapolvere Coccodrilli",
+    "texture": "rbxassetid://129656803790711",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://138719214718813",
+    "size": [
+      1.2394031286239624,
+      2,
+      2.803586006164551
+    ]
+  },
+  {
+    "name": "Panino Orsetti",
+    "texture": "rbxassetid://103183547921409",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://90696239456558",
+    "size": [
+      1.8722074031829834,
+      2.5,
+      1.7208577394485474
+    ]
+  },
+  {
+    "name": "Ombrellino Pinguini",
+    "texture": "rbxassetid://116341216685840",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://116102472963308",
+    "size": [
+      2.514711380004883,
+      2.8622517585754395,
+      2.5
+    ]
+  },
+  {
+    "name": "Trombetta Elefantini",
+    "texture": "rbxassetid://108053292541785",
+    "class": "MeshPart",
+    "mesh": "rbxassetid://89684348060350",
+    "size": [
+      3,
+      2.9839439392089844,
+      3.157784938812256
+    ]
+  }
+]

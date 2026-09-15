@@ -1,0 +1,31 @@
+{
+  "installedModels": 38,
+  "originalsBackedUp": 33,
+  "newMissingTemplates": 5,
+  "editAssetFailures": [],
+  "clientAssetFailures": [],
+  "visualCloneChecks": 114,
+  "recipePairChecks": 1444,
+  "indexVisualCheck": true,
+  "inventoryVisualCheck": true,
+  "savedLotMeshesObserved": true,
+  "baseSpawnerMeshesObserved": true,
+  "clientOnlyFusionPreview": "Trail Blazer",
+  "consoleErrors": [],
+  "unrelatedModelChanges": [],
+  "scriptsEditedByThisTask": [],
+  "otherScriptChangesObserved": [
+    "ReplicatedStorage.AreaPets",
+    "ServerScriptService.DataManager",
+    "ServerScriptService.AreaPetsService",
+    "ServerScriptService.PlotManager",
+    "ServerScriptService.BrainrotService",
+    "ServerScriptService.HauntedService",
+    "ServerStorage.IslandBuilder",
+    "ReplicatedStorage/HauntedRecipesTest",
+    "ServerScriptService/HauntedService",
+    "ReplicatedStorage/HauntedRecipes"
+  ],
+  "publishedPlace": false,
+  "studioMode": "Edit"
+}

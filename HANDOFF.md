@@ -36,6 +36,16 @@ Thirty-sixth pass, same day, right after the respawn/fall-through/travel-menu fi
 
 ---
 
+# Previous handoff — 38 Junkyard collectible models installed (2026-09-14)
+
+The new Junkyard pickup/fused-item models are installed in Studio. These are collectible vehicles/items, not avatar rigs. All 38 final model asset IDs, textures, mesh IDs and sizes are backed up in [assets/junkyard-models/asset-manifest.json](assets/junkyard-models/asset-manifest.json), with a populated Studio restore script and [full handoff](assets/junkyard-models/HANDOFF.md).
+
+33 originals were preserved in Studio; five missing recipe templates were added. Rusted Sedan retains its internal name and now looks like Scrap Kart. Verified all asset loads, 114 visual clone checks, 1,444 recipe pairs, index/inventory, existing lot displays, and a client-only fusion reveal. No Play-test Output errors. No place publication or player-data reset.
+
+Only model backup files and documentation change in this commit. Other Studio script edits observed during the session are not exported by this model backup; preserve them when continuing with Claude.
+
+---
+
 # Previous handoff — Fixed respawning and the island fall-through bug; Haunted Hollow reachable from the travel menu (2026-09-14)
 
 Thirty-fifth pass, same day, right after pulling Codex's fusion-animation commit (merged cleanly — only `FusionCelebrationView.luau` + new `docs/fusion-animations.md`, zero overlap with anything below). Three bugs/asks in one message: "im not respawning when i die," "when i teleprot to the brainrot island i fall right through the map everytime," and "i need to be able to teleport to the new map... right now its [not] intergrated into the UI" — plus an explicit heads-up that Codex is now doing a full player-model refresh, with a request to stay out of its way.
