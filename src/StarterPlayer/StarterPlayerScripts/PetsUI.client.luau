@@ -4,10 +4,10 @@
 	Lets a player equip one owned AreaPets egg pet to follow them (see
 	PlotManager.server.luau's AreaPetsService wiring and
 	updateEquippedPetVisual). Deliberately a brand-new, fully
-	self-contained script — its own nav button (left rail, slot 4, the
-	first free one) and its own modal — rather than another section
-	bolted onto GameUI.client.luau, so this never touches (or conflicts
-	with) whatever Codex is mid-pass on in that file. Same reasoning
+	self-contained script — its own nav button (left rail, slot 4) and its
+	own modal — rather than another section bolted onto
+	GameUI.client.luau, so this never touches (or conflicts with)
+	whatever Codex is mid-pass on in that file. Same reasoning
 	ShopUI.client.luau already uses for its own nav button.
 
 	Pet catalog data (name, area, tier, multipliers) comes straight from
@@ -16,10 +16,16 @@
 	wire. Only which keys are OWNED and which one is EQUIPPED come from
 	the server, via the existing GameUpdate payload's ownedAreaPets/
 	equippedAreaPet fields.
+
+	This tab shows ONLY pets the player actually owns — never a browsable
+	catalog of everything. That was an explicit correction, not a
+	preference: "its not an index it should onl whow the pets i have
+	bought from the eggs or from the store it shouldnt show anything else."
 --]]
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local gui = player:WaitForChild("PlayerGui"):WaitForChild("JunkyardUI")
@@ -34,96 +40,40 @@ local equipRemote = ReplicatedStorage:WaitForChild("EquipAreaPet")
 local Palette = UIStyle.Palette
 
 local AREA_TABS = {
-	{ key = "junkyard", label = "JUNKYARD" },
-	{ key = "brainrot", label = "BRAINROT" },
-	{ key = "haunted", label = "HAUNTED" },
+	{ key = "junkyard", label = "JUNKYARD", accent = Palette.Copper },
+	{ key = "brainrot", label = "BRAINROT", accent = Palette.Mint },
+	{ key = "haunted", label = "HAUNTED", accent = Palette.Steel },
 }
+
+local TIER_ACCENTS = { okay = Palette.Steel, good = Palette.Teal, great = Palette.Gold }
 
 local ownedAreaPets = {}
 local equippedPetKey = nil
 local selectedArea = "junkyard"
 
-------------------------------------------------------------------
--- Frame
-------------------------------------------------------------------
-
-local petsBtn = NavButton.Create(gui, "🐾", "PETS", Palette.Mint, NavButton.RailPosition("left", 4))
-
--- A custom icon, not the shared illustrated atlas — "PETS" would
--- otherwise land on the same cell as REWARDS/CODE (see UIStyle.luau's
--- `cells` table), and the user was explicit 2026-09-14 this needs to be
--- its own distinct icon, "a cartoon photo of an egg... following the
--- trend" of the rest of the UI. There's no tool available here to paint
--- a new sprite into that existing illustrated atlas, so this builds a
--- clean cartoon egg — cream shell, dark outline, a few playful speckles
--- in the game's own accent colors — entirely out of GUI primitives
--- instead. Swap this whole block for real illustrated art whenever
--- Codex has one, same as any other placeholder this session.
-local defaultArt = petsBtn:FindFirstChild("Illustration")
-if defaultArt then
-	defaultArt.Visible = false
+-- Style.Attach repaints any TextLabel/Frame it doesn't consider "Designed",
+-- which would flatten every accent colour below back to the default theme.
+-- Everything this file colours on purpose gets marked so the shim skips it.
+local function designed(object)
+	object:SetAttribute("Designed", true)
+	return object
 end
 
-local eggShape = Instance.new("Frame")
-eggShape.Name = "EggIcon"
-eggShape.Size = UDim2.fromOffset(58, 76)
-eggShape.AnchorPoint = Vector2.new(0.5, 0.5)
-eggShape.Position = UDim2.new(0.5, 0, 0.5, -18)
-eggShape.BackgroundColor3 = Color3.fromRGB(255, 250, 235)
-eggShape.BorderSizePixel = 0
-eggShape.ZIndex = 3
-eggShape.Parent = petsBtn
-
-local eggCorner = Instance.new("UICorner")
-eggCorner.CornerRadius = UDim.new(0.5, 0)
-eggCorner.Parent = eggShape
-
-local eggStroke = Instance.new("UIStroke")
-eggStroke.Color = Palette.Ink
-eggStroke.Thickness = 3
-eggStroke.Parent = eggShape
-
-local speckles = {
-	{ color = Palette.Copper, x = 0.32, y = 0.32, size = 11 },
-	{ color = Palette.Teal, x = 0.66, y = 0.46, size = 9 },
-	{ color = Palette.Gold, x = 0.48, y = 0.68, size = 13 },
-}
-for _, spot in ipairs(speckles) do
-	local speckle = Instance.new("Frame")
-	speckle.Size = UDim2.fromOffset(spot.size, spot.size)
-	speckle.AnchorPoint = Vector2.new(0.5, 0.5)
-	speckle.Position = UDim2.new(spot.x, 0, spot.y, 0)
-	speckle.BackgroundColor3 = spot.color
-	speckle.BorderSizePixel = 0
-	speckle.ZIndex = 4
-	speckle.Parent = eggShape
-
-	local speckleCorner = Instance.new("UICorner")
-	speckleCorner.CornerRadius = UDim.new(0.5, 0)
-	speckleCorner.Parent = speckle
+local function corner(object, radius)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, radius)
+	c.Parent = object
+	return c
 end
 
--- Style.Fit alone leaves no dimming backdrop behind the panel — the same
--- gap the Item Index and Inventory both had before being fixed. Adding
--- one here from the start rather than repeating that discovery a 4th time.
-local petsBackdrop = Instance.new("Frame")
-petsBackdrop.Name = "PetsBackdrop"
-petsBackdrop.Size = UDim2.fromScale(1, 1)
-petsBackdrop.BackgroundColor3 = Color3.new(0, 0, 0)
-petsBackdrop.BackgroundTransparency = 0.35
-petsBackdrop.BorderSizePixel = 0
-petsBackdrop.Visible = false
-petsBackdrop.ZIndex = 9
-petsBackdrop:SetAttribute("Designed", true)
-petsBackdrop.Parent = gui
-
-local petsFrame = Instance.new("Frame")
-petsFrame.Name = "PetsFrame"
-petsFrame.Visible = false
-petsFrame.BackgroundColor3 = Palette.Cream
-petsFrame.Parent = gui
-UIStyle.Fit(petsFrame, 920, 640)
-UIStyle.Surface(petsFrame, Palette.Cream, 4)
+local function stroke(object, color, thickness)
+	local s = Instance.new("UIStroke")
+	s.Color = color
+	s.Thickness = thickness
+	s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	s.Parent = object
+	return s
+end
 
 local function label(parent, text, size, position, color, font, textSize)
 	local lbl = Instance.new("TextLabel")
@@ -136,15 +86,115 @@ local function label(parent, text, size, position, color, font, textSize)
 	lbl.TextSize = textSize or 20
 	lbl.TextScaled = false
 	lbl.Parent = parent
-	return lbl
+	return designed(lbl)
 end
 
-local title = label(petsFrame, "PETS", UDim2.new(0, 300, 0, 50), UDim2.new(0, 30, 0, 20), Palette.Ink, Enum.Font.LuckiestGuy, 36)
-title.TextXAlignment = Enum.TextXAlignment.Left
+------------------------------------------------------------------
+-- Nav button
+------------------------------------------------------------------
 
-local subtitle = label(petsFrame, "Equip one owned pet to have it follow you.", UDim2.new(0, 500, 0, 24), UDim2.new(0, 32, 0, 68), Palette.Ink, Enum.Font.FredokaOne, 16)
-subtitle.TextXAlignment = Enum.TextXAlignment.Left
-subtitle.TextTransparency = 0.25
+local petsBtn = NavButton.Create(gui, "🐾", "PETS", Palette.Mint, NavButton.RailPosition("left", 4))
+
+-- A stand-in icon, not the shared illustrated atlas — "PETS" would otherwise
+-- land on the same cell as REWARDS/CODE (see UIStyle.luau's `cells` table),
+-- and this needs to be its own distinct mark. The real illustrated egg is
+-- being picked from a set of drawn concepts; when that's chosen and uploaded,
+-- this whole block becomes a single ImageLabel pointed at its asset id.
+local defaultArt = petsBtn:FindFirstChild("Illustration")
+if defaultArt then
+	defaultArt.Visible = false
+end
+
+local eggShape = designed(Instance.new("Frame"))
+eggShape.Name = "EggIcon"
+eggShape.Size = UDim2.fromOffset(58, 74)
+eggShape.AnchorPoint = Vector2.new(0.5, 0.5)
+eggShape.Position = UDim2.new(0.5, 0, 0.5, -18)
+eggShape.BackgroundColor3 = Color3.fromRGB(250, 250, 247)
+eggShape.BorderSizePixel = 0
+eggShape.ClipsDescendants = true
+eggShape.ZIndex = 3
+eggShape.Parent = petsBtn
+corner(eggShape, 999)
+stroke(eggShape, Color3.fromRGB(30, 34, 40), 3)
+
+local eggBand = designed(Instance.new("Frame"))
+eggBand.Size = UDim2.new(1, 0, 0, 11)
+eggBand.Position = UDim2.new(0, 0, 0.52, 0)
+eggBand.BackgroundColor3 = Color3.fromRGB(62, 201, 94)
+eggBand.BorderSizePixel = 0
+eggBand.ZIndex = 4
+eggBand.Parent = eggShape
+
+-- A press bounce, so the rail reacts to the click the way the panel does.
+local btnScale = Instance.new("UIScale")
+btnScale.Parent = petsBtn
+
+------------------------------------------------------------------
+-- Panel shell
+------------------------------------------------------------------
+
+local petsBackdrop = designed(Instance.new("Frame"))
+petsBackdrop.Name = "PetsBackdrop"
+petsBackdrop.Size = UDim2.fromScale(1, 1)
+petsBackdrop.BackgroundColor3 = Color3.new(0, 0, 0)
+petsBackdrop.BackgroundTransparency = 1
+petsBackdrop.BorderSizePixel = 0
+petsBackdrop.Visible = false
+petsBackdrop.ZIndex = 9
+petsBackdrop.Parent = gui
+
+local petsFrame = Instance.new("Frame")
+petsFrame.Name = "PetsFrame"
+petsFrame.Visible = false
+petsFrame.BackgroundColor3 = Palette.Cream
+-- Deliberately NOT clipping: UIStyle.Close parks the X button above the
+-- panel's own top edge, and clipping here lops half of it off.
+petsFrame.Parent = gui
+UIStyle.Fit(petsFrame, 980, 660)
+UIStyle.Surface(petsFrame, Palette.Cream, 4)
+corner(petsFrame, 22)
+
+local fitScale = petsFrame:FindFirstChildOfClass("UIScale")
+local RESTING_Y = petsFrame.Position.Y.Scale
+
+-- Coloured header band. A second square-cornered strip covers the band's own
+-- lower corners so it meets the panel body flush instead of showing a notch.
+local headerBand = designed(Instance.new("Frame"))
+headerBand.Name = "Header"
+headerBand.Size = UDim2.new(1, 0, 0, 108)
+headerBand.BackgroundColor3 = Palette.Copper
+headerBand.BorderSizePixel = 0
+headerBand.ZIndex = 2
+headerBand.Parent = petsFrame
+corner(headerBand, 22)
+
+local headerFoot = designed(Instance.new("Frame"))
+headerFoot.Size = UDim2.new(1, 0, 0, 26)
+headerFoot.Position = UDim2.new(0, 0, 1, -26)
+headerFoot.BackgroundColor3 = Palette.Copper
+headerFoot.BorderSizePixel = 0
+headerFoot.ZIndex = 2
+headerFoot.Parent = headerBand
+
+local headerRule = designed(Instance.new("Frame"))
+headerRule.Size = UDim2.new(1, 0, 0, 4)
+headerRule.Position = UDim2.new(0, 0, 1, -4)
+headerRule.BackgroundColor3 = Palette.Ink
+headerRule.BorderSizePixel = 0
+headerRule.ZIndex = 3
+headerRule.Parent = headerBand
+
+local titleLabel = label(headerBand, "PETS", UDim2.new(0, 400, 0, 52), UDim2.new(0, 34, 0, 16),
+	Palette.Cream, Enum.Font.LuckiestGuy, 44)
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.ZIndex = 4
+UIStyle.Outline(titleLabel, 44)
+
+local counterLabel = label(headerBand, "", UDim2.new(0, 400, 0, 24), UDim2.new(0, 36, 0, 68),
+	Palette.Cream, Enum.Font.FredokaOne, 17)
+counterLabel.TextXAlignment = Enum.TextXAlignment.Left
+counterLabel.ZIndex = 4
 
 local closeBtn = Instance.new("TextButton")
 closeBtn.Parent = petsFrame
@@ -154,112 +204,186 @@ UIStyle.Close(closeBtn)
 -- Area tabs
 ------------------------------------------------------------------
 
-local tabRow = Instance.new("Frame")
+local tabRow = designed(Instance.new("Frame"))
 tabRow.BackgroundTransparency = 1
-tabRow.Size = UDim2.new(1, -64, 0, 44)
-tabRow.Position = UDim2.new(0, 32, 0, 100)
+tabRow.Size = UDim2.new(1, -68, 0, 54)
+tabRow.Position = UDim2.new(0, 34, 0, 128)
+tabRow.ZIndex = 3
 tabRow.Parent = petsFrame
 
 local tabLayout = Instance.new("UIListLayout")
 tabLayout.FillDirection = Enum.FillDirection.Horizontal
-tabLayout.Padding = UDim.new(0, 10)
+tabLayout.Padding = UDim.new(0, 12)
+-- Explicit, because UIListLayout otherwise sorts by Name and the tabs carry
+-- per-area names — which silently reordered them alphabetically.
+tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
 tabLayout.Parent = tabRow
 
 local tabButtons = {}
 
 ------------------------------------------------------------------
--- Scrollable pet list
+-- Scrollable owned-pet list
 ------------------------------------------------------------------
 
-local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, -64, 1, -220)
-scroll.Position = UDim2.new(0, 32, 0, 156)
+local scroll = designed(Instance.new("ScrollingFrame"))
+scroll.Size = UDim2.new(1, -68, 1, -220)
+scroll.Position = UDim2.new(0, 34, 0, 198)
 scroll.BackgroundTransparency = 1
 scroll.BorderSizePixel = 0
 scroll.ScrollBarThickness = 8
+scroll.ScrollBarImageColor3 = Palette.Steel
 scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.ZIndex = 3
 scroll.Parent = petsFrame
 
 local scrollLayout = Instance.new("UIListLayout")
-scrollLayout.Padding = UDim.new(0, 18)
+scrollLayout.Padding = UDim.new(0, 22)
+-- Sections carry LayoutOrder = egg.tier so they read Okay -> Good -> Great.
+scrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
 scrollLayout.Parent = scroll
 scrollLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-	scroll.CanvasSize = UDim2.new(0, 0, 0, scrollLayout.AbsoluteContentSize.Y + 16)
+	scroll.CanvasSize = UDim2.new(0, 0, 0, scrollLayout.AbsoluteContentSize.Y + 18)
 end)
 
-local TIER_ACCENTS = { okay = Palette.Steel, good = Palette.Teal, great = Palette.Gold }
+local function statChip(parent, text, fill, order)
+	local chip = designed(Instance.new("Frame"))
+	chip.Size = UDim2.new(0, 92, 0, 26)
+	chip.BackgroundColor3 = fill
+	chip.BorderSizePixel = 0
+	chip.LayoutOrder = order
+	chip.ZIndex = 5
+	chip.Parent = parent
+	corner(chip, 999)
+	stroke(chip, Palette.Ink, 2)
 
--- Only ever called for a pet the player actually owns — this tab shows
--- your collection, not a browsable catalog. The user's own correction
--- 2026-09-14: "its not an index it should only show the pets i have
--- bought from the eggs or from the store it shouldnt show anything else."
+	local txt = label(chip, text, UDim2.fromScale(1, 1), UDim2.fromScale(0, 0),
+		Palette.Ink, Enum.Font.FredokaOne, 13)
+	txt.ZIndex = 6
+	return chip
+end
+
 local function buildPetCard(parent, pet, accent)
 	local isEquipped = equippedPetKey == pet.key
 
-	local card = Instance.new("TextButton")
-	card.Size = UDim2.new(0, 164, 0, 150)
+	local card = designed(Instance.new("TextButton"))
+	card.Size = UDim2.new(0, 208, 0, 208)
 	card.AutoButtonColor = false
 	card.Text = ""
 	card.BackgroundColor3 = Palette.Cream
+	card.BorderSizePixel = 0
+	card.ClipsDescendants = true
+	card.ZIndex = 4
 	card.Parent = parent
-	UIStyle.Surface(card, card.BackgroundColor3, isEquipped and 5 or 2)
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 14)
-	corner.Parent = card
-	if isEquipped then
-		local stroke = card:FindFirstChildOfClass("UIStroke")
-		stroke.Color = accent
-	end
+	corner(card, 16)
+	stroke(card, isEquipped and Palette.Mint or Palette.Ink, isEquipped and 5 or 3)
 
-	local badge = Instance.new("Frame")
-	badge.Size = UDim2.new(1, -16, 0, 6)
-	badge.Position = UDim2.new(0, 8, 0, 8)
-	badge.BackgroundColor3 = accent
-	badge.BorderSizePixel = 0
-	badge.Parent = card
-	local badgeCorner = Instance.new("UICorner")
-	badgeCorner.CornerRadius = UDim.new(1, 0)
-	badgeCorner.Parent = badge
+	-- Tier strip: the card's loudest signal of which egg this came out of.
+	local strip = designed(Instance.new("Frame"))
+	strip.Size = UDim2.new(1, 0, 0, 46)
+	strip.BackgroundColor3 = accent
+	strip.BorderSizePixel = 0
+	strip.ZIndex = 5
+	strip.Parent = card
 
-	if pet.secret then
-		local secretTag = label(card, "★ SECRET", UDim2.new(1, -16, 0, 16), UDim2.new(0, 8, 0, 18), Palette.Gold, Enum.Font.FredokaOne, 12)
-		secretTag.TextXAlignment = Enum.TextXAlignment.Left
-	end
+	local stripText = label(strip, pet.secret and "★ SECRET" or "PET",
+		UDim2.new(1, -20, 1, 0), UDim2.new(0, 12, 0, 0),
+		Palette.Ink, Enum.Font.FredokaOne, 16)
+	stripText.TextXAlignment = Enum.TextXAlignment.Left
+	stripText.ZIndex = 6
 
-	local nameLbl = label(card, pet.name, UDim2.new(1, -16, 0, 52), UDim2.new(0, 8, 0, pet.secret and 36 or 22), Palette.Ink, Enum.Font.FredokaOne, 15)
+	local nameLbl = label(card, pet.name, UDim2.new(1, -24, 0, 50), UDim2.new(0, 12, 0, 56),
+		Palette.Ink, Enum.Font.FredokaOne, 16)
 	nameLbl.TextWrapped = true
 	nameLbl.TextXAlignment = Enum.TextXAlignment.Left
 	nameLbl.TextYAlignment = Enum.TextYAlignment.Top
+	nameLbl.ZIndex = 5
 
-	local statText = string.format("+%d%% coins\n+%d%% speed",
-		math.floor((pet.coinMult - 1) * 100 + 0.5), math.floor((pet.speedMult - 1) * 100 + 0.5))
-	local statLbl = label(card, statText, UDim2.new(1, -16, 0, 40), UDim2.new(0, 8, 1, -76), Palette.Teal, Enum.Font.FredokaOne, 13)
-	statLbl.TextXAlignment = Enum.TextXAlignment.Left
+	local chipRow = designed(Instance.new("Frame"))
+	chipRow.BackgroundTransparency = 1
+	chipRow.Size = UDim2.new(1, -24, 0, 26)
+	chipRow.Position = UDim2.new(0, 12, 0, 114)
+	chipRow.ZIndex = 5
+	chipRow.Parent = card
 
-	local stateLbl = Instance.new("TextLabel")
-	stateLbl.Size = UDim2.new(1, -16, 0, 28)
-	stateLbl.Position = UDim2.new(0, 8, 1, -32)
-	stateLbl.BackgroundColor3 = isEquipped and accent or Palette.Ink
-	stateLbl.BorderSizePixel = 0
-	stateLbl.Text = isEquipped and "EQUIPPED" or "TAP TO EQUIP"
-	stateLbl.TextColor3 = Palette.Cream
-	stateLbl.Font = Enum.Font.FredokaOne
-	stateLbl.TextSize = 13
-	stateLbl.Parent = card
-	local stateCorner = Instance.new("UICorner")
-	stateCorner.CornerRadius = UDim.new(0, 8)
-	stateCorner.Parent = stateLbl
+	local chipLayout = Instance.new("UIListLayout")
+	chipLayout.FillDirection = Enum.FillDirection.Horizontal
+	chipLayout.Padding = UDim.new(0, 8)
+	chipLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	chipLayout.Parent = chipRow
 
-	card.MouseButton1Click:Connect(function()
+	statChip(chipRow, string.format("+%d%% COINS", math.floor((pet.coinMult - 1) * 100 + 0.5)), Palette.Gold, 1)
+	statChip(chipRow, string.format("+%d%% SPEED", math.floor((pet.speedMult - 1) * 100 + 0.5)), Palette.Mint, 2)
+
+	local action = designed(Instance.new("TextButton"))
+	action.Size = UDim2.new(1, -24, 0, 40)
+	action.Position = UDim2.new(0, 12, 1, -52)
+	action.AutoButtonColor = false
+	action.BackgroundColor3 = isEquipped and Palette.Mint or Palette.Ink
+	action.BorderSizePixel = 0
+	action.Text = isEquipped and "EQUIPPED" or "EQUIP"
+	action.TextColor3 = isEquipped and Palette.Ink or Palette.Cream
+	action.Font = Enum.Font.FredokaOne
+	action.TextSize = 17
+	action.ZIndex = 5
+	action.Parent = card
+	corner(action, 10)
+	stroke(action, Palette.Ink, 2)
+
+	local function equip()
 		equipRemote:FireServer(pet.key)
-	end)
+	end
+	card.MouseButton1Click:Connect(equip)
+	action.MouseButton1Click:Connect(equip)
 
 	return card
 end
 
+local function buildEmptyState()
+	local empty = designed(Instance.new("Frame"))
+	empty.BackgroundColor3 = Color3.fromRGB(244, 238, 226)
+	empty.BorderSizePixel = 0
+	empty.Size = UDim2.new(1, -12, 0, 190)
+	empty.LayoutOrder = 99
+	empty.ZIndex = 4
+	empty.Parent = scroll
+	corner(empty, 16)
+	stroke(empty, Palette.Steel, 3)
+
+	local mark = designed(Instance.new("Frame"))
+	mark.Size = UDim2.fromOffset(56, 70)
+	mark.AnchorPoint = Vector2.new(0.5, 0)
+	mark.Position = UDim2.new(0.5, 0, 0, 24)
+	mark.BackgroundColor3 = Color3.fromRGB(250, 250, 247)
+	mark.BorderSizePixel = 0
+	mark.ClipsDescendants = true
+	mark.ZIndex = 5
+	mark.Parent = empty
+	corner(mark, 999)
+	stroke(mark, Palette.Ink, 3)
+
+	local band = designed(Instance.new("Frame"))
+	band.Size = UDim2.new(1, 0, 0, 10)
+	band.Position = UDim2.new(0, 0, 0.52, 0)
+	band.BackgroundColor3 = Palette.Mint
+	band.BorderSizePixel = 0
+	band.ZIndex = 6
+	band.Parent = mark
+
+	local msg = label(empty, "No pets from this area yet", UDim2.new(1, -40, 0, 26),
+		UDim2.new(0, 20, 0, 106), Palette.Ink, Enum.Font.FredokaOne, 20)
+	msg.TextXAlignment = Enum.TextXAlignment.Center
+	msg.ZIndex = 5
+
+	local hint = label(empty, "Crack an egg at one of the incubators to start your collection.",
+		UDim2.new(1, -40, 0, 24), UDim2.new(0, 20, 0, 136), Palette.Ink, Enum.Font.FredokaOne, 15)
+	hint.TextXAlignment = Enum.TextXAlignment.Center
+	hint.TextTransparency = 0.35
+	hint.ZIndex = 5
+end
+
 local function redrawPets()
 	for _, child in ipairs(scroll:GetChildren()) do
-		if child:IsA("Frame") then child:Destroy() end
+		if child:IsA("GuiObject") then child:Destroy() end
 	end
 
 	local area = AreaPets.Areas[selectedArea]
@@ -276,69 +400,104 @@ local function redrawPets()
 		end
 		if #ownedPets > 0 then
 			anyOwned = true
+			local accent = TIER_ACCENTS[egg.key] or Palette.Steel
 
-			local section = Instance.new("Frame")
+			local section = designed(Instance.new("Frame"))
 			section.BackgroundTransparency = 1
-			section.Size = UDim2.new(1, 0, 0, 210)
+			section.Size = UDim2.new(1, 0, 0, 268)
 			section.LayoutOrder = egg.tier
+			section.ZIndex = 3
 			section.Parent = scroll
 
-			local sectionTitle = label(section, egg.name:upper(), UDim2.new(1, 0, 0, 26), UDim2.new(0, 0, 0, 0), TIER_ACCENTS[egg.key] or Palette.Ink, Enum.Font.FredokaOne, 20)
-			sectionTitle.TextXAlignment = Enum.TextXAlignment.Left
+			local sectionBar = designed(Instance.new("Frame"))
+			sectionBar.Size = UDim2.new(1, -12, 0, 38)
+			sectionBar.BackgroundColor3 = accent
+			sectionBar.BorderSizePixel = 0
+			sectionBar.ZIndex = 4
+			sectionBar.Parent = section
+			corner(sectionBar, 10)
+			stroke(sectionBar, Palette.Ink, 2)
 
-			local row = Instance.new("Frame")
+			local sectionTitle = label(sectionBar, string.upper(egg.name), UDim2.new(1, -110, 1, 0),
+				UDim2.new(0, 14, 0, 0), Palette.Ink, Enum.Font.FredokaOne, 19)
+			sectionTitle.TextXAlignment = Enum.TextXAlignment.Left
+			sectionTitle.ZIndex = 5
+
+			local sectionCount = label(sectionBar, string.format("%d / %d", #ownedPets, #egg.pets),
+				UDim2.new(0, 90, 1, 0), UDim2.new(1, -102, 0, 0), Palette.Ink, Enum.Font.FredokaOne, 17)
+			sectionCount.TextXAlignment = Enum.TextXAlignment.Right
+			sectionCount.ZIndex = 5
+
+			local row = designed(Instance.new("Frame"))
 			row.BackgroundTransparency = 1
-			row.Size = UDim2.new(1, 0, 0, 158)
-			row.Position = UDim2.new(0, 0, 0, 34)
+			row.Size = UDim2.new(1, 0, 0, 214)
+			row.Position = UDim2.new(0, 0, 0, 50)
+			row.ZIndex = 3
 			row.Parent = section
 
 			local rowLayout = Instance.new("UIListLayout")
 			rowLayout.FillDirection = Enum.FillDirection.Horizontal
-			rowLayout.Padding = UDim.new(0, 12)
+			rowLayout.Padding = UDim.new(0, 14)
 			rowLayout.Parent = row
 
 			for _, pet in ipairs(ownedPets) do
-				buildPetCard(row, pet, TIER_ACCENTS[egg.key] or Palette.Ink)
+				buildPetCard(row, pet, accent)
 			end
 		end
 	end
 
 	if not anyOwned then
-		local empty = Instance.new("Frame")
-		empty.BackgroundTransparency = 1
-		empty.Size = UDim2.new(1, 0, 0, 160)
-		empty.LayoutOrder = 99
-		empty.Parent = scroll
-
-		local msg = label(empty, "No pets from this area yet — buy an egg in the shop to get started!",
-			UDim2.new(1, 0, 0, 60), UDim2.new(0, 0, 0, 40), Palette.Ink, Enum.Font.FredokaOne, 18)
-		msg.TextXAlignment = Enum.TextXAlignment.Center
-		msg.TextWrapped = true
-		msg.TextTransparency = 0.3
+		buildEmptyState()
 	end
 end
 
-for _, tab in ipairs(AREA_TABS) do
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(0, 160, 1, 0)
+local function refreshCounter()
+	local owned, total = 0, 0
+	for _, areaKey in ipairs(AreaPets.AreaKeys) do
+		for _, egg in ipairs(AreaPets.Areas[areaKey].eggs) do
+			for _, pet in ipairs(egg.pets) do
+				total += 1
+				if ownedAreaPets[pet.key] then owned += 1 end
+			end
+		end
+	end
+	counterLabel.Text = string.format("%d of %d collected", owned, total)
+end
+
+------------------------------------------------------------------
+-- Tabs
+------------------------------------------------------------------
+
+local function paintTab(btn, tab, active)
+	btn.BackgroundColor3 = active and tab.accent or Palette.Cream
+	btn.TextColor3 = Palette.Ink
+	local s = btn:FindFirstChildOfClass("UIStroke")
+	if s then s.Thickness = active and 4 or 2 end
+end
+
+for index, tab in ipairs(AREA_TABS) do
+	local btn = designed(Instance.new("TextButton"))
+	btn.Name = "Tab_" .. tab.key
+	btn.LayoutOrder = index
+	btn.Size = UDim2.new(0, 168, 1, 0)
 	btn.Text = tab.label
 	btn.Font = Enum.Font.FredokaOne
-	btn.TextSize = 18
+	btn.TextSize = 19
 	btn.AutoButtonColor = false
+	btn.BorderSizePixel = 0
+	btn.ZIndex = 4
 	btn.Parent = tabRow
-	UIStyle.Surface(btn, tab.key == selectedArea and Palette.Teal or Palette.Cream, 2)
-	btn.TextColor3 = tab.key == selectedArea and Palette.Cream or Palette.Ink
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 10)
-	corner.Parent = btn
+	corner(btn, 999)
+	stroke(btn, Palette.Ink, 2)
+	paintTab(btn, tab, tab.key == selectedArea)
 
 	btn.MouseButton1Click:Connect(function()
 		selectedArea = tab.key
-		for key, otherBtn in pairs(tabButtons) do
-			local active = key == selectedArea
-			otherBtn.BackgroundColor3 = active and Palette.Teal or Palette.Cream
-			otherBtn.TextColor3 = active and Palette.Cream or Palette.Ink
+		for _, other in ipairs(AREA_TABS) do
+			paintTab(tabButtons[other.key], other, other.key == selectedArea)
 		end
+		headerBand.BackgroundColor3 = tab.accent
+		headerFoot.BackgroundColor3 = tab.accent
 		redrawPets()
 	end)
 
@@ -346,25 +505,101 @@ for _, tab in ipairs(AREA_TABS) do
 end
 
 ------------------------------------------------------------------
--- Toggle + data
+-- Open / close, with the pop the panel was missing
 ------------------------------------------------------------------
 
+local POP_IN = TweenInfo.new(0.26, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local POP_OUT = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+local FADE = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+local activeTweens = {}
+local function play(object, info, goal)
+	local existing = activeTweens[object]
+	if existing then existing:Cancel() end
+	local t = TweenService:Create(object, info, goal)
+	activeTweens[object] = t
+	t:Play()
+	return t
+end
+
+local isOpen = false
+
+local function openPanel()
+	isOpen = true
+	redrawPets()
+	refreshCounter()
+
+	-- fitScale is owned by Style.Fit and only recomputed on a viewport change,
+	-- so its value while closed is the correct resting scale to animate back to.
+	local rest = fitScale.Scale
+	fitScale.Scale = rest * 0.86
+	petsFrame.Position = UDim2.fromScale(0.5, RESTING_Y + 0.05)
+	petsFrame.Visible = true
+	petsBackdrop.Visible = true
+	petsBackdrop.BackgroundTransparency = 1
+
+	play(petsBackdrop, FADE, { BackgroundTransparency = 0.35 })
+	play(fitScale, POP_IN, { Scale = rest })
+	play(petsFrame, POP_IN, { Position = UDim2.fromScale(0.5, RESTING_Y) })
+end
+
+local function closePanel()
+	isOpen = false
+	local rest = fitScale.Scale
+	play(petsBackdrop, POP_OUT, { BackgroundTransparency = 1 })
+	play(petsFrame, POP_OUT, { Position = UDim2.fromScale(0.5, RESTING_Y + 0.04) })
+	local shrink = play(fitScale, POP_OUT, { Scale = rest * 0.9 })
+
+	shrink.Completed:Connect(function()
+		if isOpen then return end
+		petsFrame.Visible = false
+		petsBackdrop.Visible = false
+		-- Restore resting values so the next open reads them correctly.
+		fitScale.Scale = rest
+		petsFrame.Position = UDim2.fromScale(0.5, RESTING_Y)
+	end)
+end
+
 local function togglePets()
-	local visible = not petsFrame.Visible
-	petsFrame.Visible = visible
-	petsBackdrop.Visible = visible
-	if visible then redrawPets() end
+	-- A quick squash on the rail button so the click registers physically.
+	btnScale.Scale = 0.88
+	play(btnScale, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
+
+	if isOpen then closePanel() else openPanel() end
 end
 
 petsBtn.MouseButton1Click:Connect(togglePets)
-closeBtn.MouseButton1Click:Connect(togglePets)
+closeBtn.MouseButton1Click:Connect(function()
+	if isOpen then closePanel() end
+end)
+
+-- Style.Modal hides other panels by flipping Visible directly, which bypasses
+-- closePanel() and would otherwise leave isOpen stuck true.
+petsFrame:GetPropertyChangedSignal("Visible"):Connect(function()
+	if not petsFrame.Visible and isOpen then
+		isOpen = false
+		petsBackdrop.Visible = false
+	end
+end)
+
+------------------------------------------------------------------
+-- Server data
+------------------------------------------------------------------
 
 updateRemote.OnClientEvent:Connect(function(data)
+	local changed = false
 	if data.ownedAreaPets ~= nil then
 		ownedAreaPets = data.ownedAreaPets
+		changed = true
 	end
 	if data.equippedAreaPet ~= nil then
 		equippedPetKey = data.equippedAreaPet and data.equippedAreaPet.key or nil
+		changed = true
 	end
-	if petsFrame.Visible then redrawPets() end
+	if changed then
+		refreshCounter()
+		if petsFrame.Visible then redrawPets() end
+	end
 end)
+
+refreshCounter()

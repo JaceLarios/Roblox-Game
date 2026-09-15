@@ -22,6 +22,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
+local InsertService = game:GetService("InsertService")
 
 local IslandBuilder = require(ServerStorage:WaitForChild("IslandBuilder"))
 local PickupEffects = require(ServerStorage:WaitForChild("PickupEffects"))
@@ -349,66 +350,70 @@ end
 -- established "server owns the mechanic, prompt triggers it" shape).
 ------------------------------------------------------------------
 
--- Bigger "incubator" machines, replacing the original simple glowing-egg
--- markers — the user's ask 2026-09-14: "3 incubatros that are a little
--- bit bigger than a player model that will have a cool egg skin on it
--- that ill design with codex." IncubatorEgg is deliberately its own
--- separately-named part so a texture/decal is easy to drop onto it later
--- without touching the machine housing around it.
-local function buildIncubator(pos, tierColor, tierLabel, parent)
-	local base = part({
-		Name = "IncubatorBase", Size = Vector3.new(3, 5, 5),
-		Position = pos + Vector3.new(0, 1.5, 0),
-		Material = Enum.Material.Metal, Color = Color3.fromRGB(60, 62, 68), Parent = parent,
-	})
-	base.Shape = Enum.PartType.Cylinder
-	base.Orientation = Vector3.new(0, 0, 90)
-
-	local rim = part({
-		Name = "IncubatorRim", Size = Vector3.new(0.6, 5.6, 5.6),
-		Position = pos + Vector3.new(0, 3.1, 0),
-		Material = Enum.Material.Neon, Color = tierColor, Parent = parent,
-	})
-	rim.Shape = Enum.PartType.Cylinder
-	rim.Orientation = Vector3.new(0, 0, 90)
-
-	local rimLight = Instance.new("PointLight")
-	rimLight.Color = tierColor
-	rimLight.Brightness = 2
-	rimLight.Range = 20
-	rimLight.Shadows = false
-	rimLight.Parent = rim
-
-	-- ~8.5 studs tall overall (base+egg) — "a little bit bigger than a
-	-- player model" (a default rig stands roughly 5-6 studs).
-	local egg = part({
-		Name = "IncubatorEgg", Size = Vector3.new(3.4, 5, 3.4),
-		Position = pos + Vector3.new(0, 6, 0),
-		Material = Enum.Material.SmoothPlastic, Color = tierColor:Lerp(Color3.new(1, 1, 1), 0.6), Parent = parent,
-	})
-	egg.Shape = Enum.PartType.Ball
-
-	local eggLight = Instance.new("PointLight")
-	eggLight.Color = tierColor
-	eggLight.Brightness = 1.5
-	eggLight.Range = 22
-	eggLight.Shadows = false
-	eggLight.Parent = egg
-
-	label(egg, tierLabel, 6, 200, tierColor, 70)
-end
-
+-- Real modelled incubator machines, replacing the hand-built
+-- cylinder-and-ball placeholders these started as. One machine per egg tier,
+-- deliberately escalating from a cheap toy dispenser to an alien organism so
+-- the tier jump reads from across the island without anyone parsing the label.
+-- Reskinning a tier is a one-line change: swap its asset id below.
+local INCUBATOR_HEIGHT = 9.2
 local EGG_TIERS = {
-	{ label = "OKAY EGG", color = Color3.fromRGB(140, 160, 200) },
-	{ label = "GOOD EGG", color = Color3.fromRGB(90, 200, 190) },
-	{ label = "GREAT EGG", color = Color3.fromRGB(235, 190, 90) },
+	{ label = "OKAY EGG",  color = Color3.fromRGB(140, 160, 200), asset = 117072885390456 }, -- gumball dispenser
+	{ label = "GOOD EGG",  color = Color3.fromRGB(90, 200, 190),  asset = 104592900443146 }, -- arcade capsule machine
+	{ label = "GREAT EGG", color = Color3.fromRGB(235, 190, 90),  asset = 126746703704748 }, -- alien bio-pod
 }
 
-for i, tier in ipairs(EGG_TIERS) do
-	local angle = (i - 1) * (math.pi * 2 / 3)
-	local eggPos = ISLAND_CENTER + Vector3.new(math.cos(angle) * 9, 0, math.sin(angle) * 9)
-	buildIncubator(eggPos, tier.color, tier.label, islandFolder)
+local function buildIncubator(pos, tier, parent)
+	local ok, container = pcall(function()
+		return InsertService:LoadAsset(tier.asset)
+	end)
+	if not ok or not container then
+		warn(string.format("[Brainrot] incubator asset %d did not load: %s", tier.asset, tostring(container)))
+		return
+	end
+
+	local model = container:FindFirstChildWhichIsA("Model")
+	if not model then
+		container:Destroy()
+		warn(string.format("[Brainrot] incubator asset %d contained no Model", tier.asset))
+		return
+	end
+	model.Name = "Incubator_" .. string.gsub(tier.label, " ", "_")
+	model.Parent = parent
+	container:Destroy()
+
+	for _, d in ipairs(model:GetDescendants()) do
+		if d:IsA("BasePart") then
+			d.Anchored = true
+		end
+	end
+
+	-- Normalize height so all three read as one matched set regardless of
+	-- whatever bounding box each individual mesh happened to come back with.
+	local extents = model:GetExtentsSize()
+	if extents.Y > 0 then
+		model:ScaleTo(model:GetScale() * (INCUBATOR_HEIGHT / extents.Y))
+	end
+
+	model:PivotTo(CFrame.new(pos.X, model:GetPivot().Position.Y, pos.Z))
+	local bbCF, bbSize = model:GetBoundingBox()
+	-- +0.5 is the island ground's actual top surface (see IslandBuilder.Path).
+	model:PivotTo(model:GetPivot() + Vector3.new(0, (pos.Y + 0.5) - (bbCF.Position.Y - bbSize.Y / 2), 0))
+
+	local anchor = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart", true)
+	if anchor then
+		label(anchor, tier.label, bbSize.Y * 0.62, 200, tier.color, 70)
+	end
 end
+
+-- Spawned rather than inline: LoadAsset yields on a web request, and three of
+-- them would otherwise stall PlotManager's own require of this module at
+-- server start. The machines are decorative, so arriving a beat late is fine.
+task.spawn(function()
+	for i, tier in ipairs(EGG_TIERS) do
+		local angle = (i - 1) * (math.pi * 2 / 3)
+		buildIncubator(ISLAND_CENTER + Vector3.new(math.cos(angle) * 11, 0, math.sin(angle) * 11), tier, islandFolder)
+	end
+end)
 
 ------------------------------------------------------------------
 -- Spawning
