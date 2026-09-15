@@ -786,15 +786,21 @@ end
 -- showing what you have and haven't found yet.
 ------------------------------------------------------------------
 
-local function buildItemViewport(parent, itemName, tintColor)
+-- opts lets a caller frame the preview for its own tile instead of taking
+-- the default (which reserves 46px at the bottom for a name label). `zoom`
+-- is the important one: a small grid tile needs tighter framing or the item
+-- renders as an unreadable speck in the middle of empty space.
+local function buildItemViewport(parent, itemName, tintColor, opts)
+	opts = opts or {}
 	local viewport = Instance.new("ViewportFrame")
-	viewport.Size = UDim2.new(1, -16, 1, -46)
-	viewport.Position = UDim2.new(0, 8, 0, 8)
+	viewport.Size = opts.size or UDim2.new(1, -16, 1, -46)
+	viewport.Position = opts.position or UDim2.new(0, 8, 0, 8)
 	viewport.BorderSizePixel = 0
 	viewport.BackgroundColor3 = Color3.new(1,1,1)
 	viewport.BackgroundTransparency = 1
-	viewport.Ambient = Color3.fromRGB(195,195,205)
+	viewport.Ambient = Color3.fromRGB(205,205,214)
 	viewport.LightColor = Color3.new(1,1,1)
+	viewport.ZIndex = opts.zIndex or 1
 	viewport.Parent = parent
 
 	local cam = Instance.new("Camera")
@@ -811,9 +817,10 @@ local function buildItemViewport(parent, itemName, tintColor)
 		clone.Parent = viewport
 
 		local size = clone.Size
-		local reach = math.max(size.X, size.Y, size.Z) * 1.5 + 0.2
+		local reach = math.max(size.X, size.Y, size.Z) * (opts.zoom or 1.5) + 0.2
 		cam.CFrame = CFrame.new(Vector3.new(reach * 0.6, reach * 0.5, reach * 0.85), Vector3.new(0, 0, 0))
 	end
+	return viewport
 end
 
 
@@ -1140,267 +1147,370 @@ local currentPlacedCapacity = 5
 
 local inventoryBtn = NavButton.Create(gui, "📦", "INVENTORY", BLUE, NavButton.RailPosition("left", 2))
 
+-- 2026-09-15 rebuild against a reference the user supplied (Pet Simulator X's
+-- inventory): big panel, generous spacing, small-but-legible tiles, and real
+-- contrast. The old version's cards were fully transparent (`Floating`), which
+-- is exactly why it read washed out — every tile is a solid card now.
+local INK = UIStyle.Palette.Ink
+local CREAM = UIStyle.Palette.Cream
+local PAPER = Color3.fromRGB(245, 239, 228)
+local RULE_TINT = Color3.fromRGB(226, 216, 198)
+
+-- Everything below is coloured on purpose; Style.Attach repaints anything it
+-- doesn't consider "Designed" back to the default theme.
+local function mark(object)
+	object:SetAttribute("Designed", true)
+	return object
+end
+
+local function outline(object, color, thickness)
+	local s = object:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
+	s.Color = color or INK
+	s.Thickness = thickness or 3
+	s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	s.Parent = object
+	return s
+end
+
 -- Same gap the Item Index had before its backdrop fix: UIStyle.Fit alone
--- doesn't dim the world behind the panel, so the ~6% margin around this
--- 88%-screen panel left the yard/pads fully visible and undimmed. Fixed
--- the same way — a dedicated Designed=true Frame so Style.Attach never
--- re-themes it, toggled alongside the panel in toggleInventory().
-local inventoryBackdrop = Instance.new("Frame")
+-- doesn't dim the world behind the panel, so the margin around this
+-- 88%-screen panel left the yard/pads fully visible and undimmed.
+local inventoryBackdrop = mark(Instance.new("Frame"))
 inventoryBackdrop.Name = "InventoryBackdrop"
 inventoryBackdrop.Size = UDim2.fromScale(1, 1)
 inventoryBackdrop.BackgroundColor3 = Color3.new(0, 0, 0)
 inventoryBackdrop.BackgroundTransparency = 0.35
 inventoryBackdrop.BorderSizePixel = 0
 inventoryBackdrop.Visible = false
-inventoryBackdrop:SetAttribute("Designed", true)
 inventoryBackdrop.Parent = gui
 
 local inventoryFrame = Instance.new("Frame")
 inventoryFrame.Name = "InventoryPanel"
-inventoryFrame.Size = UDim2.new(0, 1100, 0, 800)
-inventoryFrame.Position = UDim2.new(0.5, -430, 0.5, -320)
-inventoryFrame.BackgroundColor3 = DARK
-inventoryFrame.BackgroundTransparency = GLASS_PANEL
+inventoryFrame.BackgroundColor3 = CREAM
 inventoryFrame.BorderSizePixel = 0
 inventoryFrame.Visible = false
 inventoryFrame.Parent = gui
-rounded(inventoryFrame, 18)
+rounded(inventoryFrame, 24)
 UIStyle.Fit(inventoryFrame, 1200, 800)
-UIStyle.Surface(inventoryFrame,UIStyle.Palette.Cream,5)
-UIStyle.Art(inventoryFrame,"INVENTORY",UDim2.fromOffset(-16,-80),UDim2.fromOffset(112,112))
+UIStyle.Surface(inventoryFrame, CREAM, 5)
+UIStyle.Art(inventoryFrame, "INVENTORY", UDim2.fromOffset(-16, -80), UDim2.fromOffset(112, 112))
 
-local inventoryTitle = label(inventoryFrame, "INVENTORY", UDim2.new(0, 280, 0, 40), BLUE, Enum.Font.LuckiestGuy, 30)
-inventoryTitle.Position = UDim2.fromOffset(92,-64)
-inventoryTitle.Size = UDim2.fromOffset(480,88)
-inventoryTitle.Text = "Inventory!"
-UIStyle.Outline(inventoryTitle,60)
-
-local inventoryCount = label(inventoryFrame, "0 / 15", UDim2.new(0, 110, 0, 34), DIM, Enum.Font.FredokaOne, 16)
-inventoryCount.Position = UDim2.new(.5,-55,0,18)
-inventoryCount.TextSize = 22
+local inventoryTitle = label(inventoryFrame, "Inventory!", UDim2.fromOffset(480, 88), BLUE, Enum.Font.LuckiestGuy, 60)
+inventoryTitle.Position = UDim2.fromOffset(92, -64)
+inventoryTitle.TextXAlignment = Enum.TextXAlignment.Left
+UIStyle.Outline(inventoryTitle, 60)
 
 local inventoryClose = Instance.new("TextButton")
-inventoryClose.Size = UDim2.new(0, 64, 0, 54)
-inventoryClose.Position = UDim2.new(1, -76, 0, 8)
-inventoryClose.BackgroundTransparency = 1
-inventoryClose.Text = "X"
-inventoryClose.TextColor3 = DIM
-inventoryClose.Font = Enum.Font.FredokaOne
-inventoryClose.TextSize = 20
 inventoryClose.Parent = inventoryFrame
 UIStyle.Close(inventoryClose)
 
--- A strip across the top showing the five pads at your plot — the only
--- things actually earning you money. Click an occupied one to take it
--- off (same as walking up to its physical pad and pressing the prompt).
-local placedLabel = label(inventoryFrame, "🐾 YOUR PETS — EARNING (0 / 5)", UDim2.new(0, 400, 0, 22), GREEN, Enum.Font.LuckiestGuy, 16)
-placedLabel.Position = UDim2.new(.5,-250,0,52)
-placedLabel.Size = UDim2.fromOffset(500,30)
-placedLabel.TextSize=23
-placedLabel.TextXAlignment=Enum.TextXAlignment.Center
+local searchBox = Instance.new("TextBox")
+searchBox.Name = "Search"
+searchBox.Text = ""
+searchBox.PlaceholderText = "Search items..."
+searchBox.ClearTextOnFocus = false
+searchBox.Font = Enum.Font.FredokaOne
+searchBox.TextSize = 22
+searchBox.TextColor3 = INK
+searchBox.Position = UDim2.new(1, -352, 0, -28)
+searchBox.Size = UDim2.fromOffset(266, 50)
+searchBox.Parent = inventoryFrame
+rounded(searchBox, 25)
+UIStyle.Surface(searchBox, Color3.new(1, 1, 1), 4)
 
-local placedRow = Instance.new("Frame")
-placedRow.Size = UDim2.new(.72, 0, 0, 150)
-placedRow:SetAttribute("Floating",true)
-placedRow.Position = UDim2.new(.14, 0, 0, 94)
-placedRow.BackgroundColor3 = Color3.fromRGB(20, 26, 22)
-placedRow.BorderSizePixel = 0
+------------------------------------------------------------------
+-- "Your pets — earning" band: a centred caption with a rule running out
+-- to each side, then the five pad slots. Mirrors the reference's
+-- "Your Best Pets 4/4" header.
+------------------------------------------------------------------
+
+local ruleLeft = mark(Instance.new("Frame"))
+ruleLeft.BackgroundColor3 = RULE_TINT
+ruleLeft.BorderSizePixel = 0
+ruleLeft.Size = UDim2.new(0, 220, 0, 3)
+ruleLeft.Position = UDim2.new(0, 34, 0, 40)
+ruleLeft.Parent = inventoryFrame
+
+local ruleRight = mark(Instance.new("Frame"))
+ruleRight.BackgroundColor3 = RULE_TINT
+ruleRight.BorderSizePixel = 0
+ruleRight.Size = UDim2.new(0, 220, 0, 3)
+ruleRight.Position = UDim2.new(1, -254, 0, 40)
+ruleRight.Parent = inventoryFrame
+
+local placedLabel = label(inventoryFrame, "YOUR PETS — EARNING  0 / 5", UDim2.fromOffset(560, 32), INK, Enum.Font.FredokaOne, 22)
+placedLabel.Position = UDim2.new(0.5, -280, 0, 26)
+placedLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local inventoryCount = label(inventoryFrame, "0 / 15", UDim2.fromOffset(150, 30), UIStyle.Palette.Teal, Enum.Font.FredokaOne, 20)
+inventoryCount.Position = UDim2.new(1, -184, 0, 66)
+inventoryCount.TextXAlignment = Enum.TextXAlignment.Right
+
+local placedRow = mark(Instance.new("Frame"))
+placedRow.Name = "PlacedSlots"
+placedRow.BackgroundTransparency = 1
+placedRow.Size = UDim2.new(1, -68, 0, 108)
+placedRow.Position = UDim2.new(0, 34, 0, 62)
 placedRow.Parent = inventoryFrame
-rounded(placedRow, 12)
 
 local placedLayout = Instance.new("UIListLayout")
 placedLayout.FillDirection = Enum.FillDirection.Horizontal
-placedLayout.Padding = UDim.new(0, 10)
+placedLayout.Padding = UDim.new(0, 14)
+placedLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 placedLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+placedLayout.SortOrder = Enum.SortOrder.LayoutOrder
 placedLayout.Parent = placedRow
-placedRow.ClipsDescendants = true
 
-local placedPadding = Instance.new("UIPadding")
-placedPadding.PaddingLeft = UDim.new(0, 10)
-placedPadding.PaddingTop = UDim.new(0, 10)
-placedPadding.Parent = placedRow
+local divider = mark(Instance.new("Frame"))
+divider.BackgroundColor3 = RULE_TINT
+divider.BorderSizePixel = 0
+divider.Size = UDim2.new(1, -68, 0, 3)
+divider.Position = UDim2.new(0, 34, 0, 180)
+divider.Parent = inventoryFrame
 
--- Left pane: everything you're holding.
-local inventoryScroll = Instance.new("ScrollingFrame")
+------------------------------------------------------------------
+-- Grid + details dock
+------------------------------------------------------------------
+
+-- An inset board behind the tiles, so the grid reads as a defined area
+-- rather than items floating loose on the panel.
+local gridBoard = mark(Instance.new("Frame"))
+gridBoard.Name = "GridBoard"
+gridBoard.BackgroundColor3 = PAPER
+gridBoard.BorderSizePixel = 0
+gridBoard.Position = UDim2.new(0, 28, 0, 198)
+gridBoard.Size = UDim2.new(1, -350, 1, -224)
+gridBoard.Parent = inventoryFrame
+rounded(gridBoard, 18)
+outline(gridBoard, RULE_TINT, 3)
+
+local inventoryScroll = mark(Instance.new("ScrollingFrame"))
 inventoryScroll.Name = "Items"
-inventoryScroll.Size = UDim2.new(1, -48, 1, -280)
-inventoryScroll.Position = UDim2.new(0, 24, 0, 260)
+inventoryScroll.Size = UDim2.new(1, -20, 1, -20)
+inventoryScroll.Position = UDim2.new(0, 10, 0, 10)
 inventoryScroll.BackgroundTransparency = 1
 inventoryScroll.BorderSizePixel = 0
-inventoryScroll.ScrollBarThickness = 6
-inventoryScroll.Parent = inventoryFrame
+inventoryScroll.ScrollBarThickness = 7
+inventoryScroll.ScrollBarImageColor3 = UIStyle.Palette.Steel
+inventoryScroll.Parent = gridBoard
 
 local inventoryLayout = Instance.new("UIGridLayout")
-inventoryLayout.CellSize = UDim2.new(0, 224, 0, 250)
-UIStyle.ScrollPadding(inventoryScroll)
-inventoryLayout.CellPadding = UDim2.new(0, 10, 0, 10)
+inventoryLayout.CellSize = UDim2.fromOffset(126, 142)
+inventoryLayout.CellPadding = UDim2.fromOffset(12, 12)
+inventoryLayout.SortOrder = Enum.SortOrder.LayoutOrder
 inventoryLayout.Parent = inventoryScroll
-do
-	local function reflow()
-		local compact = inventoryFrame:GetAttribute("Compact")
-		inventoryScroll.Size = UDim2.new(1,inventoryFrame:GetAttribute("DetailsOpen") and (compact and -292 or -386) or -48,1,-280)
-		inventoryLayout.CellSize = compact and UDim2.fromOffset(158,190) or UDim2.fromOffset(184,206)
-	end
-	inventoryFrame:GetAttributeChangedSignal("Compact"):Connect(reflow)
-	inventoryFrame:GetAttributeChangedSignal("DetailsOpen"):Connect(reflow)
-	reflow()
-end
 
--- Right pane: stats for whichever item is currently selected.
-local statPanel = Instance.new("Frame")
+local statPanel = mark(Instance.new("Frame"))
 statPanel.Name = "ItemDetails"
-statPanel.Size = UDim2.new(0, 320, 1, -236)
-statPanel.Position = UDim2.new(1, -344, 0, 222)
-statPanel.BackgroundColor3 = Color3.fromRGB(26, 26, 32)
+statPanel.BackgroundColor3 = PAPER
 statPanel.BorderSizePixel = 0
+statPanel.Position = UDim2.new(1, -306, 0, 198)
+statPanel.Size = UDim2.new(0, 278, 1, -224)
 statPanel.Parent = inventoryFrame
-rounded(statPanel, 12)
-UIStyle.ScrollDetails(statPanel, 350)
-statPanel.Parent.Visible=false
-do
-	local wrapper = statPanel.Parent
-	local function reflow()
-		local compact = inventoryFrame:GetAttribute("Compact")
-		wrapper.Size = UDim2.new(0,compact and 240 or 320,1,-280)
-		wrapper.Position = UDim2.new(1,compact and -264 or -344,0,260)
-	end
-	inventoryFrame:GetAttributeChangedSignal("Compact"):Connect(reflow)
-	reflow()
-end
+rounded(statPanel, 18)
+outline(statPanel, INK, 4)
 
-local statViewportHolder = Instance.new("Frame")
-statViewportHolder.Size = UDim2.new(1, -28, 0, 116)
-statViewportHolder.Position = UDim2.new(0, 14, 0, 14)
-statViewportHolder.BackgroundColor3 = Color3.fromRGB(36, 36, 44)
-statViewportHolder:SetAttribute("Floating",true)
+local statViewportHolder = mark(Instance.new("Frame"))
+statViewportHolder.BackgroundColor3 = Color3.new(1, 1, 1)
 statViewportHolder.BorderSizePixel = 0
+statViewportHolder.Size = UDim2.new(1, -28, 0, 150)
+statViewportHolder.Position = UDim2.new(0, 14, 0, 14)
 statViewportHolder.Parent = statPanel
-rounded(statViewportHolder, 10)
+rounded(statViewportHolder, 13)
+outline(statViewportHolder, INK, 3)
 
-local statName = label(statPanel, "Select an item", UDim2.new(1, -28, 0, 50), LIGHT, Enum.Font.FredokaOne, 19)
-statName.Position = UDim2.new(0, 14, 0, 130)
-statName.Size=UDim2.new(1,-28,0,38)
+local statName = label(statPanel, "Select an item", UDim2.new(1, -28, 0, 44), INK, Enum.Font.FredokaOne, 19)
+statName.Position = UDim2.new(0, 14, 0, 174)
 statName.TextWrapped = true
--- Same fixed-height-with-no-scaling issue as the inventory cards: a long
--- mutation-prefixed or curated name had nowhere to go but past this
--- label's 38px height once it wrapped to a second line.
 statName.TextScaled = true
 statName.RichText = true
+statName.TextXAlignment = Enum.TextXAlignment.Left
+-- TextScaled alone grows to fill the whole 44px box, which made the short
+-- "Select an item" placeholder render enormous next to everything else.
+-- The constraint keeps long mutation-prefixed names shrinking to fit while
+-- capping how large a short one is allowed to get.
+local statNameCap = Instance.new("UITextSizeConstraint")
+statNameCap.MaxTextSize = 21
+statNameCap.MinTextSize = 11
+statNameCap.Parent = statName
 
-local statValue = label(statPanel, "", UDim2.new(1, -28, 0, 20), GOLD, Enum.Font.FredokaOne, 15)
-statValue.Position = UDim2.new(0, 14, 0, 172)
+local statValue = label(statPanel, "", UDim2.new(1, -28, 0, 22), Color3.fromRGB(106, 99, 87), Enum.Font.FredokaOne, 15)
+statValue.Position = UDim2.new(0, 14, 0, 222)
+statValue.TextXAlignment = Enum.TextXAlignment.Left
 
-local statPerSecond = label(statPanel, "", UDim2.new(1, -28, 0, 20), Color3.fromRGB(120, 220, 140), Enum.Font.FredokaOne, 15)
-statPerSecond.Position = UDim2.new(0, 14, 0, 198)
+local statPerSecond = label(statPanel, "", UDim2.new(1, -28, 0, 22), Color3.fromRGB(106, 99, 87), Enum.Font.FredokaOne, 15)
+statPerSecond.Position = UDim2.new(0, 14, 0, 246)
+statPerSecond.TextXAlignment = Enum.TextXAlignment.Left
 
-local placeBtn = Instance.new("TextButton")
-placeBtn.Size = UDim2.new(1, -28, 0, 36)
-placeBtn.Position = UDim2.new(0, 14, 1, -122)
-placeBtn.BackgroundColor3 = GREEN
-placeBtn.Text = "PLACE ON PAD"
-placeBtn.TextColor3 = DARK
-placeBtn.Font = Enum.Font.LuckiestGuy
-placeBtn.TextSize = 16
-placeBtn.BorderSizePixel = 0
-placeBtn.Visible = false
-placeBtn.Parent = statPanel
-rounded(placeBtn)
-
-local moveToCarryBtn = Instance.new("TextButton")
-moveToCarryBtn.Size = UDim2.new(1, -28, 0, 36)
-moveToCarryBtn.Position = UDim2.new(0, 14, 1, -80)
-moveToCarryBtn.BackgroundColor3 = PURPLE
-moveToCarryBtn.Text = "CARRY TO FUSE"
-moveToCarryBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-moveToCarryBtn.Font = Enum.Font.FredokaOne
-moveToCarryBtn.TextSize = 14
-moveToCarryBtn.BorderSizePixel = 0
-moveToCarryBtn.Visible = false
-moveToCarryBtn.Parent = statPanel
-rounded(moveToCarryBtn)
-
-local sellBtn = Instance.new("TextButton")
-sellBtn.Size = UDim2.new(1, -28, 0, 36)
-sellBtn.Position = UDim2.new(0, 14, 1, -38)
-sellBtn.BackgroundColor3 = RED
-sellBtn.Text = "SELL"
-sellBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-sellBtn.Font = Enum.Font.LuckiestGuy
-sellBtn.TextSize = 16
-sellBtn.BorderSizePixel = 0
-sellBtn.Visible = false
-sellBtn.Parent = statPanel
-rounded(sellBtn)
-
-local selectedIndex = nil
-local searchBox = Instance.new("TextBox")
-searchBox.Name="Search" searchBox.Text="" searchBox.PlaceholderText="Search items..."
-searchBox.ClearTextOnFocus=false searchBox.Font=Enum.Font.FredokaOne searchBox.TextSize=24
-searchBox.Position=UDim2.new(1,-332,0,-28) searchBox.Size=UDim2.fromOffset(260,50)
-searchBox.Parent=inventoryFrame rounded(searchBox,22) UIStyle.Surface(searchBox,Color3.new(1,1,1),3)
-do
-	local function reflowHeader()
-		local compact=inventoryFrame:GetAttribute("Compact")
-		inventoryTitle.TextSize=compact and 44 or 60
-		inventoryTitle.Size=UDim2.fromOffset(compact and 370 or 480,88)
-		searchBox.Position=compact and UDim2.fromOffset(22,16) or UDim2.new(1,-332,0,-28)
-		searchBox.Size=compact and UDim2.new(1,-160,0,46) or UDim2.fromOffset(260,50)
-		inventoryCount.Position=compact and UDim2.new(1,-124,0,22) or UDim2.new(.5,-55,0,18)
-		placedLabel.Position=UDim2.new(.5,-250,0,compact and 78 or 52)
-		placedRow.Position=UDim2.new(.14,0,0,compact and 114 or 94)
-	end
-	inventoryFrame:GetAttributeChangedSignal("Compact"):Connect(reflowHeader)
-	reflowHeader()
+local function actionButton(text, fill, textColor, offsetFromBottom)
+	local btn = mark(Instance.new("TextButton"))
+	btn.Size = UDim2.new(1, -28, 0, 44)
+	btn.Position = UDim2.new(0, 14, 1, -offsetFromBottom)
+	btn.BackgroundColor3 = fill
+	btn.Text = text
+	btn.TextColor3 = textColor
+	btn.Font = Enum.Font.FredokaOne
+	btn.TextSize = 17
+	btn.AutoButtonColor = false
+	btn.BorderSizePixel = 0
+	btn.Visible = false
+	btn.Parent = statPanel
+	rounded(btn, 11)
+	outline(btn, INK, 3)
+	return btn
 end
 
+local placeBtn = actionButton("PLACE ON PAD", UIStyle.Palette.Mint, INK, 158)
+local moveToCarryBtn = actionButton("CARRY TO FUSE", UIStyle.Palette.Steel, Color3.new(1, 1, 1), 106)
+local sellBtn = actionButton("SELL", UIStyle.Palette.Copper, Color3.new(1, 1, 1), 54)
+
+local emptyHint = label(statPanel, "Tap an item to see what it's worth.", UDim2.new(1, -28, 0, 44), Color3.fromRGB(140, 132, 118), Enum.Font.FredokaOne, 15)
+emptyHint.Position = UDim2.new(0, 14, 0, 222)
+emptyHint.TextWrapped = true
+emptyHint.TextXAlignment = Enum.TextXAlignment.Left
+
+------------------------------------------------------------------
+-- Responsive layout. UIStyle.Fit flips the "Compact" attribute below
+-- 650px of viewport width, which is every phone in portrait.
+------------------------------------------------------------------
+
+local COLUMNS_WIDE, COLUMNS_COMPACT = 6, 4
+local detailsOpen = false
+
+local function relayout()
+	local compact = inventoryFrame:GetAttribute("Compact")
+
+	inventoryTitle.TextSize = compact and 40 or 60
+	inventoryTitle.Size = UDim2.fromOffset(compact and 340 or 480, 88)
+	UIStyle.Outline(inventoryTitle, compact and 40 or 60)
+
+	searchBox.Position = compact and UDim2.new(0, 22, 0, 14) or UDim2.new(1, -352, 0, -28)
+	searchBox.Size = compact and UDim2.new(1, -110, 0, 46) or UDim2.fromOffset(266, 50)
+
+	local bandY = compact and 74 or 26
+	placedLabel.Position = UDim2.new(0.5, -280, 0, bandY)
+	placedLabel.TextSize = compact and 18 or 22
+	inventoryCount.Position = compact and UDim2.new(1, -150, 0, bandY + 2) or UDim2.new(1, -184, 0, 66)
+
+	-- The flanking rules just get in the way once the caption is nearly as
+	-- wide as the panel, so they're dropped rather than squeezed.
+	ruleLeft.Visible = not compact
+	ruleRight.Visible = not compact
+	ruleLeft.Position = UDim2.new(0, 34, 0, bandY + 14)
+	ruleRight.Position = UDim2.new(1, -254, 0, bandY + 14)
+
+	local slotSize = compact and 76 or 104
+	placedRow.Position = UDim2.new(0, 34, 0, bandY + 36)
+	placedRow.Size = UDim2.new(1, -68, 0, slotSize + 4)
+	placedLayout.Padding = UDim.new(0, compact and 8 or 14)
+	for _, slot in ipairs(placedRow:GetChildren()) do
+		if slot:IsA("GuiObject") then slot.Size = UDim2.fromOffset(slotSize, slotSize) end
+	end
+
+	local gridTop = bandY + slotSize + 58
+	divider.Position = UDim2.new(0, 34, 0, gridTop - 18)
+
+	-- On a phone there is no room for a docked side panel, so details
+	-- become an overlay sitting on top of the grid instead.
+	if compact then
+		gridBoard.Position = UDim2.new(0, 16, 0, gridTop)
+		gridBoard.Size = UDim2.new(1, -32, 1, gridTop == 0 and -24 or -(gridTop + 24))
+		statPanel.Position = UDim2.new(0, 16, 0, gridTop)
+		statPanel.Size = UDim2.new(1, -32, 1, -(gridTop + 24))
+		statPanel.Visible = detailsOpen
+	else
+		gridBoard.Position = UDim2.new(0, 28, 0, gridTop)
+		gridBoard.Size = UDim2.new(1, -350, 1, -(gridTop + 26))
+		statPanel.Position = UDim2.new(1, -306, 0, gridTop)
+		statPanel.Size = UDim2.new(0, 278, 1, -(gridTop + 26))
+		statPanel.Visible = true
+	end
+
+	-- Keep the tile a constant size and change the column count instead, so
+	-- an item never renders smaller just because the screen got narrower.
+	local columns = compact and COLUMNS_COMPACT or COLUMNS_WIDE
+	local usable = gridBoard.AbsoluteSize.X
+	if usable <= 0 then
+		usable = compact and 540 or 818
+	else
+		usable = usable / math.max(inventoryFrame:FindFirstChildOfClass("UIScale") and inventoryFrame:FindFirstChildOfClass("UIScale").Scale or 1, 0.01) - 34
+	end
+	local cell = math.floor((usable - (columns - 1) * 12) / columns)
+	cell = math.clamp(cell, 96, 150)
+	inventoryLayout.CellSize = UDim2.fromOffset(cell, cell + 16)
+end
+
+inventoryFrame:GetAttributeChangedSignal("Compact"):Connect(relayout)
+
+------------------------------------------------------------------
+-- Tiles
+------------------------------------------------------------------
+
+local selectedIndex = nil
 
 local function showStatsFor(entry)
 	selectedIndex = entry and entry.index
-	statPanel.Parent.Visible = entry ~= nil
-	inventoryFrame:SetAttribute("DetailsOpen",entry~=nil)
-	for _, c in ipairs(statViewportHolder:GetChildren()) do c:Destroy() end
+	detailsOpen = entry ~= nil
+	inventoryFrame:SetAttribute("DetailsOpen", detailsOpen)
+
+	for _, c in ipairs(statViewportHolder:GetChildren()) do
+		if c:IsA("ViewportFrame") then c:Destroy() end
+	end
+
+	local compact = inventoryFrame:GetAttribute("Compact")
+	statPanel.Visible = detailsOpen or not compact
 
 	if not entry then
 		statName.Text = "Select an item"
 		statValue.Text = ""
 		statPerSecond.Text = ""
+		emptyHint.Visible = true
+		statViewportHolder.Visible = false
 		sellBtn.Visible = false
 		moveToCarryBtn.Visible = false
 		placeBtn.Visible = false
 		return
 	end
+	statViewportHolder.Visible = true
 
 	local baseName, mutationId = Mutations.Unwrap(entry.name)
 	local tintColor = Mutations.Color(mutationId)
-	buildItemViewport(statViewportHolder, baseName, tintColor)
+	buildItemViewport(statViewportHolder, baseName, tintColor, {
+		size = UDim2.new(1, -12, 1, -12),
+		position = UDim2.fromOffset(6, 6),
+		zoom = 1.35,
+	})
 
 	statName.Text = instanceTag(entry.name)
-	statValue.Text = string.format("Value: %d coins", math.floor(entry.value))
-	statPerSecond.Text = string.format("If placed: %.1f coins/sec", entry.perSecond)
+	statValue.Text = string.format("Value:  %d coins", math.floor(entry.value))
+	statPerSecond.Text = string.format("If placed:  %.1f / sec", entry.perSecond)
+	emptyHint.Visible = false
 	sellBtn.Visible = true
 	moveToCarryBtn.Visible = true
 	placeBtn.Visible = true
-	placeBtn.BackgroundColor3 = #currentPlaced >= currentPlacedCapacity and DIM or GREEN
+	placeBtn.BackgroundColor3 = #currentPlaced >= currentPlacedCapacity and DIM or UIStyle.Palette.Mint
 end
 
 do
-	local back=Instance.new("TextButton")
-	back.Name="CloseDetails" back.Text="X" back.Font=Enum.Font.FredokaOne back.TextSize=18
-	back.BackgroundTransparency=1 back.Size=UDim2.fromOffset(34,34)
-	back.Position=UDim2.new(1,-38,0,2) back.ZIndex=4 back.Parent=statPanel
+	local back = mark(Instance.new("TextButton"))
+	back.Name = "CloseDetails"
+	back.Text = "X"
+	back.Font = Enum.Font.FredokaOne
+	back.TextSize = 20
+	back.TextColor3 = INK
+	back.BackgroundTransparency = 1
+	back.Size = UDim2.fromOffset(36, 36)
+	back.Position = UDim2.new(1, -40, 0, 2)
+	back.ZIndex = 6
+	back.Parent = statPanel
 	back.Activated:Connect(function() showStatsFor(nil) end)
 end
 
--- redrawPlaced (below) and redrawInventory each need to re-run the
--- other whenever a selection or count changes — both are already
--- predeclared above (see the `do` block comment), so neither needs its
--- own separate forward-declare here.
 function redrawInventory(items, capacity)
 	-- Selling or moving an earlier-indexed item shifts everything after it
 	-- down by one (table.remove semantics), so a plain index match after
 	-- the swap can land on a completely different item that happened to
-	-- inherit the old selection's slot. Comparing the name too catches that;
-	-- an index match with a different name means our selection is gone.
+	-- inherit the old selection's slot. Comparing the name too catches that.
 	local previousSelectedName = selectedIndex and currentInventory[selectedIndex] and currentInventory[selectedIndex].name
 
 	currentInventory = items
@@ -1408,67 +1518,79 @@ function redrawInventory(items, capacity)
 	inventoryCount.Text = string.format("%d / %d", #items, currentInventoryCapacity)
 
 	for _, child in ipairs(inventoryScroll:GetChildren()) do
-		if not child:IsA("UIGridLayout") and not child:IsA("UIPadding") then child:Destroy() end
+		if child:IsA("GuiObject") then child:Destroy() end
 	end
 
 	if #items == 0 then
-		local empty = Instance.new("TextLabel")
-		empty.Size = UDim2.new(1, 0, 0, 60)
-		empty.BackgroundTransparency = 1
-		empty.Text = "Nothing here yet — fuse something at your pad."
-		empty.TextColor3 = DIM
-		empty.Font = Enum.Font.FredokaOne
-		empty.TextSize = 14
+		local empty = label(inventoryScroll, "Nothing here yet — fuse something at your pad.",
+			UDim2.new(1, 0, 0, 60), Color3.fromRGB(150, 142, 128), Enum.Font.FredokaOne, 16)
 		empty.TextWrapped = true
-		empty.Parent = inventoryScroll
+		empty.TextXAlignment = Enum.TextXAlignment.Center
 	end
 
 	local stillSelected = false
 	for i, entry in ipairs(items) do
-		if searchBox.Text ~= "" and not string.find(string.lower(entry.name),string.lower(searchBox.Text),1,true) then continue end
+		if searchBox.Text ~= "" and not string.find(string.lower(entry.name), string.lower(searchBox.Text), 1, true) then continue end
 		local baseName, mutationId = Mutations.Unwrap(entry.name)
 		local tintColor = Mutations.Color(mutationId)
 		local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret)
 		local isSelected = entry.index == selectedIndex and entry.name == previousSelectedName
 
-		local card = Instance.new("TextButton")
+		local card = mark(Instance.new("TextButton"))
 		card.Size = inventoryLayout.CellSize
 		card.LayoutOrder = i
-		card.BackgroundColor3 = rarityColor:Lerp(Color3.fromRGB(18, 18, 24), 0.35)
+		card.BackgroundColor3 = Color3.new(1, 1, 1)
 		card.Text = ""
 		card.AutoButtonColor = false
 		card.BorderSizePixel = 0
+		card.ClipsDescendants = true
 		card.Parent = inventoryScroll
-		rounded(card, 12)
+		rounded(card, 14)
+		outline(card, isSelected and UIStyle.Palette.Teal or INK, isSelected and 5 or 3)
 
-		card:SetAttribute("Selected", isSelected)
-		card:SetAttribute("Floating",true)
-		card.BackgroundTransparency=1
-		local stroke = Instance.new("UIStroke")
-		stroke.Color = isSelected and Color3.fromRGB(255, 255, 255) or rarityColor
-		stroke.Color=Color3.fromRGB(32,192,240)
-		stroke.Thickness = isSelected and 3 or 0
-		stroke.Transparency=isSelected and 0 or 1
-		stroke.Parent = card
+		-- The item itself gets the whole tile above the name strip, framed
+		-- tighter than the default so it still reads at this size.
+		buildItemViewport(card, baseName, tintColor, {
+			size = UDim2.new(1, -10, 1, -36),
+			position = UDim2.fromOffset(5, 3),
+			zoom = 1.3,
+		})
 
-		buildItemViewport(card, baseName, tintColor)
+		local nameStrip = mark(Instance.new("Frame"))
+		nameStrip.Size = UDim2.new(1, 0, 0, 26)
+		nameStrip.Position = UDim2.new(0, 0, 1, -26)
+		nameStrip.BackgroundColor3 = rarityColor
+		nameStrip.BorderSizePixel = 0
+		nameStrip.ZIndex = 3
+		nameStrip.Parent = card
 
-		local nameLbl = Instance.new("TextLabel")
-		nameLbl.Size = UDim2.new(1, -10, 0, 30)
-		nameLbl.Position = UDim2.new(0, 5, 1, -34)
-		nameLbl.BackgroundTransparency = 1
-		nameLbl.Text = entry.name
-		nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-		nameLbl.TextStrokeTransparency = 0.4
-		nameLbl.Font = Enum.Font.FredokaOne
-		-- Was TextScaled=false with a fixed TextSize — a long name (a
-		-- mutation prefix, a longer curated result) had nowhere to go but
-		-- past the label's edges into whatever's next to it. TextScaled
-		-- is the same fix already used for the near-identical Index cards.
-		nameLbl.TextScaled = true
-		nameLbl.TextSize=20
-		nameLbl.TextWrapped = true
-		nameLbl.Parent = card
+		local nameEdge = mark(Instance.new("Frame"))
+		nameEdge.Size = UDim2.new(1, 0, 0, 3)
+		nameEdge.BackgroundColor3 = INK
+		nameEdge.BorderSizePixel = 0
+		nameEdge.ZIndex = 4
+		nameEdge.Parent = nameStrip
+
+		local nameLbl = label(nameStrip, entry.name, UDim2.new(1, -8, 1, -3), INK, Enum.Font.FredokaOne, 12)
+		nameLbl.Position = UDim2.fromOffset(4, 3)
+		nameLbl.TextXAlignment = Enum.TextXAlignment.Center
+		nameLbl.TextTruncate = Enum.TextTruncate.AtEnd
+		nameLbl.ZIndex = 5
+
+		local valueBadge = mark(Instance.new("Frame"))
+		valueBadge.Size = UDim2.fromOffset(52, 20)
+		valueBadge.Position = UDim2.new(1, -56, 0, 4)
+		valueBadge.BackgroundColor3 = UIStyle.Palette.Gold
+		valueBadge.BorderSizePixel = 0
+		valueBadge.ZIndex = 3
+		valueBadge.Parent = card
+		rounded(valueBadge, 10)
+		outline(valueBadge, INK, 2)
+
+		local shown = entry.value >= 1000 and string.format("%.1fk", entry.value / 1000) or tostring(math.floor(entry.value))
+		local badgeText = label(valueBadge, shown, UDim2.fromScale(1, 1), INK, Enum.Font.FredokaOne, 11)
+		badgeText.TextXAlignment = Enum.TextXAlignment.Center
+		badgeText.ZIndex = 4
 
 		card.MouseButton1Click:Connect(function()
 			showStatsFor(entry)
@@ -1478,7 +1600,7 @@ function redrawInventory(items, capacity)
 		if isSelected then stillSelected = true end
 	end
 
-	inventoryScroll.CanvasSize = UDim2.new(0, 0, 0, inventoryLayout.AbsoluteContentSize.Y + 10)
+	inventoryScroll.CanvasSize = UDim2.new(0, 0, 0, inventoryLayout.AbsoluteContentSize.Y + 12)
 
 	if not stillSelected then
 		showStatsFor(nil)
@@ -1488,55 +1610,79 @@ end
 function redrawPlaced(items, capacity)
 	currentPlaced = items
 	currentPlacedCapacity = capacity or currentPlacedCapacity
-	placedLabel.Text = string.format("🐾 YOUR PETS — EARNING (%d / %d)", #items, currentPlacedCapacity)
+	placedLabel.Text = string.format("YOUR PETS — EARNING  %d / %d", #items, currentPlacedCapacity)
 
 	if selectedIndex then
-		placeBtn.BackgroundColor3 = #currentPlaced >= currentPlacedCapacity and DIM or GREEN
+		placeBtn.BackgroundColor3 = #currentPlaced >= currentPlacedCapacity and DIM or UIStyle.Palette.Mint
 	end
 
 	for _, child in ipairs(placedRow:GetChildren()) do
-		if not child:IsA("UIListLayout") and not child:IsA("UIPadding") then child:Destroy() end
+		if child:IsA("GuiObject") then child:Destroy() end
 	end
+
+	local compact = inventoryFrame:GetAttribute("Compact")
+	local slotSize = compact and 76 or 104
 
 	for slot = 1, currentPlacedCapacity do
 		local entry = items[slot]
 
-		local card = Instance.new("TextButton")
-		card.Size = UDim2.new(0.2, -12, 0, 142)
+		local card = mark(Instance.new("TextButton"))
+		card.Size = UDim2.fromOffset(slotSize, slotSize)
 		card.LayoutOrder = slot
 		card.Text = ""
 		card.AutoButtonColor = false
 		card.BorderSizePixel = 0
+		card.ClipsDescendants = true
 		card.Parent = placedRow
+		rounded(card, 16)
 
 		if entry then
-			card:SetAttribute("Floating",true)
 			local baseName, mutationId = Mutations.Unwrap(entry.name)
 			local tintColor = Mutations.Color(mutationId)
 			local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret)
-			card.BackgroundColor3 = rarityColor:Lerp(Color3.fromRGB(18, 18, 24), 0.3)
-			rounded(card, 16)
+			card.BackgroundColor3 = Color3.new(1, 1, 1)
+			outline(card, INK, 4)
 
-			local stroke = Instance.new("UIStroke")
-			stroke.Color = rarityColor
-			stroke.Thickness = 3
-			stroke.Parent = card
+			buildItemViewport(card, baseName, tintColor, {
+				size = UDim2.new(1, -10, 1, -10),
+				position = UDim2.fromOffset(5, 5),
+				zoom = 1.3,
+			})
 
-			buildItemViewport(card, baseName, tintColor)
+			-- Rarity pip, so a full slot still reads its tier at a glance
+			-- now that the card itself is plain white.
+			local pip = mark(Instance.new("Frame"))
+			pip.Size = UDim2.fromOffset(18, 18)
+			pip.Position = UDim2.fromOffset(5, 5)
+			pip.BackgroundColor3 = rarityColor
+			pip.BorderSizePixel = 0
+			pip.ZIndex = 3
+			pip.Parent = card
+			rounded(pip, 9)
+			outline(pip, INK, 2)
+
+			local rate = mark(Instance.new("Frame"))
+			rate.Size = UDim2.new(1, -10, 0, 18)
+			rate.Position = UDim2.new(0, 5, 1, -23)
+			rate.BackgroundColor3 = UIStyle.Palette.Gold
+			rate.BorderSizePixel = 0
+			rate.ZIndex = 3
+			rate.Parent = card
+			rounded(rate, 9)
+			outline(rate, INK, 2)
+
+			local rateText = label(rate, string.format("%.0f/s", entry.perSecond or 0), UDim2.fromScale(1, 1), INK, Enum.Font.FredokaOne, 11)
+			rateText.TextXAlignment = Enum.TextXAlignment.Center
+			rateText.ZIndex = 4
 
 			card.MouseButton1Click:Connect(function()
 				unplacePetRemote:FireServer(slot)
 			end)
 		else
-			card.BackgroundColor3 = UIStyle.Palette.Mint
-			rounded(card, 16)
+			card.BackgroundColor3 = PAPER
+			outline(card, Color3.fromRGB(201, 190, 170), 3)
 
-			local stroke = Instance.new("UIStroke")
-			stroke.Color = Color3.fromRGB(70, 90, 78)
-			stroke.Thickness = 2.5
-			stroke.Parent = card
-
-			local plus = label(card, "+", UDim2.new(1, 0, 1, 0), Color3.fromRGB(85, 110, 95), Enum.Font.LuckiestGuy, 36)
+			local plus = label(card, "+", UDim2.fromScale(1, 1), Color3.fromRGB(190, 178, 158), Enum.Font.LuckiestGuy, math.floor(slotSize * 0.42))
 			plus.TextXAlignment = Enum.TextXAlignment.Center
 		end
 	end
@@ -1550,20 +1696,24 @@ moveToCarryBtn.MouseButton1Click:Connect(function()
 end)
 placeBtn.MouseButton1Click:Connect(function()
 	-- No client-side capacity guard here on purpose: let the server reject
-	-- it and toast "All 5 pads are full" so a stale-looking green button
-	-- (pads filled by some other means since this panel last redrew) still
-	-- gives the player feedback instead of silently doing nothing.
+	-- it and toast "All 5 pads are full" so a stale-looking button (pads
+	-- filled by some other means since this panel last redrew) still gives
+	-- the player feedback instead of silently doing nothing.
 	if selectedIndex then placePetRemote:FireServer(selectedIndex) end
 end)
 
 local function toggleInventory()
 	inventoryFrame.Visible = not inventoryFrame.Visible
 	inventoryBackdrop.Visible = inventoryFrame.Visible
+	if inventoryFrame.Visible then relayout() end
 end
 
-searchBox:GetPropertyChangedSignal("Text"):Connect(function() redrawInventory(currentInventory,currentInventoryCapacity) end)
+searchBox:GetPropertyChangedSignal("Text"):Connect(function() redrawInventory(currentInventory, currentInventoryCapacity) end)
 inventoryBtn.MouseButton1Click:Connect(toggleInventory)
 inventoryClose.MouseButton1Click:Connect(toggleInventory)
+
+relayout()
+showStatsFor(nil)
 
 end -- do (Inventory section)
 
