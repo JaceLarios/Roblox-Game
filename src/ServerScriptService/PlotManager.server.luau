@@ -103,6 +103,17 @@ local FUSE_STAGING_SLOTS = 2
 -- still for this long, in the open, before the item is yours.
 local GRAB_HOLD_SECONDS = 1.5
 
+-- Physical carrying. Exactly ONE item at a time, visibly held in the hand,
+-- until you get it back to your own plot. Deliberately separate from
+-- s.slots (the fuse staging area): grabbing no longer puts anything into
+-- staging, it puts a real object in your hand that other players can see
+-- coming and knock loose.
+local CARRY_SCALE = 0.72
+local CARRY_TRANSPARENCY = 0.35
+local CARRY_HAND_OFFSET = Vector3.new(0, -1.0, -1.1)
+-- Stepping onto your own plot at all counts as getting home.
+local DELIVER_RADIUS = PLOT_SIZE / 2
+
 local UPGRADES = {
 	{
 		key = "luck", name = "Lucky Wrench", start = 1, max = 10,
@@ -1030,6 +1041,7 @@ local function pushUI(player)
 		equippedAreaPet = equippedAreaPetInfo,
 		inventory = inventoryInfo,
 		inventoryCapacity = INVENTORY_CAPACITY,
+		carrying = s.carrying and s.carrying.name or nil,
 		placed = placedInfo,
 		placedCapacity = PET_PAD_COUNT,
 	})
@@ -1371,11 +1383,99 @@ end
 -- Grabbing scrap (used by both the E prompt and the Auto-Collect gamepass)
 ------------------------------------------------------------------
 
+-- Welds a visible, semi-transparent copy of the item into the player's hand
+-- and tags it with its name. R15 rigs expose RightHand, R6 exposes
+-- "Right Arm"; both are checked so this does not silently no-op on one of
+-- them. Massless + CanCollide off so carrying never shoves the character
+-- around or catches on geometry mid-run.
+local function attachCarried(player, itemName)
+	local char = player.Character
+	if not char then return nil end
+	local hand = char:FindFirstChild("RightHand") or char:FindFirstChild("Right Arm")
+	if not hand then return nil end
+
+	local baseName = Mutations.Unwrap(itemName)
+	local held = ItemVisuals.Create(baseName, hand.Position, CARRY_SCALE)
+	held.Name = "CarriedItem"
+	held.Anchored = false
+	held.CanCollide = false
+	held.Massless = true
+	held.Transparency = CARRY_TRANSPARENCY
+	held.CFrame = hand.CFrame * CFrame.new(CARRY_HAND_OFFSET)
+	held.Parent = char
+
+	makeLabel(held, instanceTag(itemName), 2.4, 260, Color3.fromRGB(255, 255, 255), 120)
+
+	-- WeldConstraint snapshots the current relative transform, so the part
+	-- has to be positioned and parented BEFORE the weld is made.
+	local weld = Instance.new("WeldConstraint")
+	weld.Part0 = hand
+	weld.Part1 = held
+	weld.Parent = held
+
+	return held
+end
+
+local function clearCarriedVisual(s)
+	if s.carrying and s.carrying.model then
+		s.carrying.model:Destroy()
+	end
+end
+
+-- Puts the carried item back into the world as an ordinary grabbable, so
+-- whoever gets there first can take it. Parenting into the scrap folder is
+-- all that is needed: its ChildAdded hook attaches the Grab prompt.
+local function dropCarried(player, reason)
+	local s = state[player]
+	if not s or not s.carrying then return false end
+
+	local itemName = s.carrying.name
+	local root = playerRoot(player)
+	local origin = root and root.Position or Vector3.new(0, 6, 0)
+
+	clearCarriedVisual(s)
+	s.carrying = nil
+
+	local dropped = ItemVisuals.Create(Mutations.Unwrap(itemName), origin + Vector3.new(0, 3, 0), 1)
+	dropped:SetAttribute("ItemName", itemName)
+	dropped.Parent = getScrapFolder()
+
+	if reason then
+		toast(player, reason)
+	end
+	pushUI(player)
+	return true
+end
+
+local function deliverCarried(player)
+	local s = state[player]
+	if not s or not s.carrying then return false end
+
+	if #s.inventory >= INVENTORY_CAPACITY then
+		-- Deliberately does NOT drop it: you keep hold of it and get told
+		-- why, rather than having it silently fall on your own doorstep.
+		toast(player, "Inventory full — sell or fuse something first.")
+		return false
+	end
+
+	local itemName = s.carrying.name
+	clearCarriedVisual(s)
+	s.carrying = nil
+
+	table.insert(s.inventory, itemName)
+	playSound(playerRoot(player), "big")
+	toast(player, string.format("Delivered %s to your base.", instanceTag(itemName)), true)
+	pushUI(player)
+	return true
+end
+
 local function grabItem(player, part)
 	local s = state[player]
 	if not s then return false end
 	if not part or not part.Parent then return false end
-	if #s.slots >= capacity(player, s) then return false end
+	-- One item at a time, and it goes into your hand rather than into
+	-- staging. Staging is only fed from the Inventory panel now.
+	if s.carrying then return false end
 
 	local grabbed = part:GetAttribute("ItemName") or part.Name
 
@@ -1391,10 +1491,19 @@ local function grabItem(player, part)
 		end
 	end
 
-	table.insert(s.slots, grabbed)
+	local held = attachCarried(player, grabbed)
+	if not held then return false end
+	s.carrying = { name = grabbed, model = held }
+
 	playSound(playerRoot(player), "pickup")
 	local root = playerRoot(player)
 	PickupEffects.Play(part, root and root.Position or part.Position)
+
+	-- Server-wide callout: carrying something is public information, so
+	-- everyone gets a chance to go and take it off you.
+	broadcast(string.format("%s is carrying %s — run them down before they get home!",
+		player.Name, instanceTag(grabbed)))
+
 	refreshPad(player)
 	pushUI(player)
 	return true
@@ -1416,7 +1525,7 @@ local function attachPickup(part)
 
 	prompt.Triggered:Connect(function(player)
 		if not grabItem(player, part) then
-			toast(player, "Hands full — fuse at your plot first.")
+			toast(player, "You can only carry one item — get that one home first.")
 		end
 	end)
 end
@@ -1426,6 +1535,25 @@ for _, child in ipairs(scrapFolder:GetChildren()) do
 	attachPickup(child)
 end
 scrapFolder.ChildAdded:Connect(attachPickup)
+
+-- Getting home is checked by distance rather than a Touched connection on
+-- the plot ground: Touched fires constantly for a character standing still
+-- and would need its own debounce, while this only looks at the handful of
+-- players actually carrying something.
+task.spawn(function()
+	while true do
+		task.wait(0.25)
+		for player, s in pairs(state) do
+			if s.carrying then
+				local plot = plots[s.plotIndex]
+				local root = playerRoot(player)
+				if plot and root and (root.Position - plot.centre).Magnitude <= DELIVER_RADIUS then
+					deliverCarried(player)
+				end
+			end
+		end
+	end
+end)
 
 ------------------------------------------------------------------
 -- Wire up each plot's prompts (owner-only)
@@ -2625,6 +2753,9 @@ local function onPlayerAdded(player)
 		toast(player, "Plot " .. index .. " is yours. Scrap spawns in the centre.")
 
 		humanoid.Died:Connect(function()
+			-- Dying loses the run: whatever you were carrying lands where you
+			-- fell, for anyone else to pick up.
+			dropCarried(player)
 			task.wait(RESPAWN_DELAY)
 			if player.Parent then
 				player:LoadCharacter()
