@@ -110,7 +110,20 @@ local GRAB_HOLD_SECONDS = 1.5
 -- coming and knock loose.
 local CARRY_SCALE = 0.72
 local CARRY_TRANSPARENCY = 0.35
-local CARRY_HAND_OFFSET = Vector3.new(0, -1.0, -1.1)
+-- Held ABOVE the head, not in the hand. Anchored to HumanoidRootPart
+-- rather than Head on purpose: welding to the head makes the item swing
+-- around with the camera every time the player looks about.
+local CARRY_HEAD_OFFSET = Vector3.new(0, 4.2, 0)
+
+-- Road lasers. Each plot owner arms their own approach road from a button
+-- in their base; they stay on for LASER_DURATION and then the button is
+-- unavailable for LASER_COOLDOWN.
+local LASER_DURATION = 120
+local LASER_COOLDOWN = 60
+local LASER_COUNT = 5
+-- MapRevamp paints this plot's guide rails at +/-11.5 from the road
+-- centreline, so a 24-wide bar spans the corridor with a little overhang.
+local LASER_WIDTH = 24
 -- Stepping onto your own plot at all counts as getting home.
 local DELIVER_RADIUS = PLOT_SIZE / 2
 
@@ -666,8 +679,58 @@ for i = 1, PLOT_COUNT do
 	-- back to the pad from the Inventory popup instead of walking to a
 	-- physical slot. The pad is now the only place a new item (grabbed
 	-- scrap or a fusion result) actually enters a player's hands.
+	-- Road lasers spanning this plot's own approach corridor, plus the
+	-- button that arms them. Built here with the rest of the plot; the
+	-- prompt and touch handlers are wired further down, once dropCarried
+	-- exists for them to call.
+	local radial = Vector3.new(math.cos(angle), 0, math.sin(angle))
+	local side = Vector3.new(-math.sin(angle), 0, math.cos(angle))
+	-- Same expression MapRevamp uses for where this route stops, so the
+	-- lasers land on the painted road rather than past the end of it.
+	local roadEnd = 190 - 35 / math.max(math.abs(radial.X), math.abs(radial.Z))
+	local lasers = {}
+	for k = 1, LASER_COUNT do
+		local r = 95 + (roadEnd - 12 - 95) * (k / (LASER_COUNT + 1))
+		local laser = makePart({
+			Name = "RoadLaser",
+			Size = Vector3.new(LASER_WIDTH, 0.5, 1.2),
+			Position = radial * r + Vector3.new(0, 1.7, 0),
+			Material = Enum.Material.Neon,
+			Color = Color3.fromRGB(255, 45, 45),
+			Parent = model,
+		})
+		-- X along the road's side axis so the bar spans the corridor.
+		laser.CFrame = CFrame.fromMatrix(laser.Position, side, Vector3.new(0, 1, 0))
+		laser.CanCollide = false
+		laser.Transparency = 1
+		table.insert(lasers, laser)
+	end
+
+	local laserButton = makePart({
+		Name = "LaserButton",
+		Size = Vector3.new(4, 5, 1.5),
+		Position = centre + side * (PLOT_SIZE / 2 - 6) + Vector3.new(0, 2.5, 0),
+		Material = Enum.Material.Neon,
+		Color = Color3.fromRGB(255, 60, 60),
+		Parent = model,
+	})
+	local laserPrompt = Instance.new("ProximityPrompt")
+	laserPrompt.ActionText = "Arm Lasers"
+	laserPrompt.ObjectText = "Road Defence"
+	laserPrompt.HoldDuration = 0.3
+	laserPrompt.MaxActivationDistance = 12
+	laserPrompt.RequiresLineOfSight = false
+	laserPrompt.Parent = laserButton
+	local laserLabel = makeLabel(laserButton, "LASERS READY", 4, 220, Color3.fromRGB(255, 130, 130), 70)
+
 	plots[i] = {
 		model = model,
+		lasers = lasers,
+		laserButton = laserButton,
+		laserPrompt = laserPrompt,
+		laserLabel = laserLabel,
+		laserUntil = 0,
+		laserReadyAt = 0,
 		owner = nil,
 		centre = centre,
 		pad = pad,
@@ -1383,25 +1446,24 @@ end
 -- Grabbing scrap (used by both the E prompt and the Auto-Collect gamepass)
 ------------------------------------------------------------------
 
--- Welds a visible, semi-transparent copy of the item into the player's hand
--- and tags it with its name. R15 rigs expose RightHand, R6 exposes
--- "Right Arm"; both are checked so this does not silently no-op on one of
--- them. Massless + CanCollide off so carrying never shoves the character
--- around or catches on geometry mid-run.
+-- Welds a visible, semi-transparent copy of the item above the player's
+-- head and tags it with its name, so it reads as loot being hauled and is
+-- obvious from a distance to anyone hunting them. Massless + CanCollide
+-- off so carrying never shoves the character around or snags on geometry.
 local function attachCarried(player, itemName)
 	local char = player.Character
 	if not char then return nil end
-	local hand = char:FindFirstChild("RightHand") or char:FindFirstChild("Right Arm")
-	if not hand then return nil end
+	local anchor = char:FindFirstChild("HumanoidRootPart")
+	if not anchor then return nil end
 
 	local baseName = Mutations.Unwrap(itemName)
-	local held = ItemVisuals.Create(baseName, hand.Position, CARRY_SCALE)
+	local held = ItemVisuals.Create(baseName, anchor.Position, CARRY_SCALE)
 	held.Name = "CarriedItem"
 	held.Anchored = false
 	held.CanCollide = false
 	held.Massless = true
 	held.Transparency = CARRY_TRANSPARENCY
-	held.CFrame = hand.CFrame * CFrame.new(CARRY_HAND_OFFSET)
+	held.CFrame = anchor.CFrame * CFrame.new(CARRY_HEAD_OFFSET)
 	held.Parent = char
 
 	makeLabel(held, instanceTag(itemName), 2.4, 260, Color3.fromRGB(255, 255, 255), 120)
@@ -1409,7 +1471,7 @@ local function attachCarried(player, itemName)
 	-- WeldConstraint snapshots the current relative transform, so the part
 	-- has to be positioned and parented BEFORE the weld is made.
 	local weld = Instance.new("WeldConstraint")
-	weld.Part0 = hand
+	weld.Part0 = anchor
 	weld.Part1 = held
 	weld.Parent = held
 
@@ -1445,6 +1507,29 @@ local function dropCarried(player, reason)
 	end
 	pushUI(player)
 	return true
+end
+
+local function setLasersActive(plot, active)
+	for _, laser in ipairs(plot.lasers) do
+		laser.Transparency = active and 0 or 1
+	end
+end
+
+local function armLasers(player, plot)
+	if plot.owner ~= player then
+		toast(player, "That's not your base.")
+		return
+	end
+	local now = os.clock()
+	if now < plot.laserReadyAt then
+		toast(player, string.format("Lasers recharging — %ds left.", math.ceil(plot.laserReadyAt - now)))
+		return
+	end
+	plot.laserUntil = now + LASER_DURATION
+	plot.laserReadyAt = plot.laserUntil + LASER_COOLDOWN
+	setLasersActive(plot, true)
+	playSound(playerRoot(player), "big")
+	toast(player, string.format("Road lasers armed for %ds.", LASER_DURATION), true)
 end
 
 local function deliverCarried(player)
@@ -1535,6 +1620,52 @@ for _, child in ipairs(scrapFolder:GetChildren()) do
 	attachPickup(child)
 end
 scrapFolder.ChildAdded:Connect(attachPickup)
+
+------------------------------------------------------------------
+-- Road lasers: arming button, lethal contact, and the timer that turns
+-- them back off. Deliberately owner-armed rather than always-on, so the
+-- road is only dangerous when somebody chose to make it dangerous.
+------------------------------------------------------------------
+
+for _, plot in ipairs(plots) do
+	plot.laserPrompt.Triggered:Connect(function(player)
+		armLasers(player, plot)
+	end)
+
+	for _, laser in ipairs(plot.lasers) do
+		laser.Touched:Connect(function(hit)
+			if os.clock() >= plot.laserUntil then return end
+			local char = hit.Parent
+			local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+			if not humanoid or humanoid.Health <= 0 then return end
+			local player = Players:GetPlayerFromCharacter(char)
+			if not player then return end
+			-- Drop first, then kill: dropCarried reads the character's
+			-- position to decide where the item lands, and a dead
+			-- character's root has already started falling over.
+			dropCarried(player, "You hit a laser — you dropped it!")
+			humanoid.Health = 0
+		end)
+	end
+end
+
+task.spawn(function()
+	while true do
+		task.wait(1)
+		local now = os.clock()
+		for _, plot in ipairs(plots) do
+			local active = now < plot.laserUntil
+			setLasersActive(plot, active)
+			if active then
+				plot.laserLabel.Text = string.format("LASERS ON — %ds", math.ceil(plot.laserUntil - now))
+			elseif now < plot.laserReadyAt then
+				plot.laserLabel.Text = string.format("RECHARGING — %ds", math.ceil(plot.laserReadyAt - now))
+			else
+				plot.laserLabel.Text = "LASERS READY"
+			end
+		end
+	end
+end)
 
 -- Getting home is checked by distance rather than a Touched connection on
 -- the plot ground: Touched fires constantly for a character standing still
