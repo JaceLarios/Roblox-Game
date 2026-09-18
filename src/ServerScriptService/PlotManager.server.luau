@@ -1724,11 +1724,17 @@ local function giveTools(player)
 	coil.ToolTip = string.format("+%d%% move speed while held", COIL_SPEED_BONUS * 100)
 	local coilHandle = Instance.new("Part")
 	coilHandle.Name = "Handle"
-	coilHandle.Size = Vector3.new(2.2, 1.8, 1.8)
-	coilHandle.Shape = Enum.PartType.Cylinder
-	coilHandle.Color = Color3.fromRGB(90, 220, 255)
-	coilHandle.Material = Enum.Material.Neon
+	coilHandle.Size = Vector3.new(1.3, 1.3, 2.4)
 	coilHandle.Parent = coil
+	-- The real Roblox Speed Coil, not a stand-in cylinder. Mesh, texture,
+	-- handle size and scale all lifted off the classic coil model so it
+	-- reads as the coil players already recognise.
+	local coilMesh = Instance.new("SpecialMesh")
+	coilMesh.MeshType = Enum.MeshType.FileMesh
+	coilMesh.MeshId = "rbxassetid://16606212"
+	coilMesh.TextureId = "rbxassetid://99170547"
+	coilMesh.Scale = Vector3.new(0.7, 0.7, 0.7)
+	coilMesh.Parent = coilHandle
 	coil.Equipped:Connect(function()
 		if unequipIfCarrying(player) then return end
 		local s = state[player]

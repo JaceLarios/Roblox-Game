@@ -38,11 +38,36 @@ for _, item in ipairs(FusionRecipes.BaseItems) do
 	baseRarity[item.name] = item.rarity
 end
 
--- Returns nil for anything that is not a base grabbable (a fused result,
--- a secret pet), so callers fall back to the fusion tier colour.
-function FusionRecipes.GetRarity(name)
-	return baseRarity[name]
-end
+-- One ordered ladder, shared by grabbables and fused results alike, so
+-- "better than what went in" means the same thing everywhere.
+local RARITY_INDEX = {
+	common = 1, uncommon = 2, rare = 3, epic = 4, mythic = 5, legendary = 6,
+}
+FusionRecipes.RarityIndex = RARITY_INDEX
+
+-- Where a fused result sits on that same ladder. Base grabbables span
+-- common..legendary on their own; everything you can only get BY fusing
+-- starts above the middle of it.
+FusionRecipes.TierRarity = { [2] = "rare", [3] = "epic", [4] = "mythic" }
+
+-- Keyed by the rarity of the BETTER of the two ingredients.
+--   minTier     - the floor the result cannot fall below, so feeding in
+--                 something good can never hand back junk.
+--   luckyChance - odds of coming out one tier above that floor. Two
+--                 commons almost never spike; two legendaries often do.
+-- Applies to uncurated pairs only; see Fuse() for why.
+FusionRecipes.FusionOutcome = {
+	common    = { minTier = 2, luckyChance = 0.05 },
+	uncommon  = { minTier = 2, luckyChance = 0.10 },
+	rare      = { minTier = 3, luckyChance = 0.16 },
+	epic      = { minTier = 3, luckyChance = 0.26 },
+	mythic    = { minTier = 4, luckyChance = 0.38 },
+	legendary = { minTier = 4, luckyChance = 0.55 },
+}
+
+-- A lucky roll that is already at the tier ceiling pays out in value
+-- rather than a tier that does not exist.
+local LUCKY_VALUE_BONUS = 2.5
 
 FusionRecipes.TierValue = {
 	[2] = 250,
@@ -145,6 +170,19 @@ for tier, names in pairs(FALLBACK_NAMES) do
 	end
 end
 
+-- Rarity of ANY name this module knows: a grabbable carries its own, a
+-- fused result inherits one from its tier. Returns nil only for a name
+-- from outside this line entirely (a secret pet), so callers still fall
+-- back to the tier colour for those.
+-- Defined HERE rather than beside the other rarity tables on purpose: it
+-- reads nameTier, and a function written above that local would resolve
+-- it as a nil global at runtime instead of a compile error.
+function FusionRecipes.GetRarity(name)
+	local base = baseRarity[name]
+	if base then return base end
+	return FusionRecipes.TierRarity[nameTier[name] or 1]
+end
+
 -- Same pair always lands on the same hybrid name — reads as a rule you
 -- can learn, not a random reroll every time you try it.
 local function pickFallbackName(itemA, itemB, tier)
@@ -180,16 +218,44 @@ function FusionRecipes.Fuse(itemA, itemB)
 		}
 	end
 
+	-- Uncurated pair. This is where ingredient rarity actually pays: the
+	-- result is always at least one tier above whatever went in, AND never
+	-- below the floor the better ingredient's rarity guarantees, with a
+	-- rarity-scaled chance of doing one better still.
+	--
+	-- Curated recipes above are deliberately exempt: they are hand-authored
+	-- content with a fixed name and tier, and quietly promoting one would
+	-- mean the same recipe produced different results run to run.
+	local rarityA = FusionRecipes.GetRarity(itemA)
+	local rarityB = FusionRecipes.GetRarity(itemB)
+	local indexA = RARITY_INDEX[rarityA] or 1
+	local indexB = RARITY_INDEX[rarityB] or 1
+	local bestRarity = (indexA >= indexB) and rarityA or rarityB
+	local outcome = FusionRecipes.FusionOutcome[bestRarity] or FusionRecipes.FusionOutcome.common
+
 	local tierA = nameTier[itemA] or 1
 	local tierB = nameTier[itemB] or 1
-	local resultTier = math.min(MAX_FALLBACK_TIER, math.max(tierA, tierB) + 1)
+	local resultTier = math.max(math.max(tierA, tierB) + 1, outcome.minTier)
+
+	local lucky = math.random() < outcome.luckyChance
+	if lucky and resultTier < MAX_FALLBACK_TIER then
+		resultTier += 1
+	end
+	resultTier = math.min(MAX_FALLBACK_TIER, resultTier)
+
+	local value = FusionRecipes.FallbackValue[resultTier] or 0
+	if lucky and resultTier >= MAX_FALLBACK_TIER then
+		value = math.floor(value * LUCKY_VALUE_BONUS)
+	end
+
 	local resultName = pickFallbackName(itemA, itemB, resultTier)
 
 	return resultName, {
 		tier       = resultTier,
 		isSecret   = false,
 		isFallback = true,
-		value      = FusionRecipes.FallbackValue[resultTier] or 0,
+		lucky      = lucky,
+		value      = value,
 	}
 end
 

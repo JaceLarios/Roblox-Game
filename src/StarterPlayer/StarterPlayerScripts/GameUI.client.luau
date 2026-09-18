@@ -141,7 +141,8 @@ local function instanceTag(name)
 	if mutationId then
 		return Mutations.Tag(name, mutationId)
 	end
-	return ItemRarity.Tag(baseName, FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName))
+	return ItemRarity.Tag(baseName, FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
+		FusionRecipes.GetRarity(baseName))
 end
 
 local function watchCoins()
@@ -1269,8 +1270,11 @@ local statPerSecond = label(statPanel, "", UDim2.new(1, -28, 0, 22), Color3.from
 statPerSecond.Position = UDim2.new(0, 14, 0, 246)
 statPerSecond.TextXAlignment = Enum.TextXAlignment.Left
 
-local function actionButton(text, fill, textColor, offsetFromBottom)
+local function actionButton(text, fill, textColor, offsetFromBottom, name)
 	local btn = mark(Instance.new("TextButton"))
+	-- Named so each button is individually addressable; three identically
+	-- named siblings can only ever be reached as the first one.
+	btn.Name = name
 	btn.Size = UDim2.new(1, -28, 0, 44)
 	btn.Position = UDim2.new(0, 14, 1, -offsetFromBottom)
 	btn.BackgroundColor3 = fill
@@ -1287,9 +1291,9 @@ local function actionButton(text, fill, textColor, offsetFromBottom)
 	return btn
 end
 
-local placeBtn = actionButton("PLACE ON PAD", UIStyle.Palette.Mint, INK, 158)
-local moveToCarryBtn = actionButton("CARRY TO FUSE", UIStyle.Palette.Steel, Color3.new(1, 1, 1), 106)
-local sellBtn = actionButton("SELL", UIStyle.Palette.Copper, Color3.new(1, 1, 1), 54)
+local placeBtn = actionButton("PLACE ON PAD", UIStyle.Palette.Mint, INK, 158, "PlaceButton")
+local moveToCarryBtn = actionButton("CARRY TO FUSE", UIStyle.Palette.Steel, Color3.new(1, 1, 1), 106, "CarryToFuseButton")
+local sellBtn = actionButton("SELL", UIStyle.Palette.Copper, Color3.new(1, 1, 1), 54, "SellButton")
 
 local emptyHint = label(statPanel, "Tap an item to see what it's worth.", UDim2.new(1, -28, 0, 44), Color3.fromRGB(140, 132, 118), Enum.Font.FredokaOne, 15)
 emptyHint.Position = UDim2.new(0, 14, 0, 222)
@@ -1460,7 +1464,8 @@ function redrawInventory(items, capacity)
 		if searchBox.Text ~= "" and not string.find(string.lower(entry.name), string.lower(searchBox.Text), 1, true) then continue end
 		local baseName, mutationId = Mutations.Unwrap(entry.name)
 		local tintColor = Mutations.Color(mutationId)
-		local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret)
+		local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret,
+			FusionRecipes.GetRarity(baseName))
 		local isSelected = entry.index == selectedIndex and entry.name == previousSelectedName
 
 		-- Deliberately no card and no border: items read as floating on the
@@ -1570,7 +1575,8 @@ function redrawPlaced(items, capacity)
 		if entry then
 			local baseName, mutationId = Mutations.Unwrap(entry.name)
 			local tintColor = Mutations.Color(mutationId)
-			local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret)
+			local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret,
+				FusionRecipes.GetRarity(baseName))
 			-- Same borderless treatment as the grid tiles, so a placed item
 			-- and a stored one read as the same kind of object.
 			card.BackgroundTransparency = 1
