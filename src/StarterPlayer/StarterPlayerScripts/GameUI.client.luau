@@ -1156,6 +1156,14 @@ local CREAM = UIStyle.Palette.Cream
 local PAPER = Color3.fromRGB(245, 239, 228)
 local RULE_TINT = Color3.fromRGB(226, 216, 198)
 
+-- A blurred ellipse, softness carried in the alpha channel. Deliberately
+-- WHITE, not black: ImageColor3 multiplies, so a black sprite can never be
+-- tinted (0 times anything is 0) and the selection glow below would have
+-- silently stayed black. White lets one sprite serve as both the neutral
+-- shadow and the coloured glow.
+local SHADOW_SPRITE = "rbxassetid://115061718385182"
+local SHADOW_TINT = Color3.fromRGB(68, 60, 48)
+
 -- Everything below is coloured on purpose; Style.Attach repaints anything it
 -- doesn't consider "Designed" back to the default theme.
 local function mark(object)
@@ -1293,6 +1301,16 @@ inventoryScroll.BorderSizePixel = 0
 inventoryScroll.ScrollBarThickness = 7
 inventoryScroll.ScrollBarImageColor3 = UIStyle.Palette.Steel
 inventoryScroll.Parent = gridBoard
+
+-- Without this the top row gets clipped by the ScrollingFrame's own edge:
+-- anything a tile draws outside its cell bounds (previously the stroke, now
+-- the shadow) falls outside the scroll area and is cut off.
+local inventoryPadding = Instance.new("UIPadding")
+inventoryPadding.PaddingTop = UDim.new(0, 10)
+inventoryPadding.PaddingLeft = UDim.new(0, 8)
+inventoryPadding.PaddingRight = UDim.new(0, 8)
+inventoryPadding.PaddingBottom = UDim.new(0, 10)
+inventoryPadding.Parent = inventoryScroll
 
 local inventoryLayout = Instance.new("UIGridLayout")
 inventoryLayout.CellSize = UDim2.fromOffset(126, 142)
@@ -1536,61 +1554,67 @@ function redrawInventory(items, capacity)
 		local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret)
 		local isSelected = entry.index == selectedIndex and entry.name == previousSelectedName
 
+		-- Deliberately no card and no border: items read as floating on the
+		-- panel, with a soft contact shadow doing the job the frame used to.
+		-- With no border left to highlight, selection is shown by tinting
+		-- that shadow teal and growing it.
 		local card = mark(Instance.new("TextButton"))
 		card.Size = inventoryLayout.CellSize
 		card.LayoutOrder = i
-		card.BackgroundColor3 = Color3.new(1, 1, 1)
+		card.BackgroundTransparency = 1
 		card.Text = ""
 		card.AutoButtonColor = false
 		card.BorderSizePixel = 0
-		card.ClipsDescendants = true
 		card.Parent = inventoryScroll
-		rounded(card, 14)
-		outline(card, isSelected and UIStyle.Palette.Teal or INK, isSelected and 5 or 3)
 
-		-- The item itself gets the whole tile above the name strip, framed
-		-- tighter than the default so it still reads at this size.
+		local shadow = mark(Instance.new("ImageLabel"))
+		shadow.Name = "Shadow"
+		shadow.BackgroundTransparency = 1
+		shadow.Image = SHADOW_SPRITE
+		shadow.ImageColor3 = isSelected and UIStyle.Palette.Teal or SHADOW_TINT
+		shadow.ImageTransparency = isSelected and 0.2 or 0.36
+		shadow.ScaleType = Enum.ScaleType.Stretch
+		shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+		-- Low and flat, reading as a contact shadow on the floor under a
+		-- floating item. Centred behind the item instead, the model simply
+		-- drew over the top of it and hid it.
+		-- The label is deliberately oversized: the sprite carries a wide
+		-- transparent margin, so only the middle ~60% of it is actually
+		-- visible, and sizing to the intended shadow made it vanish.
+		shadow.Position = UDim2.new(0.5, 0, 1, -28)
+		shadow.Size = isSelected and UDim2.new(1.25, 0, 0, 42) or UDim2.new(0.95, 0, 0, 30)
+		-- Above the viewport, not behind it. A ViewportFrame occludes
+		-- lower-ZIndex siblings instead of compositing with them, so a shadow
+		-- underneath was simply invisible wherever the item overlapped it.
+		-- Drawing it on top is fine: it sits low and soft, so it reads as
+		-- contact shading under the wheels rather than dirt on the model.
+		shadow.ZIndex = 3
+		shadow.Parent = card
+
 		buildItemViewport(card, baseName, tintColor, {
-			size = UDim2.new(1, -10, 1, -36),
-			position = UDim2.fromOffset(5, 3),
-			zoom = 1.3,
+			size = UDim2.new(1, -6, 1, -24),
+			position = UDim2.fromOffset(3, 0),
+			zoom = 1.28,
+			zIndex = 2,
 		})
 
-		local nameStrip = mark(Instance.new("Frame"))
-		nameStrip.Size = UDim2.new(1, 0, 0, 26)
-		nameStrip.Position = UDim2.new(0, 0, 1, -26)
-		nameStrip.BackgroundColor3 = rarityColor
-		nameStrip.BorderSizePixel = 0
-		nameStrip.ZIndex = 3
-		nameStrip.Parent = card
-
-		local nameEdge = mark(Instance.new("Frame"))
-		nameEdge.Size = UDim2.new(1, 0, 0, 3)
-		nameEdge.BackgroundColor3 = INK
-		nameEdge.BorderSizePixel = 0
-		nameEdge.ZIndex = 4
-		nameEdge.Parent = nameStrip
-
-		local nameLbl = label(nameStrip, entry.name, UDim2.new(1, -8, 1, -3), INK, Enum.Font.FredokaOne, 12)
-		nameLbl.Position = UDim2.fromOffset(4, 3)
+		-- Name and value sit straight on the panel now, so both carry a dark
+		-- text outline for legibility rather than a coloured strip behind them.
+		local nameLbl = mark(label(card, entry.name, UDim2.new(1, -6, 0, 20), rarityColor, Enum.Font.FredokaOne, 13))
+		nameLbl.Position = UDim2.new(0, 3, 1, -21)
 		nameLbl.TextXAlignment = Enum.TextXAlignment.Center
 		nameLbl.TextTruncate = Enum.TextTruncate.AtEnd
-		nameLbl.ZIndex = 5
-
-		local valueBadge = mark(Instance.new("Frame"))
-		valueBadge.Size = UDim2.fromOffset(52, 20)
-		valueBadge.Position = UDim2.new(1, -56, 0, 4)
-		valueBadge.BackgroundColor3 = UIStyle.Palette.Gold
-		valueBadge.BorderSizePixel = 0
-		valueBadge.ZIndex = 3
-		valueBadge.Parent = card
-		rounded(valueBadge, 10)
-		outline(valueBadge, INK, 2)
+		nameLbl.TextStrokeColor3 = INK
+		nameLbl.TextStrokeTransparency = 0.1
+		nameLbl.ZIndex = 4
 
 		local shown = entry.value >= 1000 and string.format("%.1fk", entry.value / 1000) or tostring(math.floor(entry.value))
-		local badgeText = label(valueBadge, shown, UDim2.fromScale(1, 1), INK, Enum.Font.FredokaOne, 11)
-		badgeText.TextXAlignment = Enum.TextXAlignment.Center
-		badgeText.ZIndex = 4
+		local valueLbl = mark(label(card, shown, UDim2.fromOffset(58, 18), UIStyle.Palette.Gold, Enum.Font.FredokaOne, 13))
+		valueLbl.Position = UDim2.new(1, -60, 0, 2)
+		valueLbl.TextXAlignment = Enum.TextXAlignment.Right
+		valueLbl.TextStrokeColor3 = INK
+		valueLbl.TextStrokeTransparency = 0.1
+		valueLbl.ZIndex = 4
 
 		card.MouseButton1Click:Connect(function()
 			showStatsFor(entry)
@@ -1632,57 +1656,60 @@ function redrawPlaced(items, capacity)
 		card.Text = ""
 		card.AutoButtonColor = false
 		card.BorderSizePixel = 0
-		card.ClipsDescendants = true
 		card.Parent = placedRow
-		rounded(card, 16)
 
 		if entry then
 			local baseName, mutationId = Mutations.Unwrap(entry.name)
 			local tintColor = Mutations.Color(mutationId)
 			local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret)
-			card.BackgroundColor3 = Color3.new(1, 1, 1)
-			outline(card, INK, 4)
+			-- Same borderless treatment as the grid tiles, so a placed item
+			-- and a stored one read as the same kind of object.
+			card.BackgroundTransparency = 1
+
+			local shadow = mark(Instance.new("ImageLabel"))
+			shadow.Name = "Shadow"
+			shadow.BackgroundTransparency = 1
+			shadow.Image = SHADOW_SPRITE
+			shadow.ImageColor3 = SHADOW_TINT
+			shadow.ImageTransparency = 0.38
+			shadow.ScaleType = Enum.ScaleType.Stretch
+			shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+			shadow.Position = UDim2.new(0.5, 0, 1, -24)
+			shadow.Size = UDim2.new(0.9, 0, 0, 26)
+			shadow.ZIndex = 3
+			shadow.Parent = card
 
 			buildItemViewport(card, baseName, tintColor, {
-				size = UDim2.new(1, -10, 1, -10),
-				position = UDim2.fromOffset(5, 5),
-				zoom = 1.3,
+				size = UDim2.new(1, -6, 1, -20),
+				position = UDim2.fromOffset(3, 0),
+				zoom = 1.28,
+				zIndex = 2,
 			})
 
-			-- Rarity pip, so a full slot still reads its tier at a glance
-			-- now that the card itself is plain white.
-			local pip = mark(Instance.new("Frame"))
-			pip.Size = UDim2.fromOffset(18, 18)
-			pip.Position = UDim2.fromOffset(5, 5)
-			pip.BackgroundColor3 = rarityColor
-			pip.BorderSizePixel = 0
-			pip.ZIndex = 3
-			pip.Parent = card
-			rounded(pip, 9)
-			outline(pip, INK, 2)
-
-			local rate = mark(Instance.new("Frame"))
-			rate.Size = UDim2.new(1, -10, 0, 18)
-			rate.Position = UDim2.new(0, 5, 1, -23)
-			rate.BackgroundColor3 = UIStyle.Palette.Gold
-			rate.BorderSizePixel = 0
-			rate.ZIndex = 3
-			rate.Parent = card
-			rounded(rate, 9)
-			outline(rate, INK, 2)
-
-			local rateText = label(rate, string.format("%.0f/s", entry.perSecond or 0), UDim2.fromScale(1, 1), INK, Enum.Font.FredokaOne, 11)
+			-- Rate reads as outlined text in the rarity colour, rather than a
+			-- gold pill plus a separate rarity dot, now there is no card to
+			-- hold either of them.
+			local rateText = mark(label(card, string.format("%.0f/s", entry.perSecond or 0),
+				UDim2.new(1, -6, 0, 18), rarityColor, Enum.Font.FredokaOne, 13))
+			rateText.Position = UDim2.new(0, 3, 1, -19)
 			rateText.TextXAlignment = Enum.TextXAlignment.Center
+			rateText.TextStrokeColor3 = INK
+			rateText.TextStrokeTransparency = 0.1
 			rateText.ZIndex = 4
 
 			card.MouseButton1Click:Connect(function()
 				unplacePetRemote:FireServer(slot)
 			end)
 		else
+			-- Empty slots keep a faint outline on purpose: with no border and
+			-- nothing inside, an empty slot would be entirely invisible and
+			-- the "3 / 5" count would stop being readable at a glance.
 			card.BackgroundColor3 = PAPER
-			outline(card, Color3.fromRGB(201, 190, 170), 3)
+			card.BackgroundTransparency = 0.45
+			rounded(card, 16)
+			outline(card, Color3.fromRGB(214, 204, 186), 3)
 
-			local plus = label(card, "+", UDim2.fromScale(1, 1), Color3.fromRGB(190, 178, 158), Enum.Font.LuckiestGuy, math.floor(slotSize * 0.42))
+			local plus = mark(label(card, "+", UDim2.fromScale(1, 1), Color3.fromRGB(196, 184, 164), Enum.Font.LuckiestGuy, math.floor(slotSize * 0.42)))
 			plus.TextXAlignment = Enum.TextXAlignment.Center
 		end
 	end
