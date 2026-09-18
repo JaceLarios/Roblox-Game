@@ -1590,7 +1590,8 @@ local function grabItem(player, part)
 	broadcast(string.format("%s is carrying %s — run them down before they get home!",
 		player.Name, instanceTag(grabbed)))
 
-	refreshPad(player)
+	-- No refreshPad here any more: grabbing feeds the hand, not the fuse
+	-- staging slots the pad renders, so there is nothing on it to redraw.
 	pushUI(player)
 	return true
 end

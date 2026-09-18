@@ -28,7 +28,6 @@ local sellInventoryRemote = ReplicatedStorage:WaitForChild("SellInventoryItem")
 local moveToCarryRemote = ReplicatedStorage:WaitForChild("MoveToCarry")
 local placePetRemote = ReplicatedStorage:WaitForChild("PlacePet")
 local unplacePetRemote = ReplicatedStorage:WaitForChild("UnplacePet")
-local removeFromCarryRemote = ReplicatedStorage:WaitForChild("RemoveFromCarry")
 local selectTradeOfferRemote = ReplicatedStorage:WaitForChild("SelectTradeOffer")
 local confirmTradeRemote = ReplicatedStorage:WaitForChild("ConfirmTrade")
 local cancelTradeRemote = ReplicatedStorage:WaitForChild("CancelTrade")
@@ -688,96 +687,6 @@ local function redrawDaily(rewards, claimed, nextDay, available)
 		dailyCaption.TextColor3 = Color3.fromRGB(150, 150, 170)
 		dailyStatus.Text = "claimed"
 		dailyStatus.TextColor3 = Color3.fromRGB(110, 110, 130)
-	end
-end
-
-------------------------------------------------------------------
--- Carry bar (bottom centre)
-------------------------------------------------------------------
-
--- Tuned for the default 2-slot loadout; a "+Carry" upgrade raises maxSlots
--- past that, so redrawCarrySlots (below) grows the frame to match instead
--- of leaving it fixed at 470 — which used to let the extra slot pills
--- spill out past both the holder and the frame's own background.
-local CARRY_FRAME_BASE_WIDTH = 470
-local CARRY_FRAME_BASE_SLOTS = 2
-local CARRY_SLOT_WIDTH = 200
-local CARRY_SLOT_PADDING = 8
-
-local carryingFrame = Instance.new("Frame")
-carryingFrame.Size = UDim2.new(0, CARRY_FRAME_BASE_WIDTH, 0, 58)
-carryingFrame.Position = UDim2.new(0.5, -CARRY_FRAME_BASE_WIDTH / 2, 1, -92)
-carryingFrame.BackgroundColor3 = DARK
-carryingFrame.BackgroundTransparency = GLASS_HUD
-carryingFrame.BorderSizePixel = 0
-carryingFrame.Parent = gui
-UIStyle.Navigation(carryingFrame)
-rounded(carryingFrame)
-
-local carryingStroke = Instance.new("UIStroke")
-carryingStroke.Color = WHITE
-carryingStroke.Transparency = 0.5
-carryingStroke.Thickness = 1.5
-carryingStroke.Parent = carryingFrame
-
-local carryingLabel = label(carryingFrame, "CARRYING", UDim2.new(0, 150, 0, 18), LIGHT, Enum.Font.FredokaOne, 14)
-carryingLabel.Position = UDim2.new(0, 14, 0, 6)
-carryingLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local carryingHint = label(carryingFrame, "tap a slot to take it off", UDim2.new(0, 200, 0, 18), DIM, Enum.Font.FredokaOne, 12)
-carryingHint.Position = UDim2.new(1, -214, 0, 6)
-carryingHint.TextXAlignment = Enum.TextXAlignment.Right
-
-local carrySlotsHolder = Instance.new("Frame")
-carrySlotsHolder.Size = UDim2.new(1, -28, 0, 26)
-carrySlotsHolder.Position = UDim2.new(0, 14, 0, 26)
-carrySlotsHolder.BackgroundTransparency = 1
-carrySlotsHolder.Parent = carryingFrame
-
-local carrySlotsLayout = Instance.new("UIListLayout")
-carrySlotsLayout.FillDirection = Enum.FillDirection.Horizontal
-carrySlotsLayout.Padding = UDim.new(0, 8)
-carrySlotsLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-carrySlotsLayout.Parent = carrySlotsHolder
-
--- Clicking a filled slot sends it back to the Inventory — the client-side
--- half of "take something off the fuse pad" (the physical pad itself gets
--- taken off the same way, via its own ProximityPrompt, on the server).
-local function redrawCarrySlots(slots, maxSlots)
-	maxSlots = maxSlots or CARRY_FRAME_BASE_SLOTS
-
-	local extraSlots = math.max(0, maxSlots - CARRY_FRAME_BASE_SLOTS)
-	local frameWidth = CARRY_FRAME_BASE_WIDTH + extraSlots * (CARRY_SLOT_WIDTH + CARRY_SLOT_PADDING)
-	carryingFrame.Size = UDim2.new(0, frameWidth, 0, 58)
-	carryingFrame.Position = UDim2.new(0.5, -frameWidth / 2, 1, -92)
-
-	for _, child in ipairs(carrySlotsHolder:GetChildren()) do
-		if not child:IsA("UIListLayout") then child:Destroy() end
-	end
-
-	for i = 1, maxSlots do
-		local name = slots[i]
-
-		local slotBtn = Instance.new("TextButton")
-		slotBtn.Size = UDim2.new(0, 200, 1, 0)
-		slotBtn.LayoutOrder = i
-		slotBtn.BackgroundColor3 = name and Color3.fromRGB(42, 42, 50) or Color3.fromRGB(26, 26, 32)
-		slotBtn.AutoButtonColor = name ~= nil
-		slotBtn.Text = name and instanceTag(name) or "[ empty ]"
-		slotBtn.TextColor3 = name and LIGHT or DIM
-		slotBtn.RichText = true
-		slotBtn.Font = Enum.Font.FredokaOne
-		slotBtn.TextSize = 14
-		slotBtn.TextTruncate = Enum.TextTruncate.AtEnd
-		slotBtn.BorderSizePixel = 0
-		slotBtn.Parent = carrySlotsHolder
-		rounded(slotBtn, 6)
-
-		if name then
-			slotBtn.MouseButton1Click:Connect(function()
-				removeFromCarryRemote:FireServer(i)
-			end)
-		end
 	end
 end
 
@@ -2239,10 +2148,6 @@ remote.OnClientEvent:Connect(function(data)
 	if data.toast then
 		showToast(data.toast, data.big)
 		return
-	end
-
-	if data.slots then
-		redrawCarrySlots(data.slots, data.maxSlots)
 	end
 
 	if data.boosts then
