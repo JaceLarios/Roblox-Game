@@ -115,12 +115,12 @@ local CARRY_TRANSPARENCY = 0.35
 -- around with the camera every time the player looks about.
 local CARRY_HEAD_OFFSET = Vector3.new(0, 4.2, 0)
 
--- Road lasers. Each plot owner arms their own approach road from a button
--- in their base; they stay on for LASER_DURATION and then the button is
--- unavailable for LASER_COOLDOWN.
-local LASER_DURATION = 120
-local LASER_COOLDOWN = 60
+-- Road lasers are permanent: the approach to every base is an obby you
+-- jump, not a hazard somebody switches on. Invisible barriers run down
+-- both sides of each road so the lasers cannot simply be walked around.
 local LASER_COUNT = 5
+local BARRIER_HEIGHT = 16
+local BARRIER_HALF_WIDTH = 12.5   -- just outside MapRevamp's +/-11.5 guide rails
 -- MapRevamp paints this plot's guide rails at +/-11.5 from the road
 -- centreline, so a 24-wide bar spans the corridor with a little overhang.
 local LASER_WIDTH = 24
@@ -430,7 +430,8 @@ local function instanceTag(name)
 	if mutationId then
 		return Mutations.Tag(name, mutationId)
 	end
-	return ItemRarity.Tag(baseName, FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName))
+	return ItemRarity.Tag(baseName, FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
+		FusionRecipes.GetRarity(baseName))
 end
 
 -- Same idea as instanceTag, but for a name that's known to belong to a
@@ -702,35 +703,31 @@ for i = 1, PLOT_COUNT do
 		-- X along the road's side axis so the bar spans the corridor.
 		laser.CFrame = CFrame.fromMatrix(laser.Position, side, Vector3.new(0, 1, 0))
 		laser.CanCollide = false
-		laser.Transparency = 1
 		table.insert(lasers, laser)
 	end
 
-	local laserButton = makePart({
-		Name = "LaserButton",
-		Size = Vector3.new(4, 5, 1.5),
-		Position = centre + side * (PLOT_SIZE / 2 - 6) + Vector3.new(0, 2.5, 0),
-		Material = Enum.Material.Neon,
-		Color = Color3.fromRGB(255, 60, 60),
-		Parent = model,
-	})
-	local laserPrompt = Instance.new("ProximityPrompt")
-	laserPrompt.ActionText = "Arm Lasers"
-	laserPrompt.ObjectText = "Road Defence"
-	laserPrompt.HoldDuration = 0.3
-	laserPrompt.MaxActivationDistance = 12
-	laserPrompt.RequiresLineOfSight = false
-	laserPrompt.Parent = laserButton
-	local laserLabel = makeLabel(laserButton, "LASERS READY", 4, 220, Color3.fromRGB(255, 130, 130), 70)
+	-- Invisible walls down both shoulders, so the only way past a bar is
+	-- over it. They start just past the yard and stop at the plot edge, so
+	-- the yard itself and the plot stay completely open to walk around.
+	local barrierStart, barrierEnd = 88, roadEnd
+	local barrierMid = radial * ((barrierStart + barrierEnd) / 2)
+	for _, offset in ipairs({ -BARRIER_HALF_WIDTH, BARRIER_HALF_WIDTH }) do
+		local wall = makePart({
+			Name = "RoadBarrier",
+			Size = Vector3.new(1, BARRIER_HEIGHT, barrierEnd - barrierStart),
+			Position = barrierMid + side * offset + Vector3.new(0, BARRIER_HEIGHT / 2, 0),
+			Parent = model,
+		})
+		-- lookAt puts the part's Z (its length) along the road.
+		wall.CFrame = CFrame.lookAt(wall.Position, wall.Position + radial)
+		wall.Transparency = 1
+		wall.CanCollide = true
+		wall.CanQuery = false
+	end
 
 	plots[i] = {
 		model = model,
 		lasers = lasers,
-		laserButton = laserButton,
-		laserPrompt = laserPrompt,
-		laserLabel = laserLabel,
-		laserUntil = 0,
-		laserReadyAt = 0,
 		owner = nil,
 		centre = centre,
 		pad = pad,
@@ -1509,29 +1506,6 @@ local function dropCarried(player, reason)
 	return true
 end
 
-local function setLasersActive(plot, active)
-	for _, laser in ipairs(plot.lasers) do
-		laser.Transparency = active and 0 or 1
-	end
-end
-
-local function armLasers(player, plot)
-	if plot.owner ~= player then
-		toast(player, "That's not your base.")
-		return
-	end
-	local now = os.clock()
-	if now < plot.laserReadyAt then
-		toast(player, string.format("Lasers recharging — %ds left.", math.ceil(plot.laserReadyAt - now)))
-		return
-	end
-	plot.laserUntil = now + LASER_DURATION
-	plot.laserReadyAt = plot.laserUntil + LASER_COOLDOWN
-	setLasersActive(plot, true)
-	playSound(playerRoot(player), "big")
-	toast(player, string.format("Road lasers armed for %ds.", LASER_DURATION), true)
-end
-
 local function deliverCarried(player)
 	local s = state[player]
 	if not s or not s.carrying then return false end
@@ -1622,19 +1596,14 @@ end
 scrapFolder.ChildAdded:Connect(attachPickup)
 
 ------------------------------------------------------------------
--- Road lasers: arming button, lethal contact, and the timer that turns
--- them back off. Deliberately owner-armed rather than always-on, so the
--- road is only dangerous when somebody chose to make it dangerous.
+-- Road lasers: always live. Touching one drops whatever you were
+-- carrying and kills you, so the run home is a short obby you jump
+-- rather than a straight sprint.
 ------------------------------------------------------------------
 
 for _, plot in ipairs(plots) do
-	plot.laserPrompt.Triggered:Connect(function(player)
-		armLasers(player, plot)
-	end)
-
 	for _, laser in ipairs(plot.lasers) do
 		laser.Touched:Connect(function(hit)
-			if os.clock() >= plot.laserUntil then return end
 			local char = hit.Parent
 			local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 			if not humanoid or humanoid.Health <= 0 then return end
@@ -1648,24 +1617,6 @@ for _, plot in ipairs(plots) do
 		end)
 	end
 end
-
-task.spawn(function()
-	while true do
-		task.wait(1)
-		local now = os.clock()
-		for _, plot in ipairs(plots) do
-			local active = now < plot.laserUntil
-			setLasersActive(plot, active)
-			if active then
-				plot.laserLabel.Text = string.format("LASERS ON — %ds", math.ceil(plot.laserUntil - now))
-			elseif now < plot.laserReadyAt then
-				plot.laserLabel.Text = string.format("RECHARGING — %ds", math.ceil(plot.laserReadyAt - now))
-			else
-				plot.laserLabel.Text = "LASERS READY"
-			end
-		end
-	end
-end)
 
 -- Getting home is checked by distance rather than a Touched connection on
 -- the plot ground: Touched fires constantly for a character standing still

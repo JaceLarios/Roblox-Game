@@ -9,16 +9,40 @@ local FusionRecipes = {}
 -- Trimmed to 8 focused vehicles (was 12, including two non-vehicle "junk"
 -- items nobody was excited to grab) — a shorter, punchier roster reads
 -- better than a long one padded with mundane filler.
-FusionRecipes.BaseItems = {
-	{ name = "Rusted Sedan",  weight = 100, value = 5 },
-	{ name = "Dirt Bike",     weight = 85,  value = 10 },
-	{ name = "Golf Cart",     weight = 65,  value = 15 },
-	{ name = "Muscle Car",    weight = 45,  value = 25 },
-	{ name = "Cop Cruiser",   weight = 30,  value = 35 },
-	{ name = "Box Truck",     weight = 18,  value = 55 },
-	{ name = "Monster Truck", weight = 8,   value = 90 },
-	{ name = "Jet Engine",    weight = 3,   value = 300 },
+-- Rarity drives the drop rate. Deriving weight from rarity rather than
+-- writing both by hand means how rare something LOOKS and how often it
+-- actually spawns can never drift apart.
+FusionRecipes.RarityWeight = {
+	common    = 100,
+	uncommon  = 55,
+	rare      = 30,
+	epic      = 16,
+	mythic    = 7,
+	legendary = 3,
 }
+
+FusionRecipes.BaseItems = {
+	{ name = "Rusted Sedan",  rarity = "common",    value = 5 },
+	{ name = "Dirt Bike",     rarity = "common",    value = 10 },
+	{ name = "Golf Cart",     rarity = "uncommon",  value = 15 },
+	{ name = "Muscle Car",    rarity = "uncommon",  value = 25 },
+	{ name = "Cop Cruiser",   rarity = "rare",      value = 35 },
+	{ name = "Box Truck",     rarity = "epic",      value = 55 },
+	{ name = "Monster Truck", rarity = "mythic",    value = 90 },
+	{ name = "Jet Engine",    rarity = "legendary", value = 300 },
+}
+
+local baseRarity = {}
+for _, item in ipairs(FusionRecipes.BaseItems) do
+	item.weight = FusionRecipes.RarityWeight[item.rarity]
+	baseRarity[item.name] = item.rarity
+end
+
+-- Returns nil for anything that is not a base grabbable (a fused result,
+-- a secret pet), so callers fall back to the fusion tier colour.
+function FusionRecipes.GetRarity(name)
+	return baseRarity[name]
+end
 
 FusionRecipes.TierValue = {
 	[2] = 250,

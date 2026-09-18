@@ -67,7 +67,7 @@ local function addLabel(part, itemName)
 	label.Size = UDim2.new(1, 0, 1, 0)
 	label.BackgroundTransparency = 1
 	label.Text = itemName
-	label.TextColor3 = ItemRarity.Color(FusionRecipes.GetTier(itemName), false)
+	label.TextColor3 = ItemRarity.Color(FusionRecipes.GetTier(itemName), false, FusionRecipes.GetRarity(itemName))
 	label.TextStrokeTransparency = 0.4
 	label.TextScaled = true
 	label.Parent = billboard
@@ -111,7 +111,7 @@ local function spawnScrap()
 	-- the user's own call, "keep the one for when something rare spawns
 	-- like a jet engine"); it's the sole surviving world-spawn announcement.
 	if isRareRoll(itemName) then
-		local rareTag = ItemRarity.Tag(itemName, FusionRecipes.GetTier(itemName), false)
+		local rareTag = ItemRarity.Tag(itemName, FusionRecipes.GetTier(itemName), false, FusionRecipes.GetRarity(itemName))
 		remote:FireAllClients({
 			announce = string.format("%s just dropped in the yard — grab it before it's gone!", rareTag),
 		})
