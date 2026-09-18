@@ -94,6 +94,15 @@ local LUCK_MAX_CHANCE = 0.40  -- never more than a 40% chance
 -- Upgrades. All four are PERSONAL — none of them touch the shared yard,
 -- so buying them can't make the middle unfair for everyone else.
 -- `start` is the level a new player begins at.
+-- s.slots is a fuse STAGING area now, not a carry capacity: physical
+-- carrying is one item held overhead, delivered to inventory at your base.
+-- Fixed at 2, which is exactly what one fusion consumes.
+local FUSE_STAGING_SLOTS = 2
+
+-- Grabbing is a deliberate commitment now, not an instant tap: you stand
+-- still for this long, in the open, before the item is yours.
+local GRAB_HOLD_SECONDS = 1.5
+
 local UPGRADES = {
 	{
 		key = "luck", name = "Lucky Wrench", start = 1, max = 10,
@@ -102,11 +111,6 @@ local UPGRADES = {
 			return string.format("%d%% chance to upgrade scrap on pickup",
 				math.floor(math.min(LUCK_MAX_CHANCE, (lv - 1) * LUCK_PER_LEVEL) * 100))
 		end,
-	},
-	{
-		key = "carry", name = "Bigger Truck", start = 1, max = 5,
-		baseCost = 800, mult = 2.4,
-		describe = function(lv) return string.format("Carry %d items per trip", lv + 1) end,
 	},
 	{
 		key = "value", name = "Haggler", start = 1, max = 8,
@@ -856,7 +860,11 @@ end
 ------------------------------------------------------------------
 
 local function capacity(player, s)
-	return Gamepasses.Capacity(player, s.upgrades.carry)
+	-- The Bigger Truck upgrade was retired when carrying became one physical
+	-- item overhead. The ExtraCarry GAMEPASS is deliberately still honoured
+	-- here, because it is a real-money purchase -- same call that was made
+	-- when Scrap Magnet was removed but the paid Auto-Collect was left alone.
+	return Gamepasses.Capacity(player, FUSE_STAGING_SLOTS - 1)
 end
 
 local function rewardInfo(player, reward)
@@ -1401,7 +1409,7 @@ local function attachPickup(part)
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ActionText = "Grab"
 	prompt.ObjectText = itemName
-	prompt.HoldDuration = 0
+	prompt.HoldDuration = GRAB_HOLD_SECONDS
 	prompt.MaxActivationDistance = 14
 	prompt.RequiresLineOfSight = false
 	prompt.Parent = part
@@ -1466,9 +1474,7 @@ buyRemote.OnServerEvent:Connect(function(player, key)
 	coins.Value = coins.Value - cost
 	s.upgrades[key] = level + 1
 
-	if key == "carry" then
-		-- Capacity is derived from earned upgrades plus pass ownership.
-	elseif key == "speed" then
+	if key == "speed" then
 		updateWalkSpeed(player) -- feel it immediately, not on the next fuse/place
 	end
 
@@ -2572,7 +2578,7 @@ local function onPlayerAdded(player)
 		secrets = data.secrets,
 		goalIndex = data.goalIndex,
 		upgrades = upgrades,
-		maxSlots = upgrades.carry + 1,
+		maxSlots = FUSE_STAGING_SLOTS,
 		lastDailyDay = data.lastDailyDay or 0,
 		dailyStreak = data.dailyStreak or 0,
 		boosts = data.boosts or {},

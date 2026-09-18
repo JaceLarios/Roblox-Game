@@ -489,7 +489,9 @@ local function attachPickup(itemPart)
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ActionText = "Grab"
 	prompt.ObjectText = itemName
-	prompt.HoldDuration = 0
+	-- Matches the yard's GRAB_HOLD_SECONDS in PlotManager: grabbing is a
+	-- deliberate 1.5s commitment everywhere, not just in the Junkyard.
+	prompt.HoldDuration = 1.5
 	prompt.MaxActivationDistance = 14
 	prompt.RequiresLineOfSight = false
 	prompt.Parent = itemPart
