@@ -1102,6 +1102,9 @@ local function pushUI(player)
 		inventory = inventoryInfo,
 		inventoryCapacity = INVENTORY_CAPACITY,
 		carrying = s.carrying and s.carrying.name or nil,
+		-- Where "home" is, so the client can point its RUN arrows at it
+		-- without having to work out which plot belongs to this player.
+		baseCentre = plots[s.plotIndex] and plots[s.plotIndex].centre or nil,
 		placed = placedInfo,
 		placedCapacity = PET_PAD_COUNT,
 	})
