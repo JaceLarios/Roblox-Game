@@ -121,6 +121,17 @@ local CARRY_HEAD_OFFSET = Vector3.new(0, 4.2, 0)
 local LASER_COUNT = 5
 local BARRIER_HEIGHT = 16
 local BARRIER_HALF_WIDTH = 12.5   -- just outside MapRevamp's +/-11.5 guide rails
+
+-- Bat and speed coil. Everyone spawns with both, and gives up both the
+-- moment they pick something up.
+local BAT_COOLDOWN = 1.2
+local BAT_RANGE = 12
+-- Dot product against the swinger's look vector, so the bat only connects
+-- with someone actually in front of them rather than anyone standing
+-- within range in any direction. ~0.5 is a 120-degree cone.
+local BAT_ARC_DOT = 0.5
+local FLOP_SECONDS = 2.5
+local COIL_SPEED_BONUS = 0.15
 -- MapRevamp paints this plot's guide rails at +/-11.5 from the road
 -- centreline, so a 24-wide bar spans the corridor with a little overhang.
 local LASER_WIDTH = 24
@@ -487,6 +498,12 @@ local function updateWalkSpeed(player)
 
 	local placedBonus = math.min(#s.placed * PLACED_SPEED_PER_ITEM, PLACED_SPEED_CAP)
 	local speedMult = (1 + (s.upgrades.speed - 1) * SPEED_UPGRADE_PER_LEVEL) * Gamepasses.SpeedMultiplier(player) * AreaPetsService.SpeedMultiplier(player)
+	-- The coil is a held tool, so its bonus applies only while it is
+	-- actually equipped, and never while carrying: the coil is one of the
+	-- two things you give up to haul loot.
+	if s.coilEquipped and not s.carrying then
+		speedMult = speedMult * (1 + COIL_SPEED_BONUS)
+	end
 	humanoid.WalkSpeed = (BASE_WALK_SPEED + placedBonus) * speedMult
 end
 
@@ -1557,6 +1574,13 @@ local function grabItem(player, part)
 	if not held then return false end
 	s.carrying = { name = grabbed, model = held }
 
+	-- Picking something up costs you the bat and the coil. CarryHud hides
+	-- the hotbar client-side; this is the half that actually enforces it.
+	local carrierHumanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+	if carrierHumanoid then carrierHumanoid:UnequipTools() end
+	s.coilEquipped = false
+	updateWalkSpeed(player)
+
 	playSound(playerRoot(player), "pickup")
 	local root = playerRoot(player)
 	PickupEffects.Play(part, root and root.Position or part.Position)
@@ -1597,6 +1621,126 @@ for _, child in ipairs(scrapFolder:GetChildren()) do
 	attachPickup(child)
 end
 scrapFolder.ChildAdded:Connect(attachPickup)
+
+------------------------------------------------------------------
+-- Bat and speed coil. Everyone gets both on spawn. They are the two
+-- things you give up the moment you pick something up, so every entry
+-- point checks s.carrying: the client hiding the hotbar is presentation,
+-- these guards are the rule.
+------------------------------------------------------------------
+
+local batReadyAt = {}
+
+local function flopPlayer(target, seconds)
+	local char = target.Character
+	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+	if not humanoid or humanoid.Health <= 0 then return end
+	-- PlatformStand rather than breaking joints: it reads as a flop, it
+	-- reverses cleanly, and it cannot leave somebody permanently wrecked
+	-- the way a real ragdoll can when the reset is missed.
+	humanoid.PlatformStand = true
+	task.delay(seconds, function()
+		if humanoid.Parent and humanoid.Health > 0 then
+			humanoid.PlatformStand = false
+		end
+	end)
+end
+
+local function swingBat(player)
+	local s = state[player]
+	if not s then return end
+	if s.carrying then
+		toast(player, "You cannot swing while carrying something.")
+		return
+	end
+
+	local now = os.clock()
+	if now < (batReadyAt[player] or 0) then return end
+	batReadyAt[player] = now + BAT_COOLDOWN
+
+	local root = playerRoot(player)
+	if not root then return end
+	local forward = root.CFrame.LookVector
+
+	for _, other in ipairs(Players:GetPlayers()) do
+		if other ~= player then
+			local otherRoot = playerRoot(other)
+			if otherRoot then
+				local offset = otherRoot.Position - root.Position
+				local distance = offset.Magnitude
+				if distance > 0.1 and distance <= BAT_RANGE and forward:Dot(offset.Unit) >= BAT_ARC_DOT then
+					-- dropCarried returns false when they had nothing, which
+					-- is the difference between a steal and just a knockdown.
+					local knockedLoose = dropCarried(other, "You got whacked — you dropped it!")
+					flopPlayer(other, FLOP_SECONDS)
+					playSound(otherRoot, "big")
+					toast(player, knockedLoose
+						and string.format("You knocked it out of %s!", other.Name)
+						or string.format("You flattened %s.", other.Name))
+				end
+			end
+		end
+	end
+end
+
+local function unequipIfCarrying(player)
+	local s = state[player]
+	if not (s and s.carrying) then return false end
+	local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+	if humanoid then humanoid:UnequipTools() end
+	return true
+end
+
+local function giveTools(player)
+	local backpack = player:FindFirstChildOfClass("Backpack")
+	if not backpack then return end
+
+	-- Backpack contents survive nothing across a respawn, but clear any
+	-- stragglers so a player can never end up with two bats.
+	for _, existing in ipairs(backpack:GetChildren()) do
+		if existing.Name == "Bat" or existing.Name == "Speed Coil" then
+			existing:Destroy()
+		end
+	end
+
+	local bat = Instance.new("Tool")
+	bat.Name = "Bat"
+	bat.CanBeDropped = false
+	bat.ToolTip = "Whack someone to knock loose whatever they are carrying"
+	local batHandle = Instance.new("Part")
+	batHandle.Name = "Handle"
+	batHandle.Size = Vector3.new(0.7, 4.4, 0.7)
+	batHandle.Color = Color3.fromRGB(156, 108, 62)
+	batHandle.Material = Enum.Material.Wood
+	batHandle.Parent = bat
+	bat.Activated:Connect(function() swingBat(player) end)
+	bat.Equipped:Connect(function() unequipIfCarrying(player) end)
+	bat.Parent = backpack
+
+	local coil = Instance.new("Tool")
+	coil.Name = "Speed Coil"
+	coil.CanBeDropped = false
+	coil.ToolTip = string.format("+%d%% move speed while held", COIL_SPEED_BONUS * 100)
+	local coilHandle = Instance.new("Part")
+	coilHandle.Name = "Handle"
+	coilHandle.Size = Vector3.new(2.2, 1.8, 1.8)
+	coilHandle.Shape = Enum.PartType.Cylinder
+	coilHandle.Color = Color3.fromRGB(90, 220, 255)
+	coilHandle.Material = Enum.Material.Neon
+	coilHandle.Parent = coil
+	coil.Equipped:Connect(function()
+		if unequipIfCarrying(player) then return end
+		local s = state[player]
+		if s then s.coilEquipped = true end
+		updateWalkSpeed(player)
+	end)
+	coil.Unequipped:Connect(function()
+		local s = state[player]
+		if s then s.coilEquipped = false end
+		updateWalkSpeed(player)
+	end)
+	coil.Parent = backpack
+end
 
 ------------------------------------------------------------------
 -- Road lasers: always live. Touching one drops whatever you were
@@ -2829,6 +2973,7 @@ local function onPlayerAdded(player)
 
 	player.CharacterAdded:Connect(function(character)
 		local humanoid = character:WaitForChild("Humanoid")
+		giveTools(player)
 		updateWalkSpeed(player)
 		updateCompanionVisual(player)
 		updateEquippedPetVisual(player)
