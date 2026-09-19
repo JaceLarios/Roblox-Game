@@ -5,7 +5,12 @@ local Models = script.Parent:WaitForChild("ItemModels")
 local P = Style.Palette
 local Gallery = {}
 local ORDER = {1, 2, 3, 4, "secret"}
-local NAMES = {"Common", "Uncommon", "Rare", "Epic"}
+-- These filter by fusion TIER, which is not the same ladder as an item's
+-- rarity. Calling tier 1 "Common" was survivable while nothing else on the
+-- card showed rarity; now that the disc behind each item is its rarity
+-- colour, it filed an epic-purple Box Truck under a tab marked Common.
+-- Named for what they actually filter instead.
+local NAMES = {"Base", "Tier 2", "Tier 3", "Tier 4"}
 
 -- Addons are junkyard finds, but they are parts you bolt ONTO something
 -- rather than things in their own right, so they get their own tab
@@ -224,7 +229,9 @@ function Gallery.Create(gui, onEquip)
 		end
 		for key, btn in pairs(filters) do
 			local rc = Rarity.Color(type(key)=="number" and key or 1, key=="secret")
-			Style.Surface(btn, key==activeRarity and P.Teal or rc:Lerp(P.Cream,.9), key==activeRarity and 3 or 2.5)
+			-- Was 90% cream, which washed every pill to the same near-white
+			-- and made the rarity filters indistinguishable from each other.
+			Style.Surface(btn, key==activeRarity and P.Teal or rc:Lerp(P.Cream,.58), key==activeRarity and 3 or 2.5)
 			-- Ink on the bright fill, not cream: the selected teal is a
 			-- button colour now and cream on it is unreadable.
 			btn.TextColor3 = P.Ink
@@ -232,7 +239,7 @@ function Gallery.Create(gui, onEquip)
 		local flatArea = activeArea == "addons"
 		local total, known, shown = 0, 0, 0
 		local query = string.lower(search.Text):match("^%s*(.-)%s*$")
-		local colors = {Color3.fromRGB(232,244,214),Color3.fromRGB(223,240,250),Color3.fromRGB(255,234,217),Color3.fromRGB(234,226,248),Color3.fromRGB(251,226,234)}
+		local UNKNOWN_HALO = Color3.fromRGB(226,222,214)
 		for i, entry in ipairs(data[activeArea]) do
 			local key = entry.isSecret and "secret" or entry.tier
 			if flatArea or key == activeRarity then
@@ -251,12 +258,29 @@ function Gallery.Create(gui, onEquip)
 					if selected then
 						make("UIStroke", card, "CompanionOutline", {Color=P.Teal,Thickness=2.5,ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
 					end
+					-- The disc behind an item is its RARITY, not a pastel picked
+					-- off a rotating list by grid position. The old version gave
+					-- the same item a different colour depending on where it
+					-- happened to land, so the colour meant nothing; now the
+					-- Index reads the same way the inventory and the yard name
+					-- tags do, and you can pick a legendary out at a glance.
+					local haloRarity = Rarity.Color(entry.tier, entry.isSecret, entry.rarity)
 					local halo = make("Frame", card, "PastelBackdrop", {
 						Size=UDim2.new(.82,0,.63,0), Position=UDim2.fromScale(.09,.09),
-						BackgroundColor3=entry.known and colors[(i-1)%#colors+1] or Color3.fromRGB(233,233,230),
+						BackgroundColor3=entry.known and haloRarity:Lerp(P.Cream,.58) or UNKNOWN_HALO,
 						BorderSizePixel=0,
 					})
 					make("UICorner", halo, "Round", {CornerRadius=UDim.new(1,0)})
+					-- Lit from above like every other surface in the restyle.
+					if entry.known then
+						make("UIGradient", halo, "HaloLight", {
+							Rotation = 90,
+							Color = ColorSequence.new(
+								haloRarity:Lerp(P.Cream,.30),
+								haloRarity:Lerp(P.Cream,.74)
+							),
+						})
+					end
 					if entry.known then
 						card.Text = ""
 						card.AutoButtonColor = false

@@ -43,9 +43,6 @@ local UIStyle = require(ReplicatedStorage:WaitForChild("UIStyle"))
 local itemModels = ReplicatedStorage:WaitForChild("ItemModels")
 
 local DARK   = Color3.fromRGB(18, 18, 22)
--- Every piece of text that now sits on a cream enamel plate rather than
--- over the 3D world. One shared ink keeps the whole HUD consistent.
-local INK_HUD = UIStyle.Palette.Ink
 local GOLD   = UIStyle.Palette.Gold
 local LIGHT  = Color3.fromRGB(235, 235, 240)
 local DIM    = Color3.fromRGB(120, 120, 132)
@@ -100,29 +97,29 @@ end
 local coinCard = Instance.new("Frame")
 coinCard.Size = UDim2.new(0, 300, 0, 76)
 coinCard.Position = UDim2.new(0, 20, 1, -136)
+coinCard:SetAttribute("Floating",true)
+coinCard.BackgroundColor3 = DARK
+coinCard.BackgroundTransparency = GLASS_HUD
+coinCard.BorderSizePixel = 0
 coinCard.Parent = gui
 UIStyle.Navigation(coinCard)
--- Style A: a cream enamel pill rather than a dark glass card. Deliberately
--- NOT Floating any more -- that attribute forces the background off, which
--- is the one thing this needs to keep.
-rounded(coinCard, 20)
-UIStyle.Surface(coinCard, UIStyle.Palette.Cream, 4)
+rounded(coinCard)
 
 UIStyle.Art(coinCard,"DoubleCoins",UDim2.fromOffset(0,-10),UDim2.fromOffset(84,84))
 
-local coinText = label(coinCard, "0", UDim2.new(1, -72, 0, 40), INK_HUD, Enum.Font.LuckiestGuy, 28)
+local coinText = label(coinCard, "0", UDim2.new(1, -72, 0, 40), GOLD, Enum.Font.LuckiestGuy, 28)
 coinText.Position = UDim2.new(0, 88, 0, 8)
-coinText.TextSize = 34
+UIStyle.Outline(coinText,42)
 coinText.TextYAlignment = Enum.TextYAlignment.Center
+coinText.TextStrokeTransparency = 0.5
 
-local luckText = label(coinCard, "LUCK 0%", UDim2.new(0, 90, 0, 18), UIStyle.Palette.TealDeep, Enum.Font.FredokaOne, 13)
-luckText.Position = UDim2.new(0, 88, 0, 52)
+local luckText = label(coinCard, "LUCK 0%", UDim2.new(0, 90, 0, 18), DIM, Enum.Font.FredokaOne, 12)
+luckText.Position = UDim2.new(0, 88, 0, 56)
+UIStyle.Outline(luckText,14)
 luckText.TextXAlignment = Enum.TextXAlignment.Right
 
--- Sits below the pill, back over the world, so it keeps the outlined
--- treatment the rest of the plate no longer needs.
-local companionText = label(coinCard, "No companion equipped", UDim2.new(1, -32, 0, 18), WHITE, Enum.Font.FredokaOne, 12)
-companionText.Position = UDim2.new(0, 16, 1, 6)
+local companionText = label(coinCard, "No companion equipped", UDim2.new(1, -32, 0, 18), PURPLE, Enum.Font.FredokaOne, 12)
+companionText.Position = UDim2.new(0, 16, 0, 80)
 UIStyle.Outline(companionText,14)
 
 local function commas(n)
