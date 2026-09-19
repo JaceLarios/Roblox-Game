@@ -1141,16 +1141,18 @@ local function broadcast(message)
 	remote:FireAllClients({ announce = message })
 end
 
--- Items ordered rarest first, for luck upgrades.
+-- Items ordered rarest first, for luck upgrades. Vehicles only on
+-- purpose: a lucky pickup should hand you a better CAR, not silently
+-- turn one into an engine.
 local function rarerThan(itemName)
 	local current
-	for _, item in ipairs(FusionRecipes.BaseItems) do
+	for _, item in ipairs(FusionRecipes.Items) do
 		if item.name == itemName then current = item end
 	end
 	if not current then return nil end
 
 	local candidates = {}
-	for _, item in ipairs(FusionRecipes.BaseItems) do
+	for _, item in ipairs(FusionRecipes.Items) do
 		if item.weight < current.weight then
 			table.insert(candidates, item.name)
 		end
@@ -1163,7 +1165,7 @@ end
 -- Picks a rare item for golden scrap: anything uncommon or better.
 local function rollRareItem()
 	local pool = {}
-	for _, item in ipairs(FusionRecipes.BaseItems) do
+	for _, item in ipairs(FusionRecipes.Items) do
 		if item.weight <= 30 then
 			table.insert(pool, item.name)
 		end

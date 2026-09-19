@@ -29,13 +29,45 @@ FusionRecipes.BaseItems = {
 	{ name = "Cop Cruiser",   rarity = "rare",      value = 35 },
 	{ name = "Box Truck",     rarity = "epic",      value = 55 },
 	{ name = "Monster Truck", rarity = "mythic",    value = 90 },
-	{ name = "Jet Engine",    rarity = "legendary", value = 300 },
+
+	-- ADDONS. Engines you bolt onto a vehicle rather than vehicles in
+	-- their own right: their whole purpose is to be fused INTO something
+	-- to lift it. Worst to best, and the Jet Engine stays the rarest
+	-- thing in the yard.
+	--
+	-- They deliberately live in this same list so every existing lookup
+	-- (tier, rarity, recipe resolution, valuation) keeps working without
+	-- a second code path; the Items/Addons views below are what split
+	-- them apart for spawning and for the Index tab.
+	{ name = "Inline 4",   rarity = "rare",      value = 45,  isAddon = true },
+	{ name = "V6 Engine",  rarity = "epic",      value = 110, isAddon = true },
+	{ name = "V8 Engine",  rarity = "mythic",    value = 210, isAddon = true },
+	{ name = "Jet Engine", rarity = "legendary", value = 300, isAddon = true },
 }
 
+-- Share of yard spawns that are an addon rather than a vehicle. Low on
+-- purpose: an addon is what makes a fusion good, so finding one should
+-- feel like a find.
+FusionRecipes.AddonSpawnChance = 0.12
+
+FusionRecipes.Items = {}    -- vehicles only
+FusionRecipes.Addons = {}   -- engines only
+
 local baseRarity = {}
+local addonSet = {}
 for _, item in ipairs(FusionRecipes.BaseItems) do
 	item.weight = FusionRecipes.RarityWeight[item.rarity]
 	baseRarity[item.name] = item.rarity
+	if item.isAddon then
+		addonSet[item.name] = true
+		table.insert(FusionRecipes.Addons, item)
+	else
+		table.insert(FusionRecipes.Items, item)
+	end
+end
+
+function FusionRecipes.IsAddon(name)
+	return addonSet[name] == true
 end
 
 -- One ordered ladder, shared by grabbables and fused results alike, so
@@ -65,6 +97,21 @@ FusionRecipes.FusionOutcome = {
 	legendary = { minTier = 4, luckyChance = 0.55 },
 }
 
+-- An addon is a part you bolt ON to something, so pairing one with a
+-- vehicle is strictly better than mashing two vehicles together: it adds
+-- straight onto that lucky chance, by how good the engine is.
+--
+-- Two addons get nothing. You cannot bolt an engine onto an engine, and
+-- leaving that pairing flat is what keeps the intended move -- go find a
+-- car worth putting it in -- the best one.
+FusionRecipes.AddonLuckBonus = {
+	rare      = 0.15,   -- Inline 4
+	epic      = 0.25,   -- V6
+	mythic    = 0.40,   -- V8
+	legendary = 0.60,   -- Jet
+}
+local MAX_LUCKY_CHANCE = 0.95
+
 -- A lucky roll that is already at the tier ceiling pays out in value
 -- rather than a tier that does not exist.
 local LUCKY_VALUE_BONUS = 2.5
@@ -77,16 +124,29 @@ FusionRecipes.TierValue = {
 
 FusionRecipes.SecretValue = 50000
 
--- { ingredientA, ingredientB, result, tier } — order does not matter.
+-- { ingredientA, ingredientB, result, tier, value? } — order does not
+-- matter. The optional 5th column overrides the tier's value.
+--
+-- It exists for the Jet Engine recipes. Their TIERS have to stay low
+-- because the recipe tree is built on them (Boosted Beater feeds Street
+-- Menace, which feeds Redline Reaper, which feeds Sonic Scrapheap), but
+-- the Jet Engine is now the rarest thing in the game, and a tier's stock
+-- value would make spending one on its own recipe pay 250 while bolting
+-- a lesser engine onto any car with no recipe pays 5250. That is a trap
+-- on exactly the four pairs the engine was built for, so these pay the
+-- same floor an addon fusion guarantees — and you still get the named
+-- discovery on top.
+local ADDON_RECIPE_VALUE = 5250   -- == FallbackValue[4], the legendary addon floor
+
 local RECIPE_LIST = {
 	-- Tier 2
 	{ "Rusted Sedan", "Dirt Bike",   "Trail Blazer",      2 },
-	{ "Rusted Sedan", "Jet Engine",  "Boosted Beater",    2 },
-	{ "Golf Cart",    "Jet Engine",  "Fairway Fighter",   2 },
+	{ "Rusted Sedan", "Jet Engine",  "Boosted Beater",    2, ADDON_RECIPE_VALUE },
+	{ "Golf Cart",    "Jet Engine",  "Fairway Fighter",   2, ADDON_RECIPE_VALUE },
 	{ "Golf Cart",    "Monster Truck", "Lifted Cart",     2 },
 	{ "Muscle Car",   "Cop Cruiser", "Undercover Muscle", 2 },
 	{ "Dirt Bike",    "Cop Cruiser", "Pursuit Bike",      2 },
-	{ "Box Truck",    "Jet Engine",  "Jet Hauler",        2 },
+	{ "Box Truck",    "Jet Engine",  "Jet Hauler",        2, ADDON_RECIPE_VALUE },
 	{ "Muscle Car",   "Box Truck",   "Hauler Hemi",       2 },
 
 	-- Tier 3
@@ -94,7 +154,7 @@ local RECIPE_LIST = {
 	{ "Lifted Cart",     "Undercover Muscle", "Suburban Assault",  3 },
 	{ "Jet Hauler",      "Trail Blazer",      "Yard Destroyer",    3 },
 	{ "Fairway Fighter", "Hauler Hemi",       "Turbo Interceptor", 3 },
-	{ "Street Menace",   "Jet Engine",        "Redline Reaper",    3 },
+	{ "Street Menace",   "Jet Engine",        "Redline Reaper",    3, ADDON_RECIPE_VALUE },
 
 	-- Tier 4
 	{ "Yard Destroyer", "Suburban Assault", "THE LAWNLORD",     4 },
@@ -124,7 +184,7 @@ FusionRecipes.MakeKey = makeKey
 local lookup = {}
 
 for _, r in ipairs(RECIPE_LIST) do
-	lookup[makeKey(r[1], r[2])] = { result = r[3], tier = r[4], isSecret = false }
+	lookup[makeKey(r[1], r[2])] = { result = r[3], tier = r[4], isSecret = false, value = r[5] }
 end
 
 for _, r in ipairs(SECRET_LIST) do
@@ -206,7 +266,7 @@ function FusionRecipes.Fuse(itemA, itemB)
 
 	local entry = lookup[makeKey(itemA, itemB)]
 	if entry then
-		local value = FusionRecipes.TierValue[entry.tier] or 0
+		local value = entry.value or FusionRecipes.TierValue[entry.tier] or 0
 		if entry.isSecret then
 			value = FusionRecipes.SecretValue
 		end
@@ -233,11 +293,21 @@ function FusionRecipes.Fuse(itemA, itemB)
 	local bestRarity = (indexA >= indexB) and rarityA or rarityB
 	local outcome = FusionRecipes.FusionOutcome[bestRarity] or FusionRecipes.FusionOutcome.common
 
+	-- Exactly one addon: that is the pairing this whole system exists for.
+	local addonA, addonB = addonSet[itemA] == true, addonSet[itemB] == true
+	local usedAddon = (addonA ~= addonB)
+	local luckyChance = outcome.luckyChance
+	if usedAddon then
+		local addonRarity = addonA and rarityA or rarityB
+		luckyChance = math.min(MAX_LUCKY_CHANCE,
+			luckyChance + (FusionRecipes.AddonLuckBonus[addonRarity] or 0))
+	end
+
 	local tierA = nameTier[itemA] or 1
 	local tierB = nameTier[itemB] or 1
 	local resultTier = math.max(math.max(tierA, tierB) + 1, outcome.minTier)
 
-	local lucky = math.random() < outcome.luckyChance
+	local lucky = math.random() < luckyChance
 	if lucky and resultTier < MAX_FALLBACK_TIER then
 		resultTier += 1
 	end
@@ -255,6 +325,7 @@ function FusionRecipes.Fuse(itemA, itemB)
 		isSecret   = false,
 		isFallback = true,
 		lucky      = lucky,
+		usedAddon  = usedAddon,
 		value      = value,
 	}
 end
@@ -271,7 +342,7 @@ function FusionRecipes.GetValue(itemName)
 			if entry.isSecret then
 				return FusionRecipes.SecretValue
 			end
-			return FusionRecipes.TierValue[entry.tier] or 0
+			return entry.value or FusionRecipes.TierValue[entry.tier] or 0
 		end
 	end
 
@@ -293,17 +364,44 @@ function FusionRecipes.GetTier(name)
 	return nameTier[name] or 1
 end
 
--- Roll a random Tier 1 item using the weights above.
+local function weightedPick(pool)
+	local total = 0
+	for _, item in ipairs(pool) do
+		total = total + item.weight
+	end
+
+	local roll = math.random() * total
+	local running = 0
+	for _, item in ipairs(pool) do
+		running = running + item.weight
+		if roll <= running then
+			return item.name
+		end
+	end
+	return pool[#pool].name
+end
+
+-- What the yard actually drops: mostly vehicles, occasionally an addon.
+function FusionRecipes.RollSpawn()
+	local pool = (math.random() < FusionRecipes.AddonSpawnChance)
+		and FusionRecipes.Addons
+		or FusionRecipes.Items
+	return weightedPick(pool)
+end
+
+-- Vehicles only. Kept separate from RollSpawn so callers that want "a
+-- regular item" (the daily reward, the luck upgrade) never hand out an
+-- engine by accident.
 function FusionRecipes.RollBaseItem()
 	local total = 0
-	for _, item in ipairs(FusionRecipes.BaseItems) do
+	for _, item in ipairs(FusionRecipes.Items) do
 		total = total + item.weight
 	end
 
 	local roll = math.random() * total
 	local running = 0
 
-	for _, item in ipairs(FusionRecipes.BaseItems) do
+	for _, item in ipairs(FusionRecipes.Items) do
 		running = running + item.weight
 		if roll <= running then
 			return item.name
@@ -367,7 +465,11 @@ function FusionRecipes.GetIndex(discovered)
 	local items = {}
 
 	for _, base in ipairs(FusionRecipes.BaseItems) do
-		table.insert(items, { name = base.name, tier = 1, isSecret = false, isBase = true, known = true })
+		table.insert(items, {
+			name = base.name, tier = 1, isSecret = false,
+			isBase = true, isAddon = base.isAddon == true,
+			rarity = base.rarity, known = true,
+		})
 	end
 
 	local function addResult(r, isSecret)

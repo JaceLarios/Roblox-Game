@@ -735,7 +735,7 @@ end
 
 
 local bookBtn = NavButton.Create(gui, "📖", "INDEX", PURPLE, NavButton.RailPosition("left", 3))
-local indexData = { junkyard = {}, brainrot = {} }
+local indexData = { junkyard = {}, brainrot = {}, addons = {} }
 local equippedCompanion = nil
 local indexGallery = require(ReplicatedStorage:WaitForChild("IndexGallery")).Create(gui, function(name, area)
 	equipCompanionRemote:FireServer(name, area)
@@ -2202,7 +2202,21 @@ remote.OnClientEvent:Connect(function(data)
 	end
 
 	if data.index then
-		indexData.junkyard = data.index
+		-- One list off the server, split here: addons get their own Index
+		-- tab, so they should not also sit in the Junkyard list.
+		local junk, addons = {}, {}
+		for _, entry in ipairs(data.index) do
+			table.insert(entry.isAddon and addons or junk, entry)
+		end
+		-- Worst engine to best, so the tab reads as the ladder it is.
+		-- GetIndex sorts by name within a tier, and every addon is tier 1,
+		-- which would file the Jet Engine second between Inline 4 and V6.
+		table.sort(addons, function(x, y)
+			return (FusionRecipes.RarityIndex[x.rarity] or 0)
+				< (FusionRecipes.RarityIndex[y.rarity] or 0)
+		end)
+		indexData.junkyard = junk
+		indexData.addons = addons
 		redrawIndex()
 	end
 

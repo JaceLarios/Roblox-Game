@@ -7,6 +7,18 @@ local Gallery = {}
 local ORDER = {1, 2, 3, 4, "secret"}
 local NAMES = {"Common", "Uncommon", "Rare", "Epic"}
 
+-- Addons are junkyard finds, but they are parts you bolt ONTO something
+-- rather than things in their own right, so they get their own tab
+-- instead of padding out the Junkyard list. Equipping one still reports
+-- "junkyard" to the server: the tab is a view, not a new island.
+local AREAS = {
+	{ key = "junkyard", tab = "JunkyardTab", label = "Junkyard", island = "junkyard" },
+	{ key = "brainrot", tab = "BrainrotTab", label = "Brainrot", island = "brainrot" },
+	{ key = "addons",   tab = "AddonsTab",   label = "Addons",   island = "junkyard" },
+}
+local ISLAND_OF = {}
+for _, a in ipairs(AREAS) do ISLAND_OF[a.key] = a.island end
+
 local function make(class, parent, name, props)
 	local o = Instance.new(class)
 	o.Name = name
@@ -62,7 +74,7 @@ end
 function Gallery.Create(gui, onEquip)
 	local api = {}
 	local activeArea, activeRarity = "junkyard", 1
-	local data, companion = {junkyard = {}, brainrot = {}}, nil
+	local data, companion = {junkyard = {}, brainrot = {}, addons = {}}, nil
 	local dimmer = make("Frame", gui, "IndexBackdrop", {
 		Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(),
 		BackgroundTransparency = .35, BorderSizePixel = 0, Visible = false,
@@ -83,15 +95,15 @@ function Gallery.Create(gui, onEquip)
 	Style.Close(close)
 	close.Position = UDim2.new(1, -65, 0, 12)
 	local areaTabs = {}
-	for _, area in ipairs({"junkyard", "brainrot"}) do
-		local b = make("TextButton", panel, area == "junkyard" and "JunkyardTab" or "BrainrotTab", {
+	for _, area in ipairs(AREAS) do
+		local b = make("TextButton", panel, area.tab, {
 			Text = "", AutoButtonColor = false, BorderSizePixel = 0,
 		})
 		corner(b, 18)
 		Style.Surface(b, P.Cream, 2)
-		local t = caption(b, "Caption", area == "junkyard" and "Junkyard" or "Brainrot", 22)
+		local t = caption(b, "Caption", area.label, 21)
 		t.Position, t.Size = UDim2.new(.36, 0, 0, 0), UDim2.new(.64, -6, 1, 0)
-		areaTabs[area] = b
+		areaTabs[area.key] = b
 	end
 	local filter = make("Frame", panel, "RarityFilters", {BackgroundTransparency = 1})
 	local filters = {}
@@ -142,23 +154,31 @@ function Gallery.Create(gui, onEquip)
 		close.Size = UDim2.fromOffset(portrait and 76 or 58, portrait and 76 or 58)
 		close.Position = UDim2.new(1, portrait and -84 or -65, 0, 12)
 		bookArt.Size = UDim2.fromOffset(88, 88)
-		for i, area in ipairs({"junkyard", "brainrot"}) do
-			local b = areaTabs[area]
-			b.Size = UDim2.fromOffset(portrait and 258 or 230, portrait and 82 or 78)
-			b.Position = portrait and UDim2.fromOffset(28 + (i-1)*280, 109)
-				or UDim2.fromOffset(632 + (i-1)*242, 22)
+		-- Three tabs now, so they are narrower and start further left; in
+		-- portrait they still have to clear the title on their own row.
+		for i, area in ipairs(AREAS) do
+			local b = areaTabs[area.key]
+			b.Size = UDim2.fromOffset(portrait and 178 or 182, portrait and 82 or 78)
+			b.Position = portrait and UDim2.fromOffset(24 + (i-1)*184, 109)
+				or UDim2.fromOffset(548 + (i-1)*192, 22)
 		end
+		-- Every addon is a tier-1 find, so the tier filter would put all four
+		-- under "Common" and filter nothing. Drop it on that tab and show the
+		-- whole set; in portrait the rows below move up into the space.
+		local flatArea = activeArea == "addons"
+		filter.Visible = not flatArea
 		filter.Position = UDim2.fromOffset(28, portrait and 205 or 118)
 		filter.Size = UDim2.new(1, portrait and -48 or -350, 0, portrait and 74 or 44)
-		search.Position = portrait and UDim2.fromOffset(28, 292) or UDim2.new(1, -312, 0, 118)
+		search.Position = portrait and UDim2.fromOffset(28, flatArea and 205 or 292)
+			or UDim2.new(1, -312, 0, 118)
 		search.Size = portrait and UDim2.new(1, -56, 0, 74) or UDim2.fromOffset(284,44)
-		count.Position = UDim2.fromOffset(28, portrait and 378 or 176)
+		count.Position = UDim2.fromOffset(28, portrait and (flatArea and 291 or 378) or 176)
 		count.Size = UDim2.new(1, -56, 0, 36)
 		count.TextSize = portrait and 22 or 23
 		hint.Position = UDim2.new(1, -510, 0, 179)
 		hint.Size = UDim2.fromOffset(482,30)
 		hint.Visible = not portrait
-		local top = portrait and 424 or 224
+		local top = portrait and (flatArea and 337 or 424) or 224
 		scroll.Position = UDim2.fromOffset(28, top)
 		scroll.Size = UDim2.new(1, -56, 1, -top-20)
 		local cols = portrait and 2 or 5
@@ -207,17 +227,19 @@ function Gallery.Create(gui, onEquip)
 			Style.Surface(btn, key==activeRarity and P.Teal or rc:Lerp(P.Cream,.9), key==activeRarity and 2.5 or 1)
 			btn.TextColor3 = key==activeRarity and P.Cream or P.Ink
 		end
+		local flatArea = activeArea == "addons"
 		local total, known, shown = 0, 0, 0
 		local query = string.lower(search.Text):match("^%s*(.-)%s*$")
 		local colors = {Color3.fromRGB(232,244,214),Color3.fromRGB(223,240,250),Color3.fromRGB(255,234,217),Color3.fromRGB(234,226,248),Color3.fromRGB(251,226,234)}
 		for i, entry in ipairs(data[activeArea]) do
 			local key = entry.isSecret and "secret" or entry.tier
-			if key == activeRarity then
+			if flatArea or key == activeRarity then
 				total += 1
 				if entry.known then known += 1 end
 				if query == "" or (entry.known and string.find(string.lower(entry.name), query, 1, true)) then
 					shown += 1
-					local selected = companion and companion.name == entry.name and companion.island == activeArea
+					local selected = companion and companion.name == entry.name
+						and companion.island == ISLAND_OF[activeArea]
 					local card = make(entry.known and "TextButton" or "Frame", scroll, "Item"..i, {
 						BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = i,
 					})
@@ -236,8 +258,8 @@ function Gallery.Create(gui, onEquip)
 					if entry.known then
 						card.Text = ""
 						card.AutoButtonColor = false
-						local area = activeArea
-						card.Activated:Connect(function() onEquip(entry.name, area) end)
+						local island = ISLAND_OF[activeArea]
+						card.Activated:Connect(function() onEquip(entry.name, island) end)
 						modelView(card, entry.name)
 					else
 						local lock = caption(card,"Undiscovered","?",70)
@@ -254,13 +276,19 @@ function Gallery.Create(gui, onEquip)
 				end
 			end
 		end
-		count.Text=string.format("%s  •  %d / %d discovered",activeRarity=="secret" and "Secret" or NAMES[activeRarity],known,total)
-		empty.Text=query~="" and "No discovered items match your search." or "No items in this rarity yet."
+		count.Text=string.format("%s  •  %d / %d discovered",
+			flatArea and "Addons" or activeRarity=="secret" and "Secret" or NAMES[activeRarity],known,total)
+		empty.Text=query~="" and "No discovered items match your search."
+			or flatArea and "No addons found yet." or "No items in this rarity yet."
 		empty.Visible=shown==0
 		updateCanvas()
 	end
 	for area, tab in pairs(areaTabs) do
-		tab.Activated:Connect(function() activeArea=area scroll.CanvasPosition=Vector2.zero redraw() end)
+		-- layout() before redraw(): the Addons tab hides the rarity filter,
+		-- which moves everything under it.
+		tab.Activated:Connect(function()
+			activeArea=area scroll.CanvasPosition=Vector2.zero layout() redraw()
+		end)
 	end
 	for key, btn in pairs(filters) do
 		btn.Activated:Connect(function() activeRarity=key scroll.CanvasPosition=Vector2.zero redraw() end)

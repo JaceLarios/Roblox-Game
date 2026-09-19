@@ -76,6 +76,10 @@ end
 -- The lowest-weight (rarest) base items — Golden Scrap's old "worth
 -- announcing" role, now just surfacing when the regular roll itself
 -- lands on something already rare instead of a separate spawn type.
+-- Addons need no special case here: the weight bar already lands on the
+-- V8 and the Jet Engine and skips the Inline 4 and V6, which is the right
+-- line. At a drop every SPAWN_INTERVAL seconds, announcing every addon
+-- would fire roughly four times a minute and stop meaning anything.
 local function isRareRoll(itemName)
 	for _, item in ipairs(FusionRecipes.BaseItems) do
 		if item.name == itemName then
@@ -91,7 +95,7 @@ local function spawnScrap()
 		return
 	end
 
-	local itemName = FusionRecipes.RollBaseItem()
+	local itemName = FusionRecipes.RollSpawn()
 	local position = randomSpawnPosition()
 
 	-- Detailed mesh when one exists in ItemModels, else the old block.
