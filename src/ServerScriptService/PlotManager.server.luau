@@ -113,7 +113,11 @@ local CARRY_TRANSPARENCY = 0.35
 -- Held ABOVE the head, not in the hand. Anchored to HumanoidRootPart
 -- rather than Head on purpose: welding to the head makes the item swing
 -- around with the camera every time the player looks about.
-local CARRY_HEAD_OFFSET = Vector3.new(0, 4.2, 0)
+-- Gap between the carrier's raised palms and the bottom of what they are
+-- holding. The height itself is measured off the character rather than
+-- fixed, so it still lands right on avatars that are scaled up or down —
+-- see attachCarried. CarryPose (client) is what puts the arms up there.
+local CARRY_HAND_GAP = 0.15
 
 -- Road lasers are permanent: the approach to every base is an obby you
 -- jump, not a hazard somebody switches on. Invisible barriers run down
@@ -1482,7 +1486,19 @@ local function attachCarried(player, itemName)
 	held.CanCollide = false
 	held.Massless = true
 	held.Transparency = CARRY_TRANSPARENCY
-	held.CFrame = anchor.CFrame * CFrame.new(CARRY_HEAD_OFFSET)
+
+	-- Sit it ON the raised hands instead of at a fixed height, which is
+	-- what made it look like it was floating there on its own. The top of
+	-- the head is within a couple of tenths of where CarryPose puts the
+	-- palms, and unlike the hands it can be measured right now — the pose
+	-- is client-side and has not blended in yet at this point. Reading it
+	-- off the character also means it tracks avatar scaling for free.
+	local head = char:FindFirstChild("Head")
+	local handHeight = 2.15
+	if head then
+		handHeight = (head.Position.Y - anchor.Position.Y) + head.Size.Y * 0.5 + CARRY_HAND_GAP
+	end
+	held.CFrame = anchor.CFrame * CFrame.new(0, handHeight + held.Size.Y * 0.5, 0)
 	held.Parent = char
 
 	makeLabel(held, instanceTag(itemName), 2.4, 260, Color3.fromRGB(255, 255, 255), 120)

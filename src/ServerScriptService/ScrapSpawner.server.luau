@@ -32,6 +32,12 @@ local AREA_SIZE      = 130    -- studs wide/deep (the central shared yard)
 -- Golden Scrap used to have — Jet Engine (3) and Monster Truck (8) both
 -- qualify at the current BaseItems weights.
 local RARE_SPAWN_WEIGHT_THRESHOLD = 10
+
+-- Hard ceiling on how many addons can be lying in the yard at once.
+-- FusionRecipes.AddonSpawnChance sets the long-run rate; this stops the
+-- short-run clumping a rate cannot. Four engines inside twenty drops is
+-- unremarkable dice, and it reads as the yard being full of engines.
+local MAX_ACTIVE_ADDONS = 2
 -- ---------------------------------------------------------------------
 
 -- All spawned scrap lives in one folder. Keeps Explorer readable
@@ -89,6 +95,16 @@ local function isRareRoll(itemName)
 	return false
 end
 
+local function activeAddonCount()
+	local live = 0
+	for _, item in ipairs(scrapFolder:GetChildren()) do
+		if item:GetAttribute("IsAddon") then
+			live += 1
+		end
+	end
+	return live
+end
+
 local function spawnScrap()
 	-- Respect the cap. Better to skip a drop than lag the server.
 	if #scrapFolder:GetChildren() >= MAX_ITEMS then
@@ -96,6 +112,11 @@ local function spawnScrap()
 	end
 
 	local itemName = FusionRecipes.RollSpawn()
+	-- Already enough engines out there. Swap in a vehicle rather than
+	-- skipping the drop, so the yard stays as busy as it always was.
+	if FusionRecipes.IsAddon(itemName) and activeAddonCount() >= MAX_ACTIVE_ADDONS then
+		itemName = FusionRecipes.RollBaseItem()
+	end
 	local position = randomSpawnPosition()
 
 	-- Detailed mesh when one exists in ItemModels, else the old block.
@@ -106,6 +127,10 @@ local function spawnScrap()
 	-- the part in Explorer won't break anything.
 	part:SetAttribute("ItemName", itemName)
 	part:SetAttribute("Tier", 1)
+	-- What activeAddonCount() counts. Set on the part rather than tracked
+	-- in a table so the despawn timer and any other removal path keep the
+	-- tally honest for free.
+	part:SetAttribute("IsAddon", FusionRecipes.IsAddon(itemName))
 
 	addLabel(part, itemName)
 	part.Parent = scrapFolder

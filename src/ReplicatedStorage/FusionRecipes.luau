@@ -48,7 +48,14 @@ FusionRecipes.BaseItems = {
 -- Share of yard spawns that are an addon rather than a vehicle. Low on
 -- purpose: an addon is what makes a fusion good, so finding one should
 -- feel like a find.
-FusionRecipes.AddonSpawnChance = 0.12
+--
+-- Note this is a rate, not a count. The yard holds roughly
+-- DESPAWN_AFTER / SPAWN_INTERVAL items at once (~22 today), so this share
+-- is also roughly the number of engines lying around at any moment --
+-- 12% put nearly three out there permanently, which is what "a ton of
+-- engines on the floor" looked like. ScrapSpawner caps the live count on
+-- top of this, because a rate alone still clumps.
+FusionRecipes.AddonSpawnChance = 0.05
 
 FusionRecipes.Items = {}    -- vehicles only
 FusionRecipes.Addons = {}   -- engines only
