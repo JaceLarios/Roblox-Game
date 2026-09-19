@@ -1,7 +1,7 @@
 -- Shared white illustration tiles. Return values preserve Rewards integration.
 local TweenService = game:GetService("TweenService")
 local Style = require(script.Parent:WaitForChild("UIStyle"))
-local NavButton = { SIZE = 120, GAP = 20 }
+local NavButton = { SIZE = 120, GAP = 20, PLATED = true }
 function NavButton.RailPosition(side, slot)
 	return UDim2.new(side == "left" and 0 or 1, side == "left" and 20 or -140, .5, (slot-1)*140-270)
 end
@@ -40,12 +40,19 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0,20)
 	corner.Parent = btn
-	btn.BackgroundTransparency = 1
 	btn:SetAttribute("Designed",true)
-	Style.Surface(btn)
-	btn.BackgroundTransparency = 1
+	-- Style A plates the rail: each icon sits on its own enamel tile rather
+	-- than floating loose over the world. The plate is what makes the rail
+	-- legible against a bright outdoor scene, which loose icons never were.
+	-- To go back to floating icons, set PLATED to false.
+	Style.Surface(btn, Style.Palette.Cream, 4)
 	local stroke = btn:FindFirstChildOfClass("UIStroke")
-	stroke.Thickness = 0
+	if not NavButton.PLATED then
+		btn.BackgroundTransparency = 1
+		stroke.Thickness = 0
+		local surface = btn:FindFirstChild("SurfaceGradient")
+		if surface then surface.Enabled = false end
+	end
 	local gradient = Instance.new("UIGradient")
 	gradient.Enabled = false
 	gradient.Parent = btn
@@ -60,12 +67,18 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 	label.Size = UDim2.new(1,-8,0,28)
 	label.Position = UDim2.new(0,4,1,-34)
 	label.Text = caption
-	label.TextColor3 = NavButton.ReadableTextColor()
 	label.Font = Enum.Font.FredokaOne
 	label.TextSize = 19
 	label.ZIndex = 3
 	label.Parent = btn
-	Style.Outline(label,22)
+	if NavButton.PLATED then
+		-- On a cream plate an outlined cream caption is mush; ink reads.
+		label.TextColor3 = Style.Palette.Ink
+		label.TextStrokeTransparency = 1
+	else
+		label.TextColor3 = NavButton.ReadableTextColor()
+		Style.Outline(label,22)
+	end
 	btn.MouseEnter:Connect(function()
 		TweenService:Create(art,TweenInfo.new(.15),{Rotation=-5}):Play()
 		stroke.Thickness=0
@@ -74,7 +87,7 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 		TweenService:Create(art,TweenInfo.new(.15),{Rotation=0}):Play()
 		stroke.Thickness=0
 	end)
-	btn.MouseButton1Down:Connect(function() btn.Position=UDim2.fromOffset(0,3) end)
+	btn.MouseButton1Down:Connect(function() btn.Position=UDim2.fromOffset(0,4) end)
 	btn.MouseButton1Up:Connect(function() btn.Position=UDim2.fromOffset(0,0) end)
 	return btn,iconLabel,label,stroke,gradient
 end

@@ -1,17 +1,70 @@
 -- Shared presentation only. No remotes, currencies, or player-data writes.
 local Style = {}
--- Salvage Yard palette: warm enamel, oxidized teal, copper and steel.
+-- Glossy Enamel palette (style A, picked 2026-09-19). Warm cream grounds,
+-- candy fills, and one warm near-black that every outline and every piece
+-- of body copy shares -- the single dark ink is what holds the look
+-- together, so nothing else should introduce its own black.
 Style.Palette = {
-	Cream = Color3.fromRGB(255,250,241),
-	Ink = Color3.fromRGB(31,44,46),
-	Copper = Color3.fromRGB(231,125,73),
-	Teal = Color3.fromRGB(57,157,153),
-	Steel = Color3.fromRGB(111,145,177),
-	Mint = Color3.fromRGB(110,209,172),
-	Gold = Color3.fromRGB(236,183,78),
+	Cream = Color3.fromRGB(255,252,244),
+	Ink = Color3.fromRGB(43,33,24),
+	Copper = Color3.fromRGB(240,95,50),
+	Teal = Color3.fromRGB(48,184,224),
+	Steel = Color3.fromRGB(120,150,190),
+	Mint = Color3.fromRGB(79,209,107),
+	Gold = Color3.fromRGB(250,198,55),
+
+	-- Teal above is a FILL: bright enough to carry a button, far too light
+	-- to be read as text on cream. Anything writing accent-coloured text
+	-- uses this instead.
+	TealDeep = Color3.fromRGB(23,106,133),
 }
 local BLACK = Style.Palette.Ink
 local WHITE = Style.Palette.Cream
+
+-- Enamel shading. A surface is lit from above: a gloss at the top edge,
+-- the base colour through the middle, and a falloff at the bottom so it
+-- reads as a moulded object rather than a filled rectangle.
+--
+-- Both amounts scale with how light the colour already is. A cream panel
+-- given a button's falloff just looks dirty, and a saturated button given
+-- a panel's falloff looks flat, so one fixed pair cannot serve both.
+local function lighten(color, amount)
+	return color:Lerp(Color3.new(1,1,1), amount)
+end
+local function deepen(color, amount)
+	-- Multiplicative, and gentler on red than on blue, so shadow stays warm
+	-- instead of drifting grey the way a lerp toward black does.
+	return Color3.new(
+		color.R * (1 - amount * 0.88),
+		color.G * (1 - amount),
+		math.max(0, color.B * (1 - amount * 1.12))
+	)
+end
+
+local SURFACE_GRADIENT = "SurfaceGradient"
+
+local function enamel(object, color)
+	local luminance = color.R * 0.299 + color.G * 0.587 + color.B * 0.114
+	local gloss = 0.08 + (1 - luminance) * 0.34
+	local shade = 0.07 + (1 - luminance) * 0.24
+
+	local gradient = object:FindFirstChild(SURFACE_GRADIENT)
+	if not gradient or not gradient:IsA("UIGradient") then
+		gradient = Instance.new("UIGradient")
+		gradient.Name = SURFACE_GRADIENT
+	end
+	gradient.Rotation = 90
+	gradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, lighten(color, gloss)),
+		ColorSequenceKeypoint.new(0.46, lighten(color, gloss * 0.18)),
+		ColorSequenceKeypoint.new(1, deepen(color, shade)),
+	})
+	-- A gradient on the object tints only its background, never its text,
+	-- which is why this is not an overlay child: a child would draw over
+	-- the label and wash it out.
+	gradient.Enabled = true
+	gradient.Parent = object
+end
 local modals = {}
 local navigation = {}
 local function updateNavigation()
@@ -85,16 +138,24 @@ function Style.Modal(panel)
 	end)
 end
 
+-- The whole look funnels through here: every panel, tab, chip and button
+-- in the game calls it, so the enamel treatment lives here rather than
+-- being repeated per screen.
 function Style.Surface(object, color, thickness)
-	object.BackgroundColor3 = color or WHITE
+	color = color or WHITE
+	object.BackgroundColor3 = color
 	object.BackgroundTransparency = 0
 	object.BorderSizePixel = 0
 	local stroke = object:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
 	stroke.Color = BLACK
 	stroke.Transparency = 0
-	stroke.Thickness = thickness or 2
+	-- Callers ask for anything from 1 to 5. A heavy outline is the single
+	-- most identifying thing about this style, so thin requests get floored
+	-- rather than honoured; the deliberately chunky ones pass through.
+	stroke.Thickness = math.max(thickness or 3, 2.5)
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	stroke.Parent = object
+	enamel(object, color)
 end
 function Style.Outline(label, size)
 	label:SetAttribute("Designed",true)
@@ -105,7 +166,7 @@ function Style.Outline(label, size)
 	local stroke = label:FindFirstChild("TextOutline") or Instance.new("UIStroke")
 	stroke.Name = "TextOutline"
 	stroke.Color = BLACK
-	stroke.Thickness = 3
+	stroke.Thickness = 3.5
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
 	stroke.Parent = label
 end
@@ -136,8 +197,13 @@ function Style.Attach(gui)
 			local c=object.BackgroundColor3
 			if (c.R+c.G+c.B)/3 < .35 then
 				Style.Surface(object)
-				local gradient=object:FindFirstChildOfClass("UIGradient")
-				if gradient then gradient.Enabled=false end
+				-- Kill a decorative gradient the screen brought with it, but
+				-- never the one Surface just applied -- that IS the surface.
+				for _,gradient in ipairs(object:GetChildren()) do
+					if gradient:IsA("UIGradient") and gradient.Name ~= SURFACE_GRADIENT then
+						gradient.Enabled=false
+					end
+				end
 			end
 			if object:IsA("TextButton") then object.TextColor3=BLACK end
 		end

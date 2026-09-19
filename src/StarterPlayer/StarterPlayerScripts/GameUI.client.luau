@@ -43,6 +43,9 @@ local UIStyle = require(ReplicatedStorage:WaitForChild("UIStyle"))
 local itemModels = ReplicatedStorage:WaitForChild("ItemModels")
 
 local DARK   = Color3.fromRGB(18, 18, 22)
+-- Every piece of text that now sits on a cream enamel plate rather than
+-- over the 3D world. One shared ink keeps the whole HUD consistent.
+local INK_HUD = UIStyle.Palette.Ink
 local GOLD   = UIStyle.Palette.Gold
 local LIGHT  = Color3.fromRGB(235, 235, 240)
 local DIM    = Color3.fromRGB(120, 120, 132)
@@ -97,29 +100,29 @@ end
 local coinCard = Instance.new("Frame")
 coinCard.Size = UDim2.new(0, 300, 0, 76)
 coinCard.Position = UDim2.new(0, 20, 1, -136)
-coinCard:SetAttribute("Floating",true)
-coinCard.BackgroundColor3 = DARK
-coinCard.BackgroundTransparency = GLASS_HUD
-coinCard.BorderSizePixel = 0
 coinCard.Parent = gui
 UIStyle.Navigation(coinCard)
-rounded(coinCard)
+-- Style A: a cream enamel pill rather than a dark glass card. Deliberately
+-- NOT Floating any more -- that attribute forces the background off, which
+-- is the one thing this needs to keep.
+rounded(coinCard, 20)
+UIStyle.Surface(coinCard, UIStyle.Palette.Cream, 4)
 
 UIStyle.Art(coinCard,"DoubleCoins",UDim2.fromOffset(0,-10),UDim2.fromOffset(84,84))
 
-local coinText = label(coinCard, "0", UDim2.new(1, -72, 0, 40), GOLD, Enum.Font.LuckiestGuy, 28)
+local coinText = label(coinCard, "0", UDim2.new(1, -72, 0, 40), INK_HUD, Enum.Font.LuckiestGuy, 28)
 coinText.Position = UDim2.new(0, 88, 0, 8)
-UIStyle.Outline(coinText,42)
+coinText.TextSize = 34
 coinText.TextYAlignment = Enum.TextYAlignment.Center
-coinText.TextStrokeTransparency = 0.5
 
-local luckText = label(coinCard, "LUCK 0%", UDim2.new(0, 90, 0, 18), DIM, Enum.Font.FredokaOne, 12)
-luckText.Position = UDim2.new(0, 88, 0, 56)
-UIStyle.Outline(luckText,14)
+local luckText = label(coinCard, "LUCK 0%", UDim2.new(0, 90, 0, 18), UIStyle.Palette.TealDeep, Enum.Font.FredokaOne, 13)
+luckText.Position = UDim2.new(0, 88, 0, 52)
 luckText.TextXAlignment = Enum.TextXAlignment.Right
 
-local companionText = label(coinCard, "No companion equipped", UDim2.new(1, -32, 0, 18), PURPLE, Enum.Font.FredokaOne, 12)
-companionText.Position = UDim2.new(0, 16, 0, 80)
+-- Sits below the pill, back over the world, so it keeps the outlined
+-- treatment the rest of the plate no longer needs.
+local companionText = label(coinCard, "No companion equipped", UDim2.new(1, -32, 0, 18), WHITE, Enum.Font.FredokaOne, 12)
+companionText.Position = UDim2.new(0, 16, 1, 6)
 UIStyle.Outline(companionText,14)
 
 local function commas(n)
@@ -1464,8 +1467,15 @@ function redrawInventory(items, capacity)
 		if searchBox.Text ~= "" and not string.find(string.lower(entry.name), string.lower(searchBox.Text), 1, true) then continue end
 		local baseName, mutationId = Mutations.Unwrap(entry.name)
 		local tintColor = Mutations.Color(mutationId)
-		local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret,
-			FusionRecipes.GetRarity(baseName))
+		local rarityKey = FusionRecipes.GetRarity(baseName)
+		local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret, rarityKey)
+		-- How hard the pool of light burns, on the six-tier rarity ladder.
+		-- Rarity first and tier only as a fallback: every grabbable is tier 1,
+		-- so scaling by tier alone gave the Jet Engine the faintest glow in
+		-- the whole bag, which is exactly backwards.
+		local rank = rarityKey and FusionRecipes.RarityIndex[rarityKey]
+			or math.min(6, entry.tier + 1)
+		if entry.isSecret then rank = 6 end
 		local isSelected = entry.index == selectedIndex and entry.name == previousSelectedName
 
 		-- Deliberately no card and no border: items read as floating on the
@@ -1485,8 +1495,16 @@ function redrawInventory(items, capacity)
 		shadow.Name = "Shadow"
 		shadow.BackgroundTransparency = 1
 		shadow.Image = SHADOW_SPRITE
-		shadow.ImageColor3 = isSelected and UIStyle.Palette.Teal or SHADOW_TINT
-		shadow.ImageTransparency = isSelected and 0.2 or 0.36
+		-- Style A reads rarity as LIGHT, not as a border. The tiles stay
+		-- borderless the way they were asked to be, so the pool of light the
+		-- item is standing in carries its rarity instead: warm neutral for a
+		-- common, a saturated glow for a legendary. Mixed back toward the
+		-- neutral tint so it still reads as a shadow on the panel and not a
+		-- sticker under the wheels.
+		shadow.ImageColor3 = isSelected and UIStyle.Palette.Teal
+			or rarityColor:Lerp(SHADOW_TINT, 0.45)
+		local glow = math.clamp(0.38 - (rank - 1) * 0.052, 0.12, 0.38)
+		shadow.ImageTransparency = isSelected and 0.2 or glow
 		shadow.ScaleType = Enum.ScaleType.Stretch
 		shadow.AnchorPoint = Vector2.new(0.5, 0.5)
 		-- Low and flat, reading as a contact shadow on the floor under a
@@ -1496,7 +1514,8 @@ function redrawInventory(items, capacity)
 		-- transparent margin, so only the middle ~60% of it is actually
 		-- visible, and sizing to the intended shadow made it vanish.
 		shadow.Position = UDim2.new(0.5, 0, 1, -28)
-		shadow.Size = isSelected and UDim2.new(1.25, 0, 0, 42) or UDim2.new(0.95, 0, 0, 30)
+		shadow.Size = isSelected and UDim2.new(1.25, 0, 0, 42)
+			or UDim2.new(0.95 + (rank - 1) * 0.05, 0, 0, 30 + (rank - 1) * 2.5)
 		-- Above the viewport, not behind it. A ViewportFrame occludes
 		-- lower-ZIndex siblings instead of compositing with them, so a shadow
 		-- underneath was simply invisible wherever the item overlapped it.

@@ -224,8 +224,10 @@ function Gallery.Create(gui, onEquip)
 		end
 		for key, btn in pairs(filters) do
 			local rc = Rarity.Color(type(key)=="number" and key or 1, key=="secret")
-			Style.Surface(btn, key==activeRarity and P.Teal or rc:Lerp(P.Cream,.9), key==activeRarity and 2.5 or 1)
-			btn.TextColor3 = key==activeRarity and P.Cream or P.Ink
+			Style.Surface(btn, key==activeRarity and P.Teal or rc:Lerp(P.Cream,.9), key==activeRarity and 3 or 2.5)
+			-- Ink on the bright fill, not cream: the selected teal is a
+			-- button colour now and cream on it is unreadable.
+			btn.TextColor3 = P.Ink
 		end
 		local flatArea = activeArea == "addons"
 		local total, known, shown = 0, 0, 0
@@ -272,7 +274,7 @@ function Gallery.Create(gui, onEquip)
 					make("UITextSizeConstraint",name,"NameLimit",{MinTextSize=12,MaxTextSize=21})
 					local status=caption(card,"Status",selected and "COMPANION" or entry.known and "✓ Discovered" or "Keep exploring",13)
 					status.Size,status.Position=UDim2.new(1,-12,0,18),UDim2.new(0,6,1,-18)
-					status.TextColor3=entry.known and P.Teal or Color3.fromRGB(113,123,123)
+					status.TextColor3=entry.known and P.TealDeep or Color3.fromRGB(122,112,99)
 				end
 			end
 		end
