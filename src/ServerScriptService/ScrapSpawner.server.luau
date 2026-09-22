@@ -26,9 +26,12 @@ if not remote then
 end
 
 -- ---------- Tuning knobs. Change these, not the code below. ----------
-local SPAWN_INTERVAL = 2      -- seconds between drops
-local DESPAWN_AFTER  = 45     -- seconds before an ignored item disappears
-local MAX_ITEMS      = 45     -- hard cap, so the yard never floods
+local SPAWN_INTERVAL = 3      -- seconds between drops
+local DESPAWN_AFTER  = 40     -- seconds before an ignored item disappears
+-- Hard cap on items lying in the yard at once. At one drop every 3 s,
+-- each lasting 40 s, the yard sits right at it: about 13 items, down from
+-- about 22 when this was 45 and drops came every 2 s.
+local MAX_ITEMS      = 14
 local AREA_CENTER    = Vector3.new(0, 1.2, 0)  -- Y is the yard's ground surface, not an item's center
 local AREA_SIZE      = 130    -- studs wide/deep (the central shared yard)
 
@@ -47,6 +50,18 @@ local RARE_SPAWN_WEIGHT_THRESHOLD = 10
 -- unremarkable dice, and it reads as the yard being full of engines.
 local MAX_ACTIVE_ADDONS = 2
 
+-- Per-item limits on the map at once, on top of MAX_ITEMS. The rare end
+-- is what made the yard feel flooded: two V8s and a Jet Engine lying
+-- around together cheapens all three. A roll that lands on something
+-- already at its limit becomes a vehicle instead.
+local MAX_ON_MAP = {
+	["Jet Engine"] = 1,
+	["V8 Engine"] = 1,
+	["V6 Engine"] = 1,
+	["Monster Truck"] = 1,
+	["Inline 4"] = 2,
+}
+
 -- Yard events. One every four to six minutes, never the same one twice in
 -- a row, each announced EVENT_WARNING seconds ahead so people can get
 -- into position.
@@ -57,8 +72,8 @@ local EVENT_WARNING = 10
 -- Scrap Rush: drops twice as fast for a minute, with its own lower cap so
 -- a rush fills the yard without burying it.
 local RUSH_SECONDS = 60
-local RUSH_INTERVAL = 1
-local RUSH_MAX_ITEMS = 36
+local RUSH_INTERVAL = 1.5
+local RUSH_MAX_ITEMS = 22
 
 -- Mutation Frenzy: a quarter of drops land already mutated, and every
 -- fusion rolls mutations at double odds (EventConfig's own multiplier).
@@ -261,6 +276,27 @@ local function activeAddonCount()
 	return live
 end
 
+-- How many of this item (mutated or not) are lying in the yard right now.
+local function liveCount(baseName)
+	local live = 0
+	for _, item in ipairs(scrapFolder:GetChildren()) do
+		local name = item:GetAttribute("ItemName")
+		if name and Mutations.Unwrap(name) == baseName then
+			live += 1
+		end
+	end
+	return live
+end
+
+local function atLimit(itemName)
+	local baseName = Mutations.Unwrap(itemName)
+	if FusionRecipes.IsAddon(baseName) and activeAddonCount() >= MAX_ACTIVE_ADDONS then
+		return true
+	end
+	local cap = MAX_ON_MAP[baseName]
+	return cap ~= nil and liveCount(baseName) >= cap
+end
+
 -- Everything that puts an item on the yard floor goes through here, so a
 -- crate drop and a regular drop behave identically once they land.
 local function spawnItemAt(itemName, position, opts)
@@ -338,10 +374,15 @@ local function spawnScrap()
 	end
 
 	local itemName = FusionRecipes.RollSpawn()
-	-- Already enough engines out there. Swap in a vehicle rather than
-	-- skipping the drop, so the yard stays as busy as it always was.
-	if FusionRecipes.IsAddon(itemName) and activeAddonCount() >= MAX_ACTIVE_ADDONS then
+	-- Already at its limit out there. Swap in a vehicle rather than skip
+	-- the drop, so the yard stays as busy as it always was; the most common
+	-- vehicle is the last resort, since nothing caps it.
+	for _ = 1, 4 do
+		if not atLimit(itemName) then break end
 		itemName = FusionRecipes.RollBaseItem()
+	end
+	if atLimit(itemName) then
+		itemName = FusionRecipes.Items[1].name
 	end
 	if now < frenzyUntil and math.random() < FRENZY_DROP_CHANCE then
 		itemName = Mutations.Wrap(itemName, rollFrenzyMutation())
@@ -414,10 +455,9 @@ local function dropMarker(spot)
 end
 
 local function rollCrateItem()
-	local addonsFull = activeAddonCount() >= MAX_ACTIVE_ADDONS
 	local pool = {}
 	for _, item in ipairs(FusionRecipes.BaseItems) do
-		if item.weight <= CRATE_MAX_WEIGHT and not (addonsFull and item.isAddon) then
+		if item.weight <= CRATE_MAX_WEIGHT and not atLimit(item.name) then
 			table.insert(pool, item)
 		end
 	end

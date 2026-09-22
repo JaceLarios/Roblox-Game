@@ -1374,10 +1374,16 @@ local function refreshPad(player)
 		return instanceTag(itemName)
 	end
 
+	-- The empty half says what it is waiting for, since the pad only ever
+	-- takes one item and one addon.
+	local waiting = "empty"
+	if s.slots[1] and not s.slots[2] then
+		waiting = FusionRecipes.IsAddon((Mutations.Unwrap(s.slots[1]))) and "add a car" or "add an engine"
+	end
 	plot.padLabel.Text = string.format(
 		"FUSION PAD\n[ %s ]  +  [ %s ]",
 		tag(s.slots[1]),
-		tag(s.slots[2])
+		s.slots[2] and tag(s.slots[2]) or waiting
 	)
 
 	-- Physical items sitting in the two slots on the pad. A carried item
@@ -1541,6 +1547,21 @@ end
 -- there's no more physical placement step for a fusion result to go
 -- through here.
 
+-- Junkyard fusing is one item plus one addon and nothing else: no item
+-- with item, no engine with engine. Returns why a pair is not allowed,
+-- or nil when it is. (Brainrot and Haunted fuse creatures and have no
+-- addons, so they keep their own rules.)
+local function fusionPairProblem(a, b)
+	local addonA = FusionRecipes.IsAddon((Mutations.Unwrap(a)))
+	local addonB = FusionRecipes.IsAddon((Mutations.Unwrap(b)))
+	if addonA and addonB then
+		return "You can't fuse two engines together — pair an engine with a car."
+	elseif not addonA and not addonB then
+		return "Fusing needs an addon — put an engine on the pad with it."
+	end
+	return nil
+end
+
 local function attemptFusion(player)
 	local s = state[player]
 	if not s then return end
@@ -1550,7 +1571,15 @@ local function attemptFusion(player)
 
 	local a, b = s.slots[1], s.slots[2]
 	if not (a and b) then
-		toast(player, "You need two items to fuse.")
+		toast(player, "You need an item and an addon to fuse.")
+		return
+	end
+
+	-- Nothing is consumed unless the pair is a legal one.
+	local problem = fusionPairProblem(a, b)
+	if problem then
+		toast(player, problem)
+		playSound(plot.pad, "fail")
 		return
 	end
 
@@ -2924,6 +2953,17 @@ moveToCarryRemote.OnServerEvent:Connect(function(player, index)
 	if not s then return end
 	local itemName = type(index) == "number" and s.inventory[index]
 	if not itemName then return end
+
+	-- Turn away a pairing that could never fuse instead of letting it sit
+	-- on the pad and fail later. Only the first pair is checked here:
+	-- anything past it queues, and attemptFusion checks again on its turn.
+	if #s.slots == 1 then
+		local problem = fusionPairProblem(s.slots[1], itemName)
+		if problem then
+			toast(player, problem)
+			return
+		end
+	end
 
 	if not canReceiveTradedItem(player, itemName, "carry") then
 		toast(player, "Hands full — fuse or sell something first.")
