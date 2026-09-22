@@ -39,16 +39,17 @@ local AREA_SIZE      = 130    -- studs wide/deep (the central shared yard)
 -- of the gold scrap idea in general") — its old role as "the exciting
 -- thing to chase" is replaced below by just announcing it when the
 -- regular roll itself lands on a naturally rare base item.
--- Anything at or under this weight gets the same "come get it" broadcast
--- Golden Scrap used to have — Jet Engine (3) and Monster Truck (8) both
--- qualify at the current BaseItems weights.
-local RARE_SPAWN_WEIGHT_THRESHOLD = 10
+-- Anything this rare or rarer gets the same "come get it" broadcast
+-- Golden Scrap used to have: the Monster Truck, the V8 and the Jet Engine.
+local ANNOUNCE_RARITY = "mythic"
 
 -- Hard ceiling on how many addons can be lying in the yard at once.
 -- FusionRecipes.AddonSpawnChance sets the long-run rate; this stops the
 -- short-run clumping a rate cannot. Four engines inside twenty drops is
 -- unremarkable dice, and it reads as the yard being full of engines.
-local MAX_ACTIVE_ADDONS = 2
+-- Three rather than two now that addons are 12% of drops, most of them
+-- Nitrous Tanks.
+local MAX_ACTIVE_ADDONS = 3
 
 -- Per-item limits on the map at once, on top of MAX_ITEMS. The rare end
 -- is what made the yard feel flooded: two V8s and a Jet Engine lying
@@ -60,6 +61,7 @@ local MAX_ON_MAP = {
 	["V6 Engine"] = 1,
 	["Monster Truck"] = 1,
 	["Inline 4"] = 2,
+	["Nitrous Tank"] = 2,
 }
 
 -- Yard events. One every four to six minutes, never the same one twice in
@@ -81,9 +83,10 @@ local FRENZY_SECONDS = 90
 local FRENZY_DROP_CHANCE = 0.25
 local FRENZY_DROP_WEIGHTS = { shiny = 60, toxic = 25, golden = 10, frenzy = 3, cosmic = 2 }
 
--- Crane Drop: the crate only ever holds something rare or better. Jet
--- Engine is still the least likely thing in it (about 1 crate in 36).
-local CRATE_MAX_WEIGHT = 30
+-- Crane Drop: the crate only ever holds something rare or better, picked
+-- by rarity rather than by spawn rate so a crate stays worth racing for.
+-- The Jet Engine is still the least likely thing in it (about 1 crate in 36).
+local CRATE_MIN_RARITY = "rare"
 local CRATE_DESPAWN_AFTER = 60
 local CRANE_SWING_SECONDS = 6
 local CRATE_FALL_SECONDS = 1.1
@@ -244,13 +247,13 @@ local function addBeam(part, colour)
 	light.Parent = beam
 end
 
--- The lowest-weight (rarest) base items — Golden Scrap's old "worth
--- announcing" role, now just surfacing when the regular roll itself
--- lands on something already rare instead of a separate spawn type.
--- Addons need no special case here: the weight bar already lands on the
--- V8 and the Jet Engine and skips the Inline 4 and V6, which is the right
--- line. At a drop every SPAWN_INTERVAL seconds, announcing every addon
--- would fire roughly four times a minute and stop meaning anything.
+-- The rarest base items — Golden Scrap's old "worth announcing" role, now
+-- just surfacing when the regular roll itself lands on something already
+-- rare instead of a separate spawn type. Addons need no special case: the
+-- rarity bar lands on the V8 and the Jet Engine and skips the Nitrous
+-- Tank, Inline 4 and V6, which is the right line. At a drop every
+-- SPAWN_INTERVAL seconds, announcing every addon would fire several times
+-- a minute and stop meaning anything.
 -- The top mutations count too, whatever they landed on.
 local ANNOUNCE_MUTATIONS = { golden = true, cosmic = true, frenzy = true }
 local function isRareRoll(itemName)
@@ -258,12 +261,9 @@ local function isRareRoll(itemName)
 	if mutationId and ANNOUNCE_MUTATIONS[mutationId] then
 		return true
 	end
-	for _, item in ipairs(FusionRecipes.BaseItems) do
-		if item.name == baseName then
-			return item.weight <= RARE_SPAWN_WEIGHT_THRESHOLD
-		end
-	end
-	return false
+	local rarity = FusionRecipes.GetRarity(baseName)
+	return rarity ~= nil
+		and FusionRecipes.RarityIndex[rarity] >= FusionRecipes.RarityIndex[ANNOUNCE_RARITY]
 end
 
 local function activeAddonCount()
@@ -455,13 +455,14 @@ local function dropMarker(spot)
 end
 
 local function rollCrateItem()
+	local floor = FusionRecipes.RarityIndex[CRATE_MIN_RARITY]
 	local pool = {}
 	for _, item in ipairs(FusionRecipes.BaseItems) do
-		if item.weight <= CRATE_MAX_WEIGHT and not atLimit(item.name) then
+		if FusionRecipes.RarityIndex[item.rarity] >= floor and not atLimit(item.name) then
 			table.insert(pool, item)
 		end
 	end
-	return weightedPick(pool, function(item) return item.weight end).name
+	return weightedPick(pool, function(item) return FusionRecipes.RarityWeight[item.rarity] end).name
 end
 
 -- A wooden crate falling from the magnet onto the spot, then bursting.

@@ -237,6 +237,19 @@ local function playerKnowsItem(s, player, itemName, island)
 	return false
 end
 
+-- Whether this player has discovered a build at least this rare. Read
+-- off the discoveries themselves, so it needs nothing extra saved.
+local function hasDiscoveredRarity(s, rarity)
+	local floor = FusionRecipes.RarityIndex[rarity]
+	for name in pairs(s.discovered) do
+		local found = FusionRecipes.GetRarity(name)
+		if found and FusionRecipes.RarityIndex[found] >= floor then
+			return true
+		end
+	end
+	return false
+end
+
 -- Ordered objectives. Each unlocks only after the previous is done, so
 -- there is always exactly one thing the player is working toward.
 local GOALS = {
@@ -244,10 +257,10 @@ local GOALS = {
 	{ text = "Discover 3 different builds",       reward = 250,   check = function(s) return s.count >= 3 end },
 	{ text = "Sell a build for coins",            reward = 250,   check = function(s) return s.sales >= 1 end },
 	{ text = "Discover 6 different builds",       reward = 600,   check = function(s) return s.count >= 6 end },
-	{ text = "Build a Tier 3 machine",            reward = 1500,  check = function(s) return s.bestTier >= 3 end },
+	{ text = "Fuse an Epic build (V6 Engine)",    reward = 1500,  check = function(s) return hasDiscoveredRarity(s, "epic") end },
 	{ text = "Discover 12 different builds",      reward = 3000,  check = function(s) return s.count >= 12 end },
-	{ text = "Build a Tier 4 monster",            reward = 8000,  check = function(s) return s.bestTier >= 4 end },
-	{ text = "Uncover a secret recipe",           reward = 15000, check = function(s) return s.secrets >= 1 end },
+	{ text = "Fuse a Mythic build (V8 Engine)",   reward = 8000,  check = function(s) return hasDiscoveredRarity(s, "mythic") end },
+	{ text = "Fuse a Legendary build (Jet Engine)", reward = 15000, check = function(s) return hasDiscoveredRarity(s, "legendary") end },
 	{ text = string.format("Complete the index: all %d builds", FusionRecipes.GetTotalDiscoveries()),
 	  reward = 50000, check = function(s) return s.count >= FusionRecipes.GetTotalDiscoveries() end },
 }
@@ -505,6 +518,7 @@ local function itemTierInfo(itemName)
 
 	return {
 		tier = FusionRecipes.GetTier(baseName),
+		rarity = FusionRecipes.GetRarity(baseName),
 		isSecret = FusionRecipes.IsSecretResult(baseName),
 		value = FusionRecipes.GetValue(baseName) * Mutations.ValueMultiplier(mutationId),
 	}
@@ -1352,11 +1366,12 @@ local function rarerThan(itemName)
 	return candidates[math.random(1, #candidates)]
 end
 
--- Picks a rare item for golden scrap: anything uncommon or better.
+-- Picks a rare car for the daily reward: a Cop Cruiser, Box Truck or
+-- Monster Truck.
 local function rollRareItem()
 	local pool = {}
 	for _, item in ipairs(FusionRecipes.Items) do
-		if item.weight <= 30 then
+		if FusionRecipes.RarityIndex[item.rarity] >= FusionRecipes.RarityIndex.rare then
 			table.insert(pool, item.name)
 		end
 	end
@@ -1378,7 +1393,7 @@ local function refreshPad(player)
 	-- takes one item and one addon.
 	local waiting = "empty"
 	if s.slots[1] and not s.slots[2] then
-		waiting = FusionRecipes.IsAddon((Mutations.Unwrap(s.slots[1]))) and "add a car" or "add an engine"
+		waiting = FusionRecipes.IsAddon((Mutations.Unwrap(s.slots[1]))) and "needs a car" or "needs an addon"
 	end
 	plot.padLabel.Text = string.format(
 		"FUSION PAD\n[ %s ]  +  [ %s ]",
@@ -1407,7 +1422,8 @@ local function refreshPad(player)
 			slotPart.Parent = plot.model
 			local mutationColor = Mutations.Color(mutationId)
 			if mutationColor then slotPart.Color = mutationColor end
-			local itemColor = mutationColor or ItemRarity.Color(FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName))
+			local itemColor = mutationColor or ItemRarity.Color(FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
+				FusionRecipes.GetRarity(baseName))
 			makeLabel(slotPart, itemName, 1.8, 140, itemColor, 45)
 			plot.slotParts[i] = slotPart
 		end
@@ -1442,7 +1458,7 @@ local function redrawPetPad(plot, slot, itemName)
 	pad.itemPart = part
 
 	local info = itemTierInfo(itemName)
-	local itemColor = mutationColor or ItemRarity.Color(info.tier, info.isSecret)
+	local itemColor = mutationColor or ItemRarity.Color(info.tier, info.isSecret, info.rarity)
 	FusionEffects.AttachPlacedGlow(part, itemColor)
 	pad.label.Text = string.format("%s\n+%.1f coins/sec", instanceTag(itemName), info.value / PLACEMENT_PAYBACK_SECONDS)
 	pad.label.TextColor3 = itemColor
@@ -1533,7 +1549,8 @@ local function dropItemNearYard(itemName)
 	local mutationColor = Mutations.Color(mutationId)
 	if mutationColor then part.Color = mutationColor end
 	part:SetAttribute("ItemName", itemName)
-	local itemColor = mutationColor or ItemRarity.Color(FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName))
+	local itemColor = mutationColor or ItemRarity.Color(FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
+		FusionRecipes.GetRarity(baseName))
 	makeLabel(part, itemName, 2, 150, itemColor, 45)
 	part.Parent = getScrapFolder()
 end
@@ -1548,18 +1565,12 @@ end
 -- through here.
 
 -- Junkyard fusing is one item plus one addon and nothing else: no item
--- with item, no engine with engine. Returns why a pair is not allowed,
--- or nil when it is. (Brainrot and Haunted fuse creatures and have no
--- addons, so they keep their own rules.)
+-- with item, no addon with addon, and a fused build only takes an addon
+-- better than the one it has. Returns why a pair is not allowed, or nil
+-- when it is. (Brainrot and Haunted fuse creatures and have no addons,
+-- so they keep their own rules.)
 local function fusionPairProblem(a, b)
-	local addonA = FusionRecipes.IsAddon((Mutations.Unwrap(a)))
-	local addonB = FusionRecipes.IsAddon((Mutations.Unwrap(b)))
-	if addonA and addonB then
-		return "You can't fuse two engines together — pair an engine with a car."
-	elseif not addonA and not addonB then
-		return "Fusing needs an addon — put an engine on the pad with it."
-	end
-	return nil
+	return FusionRecipes.PairProblem((Mutations.Unwrap(a)), (Mutations.Unwrap(b)))
 end
 
 local function attemptFusion(player)
@@ -1575,14 +1586,6 @@ local function attemptFusion(player)
 		return
 	end
 
-	-- Nothing is consumed unless the pair is a legal one.
-	local problem = fusionPairProblem(a, b)
-	if problem then
-		toast(player, problem)
-		playSound(plot.pad, "fail")
-		return
-	end
-
 	-- Belt-and-suspenders: canReceiveTradedItem already refuses to let a
 	-- secret pet reach a carry slot at all, so this should be unreachable
 	-- — but a paid item accidentally getting consumed by a fusion would be
@@ -1594,11 +1597,18 @@ local function attemptFusion(player)
 
 	-- An item sent back from Inventory can still carry its mutation prefix
 	-- — recipe lookups need the bare name, or a "[Shiny] Trail Blazer"
-	-- would never match the curated recipe for "Trail Blazer" and would
-	-- silently fall back to a worse, wrong-tier hybrid. The ingredient's
-	-- own mutation is dealt with separately, below the result's roll.
+	-- would never be found in the book. The ingredient's own mutation is
+	-- dealt with separately, below the result's roll.
 	local baseA = Mutations.Unwrap(a)
 	local baseB = Mutations.Unwrap(b)
+
+	-- Nothing is consumed unless the pair actually makes something.
+	local result, info = FusionRecipes.Fuse(baseA, baseB)
+	if not result then
+		toast(player, info)
+		playSound(plot.pad, "fail")
+		return
+	end
 
 	s.slots[1], s.slots[2] = nil, nil
 	-- Shift any extra carried items down into the empty slots.
@@ -1609,19 +1619,8 @@ local function attemptFusion(player)
 	s.slots = remaining
 	refreshPad(player)
 
-	local result, info = FusionRecipes.Fuse(baseA, baseB)
-
-	if not result then
-		-- Only reachable on malformed input (see FusionRecipes.Fuse) —
-		-- every real item name pair now produces a result.
-		dropItemNearYard(a)
-		dropItemNearYard(b)
-		pushUI(player)
-		return
-	end
-
-	-- Mutation rolls independently of tier/secret status — a common Rusted
-	-- Sedan and a secret Scrapyard God are equally eligible. Discovery/goal
+	-- Mutation rolls independently of rarity — an Uncommon Rusty Splice
+	-- and a Legendary Scrapyard God are equally eligible. Discovery/goal
 	-- bookkeeping below always uses the bare `result` name; only the
 	-- placed/displayed instance carries the mutation.
 	local mutationId = Mutations.Roll(s.upgrades.luck, s.mutationPity)
@@ -1648,29 +1647,24 @@ local function attemptFusion(player)
 	-- The "how much money it'll make you" half of the fusion pop-up — a
 	-- rate, not the flat sell value, since a fused item only ever earns
 	-- once actually placed on a pad (see PLACEMENT_PAYBACK_SECONDS above).
+	local rarityName = ItemRarity.Name(info.tier, false, info.rarity)
 	local rateLine = string.format("%s — +%.1f coins/sec if placed",
-		ItemRarity.Name(info.tier, info.isSecret), instanceValue / PLACEMENT_PAYBACK_SECONDS)
-	local isNewDiscovery = not info.isFallback and not s.discovered[result]
+		rarityName, instanceValue / PLACEMENT_PAYBACK_SECONDS)
+	local isNewDiscovery = not s.discovered[result]
 
-	if info.isFallback then
-		-- A generic hybrid, not a curated recipe — still worth having and
-		-- placing, but doesn't count toward discoveries/goals.
-		toast(player, string.format("%s + %s = %s\n%s", aTag, bTag, resultTag, rateLine), true)
-	elseif isNewDiscovery then
+	if isNewDiscovery then
 		s.discovered[result] = true
 		s.count = s.count + 1
 		table.insert(s.discoveredList, result)
 		if info.tier > s.bestTier then s.bestTier = info.tier end
-		if info.isSecret then s.secrets = s.secrets + 1 end
 		toast(player, string.format("NEW DISCOVERY\n%s\n%s", resultTag, rateLine), true)
 		print(string.format("[Fusion] %s discovered %s (%d/%d)",
 			player.Name, result, s.count, FusionRecipes.GetTotalDiscoveries()))
+	elseif info.upgradedFrom then
+		local fromTag = FusionRecipes.IsAddon(baseA) and bTag or aTag
+		toast(player, string.format("%s upgraded to %s\n%s", fromTag, resultTag, rateLine), true)
 	else
 		toast(player, string.format("%s + %s = %s\n%s", aTag, bTag, resultTag, rateLine), true)
-	end
-
-	if info.isSecret then
-		toast(player, string.format("SECRET RECIPE\n%s", resultTag), true)
 	end
 
 	if mutationId then
@@ -1682,7 +1676,7 @@ local function attemptFusion(player)
 	do
 		local badges = {}
 		if isNewDiscovery then table.insert(badges, "NEW DISCOVERY") end
-		if info.isSecret then table.insert(badges, "SECRET RECIPE") end
+		if info.upgradedFrom then table.insert(badges, "UPGRADE") end
 		if mutationId then table.insert(badges, "MUTATION") end
 		local headerText = #badges > 0 and table.concat(badges, "   •   ") or "FUSION COMPLETE"
 
@@ -1692,8 +1686,8 @@ local function attemptFusion(player)
 			aTag = aTag,
 			bTag = bTag,
 			resultTag = resultTag,
-			rarityName = ItemRarity.Name(info.tier, info.isSecret),
-			color = mutationColor or ItemRarity.Color(info.tier, info.isSecret),
+			rarityName = rarityName,
+			color = mutationColor or ItemRarity.Color(info.tier, false, info.rarity),
 			rateLine = rateLine,
 		})
 	end
@@ -1714,7 +1708,8 @@ local function attemptFusion(player)
 	end
 	updateWalkSpeed(player)
 
-	playSound(plot.pad, (mutationId or info.isSecret or info.tier >= 4) and "big" or "fuse")
+	local big = FusionRecipes.RarityIndex[info.rarity] >= FusionRecipes.RarityIndex.mythic
+	playSound(plot.pad, (mutationId or big) and "big" or "fuse")
 	checkGoals(player)
 	pushUI(player)
 end
