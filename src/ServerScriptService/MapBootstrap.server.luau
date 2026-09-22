@@ -2,9 +2,13 @@
 local ServerStorage = game:GetService("ServerStorage")
 local Baseline = require(ServerStorage:WaitForChild("MapBaseline"))
 local Map = require(ServerStorage:WaitForChild("MapRevamp"))
+local YardFeatures = require(ServerStorage:WaitForChild("YardFeatures"))
 Baseline.Restore()
 Map.Build()
 Map.DressYard()
+-- The crane, junk piles and container stacks inside the yard. Its own
+-- module, so it rebuilds itself whenever its VERSION changes.
+YardFeatures.Build()
 local plots = workspace:WaitForChild("Plots",30)
 if plots then
  local function dress(plot)

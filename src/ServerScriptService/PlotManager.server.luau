@@ -20,6 +20,7 @@ local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage     = game:GetService("ServerStorage")
 local RunService        = game:GetService("RunService")
+local PhysicsService    = game:GetService("PhysicsService")
 local MarketplaceService = game:GetService("MarketplaceService")
 
 local FusionEffects = require(ServerStorage:WaitForChild("FusionEffects"))
@@ -141,6 +142,29 @@ local COIL_SPEED_BONUS = 0.15
 local LASER_WIDTH = 24
 -- Stepping onto your own plot at all counts as getting home.
 local DELIVER_RADIUS = PLOT_SIZE / 2
+
+-- Base raids. Anything sitting on a pet pad can be stolen by another
+-- player who gets to it; anything in Inventory cannot. The hold is longer
+-- than a yard grab so the owner has a moment to react, and the owner can
+-- shut their pads for a minute with the Lock Base button.
+local STEAL_HOLD_SECONDS = 2.5
+local STEAL_RANGE = 12
+local LOCK_SECONDS = 60
+local LOCK_COOLDOWN_SECONDS = 60
+local RAID_ALARM_COOLDOWN = 6
+-- Owner-only walls around every base. Everyone else can only get in or out
+-- along that base's own laser road; the owner walks straight through
+-- (collision groups, below), so the grass and the island gates behind each
+-- base stay reachable for them.
+local BASE_WALL_HEIGHT = 16
+local BASE_WALL_VISIBLE_HEIGHT = 5
+-- Offset from the plot centre: clear of the pads, and outside the road
+-- mouth of every one of the eight plots.
+local LOCK_BUTTON_OFFSET = Vector3.new(16, 0, -24)
+
+local function isLocked(plot)
+	return plot.lockedUntil ~= nil and os.clock() < plot.lockedUntil
+end
 
 local UPGRADES = {
 	{
@@ -616,6 +640,20 @@ plotFolder = Instance.new("Folder")
 plotFolder.Name = "Plots"
 plotFolder.Parent = workspace
 
+-- One wall group and one owner group per plot. A plot's walls stop every
+-- character except those in its own owner group, which is how "only the
+-- owner walks through" works with no per-player scripting on the walls.
+local function wallGroup(i) return "PlotWall" .. i end
+local function ownerGroup(i) return "PlotOwner" .. i end
+for i = 1, PLOT_COUNT do
+	for _, name in ipairs({ wallGroup(i), ownerGroup(i) }) do
+		if not PhysicsService:IsCollisionGroupRegistered(name) then
+			PhysicsService:RegisterCollisionGroup(name)
+		end
+	end
+	PhysicsService:CollisionGroupSetCollidable(wallGroup(i), ownerGroup(i), false)
+end
+
 for i = 1, PLOT_COUNT do
 	local angle = (i - 1) / PLOT_COUNT * math.pi * 2
 	local centre = Vector3.new(math.cos(angle) * RING_RADIUS, 0, math.sin(angle) * RING_RADIUS)
@@ -691,9 +729,23 @@ for i = 1, PLOT_COUNT do
 		takeOffPrompt.MaxActivationDistance = 10
 		takeOffPrompt.RequiresLineOfSight = false
 		takeOffPrompt.Enabled = false -- only enabled once something is actually placed
+		takeOffPrompt.Name = "TakeOffPrompt"
 		takeOffPrompt.Parent = petPadPart
 
-		petPads[slot] = { part = petPadPart, label = petPadLabel, prompt = takeOffPrompt, itemPart = nil }
+		-- The visitor's half of the same pad. Both prompts exist for
+		-- everyone; BaseRaid.client hides whichever one is not yours, and
+		-- the server checks ownership either way.
+		local stealPrompt = Instance.new("ProximityPrompt")
+		stealPrompt.Name = "StealPrompt"
+		stealPrompt.ActionText = "Steal"
+		stealPrompt.ObjectText = "Pet Pad"
+		stealPrompt.HoldDuration = STEAL_HOLD_SECONDS
+		stealPrompt.MaxActivationDistance = 10
+		stealPrompt.RequiresLineOfSight = false
+		stealPrompt.Enabled = false
+		stealPrompt.Parent = petPadPart
+
+		petPads[slot] = { part = petPadPart, label = petPadLabel, prompt = takeOffPrompt, stealPrompt = stealPrompt, itemPart = nil }
 	end
 
 	-- No physical display zones anymore — a fused result goes straight
@@ -730,9 +782,20 @@ for i = 1, PLOT_COUNT do
 	-- Invisible walls down both shoulders, so the only way past a bar is
 	-- over it. They start just past the yard and stop at the plot edge, so
 	-- the yard itself and the plot stay completely open to walk around.
-	local barrierStart, barrierEnd = 88, roadEnd
-	local barrierMid = radial * ((barrierStart + barrierEnd) / 2)
+	-- Each shoulder runs until it actually meets the plot's edge. On the four
+	-- straight roads that is exactly where the road stops; on the four
+	-- diagonal ones the road stops at the plot's corner while the shoulders
+	-- are still short of it, which used to leave a gap either side that
+	-- stepped straight off the road onto the grass.
+	local barrierStart = 88
 	for _, offset in ipairs({ -BARRIER_HALF_WIDTH, BARRIER_HALF_WIDTH }) do
+		local barrierEnd = roadEnd
+		while barrierEnd < RING_RADIUS do
+			local p = radial * barrierEnd + side * offset - centre
+			if math.max(math.abs(p.X), math.abs(p.Z)) <= PLOT_SIZE / 2 then break end
+			barrierEnd += 0.5
+		end
+		local barrierMid = radial * ((barrierStart + barrierEnd) / 2)
 		local wall = makePart({
 			Name = "RoadBarrier",
 			Size = Vector3.new(1, BARRIER_HEIGHT, barrierEnd - barrierStart),
@@ -746,9 +809,122 @@ for i = 1, PLOT_COUNT do
 		wall.CanQuery = false
 	end
 
+	-- Walls round the whole plot except where its own road comes in. The
+	-- solid wall is invisible and tall enough that nobody jumps it; a low
+	-- shimmer shows where it stands. Both carry this plot's wall group, so
+	-- they stop everyone except the owner.
+	local mouth = BARRIER_HALF_WIDTH + 1
+	local half = PLOT_SIZE / 2
+	local corners = {
+		centre + Vector3.new(-half, 0, -half), centre + Vector3.new(half, 0, -half),
+		centre + Vector3.new(half, 0, half), centre + Vector3.new(-half, 0, half),
+	}
+	local function inRoadMouth(p)
+		return math.abs(p:Dot(side)) <= mouth and p:Dot(radial) < RING_RADIUS
+	end
+	local function wallRun(a, b)
+		if (b - a).Magnitude < 0.5 then return end
+		local length = (b - a).Magnitude + 1
+		local frame = CFrame.lookAt((a + b) / 2, b)
+		makePart({
+			Name = "BaseWall",
+			Size = Vector3.new(1, BASE_WALL_HEIGHT, length),
+			CFrame = frame + Vector3.new(0, BASE_WALL_HEIGHT / 2 + 0.5, 0),
+			Transparency = 1,
+			CanCollide = true,
+			CanQuery = false,
+			CanTouch = false,
+			CollisionGroup = wallGroup(i),
+			Parent = model,
+		})
+		-- Neon at high transparency rather than ForceField: ForceField only
+		-- shimmers at glancing angles, so head-on it all but vanished and
+		-- people walked into a wall they could not see.
+		makePart({
+			Name = "BaseField",
+			Size = Vector3.new(0.4, BASE_WALL_VISIBLE_HEIGHT, length),
+			CFrame = frame + Vector3.new(0, BASE_WALL_VISIBLE_HEIGHT / 2 + 0.5, 0),
+			Material = Enum.Material.Neon,
+			Color = Color3.fromRGB(110, 190, 255),
+			Transparency = 0.84,
+			CanCollide = false,
+			CanQuery = false,
+			CanTouch = false,
+			CastShadow = false,
+			Parent = model,
+		})
+	end
+	for e = 1, 4 do
+		local a, b = corners[e], corners[e % 4 + 1]
+		local runFrom, last = nil, nil
+		for step = 0, PLOT_SIZE do
+			local p = a:Lerp(b, step / PLOT_SIZE)
+			if inRoadMouth(p) then
+				if runFrom then wallRun(runFrom, last) end
+				runFrom = nil
+			else
+				runFrom = runFrom or p
+				last = p
+			end
+		end
+		if runFrom then wallRun(runFrom, last) end
+	end
+
+	-- Lock Base: owner-only, shuts every pad for LOCK_SECONDS.
+	local lockSpot = centre + LOCK_BUTTON_OFFSET
+	makePart({
+		Name = "LockPedestal",
+		Size = Vector3.new(2.6, 2.6, 2.6),
+		Position = lockSpot + Vector3.new(0, 1.8, 0),
+		Material = Enum.Material.Metal,
+		Color = Color3.fromRGB(46, 46, 54),
+		Parent = model,
+	})
+	local lockButton = makePart({
+		Name = "LockButton",
+		Shape = Enum.PartType.Cylinder,
+		Size = Vector3.new(0.6, 2.2, 2.2),
+		CFrame = CFrame.new(lockSpot + Vector3.new(0, 3.4, 0)) * CFrame.Angles(0, 0, math.rad(90)),
+		Material = Enum.Material.Neon,
+		Color = Color3.fromRGB(70, 220, 110),
+		Parent = model,
+	})
+	local lockLabel = makeLabel(lockButton, "LOCK BASE", 3, 200, Color3.fromRGB(120, 255, 150), 60)
+	local lockPrompt = Instance.new("ProximityPrompt")
+	lockPrompt.Name = "LockPrompt"
+	lockPrompt.ActionText = "Lock Base"
+	lockPrompt.ObjectText = string.format("%d seconds", LOCK_SECONDS)
+	lockPrompt.HoldDuration = 0.4
+	lockPrompt.MaxActivationDistance = 10
+	lockPrompt.RequiresLineOfSight = false
+	lockPrompt.Parent = lockButton
+
+	-- The shield over the pad row while locked. Off by default; in this
+	-- plot's wall group so the owner can still walk up to their own pads.
+	local shield = makePart({
+		Name = "LockShield",
+		Size = Vector3.new(PET_PAD_SPACING * PET_PAD_COUNT, 12, PET_PAD_SIZE + 4),
+		Position = centre + Vector3.new(0, 6.5, PET_PAD_Z),
+		Material = Enum.Material.Neon,
+		Color = Color3.fromRGB(90, 170, 255),
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		CastShadow = false,
+		CollisionGroup = wallGroup(i),
+		Parent = model,
+	})
+
 	plots[i] = {
 		model = model,
 		lasers = lasers,
+		lockButton = lockButton,
+		lockLabel = lockLabel,
+		lockPrompt = lockPrompt,
+		shield = shield,
+		lockedUntil = 0,
+		lockCooldownUntil = 0,
 		owner = nil,
 		centre = centre,
 		pad = pad,
@@ -788,7 +964,13 @@ local RANK_COLORS = {
 }
 
 do
-	local base = Vector3.new(0, 1.2, 0)
+	-- Just off the yard's centre rather than on it: the magnet crane's
+	-- tower stands on the centre now, and a board inside its legs had the
+	-- lattice drawn straight across both leaderboards. Out here, along +X,
+	-- the board sits side-on to the tower, so its front and back faces
+	-- both open onto clear asphalt. ScrapSpawner keeps Crane Drops off
+	-- this bearing so a crate never lands on it.
+	local base = Vector3.new(11, 1.2, 0)
 
 	-- A wide pedestal, not a thin pole — this is a kiosk you walk up and
 	-- stand in front of, so it needs real footing, and the board sits low
@@ -1126,6 +1308,10 @@ local function pushUI(player)
 		-- Where "home" is, so the client can point its RUN arrows at it
 		-- without having to work out which plot belongs to this player.
 		baseCentre = plots[s.plotIndex] and plots[s.plotIndex].centre or nil,
+		-- Only set while carrying something stolen off another base, so the
+		-- arrows can lead back out along that base's road first.
+		carryFrom = s.carrying and s.carrying.fromPlot and plots[s.carrying.fromPlot]
+			and plots[s.carrying.fromPlot].centre or nil,
 		placed = placedInfo,
 		placedCapacity = PET_PAD_COUNT,
 	})
@@ -1237,6 +1423,7 @@ local function redrawPetPad(plot, slot, itemName)
 		pad.label.Text = "EMPTY PAD"
 		pad.label.TextColor3 = Color3.fromRGB(150, 150, 165)
 		pad.prompt.Enabled = false
+		pad.stealPrompt.Enabled = false
 		return
 	end
 
@@ -1254,6 +1441,8 @@ local function redrawPetPad(plot, slot, itemName)
 	pad.label.Text = string.format("%s\n+%.1f coins/sec", instanceTag(itemName), info.value / PLACEMENT_PAYBACK_SECONDS)
 	pad.label.TextColor3 = itemColor
 	pad.prompt.Enabled = true
+	pad.stealPrompt.ObjectText = itemName
+	pad.stealPrompt.Enabled = not isLocked(plot)
 end
 
 local function refreshPlacedPets(player)
@@ -1305,8 +1494,34 @@ local function getScrapFolder()
 	return folder
 end
 
+local yardRay = RaycastParams.new()
+yardRay.FilterType = Enum.RaycastFilterType.Exclude
+
+-- Somewhere in the middle of the yard to put an item down: on the asphalt
+-- or on top of a pile, never inside one. Falls back to bare ground.
+local function yardDropPosition()
+	for _ = 1, 8 do
+		local x, z = math.random(-40, 40), math.random(-40, 40)
+		if x * x + z * z > 49 then
+			local ignore = { getScrapFolder() }
+			local features = workspace:FindFirstChild("YardFeatures")
+			local crane = features and features:FindFirstChild("MagnetCrane")
+			if crane then table.insert(ignore, crane) end
+			for _, p in ipairs(Players:GetPlayers()) do
+				if p.Character then table.insert(ignore, p.Character) end
+			end
+			yardRay.FilterDescendantsInstances = ignore
+			local hit = workspace:Raycast(Vector3.new(x, 60, z), Vector3.new(0, -80, 0), yardRay)
+			if hit and hit.Normal.Y > 0.95 and hit.Position.Y < 16 then
+				return Vector3.new(x, hit.Position.Y, z)
+			end
+		end
+	end
+	return Vector3.new(math.random(10, 40), 1.2, math.random(10, 40))
+end
+
 local function dropItemNearYard(itemName)
-	local position = Vector3.new(math.random(-40, 40), 1.2, math.random(-40, 40))
+	local position = yardDropPosition()
 	local baseName, mutationId = Mutations.Unwrap(itemName)
 	local part = ItemVisuals.Create(baseName, position, 1)
 	local mutationColor = Mutations.Color(mutationId)
@@ -1352,8 +1567,7 @@ local function attemptFusion(player)
 	-- — recipe lookups need the bare name, or a "[Shiny] Trail Blazer"
 	-- would never match the curated recipe for "Trail Blazer" and would
 	-- silently fall back to a worse, wrong-tier hybrid. The ingredient's
-	-- own mutation isn't carried forward either way — the result gets its
-	-- own independent roll below, same as always.
+	-- own mutation is dealt with separately, below the result's roll.
 	local baseA = Mutations.Unwrap(a)
 	local baseB = Mutations.Unwrap(b)
 
@@ -1383,6 +1597,17 @@ local function attemptFusion(player)
 	-- placed/displayed instance carries the mutation.
 	local mutationId = Mutations.Roll(s.upgrades.luck, s.mutationPity)
 	s.mutationPity = mutationId and 0 or (s.mutationPity or 0) + 1
+	-- A mutated ingredient carries its mutation through: fuse a Golden car
+	-- and the result stays Golden unless its own roll beat that. This used
+	-- to be dropped on purpose, but with the Mutation Frenzy putting
+	-- mutated scrap on the yard floor, dropping it made those finds
+	-- worthless the moment they were fused.
+	for _, ingredient in ipairs({ a, b }) do
+		local _, inherited = Mutations.Unwrap(ingredient)
+		if inherited and Mutations.ValueMultiplier(inherited) > Mutations.ValueMultiplier(mutationId) then
+			mutationId = inherited
+		end
+	end
 	local instanceName = Mutations.Wrap(result, mutationId)
 	local instanceValue = math.floor(info.value * Mutations.ValueMultiplier(mutationId))
 	local mutationColor = Mutations.Color(mutationId)
@@ -1522,16 +1747,45 @@ end
 -- Puts the carried item back into the world as an ordinary grabbable, so
 -- whoever gets there first can take it. Parenting into the scrap folder is
 -- all that is needed: its ChildAdded hook attaches the Grab prompt.
+-- A stolen item whose thief got stopped goes back to its owner: onto a
+-- free pad if there is one, else into their Inventory. False when the
+-- owner has left or has nowhere to put it, and the caller drops it instead.
+local function returnStolen(victim, itemName, thief)
+	local vs = state[victim]
+	if not vs or not victim.Parent then return false end
+	if #vs.placed < PET_PAD_COUNT then
+		table.insert(vs.placed, itemName)
+		refreshPlacedPets(victim)
+	elseif #vs.inventory < INVENTORY_CAPACITY then
+		table.insert(vs.inventory, itemName)
+	else
+		return false
+	end
+	updateWalkSpeed(victim)
+	toast(victim, string.format("%s got stopped — your %s is back home!", thief.Name, instanceTag(itemName)), true)
+	pushUI(victim)
+	return true
+end
+
 local function dropCarried(player, reason)
 	local s = state[player]
 	if not s or not s.carrying then return false end
 
 	local itemName = s.carrying.name
+	local victim = s.carrying.stolenFrom
 	local root = playerRoot(player)
 	local origin = root and root.Position or Vector3.new(0, 6, 0)
 
 	clearCarriedVisual(s)
 	s.carrying = nil
+
+	-- Stopped mid-raid: it goes home to whoever it was taken from, not onto
+	-- the floor for a third player to scoop up.
+	if victim and returnStolen(victim, itemName, player) then
+		toast(player, (reason and (reason .. " ") or "") .. "It went back to its owner.")
+		pushUI(player)
+		return true
+	end
 
 	local dropped = ItemVisuals.Create(Mutations.Unwrap(itemName), origin + Vector3.new(0, 3, 0), 1)
 	dropped:SetAttribute("ItemName", itemName)
@@ -1556,13 +1810,44 @@ local function deliverCarried(player)
 	end
 
 	local itemName = s.carrying.name
+	local victim = s.carrying.stolenFrom
 	clearCarriedVisual(s)
 	s.carrying = nil
 
 	table.insert(s.inventory, itemName)
 	playSound(playerRoot(player), "big")
 	toast(player, string.format("Delivered %s to your base.", instanceTag(itemName)), true)
+	if victim and victim.Parent then
+		toast(victim, string.format("%s got away with your %s!", player.Name, instanceTag(itemName)), true)
+		broadcast(string.format("%s got away with %s from %s's base!", player.Name, instanceTag(itemName), victim.Name))
+	end
 	pushUI(player)
+	return true
+end
+
+-- Everything that happens the moment someone starts hauling something,
+-- whether it came off the yard floor or off another player's pad. `extra`
+-- is merged into the carry record (a stolen item notes who it belongs to).
+local function beginCarry(player, itemName, extra)
+	local s = state[player]
+	if not s then return false end
+	local held = attachCarried(player, itemName)
+	if not held then return false end
+	s.carrying = { name = itemName, model = held }
+	if extra then
+		for key, value in pairs(extra) do
+			s.carrying[key] = value
+		end
+	end
+
+	-- Picking something up costs you the bat and the coil. CarryHud hides
+	-- the hotbar client-side; this is the half that actually enforces it.
+	local carrierHumanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+	if carrierHumanoid then carrierHumanoid:UnequipTools() end
+	s.coilEquipped = false
+	updateWalkSpeed(player)
+
+	playSound(playerRoot(player), "pickup")
 	return true
 end
 
@@ -1588,18 +1873,8 @@ local function grabItem(player, part)
 		end
 	end
 
-	local held = attachCarried(player, grabbed)
-	if not held then return false end
-	s.carrying = { name = grabbed, model = held }
+	if not beginCarry(player, grabbed) then return false end
 
-	-- Picking something up costs you the bat and the coil. CarryHud hides
-	-- the hotbar client-side; this is the half that actually enforces it.
-	local carrierHumanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-	if carrierHumanoid then carrierHumanoid:UnequipTools() end
-	s.coilEquipped = false
-	updateWalkSpeed(player)
-
-	playSound(playerRoot(player), "pickup")
 	local root = playerRoot(player)
 	PickupEffects.Play(part, root and root.Position or part.Position)
 
@@ -1804,6 +2079,140 @@ task.spawn(function()
 				if plot and root and (root.Position - plot.centre).Magnitude <= DELIVER_RADIUS then
 					deliverCarried(player)
 				end
+			end
+		end
+	end
+end)
+
+------------------------------------------------------------------
+-- Base raids: stealing off pet pads, and the Lock Base button
+------------------------------------------------------------------
+
+local lastAlarm = {}   -- [plotIndex] = os.clock() of the owner's last "someone is in your base" warning
+
+-- Shield, button colour, label and every steal prompt, from the lock timers.
+local function refreshLock(plot)
+	local now = os.clock()
+	local locked = now < plot.lockedUntil
+	plot.shield.Transparency = locked and 0.75 or 1
+	plot.shield.CanCollide = locked
+	plot.model:SetAttribute("Locked", locked)
+	if locked then
+		plot.lockLabel.Text = string.format("LOCKED  %ds", math.ceil(plot.lockedUntil - now))
+		plot.lockLabel.TextColor3 = Color3.fromRGB(120, 200, 255)
+		plot.lockButton.Color = Color3.fromRGB(80, 170, 255)
+	elseif now < plot.lockCooldownUntil then
+		plot.lockLabel.Text = string.format("RECHARGING  %ds", math.ceil(plot.lockCooldownUntil - now))
+		plot.lockLabel.TextColor3 = Color3.fromRGB(255, 190, 90)
+		plot.lockButton.Color = Color3.fromRGB(255, 150, 40)
+	else
+		plot.lockLabel.Text = "LOCK BASE"
+		plot.lockLabel.TextColor3 = Color3.fromRGB(120, 255, 150)
+		plot.lockButton.Color = Color3.fromRGB(70, 220, 110)
+	end
+	local owner = plot.owner and state[plot.owner]
+	for slot, pad in ipairs(plot.petPads) do
+		pad.stealPrompt.Enabled = (not locked) and owner ~= nil and owner.placed[slot] ~= nil
+	end
+end
+
+local function stealFromPad(thief, plotIndex, slot)
+	local plot = plots[plotIndex]
+	local victim = plot and plot.owner
+	local ts = state[thief]
+	if not (plot and victim and ts) or victim == thief then return end
+	if isLocked(plot) then
+		toast(thief, "That base is locked — wait for the shield to drop.")
+		return
+	end
+	if ts.carrying then
+		toast(thief, "You can only carry one item — get that one home first.")
+		return
+	end
+
+	local vs = state[victim]
+	local itemName = vs and vs.placed[slot]
+	if not itemName then return end
+
+	local char = thief.Character
+	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+	local root = playerRoot(thief)
+	if not (humanoid and root) or humanoid.Health <= 0 then return end
+	-- Getting flopped by the owner's bat mid-hold spoils the steal.
+	if humanoid.PlatformStand then return end
+	if (root.Position - plot.petPads[slot].part.Position).Magnitude > STEAL_RANGE then return end
+
+	table.remove(vs.placed, slot)
+	refreshPlacedPets(victim)
+	updateWalkSpeed(victim)
+	pushUI(victim)
+
+	if not beginCarry(thief, itemName, { stolenFrom = victim, fromPlot = plotIndex }) then
+		-- Could not attach it to the thief at all: put it straight back.
+		table.insert(vs.placed, slot, itemName)
+		refreshPlacedPets(victim)
+		updateWalkSpeed(victim)
+		pushUI(victim)
+		return
+	end
+
+	playSound(plot.pad, "big")
+	toast(victim, string.format("%s STOLE your %s — stop them before they get home!", thief.Name, instanceTag(itemName)), true)
+	broadcast(string.format("%s stole %s from %s's base — stop them before they get home!",
+		thief.Name, instanceTag(itemName), victim.Name))
+	pushUI(thief)
+end
+
+for plotIndex, plot in ipairs(plots) do
+	for slot, pad in ipairs(plot.petPads) do
+		-- The owner hears about it the moment someone starts the hold, not
+		-- only once the steal has already worked.
+		pad.stealPrompt.PromptButtonHoldBegan:Connect(function(thief)
+			local victim = plot.owner
+			if not victim or victim == thief then return end
+			local now = os.clock()
+			if now - (lastAlarm[plotIndex] or 0) < RAID_ALARM_COOLDOWN then return end
+			lastAlarm[plotIndex] = now
+			toast(victim, string.format("%s is stealing from your base!", thief.Name), true)
+			playSound(plot.pad, "fail")
+		end)
+		pad.stealPrompt.Triggered:Connect(function(thief)
+			stealFromPad(thief, plotIndex, slot)
+		end)
+	end
+
+	plot.lockPrompt.Triggered:Connect(function(player)
+		if plot.owner ~= player then
+			toast(player, "Only the owner can lock this base.")
+			return
+		end
+		local now = os.clock()
+		if now < plot.lockedUntil then
+			toast(player, "Your base is already locked.")
+			return
+		end
+		if now < plot.lockCooldownUntil then
+			toast(player, string.format("The lock is recharging — %ds left.", math.ceil(plot.lockCooldownUntil - now)))
+			return
+		end
+		plot.lockedUntil = now + LOCK_SECONDS
+		plot.lockCooldownUntil = plot.lockedUntil + LOCK_COOLDOWN_SECONDS
+		refreshLock(plot)
+		playSound(plot.pad, "fuse")
+		toast(player, string.format("Base locked for %d seconds — nobody can steal from your pads.", LOCK_SECONDS), true)
+	end)
+end
+
+-- Counts the lock labels down and drops each shield as it expires. Only
+-- touches plots with a lock or cooldown still running (plus one tick past
+-- the end, to flip the label back to LOCK BASE).
+task.spawn(function()
+	while true do
+		task.wait(1)
+		local now = os.clock()
+		for _, plot in ipairs(plots) do
+			if plot.lockCooldownUntil > now - 1 then
+				refreshLock(plot)
 			end
 		end
 	end
@@ -2902,6 +3311,11 @@ local function assignPlot(player)
 		if plot.owner == nil then
 			plot.owner = player
 			plot.signLabel.Text = player.Name .. "'S YARD"
+			-- BaseRaid.client reads this to tell your pads from everyone else's.
+			plot.model:SetAttribute("OwnerUserId", player.UserId)
+			plot.lockedUntil = 0
+			plot.lockCooldownUntil = 0
+			refreshLock(plot)
 			return i
 		end
 	end
@@ -2997,6 +3411,16 @@ local function onPlayerAdded(player)
 	player.RespawnLocation = plot.spawnPoint
 
 	player.CharacterAdded:Connect(function(character)
+		-- The owner's own base walls let them through (collision groups set
+		-- up by the plot builder). Every part as it arrives, tools included,
+		-- since an equipped tool's handle collides too.
+		local group = ownerGroup(index)
+		local function joinGroup(part)
+			if part:IsA("BasePart") then part.CollisionGroup = group end
+		end
+		for _, descendant in ipairs(character:GetDescendants()) do joinGroup(descendant) end
+		character.DescendantAdded:Connect(joinGroup)
+
 		local humanoid = character:WaitForChild("Humanoid")
 		giveTools(player)
 		updateWalkSpeed(player)
@@ -3110,6 +3534,12 @@ game:BindToClose(function()
 end)
 
 Players.PlayerRemoving:Connect(function(player)
+	-- Leaving mid-raid does not let a thief keep it: it goes back home.
+	local leaving = state[player]
+	if leaving and leaving.carrying and leaving.carrying.stolenFrom then
+		dropCarried(player)
+	end
+
 	local data = snapshot(player)
 	if data then
 		DataManager.Save(player, data)
@@ -3130,6 +3560,10 @@ Players.PlayerRemoving:Connect(function(player)
 		local plot = plots[s.plotIndex]
 		if plot then
 			plot.owner = nil
+			plot.model:SetAttribute("OwnerUserId", nil)
+			plot.lockedUntil = 0
+			plot.lockCooldownUntil = 0
+			refreshLock(plot)
 			plot.signLabel.Text = "UNCLAIMED PLOT"
 			plot.padLabel.Text = "FUSION PAD"
 			for slot = 1, PET_PAD_COUNT do

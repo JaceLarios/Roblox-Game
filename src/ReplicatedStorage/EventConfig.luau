@@ -21,7 +21,20 @@ EventConfig.NAME = "Frenzy Weekend"
 EventConfig.EXPIRES_AT = nil -- os.time() timestamp, or nil to run until turned off
 EventConfig.MUTATION_CHANCE_MULT = 2
 
+-- The automatic yard events (ScrapSpawner's Mutation Frenzy) switch the
+-- same boost on for a short window without anyone editing ACTIVE. This is
+-- server-side only: the server's copy of this module is a different
+-- instance from each client's, so clients never see the window — which
+-- is fine, because the real gate is server-side and the event is
+-- announced separately.
+EventConfig.RuntimeUntil = 0
+
+function EventConfig.StartRuntime(seconds)
+	EventConfig.RuntimeUntil = math.max(EventConfig.RuntimeUntil, os.clock() + seconds)
+end
+
 function EventConfig.IsActive()
+	if os.clock() < EventConfig.RuntimeUntil then return true end
 	if not EventConfig.ACTIVE then return false end
 	if EventConfig.EXPIRES_AT and os.time() >= EventConfig.EXPIRES_AT then return false end
 	return true
