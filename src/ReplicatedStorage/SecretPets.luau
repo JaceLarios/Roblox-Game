@@ -4,17 +4,25 @@
 	A single Robux egg (SecretPets.EggProductId, one Developer Product)
 	that rolls one of the 5 egg pets below, weighted so the better the
 	pet, the harder it is to get — same weighted-random shape as
-	FusionRecipes.RollBaseItem, just over this separate list. Two hard
-	rules the rest of the codebase enforces around every entry in this
-	file, egg pets and the streak pet alike (see PlotManager.server.luau:
-	itemTierInfo, canReceiveTradedItem, attemptFusion, and the
-	ProcessReceipt handler):
-	  1. Never fusable — can't be carried to a pad, in or out, so they can
-	     never be an ingredient, and since they're not in FusionRecipes or
-	     BrainrotRecipes at all, they can never be a fusion result either.
-	  2. Every outcome is still worth more than the best fusion result
-	     (FusionRecipes.SecretValue, 50000) — even the "common" pull from
-	     this egg should feel like a real win, not a consolation prize.
+	FusionRecipes.RollBaseItem, just over this separate list.
+
+	These are pets, not items. As of 2026-09-22 (the user's call: "they
+	are there to give you boost not to be used in your base") owning one
+	is a permanent, stacking coin and speed multiplier and nothing else —
+	it never enters an inventory, so it cannot be placed on a base pad,
+	sold, traded or fused. AreaPets.luau folds this list into its own pet
+	registry, so the owned-set multipliers every payout already applies
+	cover these too with no second code path, and the Pets panel lists
+	them beside the egg pets.
+
+	Every multiplier here starts above the best AreaPets egg pet (the
+	great egg's secret, 2.50 coins / 1.35 speed): a paid pet should
+	outclass anything an ordinary egg can give.
+
+	`value` is a showcase number now, not a price — it ranks the pets
+	against each other, and values a pet that a save from before this
+	change still holds as an item (PlotManager's onPlayerAdded moves
+	those into the owned set on load).
 
 	A 6th entry, StreakPet, is a Day-7-daily-streak reward, not part of
 	the egg at all — granted once by PlotManager.server.luau's Day 7
@@ -73,27 +81,25 @@ SecretPets.EggProductId = 0
 -- real percentages. Higher value = lower weight = harder to get. These
 -- five weights deliberately sum to 100, so weight and percent are the
 -- same number — Secret Pet 5, the best, sits at a hard-required 1%.
-table.insert(SecretPets.List, { key = "secret_pet_1", name = "TBD Secret Pet 1", value = 70000,  weight = 55 })
-table.insert(SecretPets.List, { key = "secret_pet_2", name = "TBD Secret Pet 2", value = 95000,  weight = 25 })
-table.insert(SecretPets.List, { key = "secret_pet_3", name = "TBD Secret Pet 3", value = 125000, weight = 12 })
-table.insert(SecretPets.List, { key = "secret_pet_4", name = "TBD Secret Pet 4", value = 160000, weight = 7 })
-table.insert(SecretPets.List, { key = "secret_pet_5", name = "TBD Secret Pet 5", value = 200000, weight = 1 })
+table.insert(SecretPets.List, { key = "secret_pet_1", name = "TBD Secret Pet 1", value = 70000,  weight = 55, coinMult = 2.80, speedMult = 1.38 })
+table.insert(SecretPets.List, { key = "secret_pet_2", name = "TBD Secret Pet 2", value = 95000,  weight = 25, coinMult = 3.10, speedMult = 1.42 })
+table.insert(SecretPets.List, { key = "secret_pet_3", name = "TBD Secret Pet 3", value = 125000, weight = 12, coinMult = 3.40, speedMult = 1.46 })
+table.insert(SecretPets.List, { key = "secret_pet_4", name = "TBD Secret Pet 4", value = 160000, weight = 7,  coinMult = 3.80, speedMult = 1.50 })
+table.insert(SecretPets.List, { key = "secret_pet_5", name = "TBD Secret Pet 5", value = 200000, weight = 1,  coinMult = 4.50, speedMult = 1.60 })
 
 -- The Day-7 streak reward — no weight, since streakOnly keeps it out of
 -- the weighted pool entirely (Roll()/Odds() below skip it on purpose).
--- Value is a placeholder like everything else here: comfortably above
--- the fusion best (50000) and above most egg pets, but below the egg's
--- rarest pull (200000) — the paid egg's jackpot stays the single best
--- item in the game, and this free 7-day pet is the clear second-best.
-local streakPet = { key = "streak_pet_1", name = "TBD 7-Day Pet", value = 150000, streakOnly = true, untradeable = true }
+-- Its bonus sits just under the egg's rarest pull: the paid jackpot
+-- stays the best pet in the game, and this free 7-day pet is the clear
+-- second-best.
+local streakPet = { key = "streak_pet_1", name = "TBD 7-Day Pet", value = 150000, coinMult = 3.60, speedMult = 1.48, streakOnly = true, untradeable = true }
 table.insert(SecretPets.List, streakPet)
 SecretPets.StreakPet = streakPet
 
--- The Starter Pack's exclusive pet — below every egg pet's value (60000
--- vs. the egg's 70000-200000 range) but still above the fusion best
--- (50000), so it's a genuine, if modest, secret pet rather than a
--- reskinned common item.
-local packPet = { key = "pack_pet_1", name = "TBD Starter Pack Pet", value = 60000, packOnly = true, untradeable = true }
+-- The Starter Pack's exclusive pet — the smallest bonus of the paid
+-- pets, but still ahead of every egg pet in AreaPets, so it reads as a
+-- genuine, if modest, secret pet rather than a reskinned common one.
+local packPet = { key = "pack_pet_1", name = "TBD Starter Pack Pet", value = 60000, coinMult = 2.60, speedMult = 1.36, packOnly = true, untradeable = true }
 table.insert(SecretPets.List, packPet)
 SecretPets.PackPet = packPet
 
@@ -140,7 +146,7 @@ function SecretPets.Roll()
 	return SecretPets.List[1]
 end
 
--- {name, value, percent} per pet, for a purchase UI to disclose odds
+-- {name, coinMult, speedMult, value, percent} per pet, for a purchase UI to disclose odds
 -- with — required by Roblox for any randomized paid item, not just good
 -- practice. percent is rounded to 1 decimal; the raw weights above are
 -- the source of truth if the two ever look inconsistent. Disclosing
@@ -159,6 +165,8 @@ function SecretPets.Odds()
 		if eggEligible(entry) then
 			table.insert(odds, {
 				name = entry.name,
+				coinMult = entry.coinMult,
+				speedMult = entry.speedMult,
 				value = entry.value,
 				percent = math.floor((entry.weight / total) * 1000 + 0.5) / 10,
 			})

@@ -14,6 +14,11 @@
 	Generated from one shared tier template per area rather than 45
 	hand-written entries, since the three areas share the exact same
 	weight/multiplier curve and differ only in which area owns the egg.
+
+	SecretPets.luau's paid pets are folded into this same catalog at the
+	bottom of this file as a fourth "secret" area — they work exactly the
+	same way (owned, never an item, a stacking multiplier), so one
+	registry serves both.
 --]]
 
 local AreaPets = {}
@@ -100,6 +105,44 @@ for _, areaKey in ipairs(AreaPets.AreaKeys) do
 	end
 
 	AreaPets.Areas[areaKey] = { eggs = eggs }
+end
+
+-- SecretPets.luau's pets are the same kind of thing as an egg pet —
+-- owned, never an item, a permanent stacking multiplier — so they live
+-- in this catalog too rather than in a parallel one. That way a single
+-- owned set drives every bonus in the game and the Pets panel lists them
+-- beside the rest; SecretPets stays the source of truth for the egg's
+-- own odds and product id.
+local SecretPets = require(script.Parent:WaitForChild("SecretPets"))
+
+do
+	local eggPets, exclusivePets = {}, {}
+	for _, entry in ipairs(SecretPets.List) do
+		local pet = {
+			key = entry.key,
+			name = entry.name,
+			coinMult = entry.coinMult,
+			speedMult = entry.speedMult,
+			weight = entry.weight,
+			secret = true,
+		}
+		petByKey[pet.key] = pet
+		table.insert((entry.streakOnly or entry.packOnly) and exclusivePets or eggPets, pet)
+	end
+
+	table.insert(AreaPets.AreaKeys, "secret")
+	AreaPets.Areas.secret = {
+		eggs = {
+			-- productId stays 0 here on purpose even once SecretPets has a
+			-- real one: ProcessReceipt recognises that id through
+			-- SecretPets itself, before it ever asks FindEgg, so this entry
+			-- is for display and bonuses, never a second purchase path.
+			{ key = "secretegg", tier = 4, name = "Secret Egg", productId = 0, pets = eggPets },
+			-- Never rolled at all: the Day-7 streak pet is earned and the
+			-- Starter Pack pet is bundled.
+			{ key = "exclusive", tier = 4, name = "Exclusive Pets", productId = 0, pets = exclusivePets },
+		},
+	}
 end
 
 function AreaPets.GetEgg(areaKey, eggKey)

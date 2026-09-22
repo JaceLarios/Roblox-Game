@@ -43,6 +43,10 @@ local AREA_TABS = {
 	{ key = "junkyard", label = "JUNKYARD", accent = Palette.Copper },
 	{ key = "brainrot", label = "BRAINROT", accent = Palette.Mint },
 	{ key = "haunted", label = "HAUNTED", accent = Palette.Steel },
+	-- The paid pets (SecretPets.luau) belong to no one area, so they get
+	-- their own tab. AreaPets folds them into its catalog as the "secret"
+	-- area, which is all the rest of this file needs to list them.
+	{ key = "secret", label = "SECRET", accent = Palette.Gold },
 }
 
 local TIER_ACCENTS = { okay = Palette.Steel, good = Palette.Teal, great = Palette.Gold }

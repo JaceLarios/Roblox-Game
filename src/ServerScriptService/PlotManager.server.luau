@@ -2420,6 +2420,14 @@ end
 
 Haunted.ConfigureUnlock(ensureHauntedUnlocked, HAUNTED_UNLOCK_COST)
 
+-- What a pet's permanent bonus reads as on a toast, shared by every
+-- place that hands one out: the Starter Pack below, the Robux egg, and
+-- the Day-7 streak jackpot.
+local function petBonusLine(entry)
+	return string.format("+%d%% coins, +%d%% speed — forever",
+		math.round((entry.coinMult - 1) * 100), math.round((entry.speedMult - 1) * 100))
+end
+
 -- The Starter Pack's exclusive pet is a one-time grant, not a continuous
 -- effect like its coin/speed bonuses (those just check Gamepasses.Has
 -- live, see Service.Coins/SpeedMultiplier) — so it needs its own
@@ -2436,8 +2444,9 @@ Gamepasses.Changed:Connect(function(player)
 	if not Gamepasses.Has(player, "StarterPack") then return end
 
 	s.starterPackGranted = true
-	table.insert(s.inventory, SecretPets.PackPet.name)
-	toast(player, string.format("STARTER PACK UNLOCKED\n%s", instanceTag(SecretPets.PackPet.name)), true)
+	AreaPetsService.Grant(player, SecretPets.PackPet.key)
+	toast(player, string.format("STARTER PACK UNLOCKED\n%s\n%s",
+		SecretPets.PackPet.name, petBonusLine(SecretPets.PackPet)), true)
 	pushUI(player)
 end)
 
@@ -3102,17 +3111,21 @@ end)
 --
 -- grantSecretPet does the actual work as its own function specifically
 -- so it's directly callable/testable without needing a real purchase.
--- Granted regardless of inventory space — a paid purchase should never
--- silently fail to deliver — and recorded in s.grantedPurchaseIds so a
--- Roblox retry of an already-handled receipt never double-grants.
+-- Granted straight into the owned pet set, so nothing about a full
+-- inventory can make a paid purchase fail to deliver — and recorded in
+-- s.grantedPurchaseIds so a Roblox retry of an already-handled receipt
+-- never double-grants.
 ------------------------------------------------------------------
 
 local function grantSecretPet(player, entry)
 	local s = state[player]
 	if not s then return false end
 
-	table.insert(s.inventory, entry.name)
-	toast(player, string.format("EGG OPENED\n%s", instanceTag(entry.name)), true)
+	-- A pet, not an item (see SecretPets.luau): it goes straight into the
+	-- owned set for its permanent bonus and never touches the inventory,
+	-- so it can't be placed on a pad, sold, traded or fused.
+	AreaPetsService.Grant(player, entry.key)
+	toast(player, string.format("EGG OPENED\n%s\n%s", entry.name, petBonusLine(entry)), true)
 	pushUI(player)
 	return true
 end
@@ -3267,11 +3280,11 @@ local function grantReward(player, reward)
 	elseif reward.kind == "jackpot" then
 		addCoins(player, reward.amount)
 		giveBoost(player, "luck", 3, 20)
-		-- Straight into inventory, never a carry slot — same as the egg's
-		-- own grant (grantSecretPet, above), since a secret pet can never
-		-- be carried to a pad. The claim handler's own Day-7 toast covers
-		-- telling the player what they got, so no toast here.
-		table.insert(s.inventory, SecretPets.StreakPet.name)
+		-- Straight into the owned pet set, same as the egg's own grant
+		-- (grantSecretPet, above): a secret pet is a permanent bonus, not
+		-- an item. The claim handler's own Day-7 toast covers telling the
+		-- player what they got, so no toast here.
+		AreaPetsService.Grant(player, SecretPets.StreakPet.key)
 	end
 end
 
@@ -3299,7 +3312,7 @@ claimRemote.OnServerEvent:Connect(function(player)
 
 	if nextDay == DAILY_MAX_STREAK then
 		broadcast(string.format("%s completed a 7-day streak and hit the JACKPOT!", player.Name))
-		toast(player, string.format("DAY 7 JACKPOT\n%d coins + 3x Luck\n%s", displayReward.amount, instanceTag(SecretPets.StreakPet.name)), true)
+		toast(player, string.format("DAY 7 JACKPOT\n%d coins + 3x Luck\n%s", displayReward.amount, SecretPets.StreakPet.name), true)
 	else
 		toast(player, string.format("DAY %d CLAIMED\n%s", nextDay, displayReward.label), true)
 	end
@@ -3423,6 +3436,24 @@ local function onPlayerAdded(player)
 		plotIndex = index,
 		mutationPity = 0,
 	}
+
+	-- Secret pets stopped being items on 2026-09-22 (see grantSecretPet):
+	-- a save from before that can still hold one in its inventory or on a
+	-- pad, where it would keep earning coins it is no longer meant to
+	-- earn. Move each one into the owned set so its bonus carries over
+	-- instead of being lost.
+	do
+		local s = state[player]
+		for _, field in ipairs({ "inventory", "placed" }) do
+			for i = #s[field], 1, -1 do
+				local pet = SecretPets.ByName[(Mutations.Unwrap(s[field][i]))]
+				if pet then
+					AreaPetsService.Grant(player, pet.key)
+					table.remove(s[field], i)
+				end
+			end
+		end
+	end
 
 	refreshPad(player)
 	updateWalkSpeed(player)
