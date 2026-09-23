@@ -4,7 +4,15 @@ Five standalone pickup models based on the approved green/blue/purple/red/orange
 
 Only appearance is being changed. Recipe mappings, rarity, value, drop odds and player data are preserved. Existing templates are backed up in Studio before replacement.
 
-## Installed first pass
+## Current weathered finish
+
+Revision `AddonWeathered_20260923_v2` is now installed. Textures add chipped enamel, rust at seams/fasteners, worn pulleys, oily recesses and heat-stained headers while keeping the five rarity colors. Shape bounds remain within .01 studs of the approved first pass, and each model still has three MeshParts. The Nitrous Tank's original valve/gauge submodel was retained to keep its dial legible.
+
+Current `models.json`, `restore.luau`, and `preview.png` describe the weathered version. The `*-clean-v1` files preserve the earlier appearance. Before replacement the live clean templates were moved to `ServerStorage.AddonBeforeWeathering_1790175813`.
+
+Repeated verification: all 35 recipes, three size scales, ground placement, welded movement/resize, tint, fade and viewport cloning passed. All 15 assets preloaded successfully. The normal spawner dropped V8 Engine during testing; Output showed no errors. Recovery recreated and matched all 15 mesh/texture references and transforms. Manual pickup/fusion, save round trip and mobile performance are still untested. The place has not been published by this task.
+
+## First-pass background
 
 Revision `AddonConcept_20260923_v1`. All five templates are now Models containing three MeshParts each. Longest sides: Nitrous Tank 3, Inline 4 3.3, V6 Engine 3.5, V8 Engine 4, Jet Engine 4.5 studs. These are ingredient sizes, not the larger fused-result rarity ladder. Existing ItemVisuals global scaling still applies.
 

@@ -1,7 +1,7 @@
 [
   {
     "attributes": {
-      "CodexModelRevision": "AddonWeathered_20260923_v2",
+      "CodexModelRevision": "AddonConcept_20260923_v1",
       "Rarity": "uncommon",
       "GeneratedAssetId": 92350841313878,
       "IsAddon": true,
@@ -9,72 +9,6 @@
     },
     "name": "Nitrous Tank",
     "parts": [
-      {
-        "reflectance": 0,
-        "color": [
-          1,
-          1,
-          1
-        ],
-        "cf": [
-          -0.2517089247703552,
-          -0.08307015895843506,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
-        "transparency": 0,
-        "name": "bottle_geom",
-        "size": [
-          2.496306896209717,
-          1.1521086692810059,
-          0.9435468912124634
-        ],
-        "doubleSided": false,
-        "material": "Plastic",
-        "mesh": "rbxassetid://120801218378754",
-        "texture": "rbxassetid://113018883607950"
-      },
-      {
-        "reflectance": 0,
-        "color": [
-          1,
-          1,
-          1
-        ],
-        "cf": [
-          1.1276854276657104,
-          -0.154146209359169,
-          0.0008325576782226562,
-          1,
-          0,
-          0,
-          0,
-          1,
-          0,
-          0,
-          0,
-          1
-        ],
-        "transparency": 0,
-        "name": "cradle_geom",
-        "size": [
-          0.7446615099906921,
-          0.970955491065979,
-          0.6211804747581482
-        ],
-        "doubleSided": false,
-        "material": "Plastic",
-        "mesh": "rbxassetid://128209038501019",
-        "texture": "rbxassetid://126446074500813"
-      },
       {
         "reflectance": 0,
         "color": [
@@ -107,12 +41,78 @@
         "material": "Plastic",
         "mesh": "rbxassetid://103543645299994",
         "texture": "rbxassetid://87318930596487"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          1,
+          1,
+          1
+        ],
+        "cf": [
+          1.127685546875,
+          -0.1541461944580078,
+          0.0008325083181262016,
+          -4.371138828673793e-8,
+          0,
+          1,
+          0,
+          1,
+          0,
+          -1,
+          0,
+          -4.371138828673793e-8
+        ],
+        "transparency": 0,
+        "name": "cradle_geom",
+        "size": [
+          0.6211804747581482,
+          0.9709554314613342,
+          0.7446615099906921
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://125224615782368",
+        "texture": "rbxassetid://87650336430126"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          1,
+          1,
+          1
+        ],
+        "cf": [
+          -0.2517089545726776,
+          -0.08307015895843506,
+          1.1002548205851781e-8,
+          -4.371138828673793e-8,
+          0,
+          1,
+          0,
+          1,
+          0,
+          -1,
+          0,
+          -4.371138828673793e-8
+        ],
+        "transparency": 0,
+        "name": "bottle_geom",
+        "size": [
+          0.9435468912124634,
+          1.1521086692810059,
+          2.496306896209717
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://139025160634302",
+        "texture": "rbxassetid://79217656725337"
       }
     ]
   },
   {
     "attributes": {
-      "CodexModelRevision": "AddonWeathered_20260923_v2",
+      "CodexModelRevision": "AddonConcept_20260923_v1",
       "Rarity": "rare",
       "GeneratedAssetId": 138741025223097,
       "IsAddon": true,
@@ -150,8 +150,8 @@
         ],
         "doubleSided": false,
         "material": "Plastic",
-        "mesh": "rbxassetid://112133993981436",
-        "texture": "rbxassetid://112635514333985"
+        "mesh": "rbxassetid://104831422312721",
+        "texture": "rbxassetid://82138915770282"
       },
       {
         "reflectance": 0,
@@ -183,8 +183,8 @@
         ],
         "doubleSided": false,
         "material": "Plastic",
-        "mesh": "rbxassetid://109193041197012",
-        "texture": "rbxassetid://126276166571357"
+        "mesh": "rbxassetid://84351855445197",
+        "texture": "rbxassetid://108803828514960"
       },
       {
         "reflectance": 0,
@@ -216,14 +216,14 @@
         ],
         "doubleSided": false,
         "material": "Plastic",
-        "mesh": "rbxassetid://77352786772054",
-        "texture": "rbxassetid://85831375894436"
+        "mesh": "rbxassetid://133815931906263",
+        "texture": "rbxassetid://102459525206932"
       }
     ]
   },
   {
     "attributes": {
-      "CodexModelRevision": "AddonWeathered_20260923_v2",
+      "CodexModelRevision": "AddonConcept_20260923_v1",
       "Rarity": "epic",
       "GeneratedAssetId": 128014215202399,
       "IsAddon": true,
@@ -261,8 +261,8 @@
         ],
         "doubleSided": false,
         "material": "Plastic",
-        "mesh": "rbxassetid://123869951214251",
-        "texture": "rbxassetid://133573624594144"
+        "mesh": "rbxassetid://79881148158989",
+        "texture": "rbxassetid://129465567740706"
       },
       {
         "reflectance": 0,
@@ -294,8 +294,8 @@
         ],
         "doubleSided": false,
         "material": "Plastic",
-        "mesh": "rbxassetid://96557127052650",
-        "texture": "rbxassetid://117847625925954"
+        "mesh": "rbxassetid://100052983293847",
+        "texture": "rbxassetid://106044262510749"
       },
       {
         "reflectance": 0,
@@ -327,14 +327,14 @@
         ],
         "doubleSided": false,
         "material": "Plastic",
-        "mesh": "rbxassetid://87775949546907",
-        "texture": "rbxassetid://133308834613561"
+        "mesh": "rbxassetid://102369442733522",
+        "texture": "rbxassetid://105193980985267"
       }
     ]
   },
   {
     "attributes": {
-      "CodexModelRevision": "AddonWeathered_20260923_v2",
+      "CodexModelRevision": "AddonConcept_20260923_v1",
       "Rarity": "mythic",
       "GeneratedAssetId": 119314540417630,
       "IsAddon": true,
@@ -372,8 +372,8 @@
         ],
         "doubleSided": false,
         "material": "Plastic",
-        "mesh": "rbxassetid://110086788020075",
-        "texture": "rbxassetid://94425840810575"
+        "mesh": "rbxassetid://73176901500666",
+        "texture": "rbxassetid://139426933120573"
       },
       {
         "reflectance": 0,
@@ -405,8 +405,8 @@
         ],
         "doubleSided": false,
         "material": "Plastic",
-        "mesh": "rbxassetid://116560109582674",
-        "texture": "rbxassetid://117352156998680"
+        "mesh": "rbxassetid://92778489712146",
+        "texture": "rbxassetid://106625103386800"
       },
       {
         "reflectance": 0,
@@ -438,14 +438,14 @@
         ],
         "doubleSided": false,
         "material": "Plastic",
-        "mesh": "rbxassetid://129356613820953",
-        "texture": "rbxassetid://77432665965823"
+        "mesh": "rbxassetid://96808305690215",
+        "texture": "rbxassetid://107934656814069"
       }
     ]
   },
   {
     "attributes": {
-      "CodexModelRevision": "AddonWeathered_20260923_v2",
+      "CodexModelRevision": "AddonConcept_20260923_v1",
       "Rarity": "legendary",
       "GeneratedAssetId": 132508179445012,
       "IsAddon": true,
@@ -483,8 +483,8 @@
         ],
         "doubleSided": false,
         "material": "Plastic",
-        "mesh": "rbxassetid://117223298219262",
-        "texture": "rbxassetid://116204676538918"
+        "mesh": "rbxassetid://72136362398303",
+        "texture": "rbxassetid://92663711859974"
       },
       {
         "reflectance": 0,
@@ -516,8 +516,8 @@
         ],
         "doubleSided": false,
         "material": "Plastic",
-        "mesh": "rbxassetid://98087326961152",
-        "texture": "rbxassetid://129206263462129"
+        "mesh": "rbxassetid://74616510581672",
+        "texture": "rbxassetid://133223636402543"
       },
       {
         "reflectance": 0,
@@ -549,8 +549,8 @@
         ],
         "doubleSided": false,
         "material": "Plastic",
-        "mesh": "rbxassetid://87836180559265",
-        "texture": "rbxassetid://139535357126198"
+        "mesh": "rbxassetid://87860085688247",
+        "texture": "rbxassetid://117740461343922"
       }
     ]
   }
