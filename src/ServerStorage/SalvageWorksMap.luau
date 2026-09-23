@@ -89,14 +89,14 @@ end
 function Map.Build()
  require(game.ServerStorage:WaitForChild("WorldEnvironment")).Build()
  local old=workspace:FindFirstChild("JunkyardRefresh")
- if old and old:GetAttribute("Version")==11 then return old end
+ if old and old:GetAttribute("Version")==12 then return old end
  -- Replaced map geometry is archived, not destroyed. Terrain/other islands remain.
  local archive=folder(game.ServerStorage,"BeforeOpenSalvage_"..os.time())
  for _,n in ipairs({"JunkyardScene","JunkyardRefresh","SalvageWorksTouchup"}) do
   local item=workspace:FindFirstChild(n) if item then item.Parent=archive end
  end
- local root=folder(workspace,"JunkyardRefresh") root:SetAttribute("Version",11)
- local scene=folder(workspace,"JunkyardScene") scene:SetAttribute("Version",11)
+ local root=folder(workspace,"JunkyardRefresh") root:SetAttribute("Version",12)
+ local scene=folder(workspace,"JunkyardScene") scene:SetAttribute("Version",12)
  local routes=folder(root,"Routes") local garages=folder(root,"Garages")
  local props=folder(root,"SalvageDisplays") local scenery=folder(root,"Perimeter")
  folder(root,"Motion")
@@ -192,6 +192,7 @@ function Map.Build()
  cyl(scenery,"WaterTank",V(15,20,20),cf*CF(0,37,0)*CFrame.Angles(0,0,math.pi/2),C.teal)
  cyl(scenery,"TankRoof",V(.8,22,22),cf*CF(0,45,0)*CFrame.Angles(0,0,math.pi/2),C.navy)
  sign(scenery,cf*CF(0,38,-10.3),V(15,5,.3),"SALVAGE",C.navy)
+ require(game.ServerStorage:WaitForChild("MechanicProps")).Yard(root)
  return root
 end
 function Map.DressYard()

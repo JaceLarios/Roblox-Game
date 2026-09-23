@@ -123,6 +123,7 @@ function Workshop.Build(parent,index,layout,color)
    for y=2,3,1 do p("PatchBolt",V(.16,.2,.2),side*(half-1.1),y,z-1.2,cream) end
   end
  end
+ require(game.ServerStorage:WaitForChild("MechanicProps")).Workshop(f,frame)
  return f
 end
 return Workshop

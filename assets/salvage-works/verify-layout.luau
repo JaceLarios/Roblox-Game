@@ -1,6 +1,6 @@
 local L=require(game.ReplicatedStorage.JunkyardLayout)
 local plots=workspace:WaitForChild("Plots",20) assert(#plots:GetChildren()==8)
-local root=workspace.JunkyardRefresh assert(root:GetAttribute("Version")==11)
+local root=workspace.JunkyardRefresh assert(root:GetAttribute("Version")==12)
 local rays=RaycastParams.new() rays.FilterType=Enum.RaycastFilterType.Include rays.FilterDescendantsInstances={workspace.JunkyardScene,root.Routes}
 local means={} local report={}
 for i=1,8 do

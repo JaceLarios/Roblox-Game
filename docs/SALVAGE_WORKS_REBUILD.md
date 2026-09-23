@@ -1,5 +1,10 @@
 # Enclosed Salvage Works workshops — September 23
 
+## Mechanic equipment (map 12)
+MechanicProps adds a rolling tool cabinet with socket tray/wrench, hydraulic floor jack, compressor with motor/gauge/coiled hose, and bench hammers/wrenches/oil cans to every workshop. Cart drawers face inward. Eight small alternating cart/jack and compressor stations sit at radius 87 between return lanes, outside the 78-stud pickup disk. No signs or interaction prompts added.
+
+Verified all eight workshop sets and eight yard stations exist; every equipment part is anchored with collision/query/touch disabled, and yard-part footprint corners remain outside the pickup disk. Actual Play visual checks and Output inspection passed. Equipment is decorative, not usable upgrade/pickup items. Backup BeforeMechanicProps_1790187591. No player data changes or Roblox publishing.
+
 ## Lighting and world boundary revision (map 11)
 WorldEnvironment configures a bright blue built-in sky, native Terrain Clouds, light atmospheric haze and daylight. Each workshop now has 15 suspended ceiling lights in three rows plus three warm rear task lights. Max normal player camera zoom is 40 studs.
 
