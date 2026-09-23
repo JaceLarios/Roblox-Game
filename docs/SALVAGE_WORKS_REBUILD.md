@@ -1,5 +1,12 @@
 # Enclosed Salvage Works workshops — September 23
 
+## Lighting and world boundary revision (map 11)
+WorldEnvironment configures a bright blue built-in sky, native Terrain Clouds, light atmospheric haze and daylight. Each workshop now has 15 suspended ceiling lights in three rows plus three warm rear task lights. Max normal player camera zoom is 40 studs.
+
+Continuous rock ridges, planted crests, trees and ground extensions enclose Junkyard, Brainrot and Haunted outside existing play geometry. WorldBackdrop is a Persistent model to retain the horizon under streaming. No island gameplay or item data was changed. Zone centers/radii live in WorldEnvironment and should be updated if islands move.
+
+Verified 1,080 horizontal horizon rays per area (360 directions at heights 5, 45 and 65), 15 ceiling lights in each of eight bases, enabled clouds, player zoom cap, fresh Play without Output errors, and visual sky/interior/island checks. This covers ordinary play views, not arbitrary Studio/free-camera positions. Mobile lighting performance remains untested. Backup BeforeLightingBackdrop_1790187029 contains previous source, Lighting children/properties and previous zoom distance. Not published to Roblox.
+
 ## Latest revision: visibility windows (map version 10)
 Lock buttons are now at each workshop's rear center (local X=0, Z=35), with the rear benches split to keep access clear. Decorative writing, wall artwork, floor-number signs and owner signposts have been removed. Functional prompts and gate lock status remain.
 

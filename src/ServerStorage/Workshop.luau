@@ -80,9 +80,12 @@ function Workshop.Build(parent,index,layout,color)
  p("SolidRoof",V(layout.PlotSize+4,1,layout.PlotSize+4),0,37,0,dark,Enum.Material.Metal,true)
  for z=-36,36,18 do
   p("RoofBeam",V(layout.PlotSize,1.3,1),0,35,z,steel)
-  p("OverheadLightHousing",V(18,.4,2),0,34,z,dark)
-  local light=p("WorkshopLight",V(16,.12,1.4),0,33.7,z,cream,Enum.Material.Neon)
-  local lamp=Instance.new("SurfaceLight",light) lamp.Face=Enum.NormalId.Bottom lamp.Angle=125 lamp.Range=42 lamp.Brightness=1.5 lamp.Color=RGB(255,240,211) lamp.Shadows=false
+  for _,x in ipairs({-25,0,25}) do
+   p("OverheadLightHousing",V(12,.5,2.6),x,29,z,dark)
+   for _,dx in ipairs({-5.2,5.2}) do p("LightSuspension",V(.12,5.6,.12),x+dx,32,z,steel) end
+   local light=p("WorkshopLight",V(10.8,.14,1.8),x,28.65,z,RGB(236,247,255),Enum.Material.Neon)
+   local lamp=Instance.new("SurfaceLight",light) lamp.Face=Enum.NormalId.Bottom lamp.Angle=135 lamp.Range=38 lamp.Brightness=1.2 lamp.Color=RGB(240,246,255) lamp.Shadows=false
+  end
  end
  for x=-36,36,9 do p("RoofStandingSeam",V(.18,.25,layout.PlotSize+3),x,37.6,0,steel) end
  -- Detailed rear service bench, pegboard, drawers and spare equipment.
@@ -93,6 +96,11 @@ function Workshop.Build(parent,index,layout,color)
    p("Drawer",V(8,.7,.15),x,y,half-6.1,dark)
    p("DrawerPull",V(4,.14,.24),x,y,half-6.3,cream)
   end
+ end
+ -- Warm task lighting over the rear workbench and lock station.
+ for _,x in ipairs({-25,0,25}) do
+  local light=p("RearTaskLight",V(8,.25,1.1),x,18,half-3,RGB(255,236,200),Enum.Material.Neon)
+  local lamp=Instance.new("PointLight",light) lamp.Color=RGB(255,233,195) lamp.Brightness=.65 lamp.Range=22 lamp.Shadows=false
  end
  p("Pegboard",V(34,6,.25),0,23,half-.9,steel,Enum.Material.DiamondPlate)
  for x=-15,15,3 do
