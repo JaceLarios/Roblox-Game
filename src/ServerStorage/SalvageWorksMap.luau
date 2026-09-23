@@ -52,51 +52,39 @@ local function wreck(f,cf,color)
  end
  for _,x in ipairs({-3.4,3.4}) do for _,z in ipairs({-4,4}) do tyre(f,cf*CF(x,1.5,z)) end end
 end
+local function detailedWreck(f,cf,name,color)
+ local library=game.ReplicatedStorage:FindFirstChild("ItemModels")
+ local source=library and library:FindFirstChild(name)
+ if not source or not source:IsA("Model") then wreck(f,cf,color) return 5 end
+ local m=source:Clone() m.Name="Salvaged "..name
+ for _,v in ipairs(m:GetDescendants()) do
+  for _,tag in ipairs(game.CollectionService:GetTags(v)) do game.CollectionService:RemoveTag(v,tag) end
+  if v:IsA("Script") or v:IsA("LocalScript") or v:IsA("ProximityPrompt") then v:Destroy()
+  elseif v:IsA("BasePart") then v.Anchored=true v.CanCollide=false v.CanTouch=false v.CanQuery=false end
+ end
+ for _,tag in ipairs(game.CollectionService:GetTags(m)) do game.CollectionService:RemoveTag(m,tag) end
+ local size=m:GetExtentsSize()
+ m:ScaleTo(m:GetScale()*14/math.max(size.X,size.Z))
+ local box,newSize=m:GetBoundingBox()
+ m:PivotTo(cf*CF(0,newSize.Y/2,0)*box:Inverse()*m:GetPivot())
+ m:SetAttribute("DisplayOnly",true) m.Parent=f
+ return newSize.Y
+end
+local function container(f,cf,color)
+ p(f,"StorageContainer",V(22,10,10),cf*CF(0,5,0),color)
+ for x=-10,10,2 do
+  p(f,"ContainerRib",V(.16,9,.18),cf*CF(x,5,-5.15),color:Lerp(C.cream,.20))
+ end
+ p(f,"ContainerRoof",V(23,.35,11),cf*CF(0,10.2,0),C.steel,Enum.Material.CorrodedMetal)
+ for _,x in ipairs({-5.5,5.5}) do
+  p(f,"ContainerDoor",V(10.5,9,.13),cf*CF(x,5,5.1),color:Lerp(C.navy,.15))
+  p(f,"DoorLockBar",V(.18,8,.22),cf*CF(x,5,5.25),C.steel)
+ end
+ p(f,"RustRepair",V(5,3,.16),cf*CF(-6,2.5,-5.27)*CFrame.Angles(0,0,.08),C.rust,Enum.Material.CorrodedMetal)
+end
+local Workshop=require(game.ServerStorage:WaitForChild("Workshop"))
 local function garage(parent,i)
- local radial=V(math.cos((i-1)*math.pi/4),0,math.sin((i-1)*math.pi/4))
- -- The facade sits beyond the existing square plot, even at diagonal bays.
- local position=radial*(Layout.PlotRadius+61)
- local cf=CFrame.lookAt(position,V(0,0,0)) local col=colors[i]
- local f=folder(parent,"Garage"..i)
- -- Yard-facing negative Z is the open shop front. No new colliders on plots.
- p(f,"WorkshopFoundation",V(62,1,30),cf*CF(0,.3,0),C.steel,Enum.Material.Concrete)
- p(f,"BackWall",V(60,22,1),cf*CF(0,12,13),col)
- for x=-27,27,4.5 do p(f,"BackSidingRib",V(.18,20,.15),cf*CF(x,12,12.4),col:Lerp(C.cream,.25)) end
- for _,x in ipairs({-29.5,29.5}) do
-  p(f,"SideWall",V(1,22,26),cf*CF(x,12,0),col)
-  p(f,"FrontPost",V(1.6,23,1.6),cf*CF(x,12,-13),C.navy)
-  for y=2,6,1.4 do p(f,"SafetyBand",V(1.65,.6,1.65),cf*CF(x,y,-13),C.yellow) end
-  for z=-10,10,4 do p(f,"SidingRib",V(.15,20,.20),cf*CF(x+(x>0 and .57 or -.57),12,z),col:Lerp(C.cream,.18)) end
-  p(f,"SteelKickPlate",V(.18,3.5,24),cf*CF(x+(x>0 and .60 or -.60),2.8,0),C.steel,Enum.Material.DiamondPlate)
- end
- p(f,"UpperFacade",V(60,5,1),cf*CF(0,21,-13),col)
- p(f,"RoofLeft",V(32,.7,30),cf*CF(-15,25.2,0)*CFrame.Angles(0,0,.09),C.navy)
- p(f,"RoofRight",V(32,.7,30),cf*CF(15,25.2,0)*CFrame.Angles(0,0,-.09),C.navy)
- p(f,"RoofRidge",V(1.2,.65,30),cf*CF(0,26.8,0),C.steel)
- for x=-26,26,6.5 do p(f,"RoofSeam",V(.15,.16,29),cf*CF(x,26.7-math.abs(x)*.09,0),C.steel) end
- p(f,"RoofPatch",V(8,.15,9),cf*CF(-18,25.85,4)*CFrame.Angles(0,.06,.09),C.rust,Enum.Material.CorrodedMetal)
- sign(f,cf*CF(0,21.4,-13.7),V(45,4.2,.30),string.format("BAY %02d  /  SALVAGE WORKS",i),C.navy)
- for _,x in ipairs({-23,23}) do
-  p(f,"Workbench",V(9,.7,5),cf*CF(x,4,8),C.steel,Enum.Material.DiamondPlate)
-  p(f,"ToolCabinet",V(7,3.6,4),cf*CF(x,2,8),C.orange)
-  for y=1,3,1 do p(f,"DrawerHandle",V(4,.12,.15),cf*CF(x,y,5.9),C.cream) end
-  p(f,"ToolBoard",V(9,6,.2),cf*CF(x,9,12.4),C.navy)
-  for k=-2,2,2 do
-   p(f,"ToolHandle",V(.25,2.7,.25),cf*CF(x+k,9,12.1),C.cream)
-   p(f,"ToolHead",V(1.2,.4,.25),cf*CF(x+k,10.5,12.1),C.steel)
-  end
-  local lightPart=p(f,"WorkLight",V(7,.25,.6),cf*CF(x,18,-10),C.cream,Enum.Material.Neon)
-  local lamp=Instance.new("PointLight",lightPart)
-  lamp.Color=C.cream lamp.Range=20 lamp.Brightness=.5 lamp.Shadows=false
- end
- for _,x in ipairs({-27,27}) do
-  p(f,"RustSkirt",V(4,2,.18),cf*CF(x,2.4,-13.65),C.rust,Enum.Material.CorrodedMetal)
-  for y=9,16,3.5 do
-   p(f,"FrameBolt",V(.3,.3,.18),cf*CF(x,y,-13.7),C.steel,Enum.Material.Metal)
-  end
- end
- -- A restrained concrete apron connects shop and plot, with no tall props.
- p(f,"EntryApron",V(60,.08,22),cf*CF(0,.56,-25),RGB(189,187,166),Enum.Material.Concrete)
+ Workshop.Build(parent,i,Layout,colors[i])
 end
 function Map.Build()
  local lighting=game.Lighting
@@ -108,23 +96,23 @@ function Map.Build()
  if at then at.Density=.16 at.Haze=.35 at.Glare=.08 at.Color=RGB(211,238,249) at.Decay=RGB(180,204,219) end
  local bloom=lighting:FindFirstChildOfClass("BloomEffect") if bloom then bloom.Intensity=.10 end
  local old=workspace:FindFirstChild("JunkyardRefresh")
- if old and old:GetAttribute("Version")==6 then return old end
+ if old and old:GetAttribute("Version")==9 then return old end
  -- Replaced map geometry is archived, not destroyed. Terrain/other islands remain.
  local archive=folder(game.ServerStorage,"BeforeOpenSalvage_"..os.time())
  for _,n in ipairs({"JunkyardScene","JunkyardRefresh","SalvageWorksTouchup"}) do
   local item=workspace:FindFirstChild(n) if item then item.Parent=archive end
  end
- local root=folder(workspace,"JunkyardRefresh") root:SetAttribute("Version",6)
- local scene=folder(workspace,"JunkyardScene") scene:SetAttribute("Version",6)
+ local root=folder(workspace,"JunkyardRefresh") root:SetAttribute("Version",9)
+ local scene=folder(workspace,"JunkyardScene") scene:SetAttribute("Version",9)
  local routes=folder(root,"Routes") local garages=folder(root,"Garages")
  local props=folder(root,"SalvageDisplays") local scenery=folder(root,"Perimeter")
  folder(root,"Motion")
  -- Keep the original ground datum so pickups and plots continue to align.
- cyl(scene,"DistrictGround",V(1,710,710),CF(0,-.2,0)*CFrame.Angles(0,0,math.pi/2),RGB(161,168,126),Enum.Material.Grass,true)
+ cyl(scene,"DistrictGround",V(1,650,650),CF(0,-.2,0)*CFrame.Angles(0,0,math.pi/2),RGB(137,132,108),Enum.Material.Ground,true)
  cyl(scene,"YardAsphalt",V(1,Layout.YardRadius*2,Layout.YardRadius*2),CF(0,.7,0)*CFrame.Angles(0,0,math.pi/2),RGB(96,112,122),Enum.Material.Asphalt,true)
  for i=1,8 do
   local a=(i-1)*math.pi/4 local radial=V(math.cos(a),0,math.sin(a)) local side=V(-math.sin(a),0,math.cos(a))
-  local finish=Layout.PlotRadius-35/math.max(math.abs(radial.X),math.abs(radial.Z))
+  local finish=Layout.PlotRadius-Layout.PlotSize/2
   local from=radial*(Layout.RouteStart-2) local to=radial*(finish+2)
   local road=bar(routes,"ReturnRoad",from+V(0,.7,0),to+V(0,.7,0),25,1,RGB(101,118,126),Enum.Material.Asphalt)
   road.CanCollide=true road.CanQuery=true
@@ -132,18 +120,35 @@ function Map.Build()
    bar(routes,"RouteGuide",from+side*offset+V(0,1.23,0),to+side*offset+V(0,1.23,0),.35,.025,colors[i])
   end
   for r=107,finish-4,14 do p(routes,"RoadDash",V(.7,.025,5),CFrame.lookAt(radial*r+V(0,1.23,0),radial*(r+1)+V(0,1.23,0)),C.cream) end
-  local apron=p(routes,"BayApron",V(70,.16,70),CF(radial*Layout.PlotRadius+V(0,.30,0)),RGB(166,179,181),Enum.Material.Concrete)
+  local apron=p(routes,"BayApron",V(Layout.PlotSize,.16,Layout.PlotSize),CFrame.lookAt(radial*Layout.PlotRadius+V(0,.30,0),V(0,.30,0)),RGB(166,179,181),Enum.Material.Concrete)
   garage(garages,i)
   -- Low, clearly grouped displays in the wedges; empty playable core.
-  local pa=a+math.pi/8 local base=V(math.cos(pa)*143,0,math.sin(pa)*143)
+  local pa=a+math.pi/8 local base=V(math.cos(pa)*125,0,math.sin(pa)*125)
   local cf=CFrame.lookAt(base,V()) local f=folder(props,"ScrapPocket"..i)
-  p(f,"GravelPocket",V(33,.12,31),cf*CF(0,.35,0),RGB(166,153,126),Enum.Material.Pebble)
-  wreck(f,cf*CF(-7,.4,1)*CFrame.Angles(0,.15,0),colors[i])
-  wreck(f,cf*CF(-6,5.2,1)*CFrame.Angles(.06,-.10,.06),colors[(i%8)+1])
+  p(f,"GravelPocket",V(43,.12,47),cf*CF(0,.35,4),RGB(149,139,117),Enum.Material.Pebble)
+  local roster={"Rusted Sedan","Muscle Car","Cop Cruiser","Box Truck"}
+  local height=detailedWreck(f,cf*CF(-7,.4,0)*CFrame.Angles(0,.30,0),roster[(i-1)%4+1],colors[i])
+  detailedWreck(f,cf*CF(-6,height+.5,1)*CFrame.Angles(.025,-.10,.025),roster[i%4+1],colors[(i%8)+1])
+  -- Steel rack supports the upper wreck instead of floating above a low hood.
+  for _,x in ipairs({-13,1}) do
+   for _,z in ipairs({-5,6}) do p(f,"WreckRackPost",V(.45,height+.5,.45),cf*CF(x,(height+.5)/2,z),C.rust,Enum.Material.CorrodedMetal) end
+  end
+  for _,z in ipairs({-4,5}) do p(f,"WreckRackBeam",V(15,.4,.65),cf*CF(-6,height+.3,z),C.steel,Enum.Material.CorrodedMetal) end
+  container(f,cf*CF(0,0,21),colors[(i%8)+1])
   for k=1,3 do tyre(f,cf*CF(9,.7+k*1.1,5)*CFrame.Angles(0,0,math.pi/2)) end
   p(f,"PartsBin",V(8,4,7),cf*CF(8,2.4,-7),colors[i])
   p(f,"BinInterior",V(7.2,.2,6.2),cf*CF(8,4.45,-7),C.navy)
   for k=1,3 do cyl(f,"SparePipe",V(3,1,1),cf*CF(6+k,4.8,-7)*CFrame.Angles(0,0,.2*k),C.steel) end
+  for k=1,3 do
+   local drum=cf*CF(16,.3,k*4-2)
+   cyl(f,"OilDrum",V(4.4,2.8,2.8),drum*CF(0,2.2,0)*CFrame.Angles(0,0,math.pi/2),k%2==0 and C.orange or C.steel,Enum.Material.CorrodedMetal)
+   for _,y in ipairs({.7,3.7}) do cyl(f,"DrumBand",V(.15,2.9,2.9),drum*CF(0,y,0)*CFrame.Angles(0,0,math.pi/2),C.navy) end
+  end
+  for _,x in ipairs({-20,20}) do
+   p(f,"RackPost",V(.4,10,.4),cf*CF(x,5,19),C.navy)
+   for y=2,7,5 do p(f,"ScrapRack",V(6,.3,5),cf*CF(x,y,19),C.steel,Enum.Material.DiamondPlate) end
+   for z=17,21,2 do tyre(f,cf*CF(x,8.5,z)) end
+  end
   -- Low boundary rails keep the collection visibly separate from paths.
   for _,x in ipairs({-17,17}) do p(f,"PocketBollard",V(1,3,1),cf*CF(x,1.8,-11),C.yellow) end
  end
@@ -164,7 +169,7 @@ function Map.Build()
   bar(scenery,"ServiceDash",va:Lerp(vb,.25)+V(0,.065,0),va:Lerp(vb,.65)+V(0,.065,0),.35,.025,C.cream)
  end
  for i=0,15 do
-  local a=(i+.5)*math.pi/8 local pos=V(math.cos(a)*339,0,math.sin(a)*339)
+  local a=(i+.5)*math.pi/8 local pos=V(math.cos(a)*312,0,math.sin(a)*312)
   local cf=CFrame.lookAt(pos,V())
   p(scenery,"BoundaryPanel",V(37,9,.5),cf*CF(0,4.8,0),i%2==0 and C.teal or C.steel)
   for x=-18,18,6 do p(scenery,"FenceRib",V(.3,9,.30),cf*CF(x,4.8,-.4),C.navy) end
@@ -177,7 +182,19 @@ function Map.Build()
   shrub.Shape=Enum.PartType.Ball
  end
  -- One recognizable water tower beyond the workshops, rather than a city wall.
- local cf=CFrame.lookAt(V(242,0,242),V())
+ for i=0,3 do
+  local a=(i*2+.5)*math.pi/4
+  local depot=CFrame.lookAt(V(math.cos(a)*236,0,math.sin(a)*236),V())
+  local f=folder(scenery,"SalvageDepot"..i)
+  container(f,depot*CF(-9,0,0),C.orange)
+  container(f,depot*CF(11,0,9)*CFrame.Angles(0,.12,0),C.teal)
+  container(f,depot*CF(-9,10.5,0),C.steel)
+  sign(f,depot*CF(-9,16,-5.4),V(18,3,.2),i%2==0 and "PARTS & SALVAGE" or "REPAIR / REUSE",C.navy)
+  for k=1,3 do
+   p(f,"Pallet",V(8,.6,7),depot*CF(11,.5+(k-1)*.7,-6),C.rust,Enum.Material.WoodPlanks)
+  end
+ end
+ local cf=CFrame.lookAt(V(221,0,221),V())
  for _,x in ipairs({-6,6}) do for _,z in ipairs({-6,6}) do p(scenery,"WaterTowerLeg",V(.7,32,.7),cf*CF(x,16,z),C.steel) end end
  cyl(scenery,"WaterTank",V(15,20,20),cf*CF(0,37,0)*CFrame.Angles(0,0,math.pi/2),C.teal)
  cyl(scenery,"TankRoof",V(.8,22,22),cf*CF(0,45,0)*CFrame.Angles(0,0,math.pi/2),C.navy)

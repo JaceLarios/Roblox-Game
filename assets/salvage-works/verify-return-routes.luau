@@ -1,4 +1,6 @@
 -- Studio Server Play only. Temporary NPC copies; no player data is changed.
+-- Tests route geometry ONLY. NPCs do not trigger player-only lethal road lasers.
+local Layout=require(game.ReplicatedStorage.JunkyardLayout)
 local player=game.Players:GetPlayers()[1] local character=assert(player and player.Character,"Character unavailable")
 local prev=character.Archivable character.Archivable=true local template=character:Clone() character.Archivable=prev
 for _,v in ipairs(template:GetDescendants()) do if v:IsA("Script") or v:IsA("LocalScript") or v:IsA("Tool") then v:Destroy() end end
@@ -11,7 +13,7 @@ for i=1,8 do
  rig.Parent=f rig:PivotTo(CFrame.new(dir*90+Vector3.new(0,5,0)))
  local humanoid=rig:FindFirstChildOfClass("Humanoid") humanoid.WalkSpeed=22
  local root=rig:FindFirstChild("HumanoidRootPart") root:SetNetworkOwner(nil)
- probes[i]={rig=rig,humanoid=humanoid,root=root,target=dir*215+Vector3.new(0,3,0)}
+ probes[i]={rig=rig,humanoid=humanoid,root=root,target=dir*Layout.PlotRadius+Vector3.new(0,3,0)}
 end
 template:Destroy()
 task.wait(.5)

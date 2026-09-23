@@ -1,6 +1,6 @@
 local L=require(game.ReplicatedStorage.JunkyardLayout)
 local plots=workspace:WaitForChild("Plots",20) assert(#plots:GetChildren()==8)
-local root=workspace.JunkyardRefresh assert(root:GetAttribute("Version")==6)
+local root=workspace.JunkyardRefresh assert(root:GetAttribute("Version")==9)
 local rays=RaycastParams.new() rays.FilterType=Enum.RaycastFilterType.Include rays.FilterDescendantsInstances={workspace.JunkyardScene,root.Routes}
 local means={} local report={}
 for i=1,8 do
@@ -12,7 +12,7 @@ for i=1,8 do
   local pos=radial*d
   local hit=workspace:Raycast(pos+Vector3.new(0,50,0),Vector3.new(0,-60,0),rays)
   -- Final samples may be over the plot ground; it is excluded from this ground-only ray.
-  if d<165 then assert(hit and hit.Position.Y>.2 and hit.Position.Y<1.25,"Road floor gap "..i.." "..d) end
+  if d<L.PlotRadius-L.PlotSize/2 then assert(hit and hit.Position.Y>.2 and hit.Position.Y<1.25,"Road floor gap "..i.." "..d) end
  end
  local sum=0 local count=0
  for ring=1,3 do for k=0,63 do

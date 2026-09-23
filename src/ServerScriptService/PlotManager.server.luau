@@ -72,21 +72,14 @@ Players.CharacterAutoLoads = false
 
 -- ---------- Tuning ----------
 local Layout = require(game.ReplicatedStorage:WaitForChild("JunkyardLayout"))
+local BaseGate = require(game.ServerStorage:WaitForChild("BaseGate"))
 local PLOT_COUNT  = Layout.PlotCount
 local RING_RADIUS = Layout.PlotRadius
 local PLOT_SIZE   = Layout.PlotSize
 
--- Five pads per plot, full stop — this doubles as both the physical pad
--- count and the cap on how many pets can ever be earning money for one
--- player at once, so there's only the one number to keep in sync.
-local PET_PAD_COUNT = 5
+-- Eight earning pads: four down each workshop side. Saved slot order is unchanged.
+local PET_PAD_COUNT = Layout.PetPadCount
 local PET_PAD_SIZE = 7
-local PET_PAD_SPACING = 10
--- Pushed well back from the 16-stud fusion pad (its own back edge sits at
--- Z=8) toward the plot's actual back edge (Z=35) — plots had a lot of
--- unused ground behind this row before; this uses most of it instead of
--- leaving it empty.
-local PET_PAD_Z = 27
 
 -- Luck: applied when you GRAB, not when scrap spawns. The yard is shared,
 -- so a per-player spawn table is impossible — but a per-player reroll at
@@ -532,7 +525,7 @@ end
 -- flat per-pad bonus instead of the old per-inventory-item one.
 local BASE_WALK_SPEED = 22
 local PLACED_SPEED_PER_ITEM = 2
-local PLACED_SPEED_CAP = PET_PAD_COUNT * PLACED_SPEED_PER_ITEM
+local PLACED_SPEED_CAP = 10 -- Preserve movement balance with eight earning pads.
 local SPEED_UPGRADE_PER_LEVEL = 0.08 -- +8% per level above 1
 
 local function updateWalkSpeed(player)
@@ -674,6 +667,7 @@ for i = 1, PLOT_COUNT do
 	local angle = (i - 1) / PLOT_COUNT * math.pi * 2
 	local centre = Vector3.new(math.cos(angle) * RING_RADIUS, 0, math.sin(angle) * RING_RADIUS)
 
+	local plotFrame = CFrame.lookAt(centre, Vector3.zero)
 	local model = Instance.new("Model")
 	model.Name = "Plot" .. i
 	model.Parent = plotFolder
@@ -681,7 +675,7 @@ for i = 1, PLOT_COUNT do
 	local ground = makePart({
 		Name = "Ground",
 		Size = Vector3.new(PLOT_SIZE, 1, PLOT_SIZE),
-		Position = centre,
+		CFrame = plotFrame,
 		Material = Enum.Material.SmoothPlastic,
 		Color = Color3.fromRGB(235, 240, 245),
 		Parent = model,
@@ -692,7 +686,7 @@ for i = 1, PLOT_COUNT do
 		Name = "Sign",
 		Size = Vector3.new(2, 10, 2),
 		-- Keep the owner sign off every base's straight return corridor.
-		Position = centre + Vector3.new(-math.sin(angle), 0, math.cos(angle)) * 28 + Vector3.new(0, 5, 0),
+		Position = plotFrame:PointToWorldSpace(Vector3.new(20, 5, -PLOT_SIZE / 2 + 5)),
 		Material = Enum.Material.SmoothPlastic,
 		Color = Color3.fromRGB(255, 214, 0),
 		Parent = model,
@@ -718,7 +712,7 @@ for i = 1, PLOT_COUNT do
 	padPrompt.RequiresLineOfSight = false
 	padPrompt.Parent = pad
 
-	-- Five small pads behind the fusion pad — the only place a pet
+	-- Eight pads along the workshop sides — the only place a pet
 	-- actually earns money. Everything else in Inventory is just stored;
 	-- only what's physically placed here counts toward passive income.
 	-- Built here (fixed platforms + prompts), wired up for real down in
@@ -726,8 +720,9 @@ for i = 1, PLOT_COUNT do
 	-- fusion pad itself.
 	local petPads = {}
 	for slot = 1, PET_PAD_COUNT do
-		local xOffset = (slot - (PET_PAD_COUNT + 1) / 2) * PET_PAD_SPACING
-		local padCentre = centre + Vector3.new(xOffset, 0, PET_PAD_Z)
+		local xOffset = slot <= 4 and -28 or 28
+		local zOffset = -24 + ((slot - 1) % 4) * 16
+		local padCentre = plotFrame:PointToWorldSpace(Vector3.new(xOffset, 0, zOffset))
 
 		local petPadPart = makePart({
 			Name = "PetPad" .. slot,
@@ -778,8 +773,11 @@ for i = 1, PLOT_COUNT do
 	local side = Vector3.new(-math.sin(angle), 0, math.cos(angle))
 	-- Same expression MapRevamp uses for where this route stops, so the
 	-- lasers land on the painted road rather than past the end of it.
-	local roadEnd = RING_RADIUS - (PLOT_SIZE / 2) / math.max(math.abs(radial.X), math.abs(radial.Z))
+	local roadEnd = RING_RADIUS - PLOT_SIZE / 2
 	local lasers = {}
+	local entranceGate = BaseGate.Create(model, radial * roadEnd + Vector3.new(0, 0.5, 0),
+		side, wallGroup(i), BARRIER_HALF_WIDTH * 2 + 1, 20)
+	BaseGate.Update(entranceGate, false, 0, 0, false)
 	for k = 1, LASER_COUNT do
 		local r = Layout.LaserStart + (roadEnd - 12 - Layout.LaserStart) * (k / (LASER_COUNT + 1))
 		local laser = makePart({
@@ -807,11 +805,6 @@ for i = 1, PLOT_COUNT do
 	local barrierStart = Layout.BarrierStart
 	for _, offset in ipairs({ -BARRIER_HALF_WIDTH, BARRIER_HALF_WIDTH }) do
 		local barrierEnd = roadEnd
-		while barrierEnd < RING_RADIUS do
-			local p = radial * barrierEnd + side * offset - centre
-			if math.max(math.abs(p.X), math.abs(p.Z)) <= PLOT_SIZE / 2 then break end
-			barrierEnd += 0.5
-		end
 		local barrierMid = radial * ((barrierStart + barrierEnd) / 2)
 		local wall = makePart({
 			Name = "RoadBarrier",
@@ -826,69 +819,11 @@ for i = 1, PLOT_COUNT do
 		wall.CanQuery = false
 	end
 
-	-- Walls round the whole plot except where its own road comes in. The
-	-- solid wall is invisible and tall enough that nobody jumps it; a low
-	-- shimmer shows where it stands. Both carry this plot's wall group, so
-	-- they stop everyone except the owner.
-	local mouth = BARRIER_HALF_WIDTH + 1
-	local half = PLOT_SIZE / 2
-	local corners = {
-		centre + Vector3.new(-half, 0, -half), centre + Vector3.new(half, 0, -half),
-		centre + Vector3.new(half, 0, half), centre + Vector3.new(-half, 0, half),
-	}
-	local function inRoadMouth(p)
-		return math.abs(p:Dot(side)) <= mouth and p:Dot(radial) < RING_RADIUS
-	end
-	local function wallRun(a, b)
-		if (b - a).Magnitude < 0.5 then return end
-		local length = (b - a).Magnitude + 1
-		local frame = CFrame.lookAt((a + b) / 2, b)
-		makePart({
-			Name = "BaseWall",
-			Size = Vector3.new(1, BASE_WALL_HEIGHT, length),
-			CFrame = frame + Vector3.new(0, BASE_WALL_HEIGHT / 2 + 0.5, 0),
-			Transparency = 1,
-			CanCollide = true,
-			CanQuery = false,
-			CanTouch = false,
-			CollisionGroup = wallGroup(i),
-			Parent = model,
-		})
-		-- Neon at high transparency rather than ForceField: ForceField only
-		-- shimmers at glancing angles, so head-on it all but vanished and
-		-- people walked into a wall they could not see.
-		makePart({
-			Name = "BaseField",
-			Size = Vector3.new(0.4, BASE_WALL_VISIBLE_HEIGHT, length),
-			CFrame = frame + Vector3.new(0, BASE_WALL_VISIBLE_HEIGHT / 2 + 0.5, 0),
-			Material = Enum.Material.Neon,
-			Color = Color3.fromRGB(110, 190, 255),
-			Transparency = 0.84,
-			CanCollide = false,
-			CanQuery = false,
-			CanTouch = false,
-			CastShadow = false,
-			Parent = model,
-		})
-	end
-	for e = 1, 4 do
-		local a, b = corners[e], corners[e % 4 + 1]
-		local runFrom, last = nil, nil
-		for step = 0, PLOT_SIZE do
-			local p = a:Lerp(b, step / PLOT_SIZE)
-			if inRoadMouth(p) then
-				if runFrom then wallRun(runFrom, last) end
-				runFrom = nil
-			else
-				runFrom = runFrom or p
-				last = p
-			end
-		end
-		if runFrom then wallRun(runFrom, last) end
-	end
+	-- Workshop walls and roof are solid for everyone; only the laser entrance
+	-- uses owner-specific collision filtering.
 
 	-- Lock Base: owner-only, shuts every pad for LOCK_SECONDS.
-	local lockSpot = centre + LOCK_BUTTON_OFFSET
+	local lockSpot = plotFrame:PointToWorldSpace(Vector3.new(17, 0, -32))
 	makePart({
 		Name = "LockPedestal",
 		Size = Vector3.new(2.6, 2.6, 2.6),
@@ -916,22 +851,17 @@ for i = 1, PLOT_COUNT do
 	lockPrompt.RequiresLineOfSight = false
 	lockPrompt.Parent = lockButton
 
-	-- The shield over the pad row while locked. Off by default; in this
-	-- plot's wall group so the owner can still walk up to their own pads.
-	local shield = makePart({
-		Name = "LockShield",
-		Size = Vector3.new(PET_PAD_SPACING * PET_PAD_COUNT, 12, PET_PAD_SIZE + 4),
-		Position = centre + Vector3.new(0, 6.5, PET_PAD_Z),
-		Material = Enum.Material.Neon,
-		Color = Color3.fromRGB(90, 170, 255),
-		Transparency = 1,
-		CanCollide = false,
-		CanQuery = false,
-		CanTouch = false,
-		CastShadow = false,
-		CollisionGroup = wallGroup(i),
-		Parent = model,
-	})
+	-- A shield over each pad bank protects the eight slots while locked.
+	local shields = {}
+	for _, x in ipairs({-28, 28}) do
+		table.insert(shields, makePart({
+			Name = "LockShield", Size = Vector3.new(11, 12, 60),
+			CFrame = plotFrame * CFrame.new(x, 6.5, 0),
+			Material = Enum.Material.Neon, Color = Color3.fromRGB(90, 170, 255),
+			Transparency = 1, CanCollide = false, CanQuery = false, CanTouch = false,
+			CastShadow = false, CollisionGroup = wallGroup(i), Parent = model,
+		}))
+	end
 
 	plots[i] = {
 		model = model,
@@ -939,7 +869,9 @@ for i = 1, PLOT_COUNT do
 		lockButton = lockButton,
 		lockLabel = lockLabel,
 		lockPrompt = lockPrompt,
-		shield = shield,
+		shields = shields,
+		frame = plotFrame,
+		gate = entranceGate,
 		lockedUntil = 0,
 		lockCooldownUntil = 0,
 		owner = nil,
@@ -2121,9 +2053,12 @@ local lastAlarm = {}   -- [plotIndex] = os.clock() of the owner's last "someone 
 local function refreshLock(plot)
 	local now = os.clock()
 	local locked = now < plot.lockedUntil
-	plot.shield.Transparency = locked and 0.75 or 1
-	plot.shield.CanCollide = locked
+	for _, shield in ipairs(plot.shields) do
+		shield.Transparency = locked and 0.90 or 1
+		shield.CanCollide = locked
+	end
 	plot.model:SetAttribute("Locked", locked)
+	BaseGate.Update(plot.gate, locked, plot.lockedUntil - now, plot.lockCooldownUntil - now, plot.owner ~= nil)
 	if locked then
 		plot.lockLabel.Text = string.format("LOCKED  %ds", math.ceil(plot.lockedUntil - now))
 		plot.lockLabel.TextColor3 = Color3.fromRGB(120, 200, 255)
@@ -2209,24 +2144,12 @@ for plotIndex, plot in ipairs(plots) do
 	end
 
 	plot.lockPrompt.Triggered:Connect(function(player)
-		if plot.owner ~= player then
-			toast(player, "Only the owner can lock this base.")
-			return
-		end
 		local now = os.clock()
-		if now < plot.lockedUntil then
-			toast(player, "Your base is already locked.")
-			return
-		end
-		if now < plot.lockCooldownUntil then
-			toast(player, string.format("The lock is recharging — %ds left.", math.ceil(plot.lockCooldownUntil - now)))
-			return
-		end
-		plot.lockedUntil = now + LOCK_SECONDS
-		plot.lockCooldownUntil = plot.lockedUntil + LOCK_COOLDOWN_SECONDS
+		local ok, message = BaseGate.TryActivate(plot, player, now, LOCK_SECONDS, LOCK_COOLDOWN_SECONDS)
+		if not ok then toast(player, message) return end
 		refreshLock(plot)
 		playSound(plot.pad, "fuse")
-		toast(player, string.format("Base locked for %d seconds — nobody can steal from your pads.", LOCK_SECONDS), true)
+		toast(player, string.format("Base locked for %d seconds — visitors blocked, owner access stays open.", LOCK_SECONDS), true)
 	end)
 end
 
@@ -2461,7 +2384,7 @@ travelRemote.OnServerEvent:Connect(function(player, destination)
 		local s = state[player]
 		local plot = s and plots[s.plotIndex]
 		if plot then
-			character:PivotTo(CFrame.new(plot.centre + Vector3.new(0, 5, -20)))
+			character:PivotTo(plot.frame * CFrame.new(0, 5, -20))
 		end
 	elseif destination == "brainrot" then
 		if not ensureBrainrotUnlocked(player) then return end
@@ -3469,7 +3392,7 @@ local function onPlayerAdded(player)
 		local spawnPoint = Instance.new("SpawnLocation")
 		spawnPoint.Name = "PlotSpawn"
 		spawnPoint.Size = Vector3.new(6, 1, 6)
-		spawnPoint.Position = plot.centre + Vector3.new(0, 3, -20)
+		spawnPoint.Position = plot.frame:PointToWorldSpace(Vector3.new(0, 3, -20))
 		spawnPoint.Anchored = true
 		spawnPoint.CanCollide = false
 		spawnPoint.Transparency = 1

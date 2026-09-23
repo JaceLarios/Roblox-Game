@@ -42,7 +42,7 @@ local function defaultData()
 		sales = 0,
 		placed = {}, -- legacy: the old physical placement system. No longer written; kept so an old save still loads.
 		inventory = {},
-		placedPets = {}, -- up to 5 items actually earning money on a pad; see PlotManager.
+		placedPets = {}, -- Up to eight earning items; saved slot order is preserved. See PlotManager.
 		brainrotDiscovered = {},
 		hauntedDiscovered = {},
 		ownedAreaPets = {}, -- keys into AreaPets.luau's flat pet lookup; each owned pet is a permanent stacking coin/speed multiplier, see AreaPetsService.

@@ -835,7 +835,7 @@ do
 local currentInventory = {}
 local currentInventoryCapacity = 15
 local currentPlaced = {}
-local currentPlacedCapacity = 5
+local currentPlacedCapacity = 8
 
 local inventoryBtn = NavButton.Create(gui, "📦", "INVENTORY", BLUE, NavButton.RailPosition("left", 2))
 
@@ -939,7 +939,7 @@ ruleRight.Size = UDim2.new(0, 220, 0, 3)
 ruleRight.Position = UDim2.new(1, -254, 0, 40)
 ruleRight.Parent = inventoryFrame
 
-local placedLabel = label(inventoryFrame, "EARNING PADS  0 / 5", UDim2.fromOffset(560, 32), INK, Enum.Font.FredokaOne, 22)
+local placedLabel = label(inventoryFrame, "EARNING PADS  0 / 8", UDim2.fromOffset(560, 32), INK, Enum.Font.FredokaOne, 22)
 placedLabel.Position = UDim2.new(0.5, -280, 0, 26)
 placedLabel.TextXAlignment = Enum.TextXAlignment.Center
 
@@ -1116,10 +1116,11 @@ local function relayout()
  placedLabel.Size=UDim2.new(1,-48,0,26) placedLabel.TextSize=19
  placedLabel.TextXAlignment=Enum.TextXAlignment.Left
  ruleLeft.Visible=false ruleRight.Visible=false divider.Visible=false
- local slotSize=compact and 90 or (short and 70 or 122)
+ local gap=compact and 6 or 12
+ local slotSize=math.min(compact and 90 or (short and 70 or 122), math.max(24,math.floor((inventoryFrame.AbsoluteSize.X-48-gap*(currentPlacedCapacity-1))/currentPlacedCapacity)))
  placedRow.Position=UDim2.fromOffset(24,bandY+28)
  placedRow.Size=UDim2.new(1,-48,0,slotSize+4)
- placedLayout.Padding=UDim.new(0,compact and 12 or 24)
+ placedLayout.Padding=UDim.new(0,gap)
  for _,slot in placedRow:GetChildren() do if slot:IsA("GuiObject") then slot.Size=UDim2.fromOffset(slotSize,slotSize) end end
  local gridTop=bandY+slotSize+44
  if compact then
@@ -1363,7 +1364,9 @@ function redrawPlaced(items, capacity)
 	end
 
 	local compact = inventoryFrame:GetAttribute("Compact")
-	local slotSize = compact and 76 or 104
+	local gap = compact and 6 or 12
+	placedLayout.Padding = UDim.new(0, gap)
+	local slotSize = math.min(compact and 76 or 104, math.max(24, math.floor((inventoryFrame.AbsoluteSize.X-48-gap*(currentPlacedCapacity-1))/currentPlacedCapacity)))
 
 	for slot = 1, currentPlacedCapacity do
 		local entry = items[slot]
