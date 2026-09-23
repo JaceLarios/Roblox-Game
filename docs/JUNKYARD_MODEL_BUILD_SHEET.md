@@ -14,7 +14,7 @@ This page covers the 35 fused results and the five addons. The seven base cars w
 
 ### What the detailed cars changed
 
-The seven rebuilt cars are multi-part models — 11 parts for the Dirt Bike, 159 for the Scrap Kart, 35 to 52 for the rest. **The three newly built Legendary jet results are now detailed multi-part models; the other 32 fused results still use their previous meshes**, as do the five addons.
+The seven rebuilt cars are multi-part models — 11 parts for the Dirt Bike, 159 for the Scrap Kart, 35 to 52 for the rest. **The five addons and the three newly built Legendary jet results are now detailed multi-part models too; the other 32 fused results still use their previous single meshes.**
 
 So the ladder still runs backwards in places. The scrap a player picks up off the floor, worth 5 coins, is a detailed model, and so are the three new Jet results — but **Scrapyard God, the best item in the game at 1,667 coins/sec, is still a single mesh**, and next to Sky Marshal or Afterburner GT it now reads as the cheaper item. Same for Sonic Scrapheap, THE LAWNLORD and Jet Hauler. That gap is bigger than any single model on the lists below.
 
@@ -85,7 +85,6 @@ Sizes below are the longest side of the template in `ItemModels`. `ItemVisuals.G
 
 | Model | What it is | Today | Target | Why |
 | --- | --- | --- | --- | --- |
-| Nitrous Tank | The new addon | 1.6 × 2.6 × 0.9 | 2.5 – 3 | About a quarter the bulk of the Inline 4 (2.5 × 2.2 × 2.9), and thin with it. On the yard floor it reads as debris rather than a find |
 | Jet Hauler | Legendary, 1,222 coins/sec | 4.0 | ~7 | Every other Legendary is exactly 7.0 |
 | Mangled Overlord | Mythic, 333 coins/sec | 3.8 | ~6.5 | The smallest Mythic, and smaller than most Rares |
 | Redline Reaper | Mythic, 111 coins/sec | 4.4 | ~6 | Smaller than the Rare Boosted Beater at 5.5 |
@@ -176,7 +175,9 @@ Templates live in `ReplicatedStorage.ItemModels`, named by the item's stable key
 
 **Name templates by key, not by display name.** `Rusted Sedan` is the key; players see "Scrap Kart" through `ItemNames.Display`. The game looks a template up by key, so one named "Scrap Kart" would never be found. Every name on this page is a key.
 
-**The five addons now have a first concept-based rebuild installed in Studio**, revision `AddonConcept_20260923_v1`. They get looked at on their own rather than only bolted onto a car — they lie on the yard floor before anyone grabs them, and they have their own tab in the Index. See `assets/addon-redesign/` for the actual preview, original concept, tested recovery files and verification limits. Nitrous Tank now uses a horizontal green bottle/cradle at 3 studs longest; the engines use blue, purple, red and orange designs. These are first-pass interpretations for visual review, not a claim of exact concept fidelity or a published-place update.
+**The five addons are rebuilt and done.** Current revisions are `NitrousGeometry_20260923_v4` for the Nitrous Tank and `AddonHardware_20260923_v4` for the four engines; see `assets/addon-redesign/` for previews and recovery files. They are detailed models now (79 parts for the Nitrous Tank, 44 to 47 for the engines), and their sizes climb with rarity: Nitrous Tank 3.0, Inline 4 3.3, V6 3.5, V8 4.0, Jet Engine 4.5 studs.
+
+**Checked in Play on Sept 23, the part `assets/addon-redesign/README.md` lists as untested:** a Nitrous Tank, a V8 Engine and a Golden-mutated Jet Engine were each grabbed from the yard, carried home (every part faded, sitting on the raised hands) and delivered; both staged pairs rendered in full on the pad; Dirt Bike + Nitrous Tank made Bent Fusion, and Scrap Kart + Golden Jet Engine made a Golden Sonic Scrapheap with the mutation carried through. No errors on server or client.
 
 11 models in `ItemModels` are unused by this plan — leave them where they are. Wreck Kraken, Junkyard Behemoth, Scrap Titan, Cone Sentinel, Trolley Interceptor and Lawn Missile could become secrets later; Monster Truck Tire, Traffic Cone, Shopping Cart, Riding Mower and Minivan are old spawn items with no role now.
 
@@ -192,6 +193,18 @@ Two more things found while testing on Sept 23:
 
 - **`assets/junkyard-models/verify-models.luau` is broken, not just stale.** It asserts every roster entry is a MeshPart with revision `Junkyard_20260914`, which the seven detailed cars and the three new Legendary models now fail, and it fuses every pair of its roster, which the one-item-plus-one-addon rule refuses. It needs the 7 cars, 5 addons and 35 results, fusing only car + addon pairs.
 - **Text overlap in the Index:** "Select a discovered item to equip your companion" renders underneath the Search box.
+- **Review models left in Workspace — clear these before publishing.** Six review folders are still in the live Workspace, 1,229 parts in all, and anything in Workspace ships to every player:
+
+  | Folder | Parts | Where |
+  | --- | --- | --- |
+  | `CodexKartDetailedReview` | 160 | **On the ground on Plot 1**, about 12 studs from its fusion pad |
+  | `CodexJunkyardLineupPreview` | 402 | On the ground at x ≈ 494 |
+  | `CodexLegendaryJetReview` | 391 | Floating at y ≈ 507 |
+  | `AddonHardwareReview` | 179 | Floating at y ≈ 517 |
+  | `NitrousGeometryReview` | 82 | Floating at y ≈ 513 |
+  | `CodexAddonReview` | 15 | Floating at y ≈ 508 |
+
+  The first two are at ground level where players walk. Moving them into ServerStorage keeps them for review without shipping them. The backups already in ServerStorage (about 3,100 parts across 13 folders) never reach players, so they only cost place-file size.
 
 ## One open question
 
