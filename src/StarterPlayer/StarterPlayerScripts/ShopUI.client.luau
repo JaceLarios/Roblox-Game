@@ -1,3 +1,4 @@
+local Garage=require(game:GetService("ReplicatedStorage"):WaitForChild("GarageTheme"))
 -- Reference-guided shop: illustrated offer grid, white shell, code redemption last.
 local Players=game:GetService("Players")
 local MarketplaceService=game:GetService("MarketplaceService")
@@ -43,21 +44,22 @@ local function fit()
 	local size=overlay.AbsoluteSize
 	local compact=size.X<650
 	local width=compact and 600 or 1200
-	scale.Scale=math.min((size.X-70)/width,1.4)
-	panel.Size=UDim2.fromOffset(width,(size.Y*.80)/scale.Scale)
+	scale.Scale=math.min((size.X-34)/width,(size.Y-34)/820,1.45)
+	panel.Position=UDim2.fromScale(.5,.5)
+	panel.Size=UDim2.fromOffset(width,820)
 	panel:SetAttribute("Compact",compact)
 end
 overlay:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit) fit()
-Style.Art(panel,"SHOP",UDim2.fromOffset(-20,-78),UDim2.fromOffset(114,114))
-local title=text(panel,"Title","Scrap Shop!",UDim2.fromOffset(90,-61),UDim2.fromOffset(570,88),60,true)
+Garage.Art(panel,"SHOP",UDim2.fromOffset(14,8),UDim2.fromOffset(78,78))
+local title=text(panel,"Title","Scrap Shop!",UDim2.fromOffset(104,12),UDim2.fromOffset(440,64),48,true)
 title.TextXAlignment=Enum.TextXAlignment.Left
 local close=Instance.new("TextButton") close.Name="Close" close.Parent=panel Style.Close(close)
 local scroll=Instance.new("ScrollingFrame")
-scroll.Name="Sections" scroll.Size=UDim2.new(1,-38,1,-50) scroll.Position=UDim2.fromOffset(19,24)
+scroll.Name="Sections" scroll.Size=UDim2.new(1,-38,1,-126) scroll.Position=UDim2.fromOffset(19,95)
 scroll.BackgroundTransparency=1 scroll.BorderSizePixel=0 scroll.ScrollBarThickness=7
 scroll.ScrollBarImageColor3=BLACK scroll.AutomaticCanvasSize=Enum.AutomaticSize.Y scroll.CanvasSize=UDim2.new()
 scroll.Parent=panel Style.ScrollPadding(scroll)
-local list=Instance.new("UIListLayout") list.Padding=UDim.new(0,18) list.SortOrder=Enum.SortOrder.LayoutOrder list.Parent=scroll
+local list=Instance.new("UIListLayout") list.Padding=UDim.new(0,10) list.SortOrder=Enum.SortOrder.LayoutOrder list.Parent=scroll
 local message=text(panel,"Message","",UDim2.new(0,18,1,-26),UDim2.new(1,-36,0,24),16,false)
 local function section(name,order)
 	local h=Instance.new("Frame") h.Name=name.."Section" h.BackgroundTransparency=1
@@ -77,12 +79,12 @@ local grid=Instance.new("UIGridLayout") grid.SortOrder=Enum.SortOrder.LayoutOrde
 local PASS_ORDER={"DoubleCoins","ExtraCarry","AutoCollect","StarterPack"}
 local function gridFit()
 	local compact=panel:GetAttribute("Compact")
-	local cols=compact and 1 or 3
+	local cols=compact and 2 or 4
 	local rows=math.ceil(#PASS_ORDER/cols)
-	local cellH=compact and 340 or 354
+	local cellH=230
 	grid.FillDirectionMaxCells=cols
-	grid.CellSize=compact and UDim2.new(1,-12,0,cellH) or UDim2.new(1/3,-12,0,cellH)
-	passGrid.Size=UDim2.new(1,-6,0,rows*cellH+(rows-1)*12+40)
+	grid.CellSize=UDim2.new(1/cols,-12,0,cellH)
+	passGrid.Size=UDim2.new(1,-6,0,rows*cellH+(rows-1)*12+10)
 end
 panel:GetAttributeChangedSignal("Compact"):Connect(gridFit) gridFit()
 local PASS_ACCENTS={DoubleCoins=Color3.fromRGB(243,162,101),ExtraCarry=Color3.fromRGB(95,185,174),AutoCollect=Color3.fromRGB(129,164,194),StarterPack=Color3.fromRGB(180,140,210)}
@@ -97,7 +99,7 @@ for i,key in ipairs(PASS_ORDER) do
 	gradient.Color=ColorSequence.new(PASS_ACCENTS[key]:Lerp(WHITE,.6),PASS_ACCENTS[key])
 	gradient.Rotation=65 gradient.Parent=banner
 	text(banner,"Title",item.name,UDim2.fromOffset(10,13),UDim2.new(1,-20,0,58),36,true)
-	Style.Art(banner,key,UDim2.new(0,5,0,84),UDim2.new(.51,0,0,186))
+	Garage.Art(banner,key,UDim2.new(0,5,0,84),UDim2.new(.51,0,0,186))
 	text(banner,"Description",BENEFITS[key],UDim2.new(.51,0,0,90),UDim2.new(.46,0,0,165),25,true)
 	local buy=Instance.new("TextButton")
 	buy.Name="Purchase" buy.Size=UDim2.new(1,-28,0,60) buy.Position=UDim2.new(0,14,1,-76)
@@ -169,7 +171,7 @@ end)
 local function feature(name,kind,titleValue,description,order,color,action)
 	local card=Instance.new("Frame") card.Name=name card.LayoutOrder=order card.Size=UDim2.new(1,-12,0,220)
 	card.Parent=scroll corner(card,18) Style.Surface(card,color,3)
-	Style.Art(card,kind,UDim2.fromOffset(18,18),UDim2.fromOffset(180,180))
+	Garage.Art(card,kind,UDim2.fromOffset(18,18),UDim2.fromOffset(180,180))
 	local heading=text(card,"Title",titleValue,UDim2.fromOffset(218,24),UDim2.new(1,-440,0,52),34,true)
 	heading.TextXAlignment=Enum.TextXAlignment.Left
 	local desc=text(card,"Description",description,UDim2.fromOffset(218,84),UDim2.new(1,-440,0,110),22,false)
@@ -194,7 +196,7 @@ do
 	-- error trying to index a nonexistent card.Action.
 	local card=Instance.new("Frame") card.Name="ExclusivePets" card.LayoutOrder=6 card.Size=UDim2.new(1,-12,0,220)
 	card.Parent=scroll corner(card,18) Style.Surface(card,Color3.fromRGB(206,234,220),3)
-	Style.Art(card,"PETS",UDim2.fromOffset(18,18),UDim2.fromOffset(180,180))
+	Garage.Art(card,"PETS",UDim2.fromOffset(18,18),UDim2.fromOffset(180,180))
 	local heading=text(card,"Title","Secret Pet Egg!",UDim2.fromOffset(218,24),UDim2.new(1,-440,0,52),34,true)
 	heading.TextXAlignment=Enum.TextXAlignment.Left
 	local oddsLines={}
@@ -254,7 +256,7 @@ section("Redeem a Code",300)
 local codeBanner=Instance.new("Frame") codeBanner.Name="CodeBanner" codeBanner.LayoutOrder=310
 codeBanner.Size=UDim2.new(1,-12,0,168) codeBanner.Parent=scroll corner(codeBanner,18)
 Style.Surface(codeBanner,Color3.fromRGB(237,233,223),2)
-Style.Art(codeBanner,"CODE",UDim2.fromOffset(12,10),UDim2.fromOffset(144,144))
+Garage.Art(codeBanner,"CODE",UDim2.fromOffset(12,10),UDim2.fromOffset(144,144))
 local codeBox=Instance.new("TextBox") codeBox.Name="Code" codeBox.Text="" codeBox.PlaceholderText="Enter your code..."
 codeBox.Size=UDim2.new(1,-370,0,66) codeBox.Position=UDim2.new(0,164,.5,-33)
 codeBox.Font=Enum.Font.FredokaOne codeBox.TextSize=25 codeBox.ClearTextOnFocus=false
@@ -270,22 +272,49 @@ end
 redeemBtn.Activated:Connect(submitCode)
 codeBox.FocusLost:Connect(function(enter) if enter then submitCode() end end)
 local function reflowFeatures()
-	local compact=panel:GetAttribute("Compact")
-	title.TextSize=compact and 44 or 60
-	title.Size=UDim2.fromOffset(compact and 430 or 570,88)
-	for _,card in ipairs(scroll:GetChildren()) do
-		if card.Name=="ExclusivePets" or card.Name=="RewardBoosts" then
-			card.Size=UDim2.new(1,-12,0,compact and 320 or 220)
-			card.Title.Size=UDim2.new(1,compact and -180 or -440,0,64)
-			card.Title.Position=UDim2.fromOffset(compact and 160 or 218,20)
-			card.Description.Size=UDim2.new(1,compact and -180 or -440,0,112)
-			card.Description.Position=UDim2.fromOffset(compact and 160 or 218,92)
-			card.Illustration.Size=UDim2.fromOffset(compact and 132 or 180,180)
-			card.Action.Position=compact and UDim2.new(0,18,1,-86) or UDim2.new(1,-200,.5,-32)
-			card.Action.Size=compact and UDim2.new(1,-36,0,64) or UDim2.fromOffset(180,64)
-		end
-	end
+ local compact=panel:GetAttribute("Compact")
+ title.Text="SCRAP SHOP" title.TextSize=46 title.Size=UDim2.fromOffset(compact and 360 or 500,64)
+ for _,n in {"PetsSection","BoostsSection","Redeem a CodeSection"} do local h=scroll:FindFirstChild(n) if h then h.Visible=false end end
+ for _,card in passGrid:GetChildren() do if card:IsA("Frame") then
+  Garage.Inset(card)
+  card.Title.Position=UDim2.new(0,8,0,153) card.Title.Size=UDim2.new(1,-16,0,35) card.Title.TextSize=21 Garage.Plate(card.Title)
+  local outline=card.Title:FindFirstChild("TextOutline") if outline then outline:Destroy() end
+  card.Description.Visible=false
+  local art=card:FindFirstChild("GarageArt") if art then art.Position=UDim2.new(.17,0,0,4) art.Size=UDim2.new(.66,0,0,153) end
+  if not card:FindFirstChild("DisplayPedestal") then Garage.Pedestal(card,Color3.fromRGB(59,229,204),UDim2.new(.04,0,0,113),UDim2.new(.92,0,0,65)) end
+  card.Purchase.Position=UDim2.new(0,9,1,-48) card.Purchase.Size=UDim2.new(1,-18,0,41) card.Purchase.TextSize=22 Garage.Button(card.Purchase,Color3.fromRGB(121,154,200))
+ end end
+ local egg=scroll.ExclusivePets
+ egg.Size=UDim2.new(1,-12,0,194) Garage.Inset(egg)
+ egg.Title.Position=UDim2.new(.22,0,0,8) egg.Title.Size=UDim2.new(.55,0,0,44) egg.Title.TextSize=36
+ local art=egg:FindFirstChild("GarageArt") art:Destroy()
+ Garage.Art(egg,"egg",UDim2.fromOffset(12,10),UDim2.new(.21,0,0,190))
+ egg.Description.Visible=false egg.Description.Position=UDim2.new(.25,0,0,52) egg.Description.Size=UDim2.new(.5,0,0,118)
+ egg.Action.Position=UDim2.new(1,-212,1,-75) egg.Action.Size=UDim2.fromOffset(194,59) Garage.Button(egg.Action,Color3.fromRGB(123,145,190))
+ local row=egg:FindFirstChild("Mysteries")
+ if not row then
+  row=Garage.New("Frame",egg,"Mysteries",{Position=UDim2.new(.25,0,0,65),Size=UDim2.new(.54,0,0,103),BackgroundTransparency=1})
+  for i=1,5 do
+   Garage.Pedestal(row,Color3.fromRGB(35,205,248),UDim2.new((i-1)/5,0,0,65),UDim2.new(.18,0,0,35))
+   local silhouette=Garage.Art(row,"PETS",UDim2.new((i-1)/5,0,0,0),UDim2.new(.18,0,0,84)) silhouette.ImageColor3=Color3.fromRGB(9,48,92)
+   Garage.Text(row,"Question","?",UDim2.new((i-1)/5,0,0,24),UDim2.new(.18,0,0,40),34,Color3.fromRGB(140,233,255))
+  end
+  local odds=Garage.New("TextButton",egg,"Odds",{Text="View odds  ›",Position=UDim2.new(.36,0,1,-38),Size=UDim2.fromOffset(220,30),BackgroundTransparency=1,TextSize=23,TextColor3=Color3.fromRGB(0,37,97),Font=Enum.Font.FredokaOne,ZIndex=5})
+  odds.Activated:Connect(function() egg.Description.Visible=not egg.Description.Visible row.Visible=not egg.Description.Visible end)
+ end
+ local boosts=scroll.RewardBoosts boosts.Size=UDim2.new(1,-12,0,84) Garage.Inset(boosts)
+ boosts.Title.Position=UDim2.fromOffset(85,4) boosts.Title.Size=UDim2.new(.55,-85,0,37) boosts.Title.TextSize=26
+ boosts.Description.Position=UDim2.fromOffset(85,42) boosts.Description.Size=UDim2.new(.55,-85,0,29) boosts.Description.TextSize=17
+ boosts.GarageArt.Position=UDim2.fromOffset(8,4) boosts.GarageArt.Size=UDim2.fromOffset(72,72)
+ boosts.Action.Position=UDim2.new(1,-210,.5,-27) boosts.Action.Size=UDim2.fromOffset(192,54) Garage.Button(boosts.Action,Color3.fromRGB(0,169,248))
+ codeBanner.Size=UDim2.new(1,-12,0,83) Garage.Inset(codeBanner)
+ codeBanner.GarageArt.Position=UDim2.fromOffset(8,6) codeBanner.GarageArt.Size=UDim2.fromOffset(66,66)
+ if not codeBanner:FindFirstChild("Heading") then Garage.Text(codeBanner,"Heading","REDEEM CODE",UDim2.fromOffset(80,6),UDim2.fromOffset(240,63),25,Color3.new(1,1,1)) end
+ codeBox.Position=UDim2.new(.34,0,.5,-26) codeBox.Size=UDim2.new(.46,-12,0,52)
+ redeemBtn.Size=UDim2.new(.18,-8,0,52) redeemBtn.Position=UDim2.new(.81,0,.5,-26) Garage.Button(redeemBtn,Color3.fromRGB(93,147,195))
 end
 panel:GetAttributeChangedSignal("Compact"):Connect(reflowFeatures) reflowFeatures()
 open.Activated:Connect(function() overlay.Visible=not overlay.Visible if overlay.Visible then fit() end end)
 close.Activated:Connect(function() overlay.Visible=false end)
+Garage.Shell(panel) Garage.Header(title)
+close.Position=UDim2.new(1,-76,0,16)

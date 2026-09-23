@@ -1,3 +1,4 @@
+local Garage=require(script.Parent:WaitForChild("GarageTheme"))
 local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("ItemNames"))
 -- Open Gallery presentation. Discovery and companion ownership remain server-owned.
 local Style = require(script.Parent:WaitForChild("UIStyle"))
@@ -70,9 +71,10 @@ local function modelView(parent, name)
 		clone:Destroy()
 		return view
 	end
+	Garage.Podium(world, Color3.fromRGB(62,226,223))
 	local cam = make("Camera", view, "Camera", {FieldOfView = 35})
 	view.CurrentCamera = cam
-	local reach = math.max(size.X, size.Y, size.Z) * 1.48 + .2
+	local reach = math.max(size.X, size.Y, size.Z) * 1.78 + .2
 	cam.CFrame = CFrame.lookAt(cf.Position + Vector3.new(.6, .4, .9) * reach, cf.Position)
 	return view
 end
@@ -187,7 +189,7 @@ function Gallery.Create(gui, onEquip)
 		local top = portrait and (flatArea and 337 or 424) or 224
 		scroll.Position = UDim2.fromOffset(28, top)
 		scroll.Size = UDim2.new(1, -56, 1, -top-20)
-		local cols = portrait and 2 or 5
+		local cols = portrait and 2 or 4
 		local cellWidth = (width - 68 - 12*(cols-1))/cols
 		grid.CellSize = UDim2.fromOffset(cellWidth, math.max(cellWidth+30, (height-top-34)/2))
 		empty.Position, empty.Size = scroll.Position, scroll.Size
@@ -215,7 +217,8 @@ function Gallery.Create(gui, onEquip)
 		end
 		for area, tab in pairs(areaTabs) do
 			local selected = area == activeArea
-			Style.Surface(tab, selected and P.Mint:Lerp(P.Cream,.55) or P.Cream, selected and 3 or 1.5)
+			Style.Surface(tab, selected and Color3.fromRGB(255,158,27) or Color3.fromRGB(13,148,219), selected and 3 or 1.5)
+            Garage.Button(tab)
 			-- Use an actual discovered model for each area; never expose an unknown collectible.
 			if not tab:FindFirstChild("AreaArt") then
 				for _, entry in ipairs(data[area]) do
@@ -236,6 +239,7 @@ function Gallery.Create(gui, onEquip)
 			-- Ink on the bright fill, not cream: the selected teal is a
 			-- button colour now and cream on it is unreadable.
 			btn.TextColor3 = P.Ink
+            Garage.Button(btn)
 		end
 		local flatArea = activeArea == "addons"
 		local total, known, shown = 0, 0, 0
@@ -267,6 +271,7 @@ function Gallery.Create(gui, onEquip)
 					-- tags do, and you can pick a legendary out at a glance.
 					local haloRarity = Rarity.Color(entry.tier, entry.isSecret, entry.rarity)
 					local halo = make("Frame", card, "PastelBackdrop", {
+                        Visible=false,
 						Size=UDim2.new(.82,0,.63,0), Position=UDim2.fromScale(.09,.09),
 						BackgroundColor3=entry.known and haloRarity:Lerp(P.Cream,.58) or UNKNOWN_HALO,
 						BorderSizePixel=0,
@@ -293,7 +298,8 @@ function Gallery.Create(gui, onEquip)
 						lock.Position,lock.Size=UDim2.fromScale(.1,.08),UDim2.new(.8,0,.65,0)
 						lock.TextColor3=Color3.fromRGB(151,162,161)
 					end
-					local name = caption(card,"ItemName",entry.known and entry.name or "Undiscovered",21)
+					local name = caption(card,"ItemName",entry.known and ItemNames.Display(entry.name) or "Undiscovered",21)
+                    Garage.Plate(name)
 					name.Size,name.Position=UDim2.new(1,-12,0,46),UDim2.new(0,6,1,-62)
 					name.TextScaled=true
 					make("UITextSizeConstraint",name,"NameLimit",{MinTextSize=12,MaxTextSize=21})
@@ -327,6 +333,7 @@ function Gallery.Create(gui, onEquip)
 	close.Activated:Connect(api.Toggle)
 	layout()
 	redraw()
+	Garage.Shell(panel) Garage.Header(title)
 	return api
 end
 return Gallery

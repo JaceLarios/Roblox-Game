@@ -1,3 +1,5 @@
+local ItemNames=require(game:GetService("ReplicatedStorage"):WaitForChild("ItemNames"))
+local Garage=require(game:GetService("ReplicatedStorage"):WaitForChild("GarageTheme"))
 -- Area-specific fusion presentation. Contract: Play(data) yields until fully
 -- hidden, including skip/cleanup. Claude's controller owns the queue and the
 -- server owns all fusion outcomes. This module never writes player data.
@@ -78,6 +80,7 @@ local function run(data,area)
 			BackgroundTransparency=1,BorderSizePixel=0,GroupTransparency=1,Active=true})
 		local background=make("Frame",overlay,"Atmosphere",{Size=UDim2.fromScale(1,1),BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=.06,BorderSizePixel=0,ZIndex=0})
 		make("UIGradient",background,"Gradient",{Rotation=75,Color=ColorSequence.new(theme.base,area=="brainrot" and Color3.fromRGB(210,175,229) or Color3.fromRGB(53,114,113))})
+		make("ImageLabel",background,"Workshop",{Image=Garage.Background,ImageTransparency=.1,Size=UDim2.fromScale(1,1),ScaleType=Enum.ScaleType.Crop,BackgroundTransparency=1,ZIndex=0})
 		local stage=make("Frame",overlay,"Stage",{Size=UDim2.fromScale(.94,.94),Position=UDim2.fromScale(.03,.03),BackgroundTransparency=1,ZIndex=2})
 		label(stage,"AreaTitle",theme.title,UDim2.fromScale(.12,.02),UDim2.fromScale(.76,.075),44)
 		label(stage,"Announcement",plain(data.headerText or "FUSION COMPLETE"),UDim2.fromScale(.12,.10),UDim2.fromScale(.76,.05),23)
@@ -90,6 +93,19 @@ local function run(data,area)
 			TextColor3=INK,BackgroundColor3=CREAM,Size=UDim2.fromOffset(88,44),AnchorPoint=Vector2.new(1,1),
 			Position=UDim2.new(1,-16,1,-14),ZIndex=12,BorderSizePixel=0})
 		round(skipButton,14)
+  skipButton.Size=UDim2.fromOffset(210,70) skipButton.TextSize=32
+  Garage.Button(skipButton,Color3.fromRGB(255,171,29))
+  local banner=stage.AreaTitle
+  banner.Position=UDim2.fromScale(.1,.015) banner.Size=UDim2.fromScale(.8,.10)
+  banner.TextSize=52 Garage.Header(banner)
+  Garage.Plate(stage.Announcement,Color3.fromRGB(133,223,255))
+  resultName.Position=UDim2.fromScale(.32,.77) resultName.Size=UDim2.fromScale(.36,.064) Garage.Plate(resultName)
+  rarityLabel.Position=UDim2.fromScale(.36,.841) rarityLabel.Size=UDim2.fromScale(.28,.044) rarityLabel.TextSize=26
+  Garage.Plate(rarityLabel,Color3.fromRGB(211,98,255))
+  reward.Position=UDim2.fromScale(.33,.897) reward.Size=UDim2.fromScale(.34,.053) Garage.Plate(reward)
+  local podium=Garage.Pedestal(stage,Color3.fromRGB(46,237,174),UDim2.fromScale(.26,.66),UDim2.fromScale(.48,.15))
+  podium.Visible=false
+
 		table.insert(connections,skipButton.Activated:Connect(function() skip=true end))
 		local a,acam=item(stage,data.aTag,"IngredientA")
 		local b,bcam=item(stage,data.bTag,"IngredientB")
@@ -176,7 +192,13 @@ local function run(data,area)
 			else
 				local u=t-revealAt
 				if not revealed then
-					revealed=true a.Visible=false b.Visible=false core.Visible=false result.Visible=true
+					revealed=true podium.Visible=true core.Visible=false result.Visible=true
+                    a.Position=UDim2.fromScale(.075,.82) b.Position=UDim2.fromScale(.215,.82)
+                    a.Size=UDim2.fromScale(.14,.17) b.Size=a.Size
+                    local ingredients=Garage.Text(stage,"Ingredients","FUSION INGREDIENTS",UDim2.fromScale(.015,.69),UDim2.fromScale(.27,.04),22,Color3.new(1,1,1))
+                    Garage.Text(stage,"Plus","+",UDim2.fromScale(.12,.78),UDim2.fromScale(.05,.06),38,Color3.new(1,1,1))
+                    local al=Garage.Text(stage,"IngredientNameA",ItemNames.Display(plain(data.aTag)),UDim2.fromScale(.005,.915),UDim2.fromScale(.14,.042),17) Garage.Plate(al)
+                    local bl=Garage.Text(stage,"IngredientNameB",ItemNames.Display(plain(data.bTag)),UDim2.fromScale(.155,.915),UDim2.fromScale(.14,.042),17) Garage.Plate(bl)
 					phase.Text="FUSED!" resultName.Visible=true reward.Visible=true rarityLabel.Visible=true
 					skipButton.Text="Continue"
 					sound(bass,area=="brainrot" and 1.35 or .8,.4)

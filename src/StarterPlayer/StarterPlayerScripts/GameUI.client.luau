@@ -1,3 +1,4 @@
+local Garage = require(game:GetService("ReplicatedStorage"):WaitForChild("GarageTheme"))
 local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("ItemNames"))
 --[[
 	GameUI (LocalScript, StarterPlayerScripts) — Junkyard Fusion v1
@@ -305,7 +306,7 @@ dailyFrame.BorderSizePixel = 0
 dailyFrame.ZIndex = 6
 dailyFrame.Parent = dimmer
 rounded(dailyFrame, 16)
-UIStyle.FixedFit(dailyFrame,600,470)
+-- Garage.Canvas owns reward sizing.
 
 local frameGradient = Instance.new("UIGradient")
 frameGradient.Color = ColorSequence.new({
@@ -400,8 +401,8 @@ gridLayout.FillDirectionMaxCells = 4
 gridLayout.Parent = grid
 
 local claimBtn = Instance.new("TextButton")
-claimBtn.Size = UDim2.new(0, 280, 0, 52)
-claimBtn.Position = UDim2.new(0.5, -140, 1, -70)
+claimBtn.Size = UDim2.fromOffset(550,84)
+claimBtn.Position = UDim2.new(0.5,-275,1,-115)
 claimBtn.BackgroundColor3 = Color3.fromRGB(96, 214, 126)
 claimBtn.Text = "CLAIM"
 claimBtn.TextColor3 = Color3.fromRGB(12, 30, 16)
@@ -422,8 +423,8 @@ claimGradient.Parent = claimBtn
 
 claimBtn.MouseEnter:Connect(function()
 	TweenService:Create(claimBtn, TweenInfo.new(0.15), {
-		Size = UDim2.new(0, 292, 0, 56),
-		Position = UDim2.new(0.5, -146, 1, -72),
+		Size = UDim2.fromOffset(566,90),
+		Position = UDim2.new(0.5,-283,1,-118),
 	}):Play()
 end)
 
@@ -443,13 +444,7 @@ local function closeDaily()
 end
 
 local function openDaily()
-	dimmer.Visible = true
-	dailyFrame.Size = UDim2.new(0, 560, 0, 440)
-	dailyFrame.Position = UDim2.fromScale(0.5, 0.5)
-	TweenService:Create(dailyFrame, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-		Size = UDim2.new(0, 600, 0, 470),
-		Position = UDim2.fromScale(0.5, 0.5),
-	}):Play()
+ dimmer.Visible = true
 end
 
 dailyClose.MouseButton1Click:Connect(closeDaily)
@@ -491,168 +486,25 @@ task.spawn(function()
 end)
 
 local function redrawDaily(rewards, claimed, nextDay, available)
-	for _, child in ipairs(grid:GetChildren()) do
-		if not child:IsA("UIGridLayout") then child:Destroy() end
-	end
-	pulseCard = nil
 
-	streakLabel.Text = string.format("🔥 %d DAY STREAK", claimed or 0)
-
-	for day, reward in ipairs(rewards or {}) do
-		local isClaimed = day <= (claimed or 0)
-		local isNext    = available and day == nextDay
-		local isBonus   = day == #rewards
-
-		local card = Instance.new("Frame")
-		card.LayoutOrder = day
-		card.BorderSizePixel = 0
-		card.ZIndex = 7
-		card.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
-		card.Parent = grid
-		rounded(card, 12)
-
-		local cardGradient = Instance.new("UIGradient")
-		cardGradient.Rotation = 90
-		cardGradient.Parent = card
-
-		local stroke = Instance.new("UIStroke")
-		stroke.Thickness = 2
-		stroke.Transparency = 0.5
-		stroke.Parent = card
-
-		local accentColor
-
-		if isNext then
-			cardGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 222, 120)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(236, 168, 40)),
-			})
-			stroke.Color = Color3.fromRGB(255, 250, 210)
-			accentColor = Color3.fromRGB(40, 30, 10)
-			pulseCard = card
-		elseif isClaimed then
-			cardGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(90, 200, 130)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 120, 70)),
-			})
-			stroke.Color = Color3.fromRGB(170, 255, 200)
-			accentColor = Color3.fromRGB(225, 255, 235)
-		elseif isBonus then
-			cardGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 120, 200)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 70, 220)),
-			})
-			stroke.Color = Color3.fromRGB(255, 200, 255)
-			accentColor = Color3.fromRGB(255, 230, 255)
-		else
-			cardGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 50)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(26, 26, 34)),
-			})
-			stroke.Color = Color3.fromRGB(70, 70, 84)
-			accentColor = Color3.fromRGB(120, 120, 140)
-		end
-
-		local textColor = isNext and Color3.fromRGB(34, 24, 8) or LIGHT
-
-		-- Day number
-		local dayLabel = label(card, "DAY " .. day, UDim2.new(1, 0, 0, 16), accentColor, Enum.Font.FredokaOne, 12)
-		dayLabel.Position = UDim2.new(0, 0, 0, 12)
-		dayLabel.TextXAlignment = Enum.TextXAlignment.Center
-		dayLabel.ZIndex = 8
-
-		-- Coin dot
-		local coin = Instance.new("Frame")
-		coin.Size = UDim2.new(0, 26, 0, 26)
-		coin.Position = UDim2.new(0.5, -13, 0, 32)
-		coin.BackgroundColor3 = isNext and Color3.fromRGB(60, 44, 12) or GOLD
-		coin.BorderSizePixel = 0
-		coin.ZIndex = 8
-		coin.Parent = card
-		rounded(coin, 13)
-
-		local coinGradient = Instance.new("UIGradient")
-		if reward.kind == "boost" then
-			coinGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(160, 220, 255)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 150, 220)),
-			})
-		elseif reward.kind == "item" then
-			coinGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 170, 255)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 90, 220)),
-			})
-		else
-			coinGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 232, 150)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(224, 160, 40)),
-			})
-		end
-		coinGradient.Rotation = 90
-		coinGradient.Parent = coin
-
-		-- Amount
-		local iconText = "💰"
-		if reward.kind == "boost" then
-			iconText = "⚡"
-		elseif reward.kind == "item" then
-			iconText = "📦"
-		elseif reward.kind == "jackpot" then
-			iconText = "🐾"
-		end
-
-		local iconLabel = label(coin, iconText, UDim2.new(1, 0, 1, 0), Color3.fromRGB(255, 255, 255), Enum.Font.FredokaOne, 15)
-		iconLabel.TextXAlignment = Enum.TextXAlignment.Center
-		iconLabel.ZIndex = 9
-
-		-- Reward name, then the qualifier underneath
-		local amountLabel = label(card, reward.label, UDim2.new(1, -8, 0, 24), textColor, Enum.Font.LuckiestGuy, isBonus and 18 or 15)
-		amountLabel.Position = UDim2.new(0, 4, 0, 62)
-		amountLabel.TextXAlignment = Enum.TextXAlignment.Center
-		amountLabel.TextScaled = true
-		amountLabel.ZIndex = 8
-
-		local subLabel = label(card, reward.sub or "", UDim2.new(1, -8, 0, 14),
-			isNext and Color3.fromRGB(70, 52, 16) or DIM, Enum.Font.FredokaOne, 10)
-		subLabel.Position = UDim2.new(0, 4, 0, 86)
-		subLabel.TextXAlignment = Enum.TextXAlignment.Center
-		subLabel.ZIndex = 8
-
-		-- Status strip along the bottom
-		local statusBar = Instance.new("Frame")
-		statusBar.Size = UDim2.new(1, -20, 0, 22)
-		statusBar.Position = UDim2.new(0, 10, 1, -30)
-		statusBar.BackgroundColor3 = isNext and Color3.fromRGB(52, 38, 10) or Color3.fromRGB(18, 18, 24)
-		statusBar.BackgroundTransparency = 0.25
-		statusBar.BorderSizePixel = 0
-		statusBar.ZIndex = 8
-		statusBar.Parent = card
-		rounded(statusBar, 6)
-
-		local statusText = "🔒 LOCKED"
-		if isClaimed then
-			statusText = "✔ CLAIMED"
-		elseif isNext then
-			statusText = "▶ CLAIM NOW"
-		elseif isBonus then
-			statusText = "🐾 JACKPOT"
-		end
-
-		local status = label(statusBar, statusText, UDim2.new(1, 0, 1, 0),
-			isNext and Color3.fromRGB(255, 236, 170) or accentColor, Enum.Font.FredokaOne, 11)
-		status.TextXAlignment = Enum.TextXAlignment.Center
-		status.ZIndex = 9
-
-		-- Staggered entrance
-		card.Size = UDim2.new(0, 0, 0, 0)
-		task.delay(day * 0.045, function()
-			if card.Parent then
-				TweenService:Create(card, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-					Size = UDim2.new(0, 128, 0, 130),
-				}):Play()
-			end
-		end)
-	end
+ for _,child in grid:GetChildren() do child:Destroy() end
+ pulseCard=nil
+ streakLabel.Text=string.format("🔥 %d DAY STREAK",claimed or 0)
+ for day,reward in ipairs(rewards or {}) do
+  local isClaimed=day<=(claimed or 0)
+  local isNext=available and day==nextDay
+  local accent=isNext and Color3.fromRGB(255,202,39) or isClaimed and Color3.fromRGB(39,225,158) or day==7 and Color3.fromRGB(181,66,243) or Color3.fromRGB(64,169,239)
+  local bottom=day>4 local w=bottom and 360 or 267 local x=bottom and (day-5)*382 or (day-1)*285
+  local card=Garage.New("Frame",grid,"Day"..day,{Position=UDim2.fromOffset(x,bottom and 280 or 0),Size=UDim2.fromOffset(w,260),BackgroundTransparency=.3,BackgroundColor3=accent,ZIndex=7})
+  Garage.Inset(card)
+  local dayLabel=Garage.Text(card,"Day","DAY "..day,UDim2.new(.15,0,0,8),UDim2.new(.7,0,0,34),24)
+  Garage.Plate(dayLabel,isNext and GOLD or isClaimed and Color3.fromRGB(152,255,210) or Color3.fromRGB(191,226,255))
+  Garage.Pedestal(card,accent,UDim2.new(.08,0,0,146),UDim2.new(.84,0,0,64))
+  Garage.Art(card,reward.kind=="boost" and "boost" or reward.kind=="item" and "crate" or reward.kind=="jackpot" and "PETS" or "coins",UDim2.new(.19,0,0,40),UDim2.new(.62,0,0,128))
+  local name=Garage.Text(card,"Reward",reward.label,UDim2.new(.05,0,0,182),UDim2.new(.9,0,0,31),20) Garage.Plate(name)
+  local status=Garage.Text(card,"Status",isNext and "READY!" or isClaimed and "✓ CLAIMED" or "LOCKED",UDim2.new(.05,0,0,219),UDim2.new(.9,0,0,33),20)
+  Garage.Plate(status,isNext and GOLD or isClaimed and Color3.fromRGB(104,251,181) or Color3.fromRGB(148,194,235))
+ end
 
 	if available then
 		claimBtn.Visible = true
@@ -722,10 +574,11 @@ local function buildItemViewport(parent, itemName, tintColor, opts)
 	cam.Parent = viewport
 
 	local clone, size = ItemVisuals.CloneForViewport(itemName, tintColor)
+	if clone then Garage.Podium(clone, tintColor or ItemRarity.Color(FusionRecipes.GetTier(itemName), false, FusionRecipes.GetRarity(itemName))) end
 	if clone then
 		clone.Parent = viewport
-		local reach = math.max(size.X, size.Y, size.Z) * (opts.zoom or 1.5) + 0.2
-		cam.CFrame = CFrame.new(Vector3.new(reach * 0.6, reach * 0.5, reach * 0.85), Vector3.new(0, 0, 0))
+		local reach = math.max(size.X, size.Y, size.Z) * math.max(opts.zoom or 1.5,1.65) + 0.2
+		cam.CFrame = CFrame.new(Vector3.new(reach * 0.6, reach * 0.5, reach * 0.85), Vector3.new(0, -size.Y*.12, 0))
 	end
 	return viewport
 end
@@ -761,7 +614,7 @@ shopFrame.BorderSizePixel = 0
 shopFrame.Visible = false
 shopFrame.Parent = gui
 rounded(shopFrame, 18)
-UIStyle.Fit(shopFrame, 1100, 760)
+UIStyle.Modal(shopFrame)
 UIStyle.Surface(shopFrame,UIStyle.Palette.Cream,5)
 
 local shopTitle = label(shopFrame, "UPGRADES", UDim2.new(1, -30, 0, 30), Color3.fromRGB(90, 200, 255), Enum.Font.LuckiestGuy, 30)
@@ -863,7 +716,7 @@ local UPGRADE_COLORS = {
 	luck = GREEN,
 	carry = BLUE,
 	value = RED,
-	speed = WHITE,
+	speed = Color3.fromRGB(242,85,100),
 }
 
 -- Filled/empty pip row for the level, e.g. "●●●●○○○○○○" for Lv 4/10 —
@@ -874,96 +727,28 @@ local function levelDots(level, max)
 end
 
 local function redrawShop(shop)
-	for _, child in ipairs(shopScroll:GetChildren()) do
-		if not child:IsA("UIGridLayout") and not child:IsA("UIPadding") then child:Destroy() end
-	end
-
-	for i, entry in ipairs(shop or {}) do
-		local accent = UPGRADE_COLORS[entry.key] or LIGHT
-
-		local card = Instance.new("Frame")
-		card.Name = entry.key
-		card.LayoutOrder = i
-		card.BackgroundColor3 = WHITE
-		card.BorderSizePixel = 0
-		card.ClipsDescendants = true
-		card.Parent = shopScroll
-		rounded(card, 16)
-
-		local cardStroke = Instance.new("UIStroke")
-		cardStroke.Color = DARK
-		cardStroke.Thickness = 2
-		cardStroke.Parent = card
-
-		-- Colored header strip — each upgrade's own accent color doing the
-		-- "reads as four distinct things" job the old row tint used to do,
-		-- now bolder since it owns the whole top of the card.
-		local header = Instance.new("Frame")
-		header.Size = UDim2.new(1, 0, 0, 52)
-		header.BackgroundColor3 = accent
-		header.BorderSizePixel = 0
-		header.Parent = card
-
-		UIStyle.Art(header, entry.key, UDim2.fromOffset(4, -6), UDim2.fromOffset(60, 60))
-
-		local name = label(header, entry.name, UDim2.new(1, -70, 1, 0), DARK, Enum.Font.FredokaOne, 20)
-		name.Name = "UpgradeName"
-		name.Position = UDim2.new(0, 62, 0, 0)
-		name.TextXAlignment = Enum.TextXAlignment.Left
-		name.TextTruncate = Enum.TextTruncate.AtEnd
-
-		local dots = label(card, levelDots(entry.level, entry.max), UDim2.new(1, -24, 0, 22), accent, Enum.Font.FredokaOne, 15)
-		dots.Name = "UpgradeLevel"
-		dots.Position = UDim2.new(0, 12, 0, 62)
-		dots.TextXAlignment = Enum.TextXAlignment.Left
-		dots.TextTruncate = Enum.TextTruncate.AtEnd
-
-		local levelNum = label(card, string.format("Lv %d / %d", entry.level, entry.max), UDim2.new(1, -24, 0, 16), DIM, Enum.Font.FredokaOne, 12)
-		levelNum.Position = UDim2.new(0, 12, 0, 82)
-		levelNum.TextXAlignment = Enum.TextXAlignment.Left
-
-		local now = label(card, entry.effect, UDim2.new(1, -24, 0, 44), DARK, Enum.Font.FredokaOne, 15)
-		now.Name = "UpgradeNow"
-		now.Position = UDim2.new(0, 12, 0, 104)
-		now.TextWrapped = true
-		now.TextXAlignment = Enum.TextXAlignment.Left
-		now.TextYAlignment = Enum.TextYAlignment.Top
-
-		if entry.nextEffect then
-			local nxt = label(card, "Next: " .. entry.nextEffect, UDim2.new(1, -24, 0, 36),
-				accent, Enum.Font.FredokaOne, 13)
-			nxt.Name = "UpgradeNext"
-			nxt.Position = UDim2.new(0, 12, 0, 148)
-			nxt.TextWrapped = true
-			nxt.TextXAlignment = Enum.TextXAlignment.Left
-			nxt.TextYAlignment = Enum.TextYAlignment.Top
-		end
-
-		local buy = Instance.new("TextButton")
-		buy.Size = UDim2.new(1, -24, 0, 42)
-		buy.Position = UDim2.new(0, 12, 1, -54)
-		buy.BorderSizePixel = 0
-		buy.Font = Enum.Font.FredokaOne
-		buy.TextSize = 16
-		buy.Name = "UpgradeBuy"
-		buy.Parent = card
-		rounded(buy, 10)
-
-		if entry.cost then
-			buy.BackgroundColor3 = GOLD
-			buy.TextColor3 = DARK
-			buy.Text = string.format("Buy · %s coins", entry.cost)
-			buy.MouseButton1Click:Connect(function()
-				buyRemote:FireServer(entry.key)
-			end)
-		else
-			buy.BackgroundColor3 = Color3.fromRGB(50, 50, 58)
-			buy.TextColor3 = DIM
-			buy.Text = "MAXED"
-		end
-	end
-
-	shopScroll.CanvasSize = UDim2.new(0, 0, 0, shopLayout.AbsoluteContentSize.Y + 16)
+ for _,c in shopScroll:GetChildren() do if c:IsA("GuiObject") then c:Destroy() end end
+ for i,entry in ipairs(shop or {}) do
+  local accent=UPGRADE_COLORS[entry.key] or Color3.fromRGB(26,168,247)
+  local card=Garage.New("Frame",shopScroll,entry.key,{LayoutOrder=i,BackgroundColor3=Color3.fromRGB(58,172,222)})
+  Garage.Inset(card)
+  Garage.Pedestal(card,accent,UDim2.fromOffset(10,170),UDim2.fromOffset(210,65))
+  Garage.Art(card,entry.key,UDim2.fromOffset(15,25),UDim2.fromOffset(205,176))
+  local name=Garage.Text(card,"UpgradeName",entry.name,UDim2.fromOffset(228,12),UDim2.new(1,-240,0,43),26,Color3.new(1,1,1))
+  Garage.Gloss(name,accent,12)
+  name.TextTransparency=1 local caption=Garage.Text(name,"Caption",entry.name,UDim2.fromOffset(6,0),UDim2.new(1,-12,1,0),26,Color3.new(1,1,1)) caption.TextStrokeColor3=Color3.fromRGB(0,35,70) caption.TextStrokeTransparency=0
+  local effect=Garage.Text(card,"UpgradeNow",entry.effect,UDim2.fromOffset(228,62),UDim2.new(1,-240,0,46),18,Color3.new(1,1,1))
+  local progress=Garage.New("Frame",card,"Level",{Position=UDim2.fromOffset(232,112),Size=UDim2.new(1,-252,0,19),BackgroundColor3=Color3.fromRGB(0,68,122),BorderSizePixel=0})
+  rounded(progress,9)
+  for level=1,entry.max do
+   local segment=Garage.New("Frame",progress,"Segment",{Size=UDim2.new(1/entry.max,-3,1,-4),Position=UDim2.new((level-1)/entry.max,2,0,2),BackgroundColor3=level<=entry.level and GOLD or Color3.fromRGB(5,93,145),BorderSizePixel=0}) rounded(segment,5)
+  end
+  local next=Garage.Text(card,"UpgradeNext",entry.nextEffect or "MAXIMUM LEVEL",UDim2.fromOffset(228,141),UDim2.new(1,-240,0,39),16)
+  Garage.Plate(next)
+  local buy=Garage.New("TextButton",card,"UpgradeBuy",{Size=UDim2.new(1,-240,0,48),Position=UDim2.fromOffset(228,187),Text=entry.cost and ("Upgrade • "..commas(entry.cost)) or "MAXED",Font=Enum.Font.FredokaOne,TextSize=24,BackgroundColor3=Color3.fromRGB(20,219,126)})
+  Garage.Button(buy,entry.cost and Color3.fromRGB(20,219,126) or Color3.fromRGB(92,132,174))
+  if entry.cost then buy.MouseButton1Click:Connect(function() buyRemote:FireServer(entry.key) end) end
+ end
 end
 
 ------------------------------------------------------------------
@@ -1106,9 +891,10 @@ inventoryFrame.BorderSizePixel = 0
 inventoryFrame.Visible = false
 inventoryFrame.Parent = gui
 rounded(inventoryFrame, 24)
-UIStyle.Fit(inventoryFrame, 1200, 800)
+UIStyle.Modal(inventoryFrame)
+Garage.Fit(inventoryFrame)
 UIStyle.Surface(inventoryFrame, CREAM, 5)
-UIStyle.Art(inventoryFrame, "INVENTORY", UDim2.fromOffset(-16, -80), UDim2.fromOffset(112, 112))
+UIStyle.Art(inventoryFrame, "INVENTORY", UDim2.fromOffset(14, 5), UDim2.fromOffset(78, 78))
 
 local inventoryTitle = label(inventoryFrame, "Inventory!", UDim2.fromOffset(480, 88), BLUE, Enum.Font.LuckiestGuy, 60)
 inventoryTitle.Position = UDim2.fromOffset(92, -64)
@@ -1153,7 +939,7 @@ ruleRight.Size = UDim2.new(0, 220, 0, 3)
 ruleRight.Position = UDim2.new(1, -254, 0, 40)
 ruleRight.Parent = inventoryFrame
 
-local placedLabel = label(inventoryFrame, "YOUR PETS — EARNING  0 / 5", UDim2.fromOffset(560, 32), INK, Enum.Font.FredokaOne, 22)
+local placedLabel = label(inventoryFrame, "EARNING PADS  0 / 5", UDim2.fromOffset(560, 32), INK, Enum.Font.FredokaOne, 22)
 placedLabel.Position = UDim2.new(0.5, -280, 0, 26)
 placedLabel.TextXAlignment = Enum.TextXAlignment.Center
 
@@ -1302,73 +1088,69 @@ emptyHint.TextXAlignment = Enum.TextXAlignment.Left
 -- 650px of viewport width, which is every phone in portrait.
 ------------------------------------------------------------------
 
-local COLUMNS_WIDE, COLUMNS_COMPACT = 6, 4
+local COLUMNS_WIDE, COLUMNS_COMPACT = 3, 2
 local detailsOpen = false
 
+local detailScroll=mark(Instance.new("ScrollingFrame"))
+detailScroll.Name="DetailScroll" detailScroll.BackgroundTransparency=1 detailScroll.BorderSizePixel=0
+detailScroll.Size=UDim2.fromScale(1,1) detailScroll.ScrollBarThickness=4 detailScroll.Parent=statPanel
+local detailContent=mark(Instance.new("Frame"))
+detailContent.Name="Content" detailContent.BackgroundTransparency=1 detailContent.Size=UDim2.new(1,-6,0,420) detailContent.Parent=detailScroll
+for _,child in statPanel:GetChildren() do if child:IsA("GuiObject") and child~=detailScroll then child.Parent=detailContent end end
 local function relayout()
-	local compact = inventoryFrame:GetAttribute("Compact")
-
-	inventoryTitle.TextSize = compact and 40 or 60
-	inventoryTitle.Size = UDim2.fromOffset(compact and 340 or 480, 88)
-	UIStyle.Outline(inventoryTitle, compact and 40 or 60)
-
-	searchBox.Position = compact and UDim2.new(0, 22, 0, 14) or UDim2.new(1, -352, 0, -28)
-	searchBox.Size = compact and UDim2.new(1, -110, 0, 46) or UDim2.fromOffset(266, 50)
-
-	local bandY = compact and 74 or 26
-	placedLabel.Position = UDim2.new(0.5, -280, 0, bandY)
-	placedLabel.TextSize = compact and 18 or 22
-	inventoryCount.Position = compact and UDim2.new(1, -150, 0, bandY + 2) or UDim2.new(1, -184, 0, 66)
-
-	-- The flanking rules just get in the way once the caption is nearly as
-	-- wide as the panel, so they're dropped rather than squeezed.
-	ruleLeft.Visible = not compact
-	ruleRight.Visible = not compact
-	ruleLeft.Position = UDim2.new(0, 34, 0, bandY + 14)
-	ruleRight.Position = UDim2.new(1, -254, 0, bandY + 14)
-
-	local slotSize = compact and 76 or 104
-	placedRow.Position = UDim2.new(0, 34, 0, bandY + 36)
-	placedRow.Size = UDim2.new(1, -68, 0, slotSize + 4)
-	placedLayout.Padding = UDim.new(0, compact and 8 or 14)
-	for _, slot in ipairs(placedRow:GetChildren()) do
-		if slot:IsA("GuiObject") then slot.Size = UDim2.fromOffset(slotSize, slotSize) end
-	end
-
-	local gridTop = bandY + slotSize + 58
-	divider.Position = UDim2.new(0, 34, 0, gridTop - 18)
-
-	-- On a phone there is no room for a docked side panel, so details
-	-- become an overlay sitting on top of the grid instead.
-	if compact then
-		gridBoard.Position = UDim2.new(0, 16, 0, gridTop)
-		gridBoard.Size = UDim2.new(1, -32, 1, gridTop == 0 and -24 or -(gridTop + 24))
-		statPanel.Position = UDim2.new(0, 16, 0, gridTop)
-		statPanel.Size = UDim2.new(1, -32, 1, -(gridTop + 24))
-		statPanel.Visible = detailsOpen
-	else
-		gridBoard.Position = UDim2.new(0, 28, 0, gridTop)
-		gridBoard.Size = UDim2.new(1, -350, 1, -(gridTop + 26))
-		statPanel.Position = UDim2.new(1, -306, 0, gridTop)
-		statPanel.Size = UDim2.new(0, 278, 1, -(gridTop + 26))
-		statPanel.Visible = true
-	end
-
-	-- Keep the tile a constant size and change the column count instead, so
-	-- an item never renders smaller just because the screen got narrower.
-	local columns = compact and COLUMNS_COMPACT or COLUMNS_WIDE
-	local usable = gridBoard.AbsoluteSize.X
-	if usable <= 0 then
-		usable = compact and 540 or 818
-	else
-		usable = usable / math.max(inventoryFrame:FindFirstChildOfClass("UIScale") and inventoryFrame:FindFirstChildOfClass("UIScale").Scale or 1, 0.01) - 34
-	end
-	local cell = math.floor((usable - (columns - 1) * 12) / columns)
-	cell = math.clamp(cell, 96, 150)
-	inventoryLayout.CellSize = UDim2.fromOffset(cell, cell + 16)
+ local compact = inventoryFrame:GetAttribute("Compact")
+ inventoryFrame.Position=UDim2.fromScale(.5,.5)
+ inventoryTitle.Position=UDim2.fromOffset(98,12)
+ inventoryTitle.Size=UDim2.fromOffset(compact and 270 or 400,60)
+ inventoryTitle.TextSize=compact and 34 or 48
+ inventoryTitle.Text="INVENTORY"
+ inventoryClose.Position=UDim2.new(1,-76,0,12)
+ inventoryCount.Position=UDim2.fromOffset(compact and 24 or 512,compact and 90 or 26)
+ inventoryCount.Size=UDim2.fromOffset(150,30)
+ inventoryCount.TextColor3=Color3.fromRGB(255,224,80)
+ searchBox.Position=compact and UDim2.new(0,184,0,84) or UDim2.new(1,-420,0,18)
+ searchBox.Size=compact and UDim2.new(1,-208,0,44) or UDim2.fromOffset(320,46)
+ local short=inventoryFrame.Size.Y.Offset<650
+ local bandY=compact and 142 or 96
+ placedLabel.Position=UDim2.fromOffset(24,bandY)
+ placedLabel.Size=UDim2.new(1,-48,0,26) placedLabel.TextSize=19
+ placedLabel.TextXAlignment=Enum.TextXAlignment.Left
+ ruleLeft.Visible=false ruleRight.Visible=false divider.Visible=false
+ local slotSize=compact and 90 or (short and 70 or 122)
+ placedRow.Position=UDim2.fromOffset(24,bandY+28)
+ placedRow.Size=UDim2.new(1,-48,0,slotSize+4)
+ placedLayout.Padding=UDim.new(0,compact and 12 or 24)
+ for _,slot in placedRow:GetChildren() do if slot:IsA("GuiObject") then slot.Size=UDim2.fromOffset(slotSize,slotSize) end end
+ local gridTop=bandY+slotSize+44
+ if compact then
+  gridBoard.Position=UDim2.fromOffset(16,gridTop) gridBoard.Size=UDim2.new(1,-32,1,-gridTop-16)
+  statPanel.Position=gridBoard.Position statPanel.Size=gridBoard.Size statPanel.Visible=detailsOpen
+ else
+  gridBoard.Position=UDim2.fromOffset(18,gridTop) gridBoard.Size=UDim2.new(.69,-26,1,-gridTop-18)
+  statPanel.Position=UDim2.new(.69,2,0,gridTop) statPanel.Size=UDim2.new(.31,-20,1,-gridTop-18) statPanel.Visible=true
+ end
+ local columns=compact and 2 or 3
+ local width=compact and 516 or 744
+ local cell=math.floor((width-(columns-1)*16)/columns)
+ inventoryLayout.CellPadding=UDim2.fromOffset(16,18)
+ inventoryLayout.CellSize=UDim2.fromOffset(cell,cell*1.08)
+ local h=math.max(420,inventoryFrame.Size.Y.Offset-gridTop-18)
+ detailContent.Size=UDim2.new(1,-6,0,h)
+ detailScroll.CanvasSize=UDim2.fromOffset(0,h)
+ local previewHeight=math.clamp(h-258,110,240)
+ statViewportHolder.Position=UDim2.fromOffset(10,12) statViewportHolder.Size=UDim2.new(1,-20,0,previewHeight)
+ statViewportHolder.BackgroundTransparency=1
+ statName.Position=UDim2.fromOffset(14,previewHeight+22) statName.Size=UDim2.new(1,-28,0,36)
+ statValue.Position=UDim2.fromOffset(14,previewHeight+64)
+ statValue.Size=UDim2.new(1,-28,0,30)
+ statPerSecond.Position=UDim2.fromOffset(14,previewHeight+97)
+ statPerSecond.Size=UDim2.new(1,-28,0,30)
+ emptyHint.Position=UDim2.fromOffset(14,previewHeight+62)
+ for _,btn in {placeBtn,moveToCarryBtn,sellBtn} do btn.Size=UDim2.new(1,-28,0,42) btn.TextSize=20 end
 end
 
 inventoryFrame:GetAttributeChangedSignal("Compact"):Connect(relayout)
+inventoryFrame:GetPropertyChangedSignal("Size"):Connect(relayout)
 
 ------------------------------------------------------------------
 -- Tiles
@@ -1409,14 +1191,17 @@ local function showStatsFor(entry)
 		zoom = 1.35,
 	})
 
-	statName.Text = instanceTag(entry.name)
+	statName.Text = ItemNames.Display(entry.name)
+	statName.RichText=false
 	statValue.Text = string.format("Value:  %d coins", math.floor(entry.value))
 	statPerSecond.Text = string.format("If placed:  %.1f / sec", entry.perSecond)
 	emptyHint.Visible = false
 	sellBtn.Visible = true
 	moveToCarryBtn.Visible = true
 	placeBtn.Visible = true
-	placeBtn.BackgroundColor3 = #currentPlaced >= currentPlacedCapacity and DIM or UIStyle.Palette.Mint
+	UIStyle.Surface(placeBtn,#currentPlaced >= currentPlacedCapacity and Color3.fromRGB(89,122,144) or Color3.fromRGB(20,218,157),3)
+placeBtn.TextColor3=Color3.new(1,1,1)
+	for _,g in placeBtn:GetChildren() do if g:IsA("UIGradient") then g:Destroy() end end
 end
 
 do
@@ -1477,6 +1262,7 @@ function redrawInventory(items, capacity)
 		-- With no border left to highlight, selection is shown by tinting
 		-- that shadow teal and growing it.
 		local card = mark(Instance.new("TextButton"))
+		card.Name="InventoryItem"..entry.index
 		card.Size = inventoryLayout.CellSize
 		card.LayoutOrder = i
 		card.BackgroundTransparency = 1
@@ -1498,7 +1284,7 @@ function redrawInventory(items, capacity)
 		shadow.ImageColor3 = isSelected and UIStyle.Palette.Teal
 			or rarityColor:Lerp(SHADOW_TINT, 0.45)
 		local glow = math.clamp(0.38 - (rank - 1) * 0.052, 0.12, 0.38)
-		shadow.ImageTransparency = isSelected and 0.2 or glow
+		shadow.ImageTransparency = 1
 		shadow.ScaleType = Enum.ScaleType.Stretch
 		shadow.AnchorPoint = Vector2.new(0.5, 0.5)
 		-- Low and flat, reading as a contact shadow on the floor under a
@@ -1519,7 +1305,7 @@ function redrawInventory(items, capacity)
 		shadow.Parent = card
 
 		buildItemViewport(card, baseName, tintColor, {
-			size = UDim2.new(1, -6, 1, -24),
+			size = UDim2.new(1, -6, 1, -72),
 			position = UDim2.fromOffset(3, 0),
 			zoom = 1.28,
 			zIndex = 2,
@@ -1527,12 +1313,17 @@ function redrawInventory(items, capacity)
 
 		-- Name and value sit straight on the panel now, so both carry a dark
 		-- text outline for legibility rather than a coloured strip behind them.
-		local nameLbl = mark(label(card, entry.name, UDim2.new(1, -6, 0, 20), rarityColor, Enum.Font.FredokaOne, 13))
-		nameLbl.Position = UDim2.new(0, 3, 1, -21)
+		local nameLbl = mark(label(card, ItemNames.Display(entry.name), UDim2.new(1, -6, 0, 20), rarityColor, Enum.Font.FredokaOne, 13))
+		nameLbl.Position = UDim2.new(0, 8, 1, -62)
+		nameLbl.Size=UDim2.new(1,-16,0,30)
+		nameLbl.TextSize=18 nameLbl.TextColor3=INK nameLbl.TextStrokeTransparency=1
+  local rarityChip=Garage.Text(card,"Rarity",rarityKey or (entry.isSecret and "SECRET" or "FUSED"),UDim2.new(.18,0,1,-28),UDim2.new(.64,0,0,25),16)
+  Garage.Plate(rarityChip,rarityColor:Lerp(Color3.new(1,1,1),.35))
+		nameLbl.BackgroundColor3=Color3.fromRGB(255,245,212) nameLbl.BackgroundTransparency=0 rounded(nameLbl,10)
 		nameLbl.TextXAlignment = Enum.TextXAlignment.Center
 		nameLbl.TextTruncate = Enum.TextTruncate.AtEnd
 		nameLbl.TextStrokeColor3 = INK
-		nameLbl.TextStrokeTransparency = 0.1
+		nameLbl.TextStrokeTransparency = 1
 		nameLbl.ZIndex = 4
 
 		local shown = entry.value >= 1000 and string.format("%.1fk", entry.value / 1000) or tostring(math.floor(entry.value))
@@ -1561,7 +1352,7 @@ end
 function redrawPlaced(items, capacity)
 	currentPlaced = items
 	currentPlacedCapacity = capacity or currentPlacedCapacity
-	placedLabel.Text = string.format("YOUR PETS — EARNING  %d / %d", #items, currentPlacedCapacity)
+	placedLabel.Text = string.format("EARNING PADS  %d / %d", #items, currentPlacedCapacity)
 
 	if selectedIndex then
 		placeBtn.BackgroundColor3 = #currentPlaced >= currentPlacedCapacity and DIM or UIStyle.Palette.Mint
@@ -1599,7 +1390,7 @@ function redrawPlaced(items, capacity)
 			shadow.BackgroundTransparency = 1
 			shadow.Image = SHADOW_SPRITE
 			shadow.ImageColor3 = SHADOW_TINT
-			shadow.ImageTransparency = 0.38
+			shadow.ImageTransparency = 1
 			shadow.ScaleType = Enum.ScaleType.Stretch
 			shadow.AnchorPoint = Vector2.new(0.5, 0.5)
 			shadow.Position = UDim2.new(0.5, 0, 1, -24)
@@ -1670,6 +1461,22 @@ inventoryClose.MouseButton1Click:Connect(toggleInventory)
 relayout()
 showStatsFor(nil)
 
+Garage.Shell(inventoryFrame)
+Garage.Header(inventoryTitle)
+Garage.Inset(gridBoard) Garage.Inset(statPanel) Garage.Inset(placedRow)
+Garage.Plate(statValue) Garage.Plate(statPerSecond)
+Garage.Plate(statName)
+statName.BackgroundColor3=Color3.fromRGB(255,243,209)
+statName.TextColor3=INK statName.TextStrokeTransparency=1
+statViewportHolder:FindFirstChildOfClass("UIStroke").Transparency=1
+UIStyle.Surface(moveToCarryBtn,Color3.fromRGB(0,165,250),3)
+UIStyle.Surface(placeBtn,Color3.fromRGB(20,218,157),3)
+UIStyle.Surface(sellBtn,Color3.fromRGB(255,91,35),3)
+for _,btn in {placeBtn,moveToCarryBtn,sellBtn} do UIStyle.Surface(btn,btn.BackgroundColor3,3) UIStyle.Outline(btn,20) for _,g in btn:GetChildren() do if g:IsA("UIGradient") then g:Destroy() end end end
+for _,b in {placeBtn,moveToCarryBtn,sellBtn} do Garage.Button(b) end
+inventoryFrame.Illustration:Destroy()
+Garage.Art(inventoryFrame,"INVENTORY",UDim2.fromOffset(14,8),UDim2.fromOffset(78,78))
+relayout()
 end -- do (Inventory section)
 
 ------------------------------------------------------------------
@@ -1854,13 +1661,14 @@ tradePickerScroll.ScrollBarThickness = 5
 tradePickerScroll.ZIndex = 5
 tradePickerScroll.Parent = tradePickerFrame
 
-local tradePickerLayout = Instance.new("UIListLayout")
-tradePickerLayout.Padding = UDim.new(0, 6)
+local tradePickerLayout = Instance.new("UIGridLayout")
+tradePickerLayout.CellSize=UDim2.fromOffset(99,145)
+tradePickerLayout.CellPadding=UDim2.fromOffset(8,10)
 tradePickerLayout.Parent = tradePickerScroll
 
 local function redrawTradePicker()
 	for _, child in ipairs(tradePickerScroll:GetChildren()) do
-		if not child:IsA("UIListLayout") then child:Destroy() end
+		if not child:IsA("UIGridLayout") then child:Destroy() end
 	end
 
 	if #myTradeItems == 0 then
@@ -1890,7 +1698,13 @@ local function redrawTradePicker()
 		local tag = ItemRarity.Tag(ref.itemName, FusionRecipes.GetTier(ref.itemName), FusionRecipes.IsSecretResult(ref.itemName))
 		local rowLabel = label(row, tag, UDim2.new(1, -20, 1, 0), LIGHT, Enum.Font.FredokaOne, 14)
 		rowLabel.Position = UDim2.new(0, 10, 0, 0)
-		rowLabel.RichText = true
+		rowLabel.RichText = false
+  rowLabel.Text=ItemNames.Display(ref.itemName)
+  rowLabel.Position=UDim2.new(0,3,1,-35) rowLabel.Size=UDim2.new(1,-6,0,32) rowLabel.TextSize=13
+  Garage.Plate(rowLabel)
+  local base=Mutations.Unwrap(ref.itemName)
+  buildItemViewport(row,base,nil,{size=UDim2.new(1,-4,0,106),position=UDim2.fromOffset(2,2),zoom=1.75})
+  Garage.Inset(row)
 		rowLabel.ZIndex = 5
 
 		row.MouseButton1Click:Connect(function()
@@ -1930,6 +1744,8 @@ function redrawTrade(trade)
 	tradeTitle.Text = "TRADING WITH " .. string.upper(trade.partnerName)
 
 	local function fillOffer(offer, itemLbl, statusLbl, confirmed, whoseConfirmedText)
+  for _,c in itemLbl.Parent:GetChildren() do if c:IsA("ViewportFrame") then c:Destroy() end end
+  if offer then local base,tint=Mutations.Unwrap(offer.itemName) buildItemViewport(itemLbl.Parent,base,Mutations.Color(tint),{size=UDim2.new(1,-18,0,320),position=UDim2.fromOffset(9,65),zoom=1.7}) end
 		if offer then
 			itemLbl.Text = ItemRarity.Tag(offer.itemName, FusionRecipes.GetTier(offer.itemName), FusionRecipes.IsSecretResult(offer.itemName))
 		else
@@ -1951,7 +1767,8 @@ function redrawTrade(trade)
 		tradeStatus.Text = "Pick an item, then confirm when you're both ready."
 	end
 
-	confirmTradeBtn.Text = trade.myConfirmed and "WAITING..." or "CONFIRM"
+	redrawTradePicker() tradePickerFrame.Visible=true
+ confirmTradeBtn.Text = trade.myConfirmed and "WAITING..." or "CONFIRM"
 	confirmTradeBtn.BackgroundColor3 = trade.myConfirmed and Color3.fromRGB(60, 60, 68) or Color3.fromRGB(120, 220, 140)
 end
 
@@ -2039,7 +1856,11 @@ local function redrawTradeList()
 		rowStroke.Parent = row
 
 		local nameLbl = label(row, other.Name, UDim2.new(1, -140, 1, 0), LIGHT, Enum.Font.FredokaOne, 18)
-		nameLbl.Position = UDim2.new(0, 16, 0, 0)
+		nameLbl.Position = UDim2.new(0, 72, 0, 0)
+  nameLbl.Size=UDim2.new(1,-188,1,0)
+  local avatar=Garage.New("ImageLabel",row,"Avatar",{Position=UDim2.fromOffset(6,6),Size=UDim2.fromOffset(58,58),BackgroundTransparency=1})
+  task.spawn(function() local ok,url=pcall(function() return Players:GetUserThumbnailAsync(other.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size150x150) end) if ok and avatar.Parent then avatar.Image=url end end)
+  Garage.Inset(row)
 		nameLbl.TextYAlignment = Enum.TextYAlignment.Center
 
 		local tradeRowBtn = Instance.new("TextButton")
@@ -2054,7 +1875,8 @@ local function redrawTradeList()
 		tradeRowBtn.Parent = row
 		rounded(tradeRowBtn, 10)
 
-		tradeRowBtn.MouseButton1Click:Connect(function()
+		Garage.Button(tradeRowBtn,Color3.fromRGB(0,167,249))
+  tradeRowBtn.MouseButton1Click:Connect(function()
 			startTradeWithRemote:FireServer(other.UserId)
 			tradeListFrame.Visible = false
 		end)
@@ -2079,6 +1901,33 @@ Players.PlayerRemoving:Connect(function()
 	if tradeListFrame.Visible then task.defer(redrawTradeList) end
 end)
 
+for _,panel in {tradeFrame,tradeListFrame} do Garage.Shell(panel) end
+Garage.Inset(tradePickerFrame)
+for _,heading in {tradeTitle,tradeListTitle,tradePickerTitle} do Garage.Header(heading) end
+
+Garage.Canvas(tradeFrame,1200,820) Garage.Canvas(tradeListFrame,1200,820)
+tradeFrame.Name="TradingPanel" tradeListFrame.Name="TradePlayersPanel" tradePickerFrame.Name="ChooseTradeItem"
+tradeTitle.Position=UDim2.fromOffset(94,15) tradeTitle.Size=UDim2.fromOffset(630,64) tradeTitle.TextSize=40
+tradeListTitle.Position=UDim2.fromOffset(94,15) tradeListTitle.Size=UDim2.fromOffset(500,64) tradeListTitle.Text="TRADING" tradeListTitle.TextSize=46
+Garage.Art(tradeFrame,"TRADE",UDim2.fromOffset(14,8),UDim2.fromOffset(78,78))
+Garage.Art(tradeListFrame,"TRADE",UDim2.fromOffset(14,8),UDim2.fromOffset(78,78))
+myBox.Position=UDim2.fromOffset(24,115) myBox.Size=UDim2.fromOffset(378,477) Garage.Inset(myBox)
+theirBox.Position=UDim2.fromOffset(425,115) theirBox.Size=UDim2.fromOffset(378,477) Garage.Inset(theirBox)
+for _,l in {myItemLbl,theirItemLbl} do l.Position=UDim2.fromOffset(12,389) l.Size=UDim2.new(1,-24,0,43) l.TextSize=24 Garage.Plate(l) end
+for _,l in {myStatusLbl,theirStatusLbl} do l.Position=UDim2.new(0,12,1,-38) l.Size=UDim2.new(1,-24,0,30) l.TextSize=20 end
+chooseItemBtn.Position=UDim2.fromOffset(40,607) chooseItemBtn.Size=UDim2.fromOffset(345,58) chooseItemBtn.TextSize=27 Garage.Button(chooseItemBtn,Color3.fromRGB(0,175,248))
+tradeStatus.Position=UDim2.fromOffset(35,678) tradeStatus.Size=UDim2.fromOffset(750,38) tradeStatus.TextSize=22 Garage.Plate(tradeStatus,Color3.fromRGB(153,223,248))
+confirmTradeBtn.Position=UDim2.fromOffset(40,736) confirmTradeBtn.Size=UDim2.fromOffset(350,58) confirmTradeBtn.TextSize=27 Garage.Button(confirmTradeBtn,Color3.fromRGB(20,224,128))
+cancelTradeBtn.Position=UDim2.fromOffset(425,736) cancelTradeBtn.Size=UDim2.fromOffset(350,58) cancelTradeBtn.TextSize=27 Garage.Button(cancelTradeBtn,Color3.fromRGB(255,86,36))
+tradePickerFrame.Parent=tradeFrame tradePickerFrame.Position=UDim2.fromOffset(824,116) tradePickerFrame.Size=UDim2.fromOffset(352,674)
+tradePickerTitle.Size=UDim2.new(1,-28,0,50) tradePickerTitle.Position=UDim2.fromOffset(14,12) tradePickerTitle.TextSize=26
+tradePickerClose.Visible=false
+tradePickerScroll.Position=UDim2.fromOffset(13,78) tradePickerScroll.Size=UDim2.new(1,-26,1,-92)
+tradeListScroll.Position=UDim2.fromOffset(824,125) tradeListScroll.Size=UDim2.fromOffset(350,658)
+local playerPane=Garage.New("Frame",tradeListFrame,"PlayerPane",{Position=UDim2.fromOffset(814,105),Size=UDim2.fromOffset(370,684),ZIndex=0}) Garage.Inset(playerPane)
+local greeting=Garage.Text(tradeListFrame,"Greeting","TRADE VEHICLES\nBUILD A BIGGER GARAGE!",UDim2.fromOffset(50,135),UDim2.fromOffset(700,95),38,Color3.new(1,1,1))
+Garage.Art(tradeListFrame,"TRADE",UDim2.fromOffset(275,260),UDim2.fromOffset(255,235))
+Garage.Text(tradeListFrame,"HowTo","Choose an online player to begin.\nBoth players must confirm before items change hands.",UDim2.fromOffset(80,565),UDim2.fromOffset(640,130),26,Color3.new(1,1,1))
 end -- do (Event banner + Trading section)
 
 ------------------------------------------------------------------
@@ -2306,6 +2155,7 @@ travelScroll.Parent = travelFrame
 
 local travelLayout = Instance.new("UIListLayout")
 travelLayout.Padding = UDim.new(0, 22)
+travelLayout.SortOrder = Enum.SortOrder.LayoutOrder
 travelLayout.Parent = travelScroll
 
 travelLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
@@ -2323,60 +2173,19 @@ travelClose.MouseButton1Click:Connect(toggleTravel)
 -- and fun on every screen, unlike a hand-lit 3D scene, which fought us
 -- on camera angles for three rounds before we gave up on it here.
 local function buildWorldRow(world)
-	local row = Instance.new("TextButton")
-	row.Size = UDim2.new(1, -6, 0, 220)
-	row.BackgroundColor3 = world.gradientColors[1]
-	row.AutoButtonColor = false
-	row.Text = ""
-	row.BorderSizePixel = 0
-	row.ClipsDescendants = true
-	row.Parent = travelScroll
-	rounded(row, 20)
-
-	local gradient = Instance.new("UIGradient")
-	gradient.Color = ColorSequence.new(world.gradientColors[1], world.gradientColors[2])
-	gradient.Rotation = 20
-	gradient.Parent = row
-
-	-- Giant emoji badge, oversized and cropped by the card so it reads as
-	-- a bold graphic rather than a tiny icon.
-	local emojiBadge = Instance.new("TextLabel")
-	emojiBadge.Size = UDim2.new(0, 260, 0, 260)
-	emojiBadge.Position = UDim2.new(0, -40, 0.5, -130)
-	emojiBadge.BackgroundTransparency = 1
-	emojiBadge.Text = world.emoji
-	emojiBadge.Font = Enum.Font.LuckiestGuy
-	emojiBadge.TextSize = 150
-	emojiBadge.TextTransparency = 0.06
-	emojiBadge.TextStrokeTransparency = 0.75
-	emojiBadge.Rotation = -8
-	emojiBadge.Parent = row
-
-	local nameLabel = label(row, world.name, UDim2.new(1, -280, 0, 44), Color3.fromRGB(255, 255, 255), Enum.Font.LuckiestGuy, 34)
-	nameLabel.Position = UDim2.new(0, 200, 0, 34)
-	nameLabel.TextStrokeTransparency = 0.55
-
-	local blurbLabel = label(row, world.blurb, UDim2.new(1, -300, 0, 40), Color3.fromRGB(255, 255, 255), Enum.Font.FredokaOne, 16)
-	blurbLabel.Position = UDim2.new(0, 200, 0, 82)
-	blurbLabel.TextWrapped = true
-	blurbLabel.TextTransparency = 0.05
-	blurbLabel.TextStrokeTransparency = 0.65
-
-	local goPill = Instance.new("Frame")
-	goPill.Size = UDim2.new(0, 200, 0, 42)
-	goPill.Position = UDim2.new(0, 200, 1, -62)
-	goPill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	goPill.BorderSizePixel = 0
-	goPill.Parent = row
-	rounded(goPill, 21)
-
-	local goLabel = label(goPill, "TAP TO TRAVEL  →", UDim2.new(1, 0, 1, 0), world.gradientColors[2], Enum.Font.LuckiestGuy, 15)
-	goLabel.TextXAlignment = Enum.TextXAlignment.Center
-
-	row.MouseButton1Click:Connect(function()
-		travelRemote:FireServer(world.key)
-		toggleTravel()
-	end)
+ local index=world.key=="brainrot" and 1 or world.key=="haunted" and 2 or 0
+ local color=({Color3.fromRGB(255,159,27),Color3.fromRGB(235,49,220),Color3.fromRGB(128,65,225)})[index+1]
+ local row=Garage.New("TextButton",travelScroll,"Destination_"..world.key,{Size=UDim2.new(1,-12,0,210),Text="",LayoutOrder=index,BackgroundColor3=color,AutoButtonColor=false})
+ Garage.Gloss(row,color,20)
+ Garage.Scene(row,index,UDim2.fromOffset(8,8),UDim2.new(.44,-12,1,-16))
+ local name=Garage.Text(row,"DestinationName",world.name,UDim2.new(.46,0,0,13),UDim2.new(.52,-12,0,54),38,Color3.new(1,1,1))
+ name.TextStrokeColor3=Color3.fromRGB(10,24,56) name.TextStrokeTransparency=0
+ local desc=Garage.Text(row,"Description",world.blurb,UDim2.new(.46,0,0,79),UDim2.new(.29,-8,0,111),20)
+ Garage.Plate(desc)
+ local go=Garage.New("TextButton",row,"Travel",{Position=UDim2.new(.77,0,0,91),Size=UDim2.new(.21,-12,0,87),Text="TRAVEL →",TextSize=30,BackgroundColor3=Color3.fromRGB(12,223,142),Font=Enum.Font.FredokaOne})
+ Garage.Button(go)
+ local function travel() travelRemote:FireServer(world.key) toggleTravel() end
+ go.Activated:Connect(travel) row.Activated:Connect(travel)
 end
 
 for _, world in ipairs(WORLDS) do
@@ -2385,3 +2194,46 @@ end
 
 -- Apply presentation after construction; future inventory/reward rows inherit it.
 UIStyle.Attach(gui)
+Garage.Shell(shopFrame) Garage.Header(shopTitle)
+Garage.Shell(dailyFrame) Garage.Header(dailyTitle)
+Garage.Shell(travelFrame) Garage.Header(travelTitle)
+
+shopTitle.Position=UDim2.fromOffset(98,12) shopTitle.Size=UDim2.new(1,-200,0,60) shopTitle.TextSize=42
+shopFrame.Illustration.Position=UDim2.fromOffset(14,5) shopFrame.Illustration.Size=UDim2.fromOffset(78,78)
+shopClose.Position=UDim2.new(1,-76,0,12)
+rebirthRow.Position=UDim2.fromOffset(20,94) Garage.Inset(rebirthRow)
+shopScroll.Position=UDim2.fromOffset(20,196) shopScroll.Size=UDim2.new(1,-40,1,-212)
+
+dailyTitle.Size=UDim2.new(1,-250,0,38)
+travelTitle.Size=UDim2.new(1,-115,0,50)
+
+-- Daily rewards reference canvas.
+Garage.Canvas(dailyFrame,1200,820)
+dailyTitle.Text="DAILY REWARDS" dailyTitle.Position=UDim2.fromOffset(90,16) dailyTitle.Size=UDim2.fromOffset(495,64) dailyTitle.TextSize=46
+Garage.Art(dailyFrame,"REWARDS",UDim2.fromOffset(12,12),UDim2.fromOffset(78,78))
+streakPill.Position=UDim2.fromOffset(615,18) streakPill.Size=UDim2.fromOffset(445,42) streakPill.BackgroundTransparency=1
+streakLabel.Position=UDim2.fromOffset(0,0) streakLabel.Size=UDim2.fromScale(1,1) streakLabel.TextSize=29 streakLabel.TextColor3=GOLD streakLabel:SetAttribute("Designed",true)
+dailySub.Position=UDim2.fromOffset(610,63) dailySub.Size=UDim2.fromOffset(460,34) dailySub.TextSize=16 dailySub.TextWrapped=true dailySub.TextColor3=Color3.new(1,1,1) dailySub:SetAttribute("Designed",true)
+grid.Position=UDim2.fromOffset(32,120) grid.Size=UDim2.new(1,-64,0,540)
+claimBtn.Position=UDim2.new(.5,-275,1,-115) claimBtn.Size=UDim2.fromOffset(550,84) claimBtn.TextSize=36
+Garage.Button(claimBtn,Color3.fromRGB(255,163,19))
+
+Garage.Canvas(shopFrame,1200,820)
+shopLayout.CellSize=UDim2.fromOffset(548,250) shopLayout.FillDirectionMaxCells=2 shopLayout.CellPadding=UDim2.fromOffset(18,18)
+shopScroll.Position=UDim2.fromOffset(28,104) shopScroll.Size=UDim2.new(1,-56,0,526)
+shopFrame.Illustration:Destroy() Garage.Art(shopFrame,"UPGRADES",UDim2.fromOffset(14,8),UDim2.fromOffset(78,78))
+shopTitle.Size=UDim2.fromOffset(480,64)
+rebirthRow.Position=UDim2.fromOffset(24,648) rebirthRow.Size=UDim2.new(1,-48,0,145)
+Garage.Gloss(rebirthRow,Color3.fromRGB(161,63,236),20)
+Garage.Art(rebirthRow,"rebirth",UDim2.fromOffset(12,0),UDim2.fromOffset(155,142))
+rebirthTitle.Position=UDim2.fromOffset(176,16) rebirthTitle.Size=UDim2.new(1,-390,0,32) rebirthTitle.TextSize=28 UIStyle.Outline(rebirthTitle,28)
+rebirthNow.Position=UDim2.fromOffset(176,57) rebirthNow.Size=UDim2.new(1,-390,0,25) rebirthNow.TextSize=18
+rebirthNext.Position=UDim2.fromOffset(176,86) rebirthNext.Size=UDim2.new(1,-390,0,44) rebirthNext.TextSize=17
+for _,l in {rebirthNow,rebirthNext} do l:SetAttribute("Designed",true) l.TextColor3=Color3.new(1,1,1) end
+rebirthBtn.Size=UDim2.fromOffset(186,66) rebirthBtn.Position=UDim2.new(1,-200,.5,-33) Garage.Button(rebirthBtn,Color3.fromRGB(179,54,243))
+
+Garage.Canvas(travelFrame,1200,820)
+travelTitle.Position=UDim2.fromOffset(94,14) travelTitle.Size=UDim2.fromOffset(470,64) travelTitle.TextSize=46
+Garage.Art(travelFrame,"TRAVEL",UDim2.fromOffset(14,8),UDim2.fromOffset(78,78))
+travelSub.Position=UDim2.fromOffset(610,27) travelSub.Size=UDim2.fromOffset(400,42) travelSub.TextSize=26 travelSub.TextColor3=Color3.new(1,1,1) travelSub:SetAttribute("Designed",true)
+travelScroll.Position=UDim2.fromOffset(22,108) travelScroll.Size=UDim2.new(1,-44,1,-128)
