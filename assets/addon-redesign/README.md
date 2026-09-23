@@ -6,6 +6,10 @@ Only appearance is being changed. Recipe mappings, rarity, value, drop odds and 
 
 ## Current weathered finish
 
+Latest installed revision is `AddonHeavyWear_20260923_v3`. The second texture pass adds more prominent rust and paint loss; bounds remain within .01 studs of v2 and no parts were added. Previous models are preserved in `ServerStorage.AddonBeforeHeavyWear_1790176482` and Git history. Current manifest, restore script and preview reflect v3. All 35 recipe pairs, three scales, weld movement, resize, tint, fade and 15 client asset loads passed; Play Output showed no errors. This revision's recovery script has not been rerun, though it uses the prior verified reconstruction procedure.
+
+**Art direction correction:** the user finds the rounded surfaces and painted-on wear too smooth. Further improvement should change actual geometry: dented sheet metal, irregular strap edges, chipped corners and uneven seams. Another texture-only iteration will not change those silhouettes. No such geometry pass has been performed yet.
+
 Revision `AddonWeathered_20260923_v2` is now installed. Textures add chipped enamel, rust at seams/fasteners, worn pulleys, oily recesses and heat-stained headers while keeping the five rarity colors. Shape bounds remain within .01 studs of the approved first pass, and each model still has three MeshParts. The Nitrous Tank's original valve/gauge submodel was retained to keep its dial legible.
 
 Current `models.json`, `restore.luau`, and `preview.png` describe the weathered version. The `*-clean-v1` files preserve the earlier appearance. Before replacement the live clean templates were moved to `ServerStorage.AddonBeforeWeathering_1790175813`.
