@@ -6,11 +6,19 @@ Only appearance is being changed. Recipe mappings, rarity, value, drop odds and 
 
 ## Current weathered finish
 
+Current geometry update: Nitrous Tank is `NitrousGeometry_20260923_v4`; Inline 4, V6 Engine, V8 Engine and Jet Engine are `AddonHardware_20260923_v4`. All five retain the v3 base meshes and colors beneath additional physical hardware. Historical texture-only revisions are described below.
+
+The three engines now have bent mounting rails, chipped rail ends, buckled mounting feet, repair plates, fasteners and raised weld beads. Jet Engine has segmented clamps fitted to the tapered barrel and weathered skids. Original engine bodies remain intact. Prior four templates are in `ServerStorage.AddonsBeforeHardware_1790180460`. Review clones are in `Workspace.AddonHardwareReview`; screenshot: `addon-hardware-preview.png`.
+
+Recovery for these four: restore/install the v3 base, run `addon-hardware.luau` to stage the detail variants, then `install-addon-hardware.luau` to preserve the old templates and install the new ones. The base manifest remains v3; procedural builders contain the added geometry. Nitrous recovery is described separately below.
+
+Verified in fresh Studio Play: all 35 recipe pairs; ground alignment; three scales; welded translation/rotation; resize, tint, fade and viewport cloning. Inline 4, V6 and V8 each have 44 BaseParts, Jet has 47, Nitrous has 79. All four review models preloaded and rendered; Output showed no errors. Returned to Edit. Manual pickup/fusion, save round trip and mobile performance remain untested. Not published.
+
 Latest installed revision is `AddonHeavyWear_20260923_v3`. The second texture pass adds more prominent rust and paint loss; bounds remain within .01 studs of v2 and no parts were added. Previous models are preserved in `ServerStorage.AddonBeforeHeavyWear_1790176482` and Git history. Current manifest, restore script and preview reflect v3. All 35 recipe pairs, three scales, weld movement, resize, tint, fade and 15 client asset loads passed; Play Output showed no errors. This revision's recovery script has not been rerun, though it uses the prior verified reconstruction procedure.
 
 ## Nitrous geometry study
 
-Nitrous Tank now uses `NitrousGeometry_20260923_v4`; the other four remain v3. Added actual segmented straps, bent cradle rails, angular end chips, mounting feet, fasteners and raised weld beads. The original bottle mesh remains intact beneath the hardware. This is the first-item review before extending the approach to other addons.
+Nitrous Tank uses `NitrousGeometry_20260923_v4`. Added actual segmented straps, bent cradle rails, angular end chips, mounting feet, fasteners and raised weld beads. The original bottle mesh remains intact beneath the hardware. This first-item study was approved before extending the approach to the other addons.
 
 Installed template has 79 BaseParts, bounds approximately 3 x 1.4125 x 1.198 studs. Prior tank is preserved at `ServerStorage.NitrousBeforeGeometry_1790177009`. The before/after pair is at `Workspace.NitrousGeometryReview`; `nitrous-geometry-preview.png` is the actual loaded client comparison.
 
