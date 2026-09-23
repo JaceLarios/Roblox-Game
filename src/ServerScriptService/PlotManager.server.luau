@@ -71,9 +71,10 @@ Gamepasses.Start()
 Players.CharacterAutoLoads = false
 
 -- ---------- Tuning ----------
-local PLOT_COUNT  = 8
-local RING_RADIUS = 190    -- how far each plot sits from the centre yard
-local PLOT_SIZE   = 70
+local Layout = require(game.ReplicatedStorage:WaitForChild("JunkyardLayout"))
+local PLOT_COUNT  = Layout.PlotCount
+local RING_RADIUS = Layout.PlotRadius
+local PLOT_SIZE   = Layout.PlotSize
 
 -- Five pads per plot, full stop — this doubles as both the physical pad
 -- count and the cap on how many pets can ever be earning money for one
@@ -126,7 +127,7 @@ local CARRY_HAND_GAP = 0.15
 -- both sides of each road so the lasers cannot simply be walked around.
 local LASER_COUNT = 5
 local BARRIER_HEIGHT = 16
-local BARRIER_HALF_WIDTH = 12.5   -- just outside MapRevamp's +/-11.5 guide rails
+local BARRIER_HALF_WIDTH = Layout.RouteHalfWidth
 
 -- Bat and speed coil. Everyone spawns with both, and gives up both the
 -- moment they pick something up.
@@ -690,7 +691,8 @@ for i = 1, PLOT_COUNT do
 	local signPost = makePart({
 		Name = "Sign",
 		Size = Vector3.new(2, 10, 2),
-		Position = centre + Vector3.new(0, 5, -PLOT_SIZE / 2 + 3),
+		-- Keep the owner sign off every base's straight return corridor.
+		Position = centre + Vector3.new(-math.sin(angle), 0, math.cos(angle)) * 28 + Vector3.new(0, 5, 0),
 		Material = Enum.Material.SmoothPlastic,
 		Color = Color3.fromRGB(255, 214, 0),
 		Parent = model,
@@ -776,10 +778,10 @@ for i = 1, PLOT_COUNT do
 	local side = Vector3.new(-math.sin(angle), 0, math.cos(angle))
 	-- Same expression MapRevamp uses for where this route stops, so the
 	-- lasers land on the painted road rather than past the end of it.
-	local roadEnd = 190 - 35 / math.max(math.abs(radial.X), math.abs(radial.Z))
+	local roadEnd = RING_RADIUS - (PLOT_SIZE / 2) / math.max(math.abs(radial.X), math.abs(radial.Z))
 	local lasers = {}
 	for k = 1, LASER_COUNT do
-		local r = 95 + (roadEnd - 12 - 95) * (k / (LASER_COUNT + 1))
+		local r = Layout.LaserStart + (roadEnd - 12 - Layout.LaserStart) * (k / (LASER_COUNT + 1))
 		local laser = makePart({
 			Name = "RoadLaser",
 			Size = Vector3.new(LASER_WIDTH, 0.5, 1.2),
@@ -802,7 +804,7 @@ for i = 1, PLOT_COUNT do
 	-- diagonal ones the road stops at the plot's corner while the shoulders
 	-- are still short of it, which used to leave a gap either side that
 	-- stepped straight off the road onto the grass.
-	local barrierStart = 88
+	local barrierStart = Layout.BarrierStart
 	for _, offset in ipairs({ -BARRIER_HALF_WIDTH, BARRIER_HALF_WIDTH }) do
 		local barrierEnd = roadEnd
 		while barrierEnd < RING_RADIUS do

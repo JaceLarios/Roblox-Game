@@ -1,5 +1,7 @@
 # Compact Salvage Works touchup
 
+Historical pass, superseded by the open-map rebuild described in docs/SALVAGE_WORKS_REBUILD.md. Current entry point is SalvageWorksMap; the small touchup is no longer run.
+
 Approved direction: the first Salvage Works concept, adapted to the existing footprint rather than a larger redesign.
 
 Implemented by `src/ServerStorage/SalvageWorksTouchup.luau`, called after YardFeatures.Build in MapBootstrap.

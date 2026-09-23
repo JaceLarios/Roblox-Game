@@ -34,7 +34,7 @@ local DESPAWN_AFTER  = 40     -- seconds before an ignored item disappears
 -- about 22 when this was 45 and drops came every 2 s.
 local MAX_ITEMS      = 14
 local AREA_CENTER    = Vector3.new(0, 1.2, 0)  -- Y is the yard's ground surface, not an item's center
-local AREA_SIZE      = 130    -- studs wide/deep (the central shared yard)
+local Layout = require(game.ReplicatedStorage:WaitForChild("JunkyardLayout"))
 
 -- Golden Scrap removed 2026-09-14 ("its litteary worthless now, get rid
 -- of the gold scrap idea in general") — its old role as "the exciting
@@ -162,13 +162,14 @@ local function surfaceY(x, z)
 	return hit.Position.Y
 end
 
--- Picks a random spot inside the square defined above, on top of whatever
--- is there — so the piles and container roofs get drops worth climbing for.
+-- Uniform-area circular drops give all eight radial bases the same
+-- distribution of return distances (the old square favored diagonal directions).
 local function randomSpawnPosition()
-	local half = AREA_SIZE / 2
 	for _ = 1, 8 do
-		local x = AREA_CENTER.X + math.random(-half, half)
-		local z = AREA_CENTER.Z + math.random(-half, half)
+		local angle = math.random() * math.pi * 2
+		local radius = math.sqrt(math.random()) * Layout.SpawnRadius
+		local x = AREA_CENTER.X + math.cos(angle) * radius
+		local z = AREA_CENTER.Z + math.sin(angle) * radius
 		-- The crane's legs stand inside this radius.
 		if x * x + z * z > 49 then
 			local y = surfaceY(x, z)
