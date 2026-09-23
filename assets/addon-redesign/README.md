@@ -8,7 +8,15 @@ Only appearance is being changed. Recipe mappings, rarity, value, drop odds and 
 
 Latest installed revision is `AddonHeavyWear_20260923_v3`. The second texture pass adds more prominent rust and paint loss; bounds remain within .01 studs of v2 and no parts were added. Previous models are preserved in `ServerStorage.AddonBeforeHeavyWear_1790176482` and Git history. Current manifest, restore script and preview reflect v3. All 35 recipe pairs, three scales, weld movement, resize, tint, fade and 15 client asset loads passed; Play Output showed no errors. This revision's recovery script has not been rerun, though it uses the prior verified reconstruction procedure.
 
-**Art direction correction:** the user finds the rounded surfaces and painted-on wear too smooth. Further improvement should change actual geometry: dented sheet metal, irregular strap edges, chipped corners and uneven seams. Another texture-only iteration will not change those silhouettes. No such geometry pass has been performed yet.
+## Nitrous geometry study
+
+Nitrous Tank now uses `NitrousGeometry_20260923_v4`; the other four remain v3. Added actual segmented straps, bent cradle rails, angular end chips, mounting feet, fasteners and raised weld beads. The original bottle mesh remains intact beneath the hardware. This is the first-item review before extending the approach to other addons.
+
+Installed template has 79 BaseParts, bounds approximately 3 x 1.4125 x 1.198 studs. Prior tank is preserved at `ServerStorage.NitrousBeforeGeometry_1790177009`. The before/after pair is at `Workspace.NitrousGeometryReview`; `nitrous-geometry-preview.png` is the actual loaded client comparison.
+
+Recovery: first restore/install the v3 base using the instructions below, then run `nitrous-geometry.luau` in Edit mode to build a staged copy, inspect it, and run `install-nitrous-geometry.luau`. Both scripts validate revisions; the installer backs up the prior tank. The base manifest and restore script remain v3, with the procedural overlay stored separately.
+
+Fresh Play verification passed all 35 recipe pairs, three scales, ground alignment, welded movement, resize, tint, fade and viewport cloning, including all 79 Nitrous parts. Output showed no errors. Studio returned to Edit. Manual pickup/fusion and mobile performance remain untested; the increased part count has not been benchmarked. Not published.
 
 Revision `AddonWeathered_20260923_v2` is now installed. Textures add chipped enamel, rust at seams/fasteners, worn pulleys, oily recesses and heat-stained headers while keeping the five rarity colors. Shape bounds remain within .01 studs of the approved first pass, and each model still has three MeshParts. The Nitrous Tank's original valve/gauge submodel was retained to keep its dial legible.
 
