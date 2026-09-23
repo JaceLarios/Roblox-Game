@@ -1,0 +1,569 @@
+[
+  {
+    "attributes": {
+      "CodexModelRevision": "LegendaryFullBody_20260923_v3",
+      "BaseVehicle": "Dirt Bike",
+      "Addon": "Jet Engine",
+      "GeneratedAssetId": 125653357915775,
+      "Rarity": "Legendary",
+      "DisplayName": "Rocket Rider"
+    },
+    "name": "Rocket Rider",
+    "parts": [
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          -0.00328826904296875,
+          -0.8545042276382446,
+          -2.3695068359375,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "rear wheel_geom",
+        "size": [
+          1.0228523015975952,
+          2.258944272994995,
+          2.260923147201538
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://138712434401055",
+        "texture": "rbxassetid://138977870174365"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          -0.0010833740234375,
+          -0.9392027854919434,
+          2.4188232421875,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "front wheel_geom",
+        "size": [
+          0.9469188451766968,
+          2.073101282119751,
+          2.162254810333252
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://74027656646741",
+        "texture": "rbxassetid://81117032520496"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          -0.00501251220703125,
+          0.03809404373168945,
+          1.98095703125,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "front fork_geom",
+        "size": [
+          1.420859932899475,
+          2.691314220428467,
+          1.6052359342575073
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://133737403110555",
+        "texture": "rbxassetid://120505524923327"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          0,
+          1.183201551437378,
+          1.237548828125,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "handlebars_geom",
+        "size": [
+          2.4354350566864014,
+          0.4839114844799042,
+          0.6506348848342896
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://124923212127522",
+        "texture": "rbxassetid://120331186083427"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          -0.01448822021484375,
+          0.15538907051086426,
+          0.0914306640625,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "frame_geom",
+        "size": [
+          1.9517850875854492,
+          3.657174825668335,
+          5.670215606689453
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://87556898444735",
+        "texture": "rbxassetid://137505002852607"
+      }
+    ]
+  },
+  {
+    "attributes": {
+      "CodexModelRevision": "LegendaryFullBody_20260923_v3",
+      "BaseVehicle": "Muscle Car",
+      "Addon": "Jet Engine",
+      "GeneratedAssetId": 71088991946079,
+      "Rarity": "Legendary",
+      "DisplayName": "Afterburner GT"
+    },
+    "name": "Afterburner GT",
+    "parts": [
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          -1.8144199848175049,
+          -0.6448097825050354,
+          -2.351489782333374,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "right rear wheel_geom",
+        "size": [
+          0.6952006220817566,
+          1.3984700441360474,
+          1.3823537826538086
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://113061939496216",
+        "texture": "rbxassetid://115522570695555"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          1.8183852434158325,
+          -0.6440688967704773,
+          -2.351489782333374,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "left rear wheel_geom",
+        "size": [
+          0.6967588663101196,
+          1.3972285985946655,
+          1.382129430770874
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://80028730410433",
+        "texture": "rbxassetid://108257865931193"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          -1.8010592460632324,
+          -0.6884723901748657,
+          1.8909943103790283,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "right front wheel_geom",
+        "size": [
+          0.6738290786743164,
+          1.3151748180389404,
+          1.305860161781311
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://125466247821446",
+        "texture": "rbxassetid://94748568549514"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          1.8058205842971802,
+          -0.6895369291305542,
+          1.8901636600494385,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "left front wheel_geom",
+        "size": [
+          0.6776005625724792,
+          1.3146157264709473,
+          1.3050291538238525
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://95179054667419",
+        "texture": "rbxassetid://98705223629388"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          -0.00005951523780822754,
+          0.03228214383125305,
+          3.3527612686157227e-8,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "body_geom",
+        "size": [
+          4.877098560333252,
+          2.6289970874786377,
+          7
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://117869262382075",
+        "texture": "rbxassetid://139578944479242"
+      }
+    ]
+  },
+  {
+    "attributes": {
+      "CodexModelRevision": "LegendaryFullBody_20260923_v3",
+      "BaseVehicle": "Cop Cruiser",
+      "Addon": "Jet Engine",
+      "GeneratedAssetId": 105488583478815,
+      "Rarity": "Legendary",
+      "DisplayName": "Sky Marshal"
+    },
+    "name": "Sky Marshal",
+    "parts": [
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          -0.0012500761076807976,
+          1.3354301452636719,
+          -0.7076550722122192,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "siren light bar_geom",
+        "size": [
+          1.6281567811965942,
+          0.37136465311050415,
+          0.4742102026939392
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://100775990699456",
+        "texture": "rbxassetid://81506752194675"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          -1.7910951375961304,
+          -0.6964378356933594,
+          -2.2838504314422607,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "right rear wheel_geom",
+        "size": [
+          0.8155364990234375,
+          1.8627055883407593,
+          1.8433833122253418
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://135444192933562",
+        "texture": "rbxassetid://137098406285387"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          1.792156457901001,
+          -0.6965277194976807,
+          -2.2853147983551025,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "left rear wheel_geom",
+        "size": [
+          0.8137755990028381,
+          1.8641853332519531,
+          1.847770094871521
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://76570013403641",
+        "texture": "rbxassetid://80712141128858"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          -1.7902299165725708,
+          -0.6945443749427795,
+          1.9267040491104126,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "right front wheel_geom",
+        "size": [
+          0.8176287412643433,
+          1.8828579187393188,
+          1.900909185409546
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://129201699532298",
+        "texture": "rbxassetid://123422879586058"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          1.7884951829910278,
+          -0.6934357285499573,
+          1.9287010431289673,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "left front wheel_geom",
+        "size": [
+          0.8148835897445679,
+          1.878706455230713,
+          1.903689980506897
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://112064803554855",
+        "texture": "rbxassetid://126471294988864"
+      },
+      {
+        "reflectance": 0,
+        "color": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "cf": [
+          -0.0008839527145028114,
+          0.26749786734580994,
+          -0.0001711016520857811,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "transparency": 0,
+        "name": "body_geom",
+        "size": [
+          3.9728071689605713,
+          2.7369508743286133,
+          7.00034236907959
+        ],
+        "doubleSided": false,
+        "material": "Plastic",
+        "mesh": "rbxassetid://109361933335698",
+        "texture": "rbxassetid://126342940951630"
+      }
+    ]
+  }
+]

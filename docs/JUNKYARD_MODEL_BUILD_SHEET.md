@@ -32,7 +32,7 @@ Pets are not part of this at all any more. Since Sept 22 they are not items — 
 
 ## Completed: three missing Legendary models
 
-All three Legendary Jet Engine results below are now installed under their exact recipe names, with 7-stud longest sides. Their live ItemVisuals rendering and recipe lookup checks passed. This does not mean the place has been published; see the backup README for tests still outstanding.
+All three Legendary Jet Engine results below are now installed under their exact recipe names, with 7-stud longest sides. Their live ItemVisuals rendering and recipe lookup checks passed. The latest pass replaces the initial bolt-on builds with complete custom vehicle bodies; current backups and preview are in `assets/legendary-redesign/`, while `assets/legendary-jets/` preserves the earlier versions. This does not mean the place has been published; see the backup README for tests still outstanding.
 
 | Model | Made from | Earns | Brief |
 | --- | --- | --- | --- |
