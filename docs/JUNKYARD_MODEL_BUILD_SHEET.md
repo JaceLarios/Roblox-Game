@@ -193,7 +193,7 @@ Two more things found while testing on Sept 23:
 
 - **`assets/junkyard-models/verify-models.luau` is broken, not just stale.** It asserts every roster entry is a MeshPart with revision `Junkyard_20260914`, which the seven detailed cars and the three new Legendary models now fail, and it fuses every pair of its roster, which the one-item-plus-one-addon rule refuses. It needs the 7 cars, 5 addons and 35 results, fusing only car + addon pairs.
 - **Text overlap in the Index:** "Select a discovered item to equip your companion" renders underneath the Search box.
-- **Review models left in Workspace — clear these before publishing.** Six review folders are still in the live Workspace, 1,229 parts in all, and anything in Workspace ships to every player:
+- **Review models moved out of Workspace — done Sept 23.** Six review folders had been left in the live Workspace, 1,229 parts in all, and anything in Workspace ships to every player. All six now live in `ServerStorage.CodexReviewModels_20260923` under their original names; drag one back into Workspace to look at it, and please leave future review lineups in ServerStorage or remove them when done. Where they were:
 
   | Folder | Parts | Where |
   | --- | --- | --- |
@@ -204,7 +204,7 @@ Two more things found while testing on Sept 23:
   | `NitrousGeometryReview` | 82 | Floating at y ≈ 513 |
   | `CodexAddonReview` | 15 | Floating at y ≈ 508 |
 
-  The first two are at ground level where players walk. Moving them into ServerStorage keeps them for review without shipping them. The backups already in ServerStorage (about 3,100 parts across 13 folders) never reach players, so they only cost place-file size.
+  The backups already in ServerStorage (about 3,100 parts across 13 folders) never reach players, so they only cost place-file size.
 
 ## One open question
 
