@@ -77,6 +77,7 @@ function LeaderboardService.RefreshIfStale()
 			return Players:GetNameFromUserIdAsync(userId)
 		end)
 		table.insert(top, {
+			userId = userId,
 			name = nameOk and name or ("Player " .. tostring(userId)),
 			coins = entry.value,
 		})
