@@ -1,3 +1,4 @@
+local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("ItemNames"))
 -- Open Gallery presentation. Discovery and companion ownership remain server-owned.
 local Style = require(script.Parent:WaitForChild("UIStyle"))
 local Rarity = require(script.Parent:WaitForChild("ItemRarity"))
@@ -37,7 +38,7 @@ local function corner(o, r)
 end
 local function caption(parent, name, text, size)
 	return make("TextLabel", parent, name, {
-		Text = text, Font = Enum.Font.FredokaOne, TextSize = size,
+		Text = ItemNames.Display(text), Font = Enum.Font.FredokaOne, TextSize = size,
 		TextColor3 = P.Ink, BackgroundTransparency = 1, BorderSizePixel = 0,
 		TextWrapped = true,
 	})
@@ -245,7 +246,7 @@ function Gallery.Create(gui, onEquip)
 			if flatArea or key == activeRarity then
 				total += 1
 				if entry.known then known += 1 end
-				if query == "" or (entry.known and string.find(string.lower(entry.name), query, 1, true)) then
+				if query == "" or (entry.known and string.find(string.lower(ItemNames.Display(entry.name)), query, 1, true)) then
 					shown += 1
 					local selected = companion and companion.name == entry.name
 						and companion.island == ISLAND_OF[activeArea]

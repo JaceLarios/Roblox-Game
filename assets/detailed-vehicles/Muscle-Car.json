@@ -1,0 +1,4185 @@
+[
+  {
+    "name": "Muscle Car",
+    "attributes": {
+      "Revision": "DetailedLineup_20260922",
+      "VisualRevision": "DetailedJunkyard_20260923",
+      "PaletteRevision": "BoldPaint_20260922",
+      "DisplayName": "Muscle Car"
+    },
+    "id": 1,
+    "class": "Model",
+    "properties": [],
+    "parent": 0
+  },
+  {
+    "name": "right rear wheel",
+    "attributes": [],
+    "id": 2,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "right rear wheel_geom",
+    "attributes": [],
+    "id": 3,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.0198726654052734,
+          -0.40253332257270813,
+          -1.406470775604248,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://117283214385693",
+      "MeshId": "rbxassetid://79909652763475",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Rubber"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.45279476046562195,
+          1.0353013277053833,
+          1.0252504348754883
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 2
+  },
+  {
+    "name": "left rear wheel",
+    "attributes": [],
+    "id": 4,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "left rear wheel_geom",
+    "attributes": [],
+    "id": 5,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.0211882591247559,
+          -0.40540340542793274,
+          -1.4070359468460083,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://109479861639608",
+      "MeshId": "rbxassetid://125824985459560",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Rubber"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.45076799392700195,
+          1.0373923778533936,
+          1.0211646556854248
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 4
+  },
+  {
+    "name": "right front wheel",
+    "attributes": [],
+    "id": 6,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "right front wheel_geom",
+    "attributes": [],
+    "id": 7,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.0204943418502808,
+          -0.40046724677085876,
+          1.257035732269287,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://103043804923415",
+      "MeshId": "rbxassetid://99134623493553",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Rubber"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.45296260714530945,
+          1.0272949934005737,
+          1.0294826030731201
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 6
+  },
+  {
+    "name": "left front wheel",
+    "attributes": [],
+    "id": 8,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "left front wheel_geom",
+    "attributes": [],
+    "id": 9,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.02130126953125,
+          -0.40045443177223206,
+          1.259974479675293,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://89914787370102",
+      "MeshId": "rbxassetid://89005545419645",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Rubber"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.4512726366519928,
+          1.027929663658142,
+          1.0256149768829346
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "body",
+    "attributes": [],
+    "id": 10,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "body_geom",
+    "attributes": {},
+    "id": 11,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          1,
+          1,
+          1
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.000601308885961771,
+          0.19203606247901917,
+          -0.07500005513429642,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://103413260232456",
+      "MeshId": "rbxassetid://106601445007399",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Plastic"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          2.4556543827056885,
+          1.4392348527908325,
+          4.351851940155029
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 10
+  },
+  {
+    "name": "CraftedDetails",
+    "attributes": [],
+    "id": 12,
+    "class": "Folder",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "RadiatorRecess",
+    "attributes": [],
+    "id": 13,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.125490203499794,
+          0.14901961386203766,
+          0.15294118225574493
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.000036168843507766724,
+          0.26111122965812683,
+          2.096296548843384,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          1.6111111640930176,
+          0.25925928354263306,
+          0.06018518656492233
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 14,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.6443933844566345,
+          0.26111122965812683,
+          2.142592668533325,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.02777777798473835,
+          0.236111119389534,
+          0.050925929099321365
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 15,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.48327186703681946,
+          0.26111122965812683,
+          2.142592668533325,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.02777777798473835,
+          0.236111119389534,
+          0.050925929099321365
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 16,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.32220685482025146,
+          0.26111122965812683,
+          2.142592668533325,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.02777777798473835,
+          0.236111119389534,
+          0.050925929099321365
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 17,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.1610853523015976,
+          0.26111122965812683,
+          2.142592668533325,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.02777777798473835,
+          0.236111119389534,
+          0.050925929099321365
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 18,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.000036168843507766724,
+          0.26111122965812683,
+          2.142592668533325,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.02777777798473835,
+          0.236111119389534,
+          0.050925929099321365
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 19,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.16115768253803253,
+          0.26111122965812683,
+          2.142592668533325,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.02777777798473835,
+          0.236111119389534,
+          0.050925929099321365
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 20,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.3222792148590088,
+          0.26111122965812683,
+          2.142592668533325,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.02777777798473835,
+          0.236111119389534,
+          0.050925929099321365
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 21,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.4833441972732544,
+          0.26111122965812683,
+          2.142592668533325,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.02777777798473835,
+          0.236111119389534,
+          0.050925929099321365
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 22,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.6444657444953918,
+          0.26111122965812683,
+          2.142592668533325,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.02777777798473835,
+          0.236111119389534,
+          0.050925929099321365
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "GrilleEdge",
+    "attributes": [],
+    "id": 23,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.000036168843507766724,
+          0.13148149847984314,
+          2.1518516540527344,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          1.6759259700775146,
+          0.03240741044282913,
+          0.07407407462596893
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "EdgeWear",
+    "attributes": [],
+    "id": 24,
+    "class": "SurfaceGui",
+    "properties": {
+      "Enabled": true,
+      "Face": {
+        "e": "NormalId",
+        "t": "EnumItem",
+        "v": "Back"
+      },
+      "ZOffset": 0,
+      "LightInfluence": 1,
+      "SizingMode": {
+        "e": "SurfaceGuiSizingMode",
+        "t": "EnumItem",
+        "v": "PixelsPerStud"
+      },
+      "PixelsPerStud": 270,
+      "Brightness": 1,
+      "AlwaysOnTop": false,
+      "CanvasSize": {
+        "v": [
+          800,
+          600
+        ],
+        "t": "Vector2"
+      }
+    },
+    "parent": 23
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 25,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -10.309220314025879,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.4449751377105713,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.020606428384780884,
+          0,
+          0.06329961866140366,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 24
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 26,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 1.4386776685714722,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.4081326425075531,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.013751693069934845,
+          0,
+          0.04311474785208702,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 24
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 27,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 5.263169765472412,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.25656962394714355,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.021105065941810608,
+          0,
+          0.06639321893453598,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 24
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 28,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 6.463462829589844,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.06607002764940262,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.03354542702436447,
+          0,
+          0.03218129277229309,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 24
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 29,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -0.7205339670181274,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.2813846468925476,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.025553736835718155,
+          0,
+          0.04714023321866989,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 24
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 30,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -0.3908275067806244,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.6798791289329529,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.02640695869922638,
+          0,
+          0.06691407412290573,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 24
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 31,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 5.464406967163086,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.21467570960521698,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.011401929892599583,
+          0,
+          0.029608014971017838,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 24
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 32,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -10.592328071594238,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.6084961891174316,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.03982817754149437,
+          0,
+          0.04869398474693298,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 24
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 33,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 4.022994518280029,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.6991066932678223,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.01853044517338276,
+          0,
+          0.058524563908576965,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 24
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 34,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -5.789243698120117,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.6822003722190857,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.011099846102297306,
+          0,
+          0.07479988783597946,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 24
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 35,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -4.047842502593994,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.044312868267297745,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.043475888669490814,
+          0,
+          0.04372350499033928,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 24
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 36,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -6.357483863830566,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.37764590978622437,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.015092984773218632,
+          0,
+          0.07559576630592346,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 24
+  },
+  {
+    "name": "GrilleEdge",
+    "attributes": [],
+    "id": 37,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.000036168843507766724,
+          0.3907409608364105,
+          2.1518516540527344,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          1.6759259700775146,
+          0.03240741044282913,
+          0.07407407462596893
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "EdgeWear",
+    "attributes": [],
+    "id": 38,
+    "class": "SurfaceGui",
+    "properties": {
+      "Enabled": true,
+      "Face": {
+        "e": "NormalId",
+        "t": "EnumItem",
+        "v": "Back"
+      },
+      "ZOffset": 0,
+      "LightInfluence": 1,
+      "SizingMode": {
+        "e": "SurfaceGuiSizingMode",
+        "t": "EnumItem",
+        "v": "PixelsPerStud"
+      },
+      "PixelsPerStud": 270,
+      "Brightness": 1,
+      "AlwaysOnTop": false,
+      "CanvasSize": {
+        "v": [
+          800,
+          600
+        ],
+        "t": "Vector2"
+      }
+    },
+    "parent": 37
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 39,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 13.889273643493652,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.8952500820159912,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.04572811350226402,
+          0,
+          0.052478183060884476,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 38
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 40,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -1.8218598365783691,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.5465978980064392,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.025032587349414825,
+          0,
+          0.04619793966412544,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 38
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 41,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 10.77125358581543,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.6028521060943604,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.03513966128230095,
+          0,
+          0.0377817340195179,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 38
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 42,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -13.877869606018066,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.6023963093757629,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.02162361331284046,
+          0,
+          0.04848357290029526,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 38
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 43,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 13.057184219360352,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.8884748816490173,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.02189710922539234,
+          0,
+          0.06912029534578323,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 38
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 44,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -11.120478630065918,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.9294873476028442,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.026923900470137596,
+          0,
+          0.06811491400003433,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 38
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 45,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 14.064563751220703,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.42235973477363586,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.03243481367826462,
+          0,
+          0.05474403500556946,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 38
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 46,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 6.731797695159912,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.3973599672317505,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.022874455899000168,
+          0,
+          0.0666223019361496,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 38
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 47,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 13.462775230407715,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.13457131385803223,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.03815653547644615,
+          0,
+          0.03444814682006836,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 38
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 48,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -2.423753499984741,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.8198601603507996,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.04854326695203781,
+          0,
+          0.06445521861314774,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 38
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 49,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -11.45498275756836,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.5401778221130371,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.02046702243387699,
+          0,
+          0.057544730603694916,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 38
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 50,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 2.0318944454193115,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.11373039335012436,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.02471775934100151,
+          0,
+          0.044167160987854004,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 38
+  },
+  {
+    "name": "LampHousing",
+    "attributes": [],
+    "id": 51,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.125490203499794,
+          0.14901961386203766,
+          0.15294118225574493
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.5740334391593933,
+          0.26111122965812683,
+          2.1518516540527344,
+          -4.371138828673793e-8,
+          0,
+          1,
+          0,
+          1,
+          0,
+          -1,
+          0,
+          -4.371138828673793e-8
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Cylinder"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.12037037312984467,
+          0.18518519401550293,
+          0.18518519401550293
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "LampLens",
+    "attributes": [],
+    "id": 52,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          1,
+          0.8313725590705872,
+          0.0941176488995552
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.5740334391593933,
+          0.26111122965812683,
+          2.2259256839752197,
+          -4.371138828673793e-8,
+          0,
+          1,
+          0,
+          1,
+          0,
+          -1,
+          0,
+          -4.371138828673793e-8
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Cylinder"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "SmoothPlastic"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.02777777798473835,
+          0.1527777910232544,
+          0.1527777910232544
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "LampHousing",
+    "attributes": [],
+    "id": 53,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.125490203499794,
+          0.14901961386203766,
+          0.15294118225574493
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.5741057395935059,
+          0.26111122965812683,
+          2.1518516540527344,
+          -4.371138828673793e-8,
+          0,
+          1,
+          0,
+          1,
+          0,
+          -1,
+          0,
+          -4.371138828673793e-8
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Cylinder"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.12037037312984467,
+          0.18518519401550293,
+          0.18518519401550293
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "LampLens",
+    "attributes": [],
+    "id": 54,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          1,
+          0.8313725590705872,
+          0.0941176488995552
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.5741057395935059,
+          0.26111122965812683,
+          2.2259256839752197,
+          -4.371138828673793e-8,
+          0,
+          1,
+          0,
+          1,
+          0,
+          -1,
+          0,
+          -4.371138828673793e-8
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Cylinder"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "SmoothPlastic"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.02777777798473835,
+          0.1527777910232544,
+          0.1527777910232544
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "CreamRoofStripe",
+    "attributes": [],
+    "id": 55,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          1,
+          0.9372549057006836,
+          0.7607843279838562
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.305535227060318,
+          0.8990743160247803,
+          -0.4268520176410675,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "SmoothPlastic"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.17592592537403107,
+          0.007407408207654953,
+          0.5833333730697632
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "CreamRoofStripe",
+    "attributes": [],
+    "id": 56,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          1,
+          0.9372549057006836,
+          0.7607843279838562
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.30560755729675293,
+          0.8990743160247803,
+          -0.4268520176410675,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "SmoothPlastic"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.17592592537403107,
+          0.007407408207654953,
+          0.5833333730697632
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "SideExhaust",
+    "attributes": [],
+    "id": 57,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.0184597969055176,
+          -0.4148147404193878,
+          -0.6120370626449585,
+          -4.371138828673793e-8,
+          0,
+          1,
+          0,
+          1,
+          0,
+          -1,
+          0,
+          -4.371138828673793e-8
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Cylinder"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.694444477558136,
+          0.12037037312984467,
+          0.12037037312984467
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "SideExhaust",
+    "attributes": [],
+    "id": 58,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.018532156944275,
+          -0.4148147404193878,
+          -0.6120370626449585,
+          -4.371138828673793e-8,
+          0,
+          1,
+          0,
+          1,
+          0,
+          -1,
+          0,
+          -4.371138828673793e-8
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Cylinder"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.694444477558136,
+          0.12037037312984467,
+          0.12037037312984467
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 59,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.2629395723342896,
+          -0.2368851602077484,
+          -1.406470775604248,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 60,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.2629395723342896,
+          -0.3197091221809387,
+          -1.2630151510238647,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 61,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.2629395723342896,
+          -0.48535752296447754,
+          -1.2630151510238647,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 62,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.2629395723342896,
+          -0.5681814551353455,
+          -1.406470775604248,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 63,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.2629395723342896,
+          -0.48535752296447754,
+          -1.5499262809753418,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 64,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.2629395723342896,
+          -0.3197091221809387,
+          -1.5499262809753418,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 65,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.2632379531860352,
+          -0.2394205629825592,
+          -1.4070359468460083,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 66,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.2632379531860352,
+          -0.3224121034145355,
+          -1.2632906436920166,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 67,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.2632379531860352,
+          -0.48839470744132996,
+          -1.2632906436920166,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 68,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.2632379531860352,
+          -0.5713862180709839,
+          -1.4070359468460083,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 69,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.2632379531860352,
+          -0.48839470744132996,
+          -1.5507811307907104,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 70,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.2632379531860352,
+          -0.3224121034145355,
+          -1.5507811307907104,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 71,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.2636176347732544,
+          -0.23610015213489532,
+          1.257035732269287,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 72,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.2636176347732544,
+          -0.31828370690345764,
+          1.3993818759918213,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 73,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.2636176347732544,
+          -0.4826507866382599,
+          1.3993818759918213,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 74,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.2636176347732544,
+          -0.5648343563079834,
+          1.257035732269287,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 75,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.2636176347732544,
+          -0.4826507866382599,
+          1.1146897077560425,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 76,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.2636176347732544,
+          -0.31828370690345764,
+          1.1146897077560425,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 77,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.2635769844055176,
+          -0.23598580062389374,
+          1.259974479675293,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 78,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.2635769844055176,
+          -0.3182201087474823,
+          1.402408480644226,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 79,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.2635769844055176,
+          -0.4826887547969818,
+          1.402408480644226,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 80,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.2635769844055176,
+          -0.564923107624054,
+          1.259974479675293,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 81,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.2635769844055176,
+          -0.4826887547969818,
+          1.1175405979156494,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "WheelLug",
+    "attributes": [],
+    "id": 82,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.2635769844055176,
+          -0.3182201087474823,
+          1.1175405979156494,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03703703731298447,
+          0.04629629850387573,
+          0.04629629850387573
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  }
+]

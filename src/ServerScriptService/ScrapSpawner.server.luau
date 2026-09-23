@@ -1,3 +1,4 @@
+local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("ItemNames"))
 --[[
 	ScrapSpawner (Script, ServerScriptService) — Junkyard Fusion v1
 	Drops a random Tier 1 item into the yard every few seconds, and runs the
@@ -214,7 +215,7 @@ local function addLabel(part, itemName)
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.new(1, 0, 1, 0)
 	label.BackgroundTransparency = 1
-	label.Text = itemName
+	label.Text = ItemNames.Display(itemName)
 	label.TextColor3 = itemColour(itemName)
 	label.TextStrokeTransparency = 0.4
 	label.TextScaled = true
@@ -326,6 +327,7 @@ local function spawnItemAt(itemName, position, opts)
 		glow.FillTransparency = 0.55
 		glow.OutlineTransparency = 0
 		glow.DepthMode = Enum.HighlightDepthMode.Occluded
+		glow.Adornee = part:FindFirstChild("Visual") or part
 		glow.Parent = part
 	end
 

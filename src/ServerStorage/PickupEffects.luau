@@ -18,6 +18,7 @@
 
 local TweenService = game:GetService("TweenService")
 
+local ItemVisuals = require(game:GetService("ReplicatedStorage"):WaitForChild("ItemVisuals"))
 local PickupEffects = {}
 
 local FLIGHT_TIME = 0.22
@@ -46,6 +47,24 @@ function PickupEffects.Play(itemPart, targetPosition)
 	end
 
 	local goalCFrame = CFrame.new(targetPosition + Vector3.new(0, 2.2, 0))
+	if itemPart:GetAttribute("ItemAssembly") then
+		local startCFrame, startSize = itemPart.CFrame, itemPart.Size
+		local driver = Instance.new("NumberValue")
+		driver.Parent = itemPart
+		local connection = driver.Changed:Connect(function(alpha)
+			if not itemPart.Parent then return end
+			ItemVisuals.Resize(itemPart, startSize * (1 - .85 * alpha))
+			itemPart.CFrame = startCFrame:Lerp(goalCFrame, alpha)
+			ItemVisuals.SetTransparency(itemPart, alpha)
+		end)
+		local flight = TweenService:Create(driver, TweenInfo.new(FLIGHT_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Value = 1})
+		flight.Completed:Once(function()
+			connection:Disconnect()
+			if itemPart.Parent then itemPart:Destroy() end
+		end)
+		flight:Play()
+		return
+	end
 	local tween = TweenService:Create(itemPart, TweenInfo.new(FLIGHT_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
 		CFrame = goalCFrame,
 		Size = itemPart.Size * 0.15,

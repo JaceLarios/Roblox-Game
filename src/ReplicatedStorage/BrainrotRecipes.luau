@@ -230,8 +230,7 @@ function BrainrotRecipes.IsSecretResult(name)
 end
 
 -- Mirrors FusionRecipes.GetIndex — every real creature, secrets included
--- as masked rows, fallback hybrids excluded. Only the final name is
--- exposed — the index is a collection list, not a recipe book.
+-- as masked rows, fallback hybrids excluded.
 function BrainrotRecipes.GetIndex(discovered)
 	discovered = discovered or {}
 	local items = {}

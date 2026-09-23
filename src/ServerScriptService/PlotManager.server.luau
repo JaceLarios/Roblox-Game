@@ -1,3 +1,4 @@
+local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("ItemNames"))
 --[[
 	PlotManager (Script, ServerScriptService) — Junkyard Fusion v1
 
@@ -1421,7 +1422,7 @@ local function refreshPad(player)
 			slotPart.Name = "Slot" .. i
 			slotPart.Parent = plot.model
 			local mutationColor = Mutations.Color(mutationId)
-			if mutationColor then slotPart.Color = mutationColor end
+			if mutationColor then ItemVisuals.Tint(slotPart, mutationColor) end
 			local itemColor = mutationColor or ItemRarity.Color(FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
 				FusionRecipes.GetRarity(baseName))
 			makeLabel(slotPart, itemName, 1.8, 140, itemColor, 45)
@@ -1453,7 +1454,7 @@ local function redrawPetPad(plot, slot, itemName)
 	local padSurfaceY = pad.part.Position.Y + pad.part.Size.Y / 2
 	local part = ItemVisuals.Create(baseName, Vector3.new(pad.part.Position.X, padSurfaceY, pad.part.Position.Z), 0.75)
 	local mutationColor = Mutations.Color(mutationId)
-	if mutationColor then part.Color = mutationColor end
+	if mutationColor then ItemVisuals.Tint(part, mutationColor) end
 	part.Parent = plot.model
 	pad.itemPart = part
 
@@ -1547,7 +1548,7 @@ local function dropItemNearYard(itemName)
 	local baseName, mutationId = Mutations.Unwrap(itemName)
 	local part = ItemVisuals.Create(baseName, position, 1)
 	local mutationColor = Mutations.Color(mutationId)
-	if mutationColor then part.Color = mutationColor end
+	if mutationColor then ItemVisuals.Tint(part, mutationColor) end
 	part:SetAttribute("ItemName", itemName)
 	local itemColor = mutationColor or ItemRarity.Color(FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
 		FusionRecipes.GetRarity(baseName))
@@ -1734,7 +1735,7 @@ local function attachCarried(player, itemName)
 	held.Anchored = false
 	held.CanCollide = false
 	held.Massless = true
-	held.Transparency = CARRY_TRANSPARENCY
+	ItemVisuals.SetTransparency(held, CARRY_TRANSPARENCY)
 
 	-- Sit it ON the raised hands instead of at a fixed height, which is
 	-- what made it look like it was floating there on its own. The top of
@@ -1921,7 +1922,7 @@ local function attachPickup(part)
 
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ActionText = "Grab"
-	prompt.ObjectText = itemName
+	prompt.ObjectText = ItemNames.Display(itemName)
 	prompt.HoldDuration = GRAB_HOLD_SECONDS
 	prompt.MaxActivationDistance = 14
 	prompt.RequiresLineOfSight = false

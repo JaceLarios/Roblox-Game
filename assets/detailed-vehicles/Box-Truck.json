@@ -1,0 +1,4525 @@
+[
+  {
+    "name": "Box Truck",
+    "attributes": {
+      "Revision": "DetailedLineup_20260922",
+      "VisualRevision": "DetailedJunkyard_20260923",
+      "PaletteRevision": "BoldPaint_20260922",
+      "DisplayName": "Box Truck"
+    },
+    "id": 1,
+    "class": "Model",
+    "properties": [],
+    "parent": 0
+  },
+  {
+    "name": "wheels",
+    "attributes": [],
+    "id": 2,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "wheels_geom",
+    "attributes": [],
+    "id": 3,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.00333196297287941,
+          -1.6677234172821045,
+          -0.00629730150103569,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://87239250351617",
+      "MeshId": "rbxassetid://109840878077907",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Rubber"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          3.509727954864502,
+          1.5683069229125977,
+          4.931747913360596
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 2
+  },
+  {
+    "name": "cargo box",
+    "attributes": [],
+    "id": 4,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "cargo box_geom",
+    "attributes": {},
+    "id": 5,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          1,
+          1,
+          1
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.003371410071849823,
+          0.3018147647380829,
+          -0.6628537774085999,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://120304067639792",
+      "MeshId": "rbxassetid://71878803024927",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Plastic"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          3.3905460834503174,
+          4.3003339767456055,
+          5.124531269073486
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 4
+  },
+  {
+    "name": "cab",
+    "attributes": [],
+    "id": 6,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "cab_geom",
+    "attributes": {},
+    "id": 7,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          1,
+          1,
+          1
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.00001841224730014801,
+          -0.1317630410194397,
+          0.2354341447353363,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://125916330221391",
+      "MeshId": "rbxassetid://93241358630976",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Plastic"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          3.605743646621704,
+          3.0533957481384277,
+          5.746526718139648
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 6
+  },
+  {
+    "name": "CraftedDetails",
+    "attributes": [],
+    "id": 8,
+    "class": "Folder",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "RadiatorRecess",
+    "attributes": [],
+    "id": 9,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.125490203499794,
+          0.14901961386203766,
+          0.15294118225574493
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.00001841224730014801,
+          -0.9266085028648376,
+          3.0958595275878906,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          1.2150444984436035,
+          0.5687442421913147,
+          0.08401902765035629
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 10,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.48600852489471436,
+          -0.9266085028648376,
+          3.160489797592163,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03877801448106766,
+          0.536429226398468,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 11,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.3645116686820984,
+          -0.9266085028648376,
+          3.160489797592163,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03877801448106766,
+          0.536429226398468,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 12,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.24297532439231873,
+          -0.9266085028648376,
+          3.160489797592163,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03877801448106766,
+          0.536429226398468,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 13,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.12147846817970276,
+          -0.9266085028648376,
+          3.160489797592163,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03877801448106766,
+          0.536429226398468,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 14,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.00001841224730014801,
+          -0.9266085028648376,
+          3.160489797592163,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03877801448106766,
+          0.536429226398468,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 15,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.12151528894901276,
+          -0.9266085028648376,
+          3.160489797592163,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03877801448106766,
+          0.536429226398468,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 16,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.24301216006278992,
+          -0.9266085028648376,
+          3.160489797592163,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03877801448106766,
+          0.536429226398468,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 17,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.3645484745502472,
+          -0.9266085028648376,
+          3.160489797592163,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03877801448106766,
+          0.536429226398468,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "RadiatorSlat",
+    "attributes": [],
+    "id": 18,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.48604536056518555,
+          -0.9266085028648376,
+          3.160489797592163,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.03877801448106766,
+          0.536429226398468,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "GrilleEdge",
+    "attributes": [],
+    "id": 19,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.00001841224730014801,
+          -1.2109806537628174,
+          3.173414945602417,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          1.3055264949798584,
+          0.045241016894578934,
+          0.10340803861618042
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "EdgeWear",
+    "attributes": [],
+    "id": 20,
+    "class": "SurfaceGui",
+    "properties": {
+      "Enabled": true,
+      "Face": {
+        "e": "NormalId",
+        "t": "EnumItem",
+        "v": "Back"
+      },
+      "ZOffset": 0,
+      "LightInfluence": 1,
+      "SizingMode": {
+        "e": "SurfaceGuiSizingMode",
+        "t": "EnumItem",
+        "v": "PixelsPerStud"
+      },
+      "PixelsPerStud": 193.40855407714844,
+      "Brightness": 1,
+      "AlwaysOnTop": false,
+      "CanvasSize": {
+        "v": [
+          800,
+          600
+        ],
+        "t": "Vector2"
+      }
+    },
+    "parent": 19
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 21,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 7.583691596984863,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.060180213302373886,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.011659478768706322,
+          0,
+          0.030365323647856712,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 20
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 22,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -11.769423484802246,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.6761245727539062,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.026235299184918404,
+          0,
+          0.058111317455768585,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 20
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 23,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -7.516767978668213,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.4447754919528961,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.02032853104174137,
+          0,
+          0.06943203508853912,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 20
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 24,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 1.393450379371643,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.5146478414535522,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.012266523204743862,
+          0,
+          0.07063018530607224,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 20
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 25,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -4.177213668823242,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.2060074508190155,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.02622508630156517,
+          0,
+          0.044972874224185944,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 20
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 26,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -2.7162978649139404,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.25626081228256226,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.01396266557276249,
+          0,
+          0.03964092582464218,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 20
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 27,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -2.91031813621521,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.32651498913764954,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.012815391644835472,
+          0,
+          0.040177617222070694,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 20
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 28,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 8.716218948364258,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.5150955319404602,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.04013233631849289,
+          0,
+          0.0695950984954834,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 20
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 29,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -4.156174659729004,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.025708498433232307,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.01667340286076069,
+          0,
+          0.0629676878452301,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 20
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 30,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -5.3273024559021,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.765755832195282,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.04231128469109535,
+          0,
+          0.07252594083547592,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 20
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 31,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 12.837204933166504,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.6620796322822571,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.048040736466646194,
+          0,
+          0.062411289662122726,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 20
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 32,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 13.779374122619629,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.4626896381378174,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.039533037692308426,
+          0,
+          0.03660235553979874,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 20
+  },
+  {
+    "name": "GrilleEdge",
+    "attributes": [],
+    "id": 33,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.00001841224730014801,
+          -0.6422363519668579,
+          3.173414945602417,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          1.3055264949798584,
+          0.045241016894578934,
+          0.10340803861618042
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "EdgeWear",
+    "attributes": [],
+    "id": 34,
+    "class": "SurfaceGui",
+    "properties": {
+      "Enabled": true,
+      "Face": {
+        "e": "NormalId",
+        "t": "EnumItem",
+        "v": "Back"
+      },
+      "ZOffset": 0,
+      "LightInfluence": 1,
+      "SizingMode": {
+        "e": "SurfaceGuiSizingMode",
+        "t": "EnumItem",
+        "v": "PixelsPerStud"
+      },
+      "PixelsPerStud": 193.40855407714844,
+      "Brightness": 1,
+      "AlwaysOnTop": false,
+      "CanvasSize": {
+        "v": [
+          800,
+          600
+        ],
+        "t": "Vector2"
+      }
+    },
+    "parent": 33
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 35,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -0.020754903554916382,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.8607136607170105,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.04581035301089287,
+          0,
+          0.06741225719451904,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 34
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 36,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 2.664907217025757,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.9401077628135681,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.048416923731565475,
+          0,
+          0.04091528058052063,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 34
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 37,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 14.375862121582031,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.24065835773944855,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.04655832797288895,
+          0,
+          0.07121662050485611,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 34
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 38,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 6.798973560333252,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.5982956290245056,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.03215407952666283,
+          0,
+          0.04459046944975853,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 34
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 39,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 7.6334428787231445,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.13760262727737427,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.015209888108074665,
+          0,
+          0.06738445907831192,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 34
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 40,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -9.100502967834473,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.6381514072418213,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.019824104383587837,
+          0,
+          0.026295706629753113,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 34
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 41,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -7.663960933685303,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.054226379841566086,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.03285345807671547,
+          0,
+          0.028809750452637672,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 34
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 42,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 2.224926471710205,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.8979830145835876,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.011005358770489693,
+          0,
+          0.026604723185300827,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 34
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 43,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -6.781102180480957,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.4125421941280365,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.045736897736787796,
+          0,
+          0.039360564202070236,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 34
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 44,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 14.517369270324707,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.37120598554611206,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.025317475199699402,
+          0,
+          0.025321297347545624,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 34
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 45,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -13.634446144104004,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.3783665895462036,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.043742481619119644,
+          0,
+          0.05285927280783653,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 34
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 46,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 6.684749603271484,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.7302423119544983,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.0352959930896759,
+          0,
+          0.029644064605236053,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 34
+  },
+  {
+    "name": "BumperBolt",
+    "attributes": [],
+    "id": 47,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.176252841949463,
+          -1.4307225942611694,
+          3.1475636959075928,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.09694503992795944,
+          0.09694503992795944,
+          0.045241016894578934
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "BumperBolt",
+    "attributes": [],
+    "id": 48,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.1762895584106445,
+          -1.4307225942611694,
+          3.1475636959075928,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.09694503992795944,
+          0.09694503992795944,
+          0.045241016894578934
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoLowerRail",
+    "attributes": [],
+    "id": 49,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.9137254953384399,
+          0.8627451062202454,
+          0.6980392336845398
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.706223726272583,
+          -0.2544562816619873,
+          -1.040461778640747,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.058167025446891785,
+          0.09694503992795944,
+          3.528799533843994
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "EdgeWear",
+    "attributes": [],
+    "id": 50,
+    "class": "SurfaceGui",
+    "properties": {
+      "Enabled": true,
+      "Face": {
+        "e": "NormalId",
+        "t": "EnumItem",
+        "v": "Back"
+      },
+      "ZOffset": 0,
+      "LightInfluence": 1,
+      "SizingMode": {
+        "e": "SurfaceGuiSizingMode",
+        "t": "EnumItem",
+        "v": "PixelsPerStud"
+      },
+      "PixelsPerStud": 193.40855407714844,
+      "Brightness": 1,
+      "AlwaysOnTop": false,
+      "CanvasSize": {
+        "v": [
+          800,
+          600
+        ],
+        "t": "Vector2"
+      }
+    },
+    "parent": 49
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 51,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 14.077582359313965,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.7749297022819519,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.029548581689596176,
+          0,
+          0.06038649380207062,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 50
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 52,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -6.103665351867676,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.23575614392757416,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.03574341535568237,
+          0,
+          0.026522871106863022,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 50
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 53,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 4.72042989730835,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.22140787541866302,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.02292388118803501,
+          0,
+          0.03197622671723366,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 50
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 54,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 12.934748649597168,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.5636493563652039,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.026633109897375107,
+          0,
+          0.05602933466434479,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 50
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 55,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 2.0977909564971924,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.4569948613643646,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.02733672596514225,
+          0,
+          0.05508578196167946,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 50
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 56,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -7.193446159362793,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.12372799217700958,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.013202649541199207,
+          0,
+          0.027418343350291252,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 50
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 57,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 8.764392852783203,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.6952929496765137,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.02773277461528778,
+          0,
+          0.03377856686711311,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 50
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 58,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 2.496004819869995,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.9183213710784912,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.0209293644875288,
+          0,
+          0.03510314226150513,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 50
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 59,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -3.2603728771209717,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.07154116779565811,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.027476904913783073,
+          0,
+          0.07478255033493042,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 50
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 60,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -3.6493191719055176,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.08207404613494873,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.03681480512022972,
+          0,
+          0.07636565715074539,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 50
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 61,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -4.329611301422119,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.6063213348388672,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.0442739874124527,
+          0,
+          0.04359438642859459,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 50
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 62,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -9.34593391418457,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.32739365100860596,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.029678480699658394,
+          0,
+          0.03477140888571739,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 50
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 63,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.7385308742523193,
+          -0.2544562816619873,
+          -2.64328670501709,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 64,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.7385308742523193,
+          -0.2544562816619873,
+          -2.177950382232666,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 65,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.7385308742523193,
+          -0.2544562816619873,
+          -1.71261465549469,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 66,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.7385308742523193,
+          -0.2544562816619873,
+          -1.2472783327102661,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 67,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.7385308742523193,
+          -0.2544562816619873,
+          -0.7819419503211975,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 68,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.7385308742523193,
+          -0.2544562816619873,
+          -0.3166055679321289,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 69,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.7385308742523193,
+          -0.2544562816619873,
+          0.1487307846546173,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 70,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -1.7385308742523193,
+          -0.2544562816619873,
+          0.6140665411949158,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoLowerRail",
+    "attributes": [],
+    "id": 71,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.9137254953384399,
+          0.8627451062202454,
+          0.6980392336845398
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.7062605619430542,
+          -0.2544562816619873,
+          -1.040461778640747,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.058167025446891785,
+          0.09694503992795944,
+          3.528799533843994
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "EdgeWear",
+    "attributes": [],
+    "id": 72,
+    "class": "SurfaceGui",
+    "properties": {
+      "Enabled": true,
+      "Face": {
+        "e": "NormalId",
+        "t": "EnumItem",
+        "v": "Back"
+      },
+      "ZOffset": 0,
+      "LightInfluence": 1,
+      "SizingMode": {
+        "e": "SurfaceGuiSizingMode",
+        "t": "EnumItem",
+        "v": "PixelsPerStud"
+      },
+      "PixelsPerStud": 193.40855407714844,
+      "Brightness": 1,
+      "AlwaysOnTop": false,
+      "CanvasSize": {
+        "v": [
+          800,
+          600
+        ],
+        "t": "Vector2"
+      }
+    },
+    "parent": 71
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 73,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 7.497608184814453,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.2566249668598175,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.04402913898229599,
+          0,
+          0.037698883563280106,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 72
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 74,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -14.568977355957031,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.39730602502822876,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.04633629694581032,
+          0,
+          0.0782402902841568,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 72
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 75,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 1.140958547592163,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.2721949517726898,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.026247086003422737,
+          0,
+          0.029685743153095245,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 72
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 76,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 12.730849266052246,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.30118677020072937,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.030852388590574265,
+          0,
+          0.044082604348659515,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 72
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 77,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 8.99554443359375,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.674505889415741,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.025984253734350204,
+          0,
+          0.05040555074810982,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 72
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 78,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -2.090456962585449,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.28505194187164307,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.03990234062075615,
+          0,
+          0.03305689990520477,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 72
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 79,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -5.77309513092041,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.5782948136329651,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.011139890179038048,
+          0,
+          0.07407985627651215,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 72
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 80,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -14.688580513000488,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.829609751701355,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.04683743417263031,
+          0,
+          0.02527601271867752,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 72
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 81,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 12.12661075592041,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.7734034061431885,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.04925959184765816,
+          0,
+          0.03986448049545288,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 72
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 82,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": 13.522675514221191,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.26085323095321655,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.04680023714900017,
+          0,
+          0.07505733519792557,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 72
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 83,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -2.1925010681152344,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.5169995427131653,
+          0,
+          0.8399999737739563,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.658823549747467,
+          0.6392157077789307,
+          0.5529412031173706
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.023610563948750496,
+          0,
+          0.07941045612096786,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 72
+  },
+  {
+    "name": "Frame",
+    "attributes": [],
+    "id": 84,
+    "class": "Frame",
+    "properties": {
+      "Visible": true,
+      "Rotation": -14.105918884277344,
+      "AnchorPoint": {
+        "v": [
+          0,
+          0
+        ],
+        "t": "Vector2"
+      },
+      "BackgroundTransparency": 0.25,
+      "Position": {
+        "v": [
+          0.25351136922836304,
+          0,
+          0.05999999865889549,
+          0
+        ],
+        "t": "UDim2"
+      },
+      "BackgroundColor3": {
+        "v": [
+          0.42352941632270813,
+          0.29019609093666077,
+          0.1882352977991104
+        ],
+        "t": "Color3"
+      },
+      "ZIndex": 1,
+      "BorderSizePixel": 0,
+      "Size": {
+        "v": [
+          0.025798693299293518,
+          0,
+          0.07249089330434799,
+          0
+        ],
+        "t": "UDim2"
+      }
+    },
+    "parent": 72
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 85,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.7385677099227905,
+          -0.2544562816619873,
+          -2.64328670501709,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 86,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.7385677099227905,
+          -0.2544562816619873,
+          -2.177950382232666,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 87,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.7385677099227905,
+          -0.2544562816619873,
+          -1.71261465549469,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 88,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.7385677099227905,
+          -0.2544562816619873,
+          -1.2472783327102661,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 89,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.7385677099227905,
+          -0.2544562816619873,
+          -0.7819419503211975,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 90,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.7385677099227905,
+          -0.2544562816619873,
+          -0.3166055679321289,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 91,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.7385677099227905,
+          -0.2544562816619873,
+          0.1487307846546173,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "CargoRivet",
+    "attributes": [],
+    "id": 92,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          1.7385677099227905,
+          -0.2544562816619873,
+          0.6140665411949158,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.047826219350099564,
+          0.07109303027391434,
+          0.07109303027391434
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  }
+]

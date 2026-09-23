@@ -1,3 +1,4 @@
+local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("ItemNames"))
 --[[
 	ItemRarity (ModuleScript, ReplicatedStorage) — Junkyard Fusion v1
 	One shared tier -> color mapping, so an item's name reads the same
@@ -84,6 +85,7 @@ end
 -- Wraps a name in its rarity color as a RichText span. The label/TextLabel
 -- showing it must have RichText = true, or the tags render as plain text.
 function ItemRarity.Tag(name, tier, isSecret, rarityKey)
+	name = ItemNames.Display(name)
 	return string.format('<font color="%s">%s</font>', ItemRarity.Hex(tier, isSecret, rarityKey), name)
 end
 

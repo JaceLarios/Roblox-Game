@@ -49,12 +49,14 @@ function LeaderboardService.Snapshot(player)
 end
 
 -- The real network call — deliberately only invoked from the existing
--- periodic autosave loop, never per-earning.
+-- periodic autosave loop, never per-earning. Ordered stores reject any
+-- non-integer value, and passive income / multipliers make the running
+-- total fractional, so floor it on the way out (memory stays exact).
 function LeaderboardService.PushToStore(player)
 	local s = state[player]
 	if not s then return end
 	pcall(function()
-		store:SetAsync(tostring(player.UserId), s.lifetimeCoins)
+		store:SetAsync(tostring(player.UserId), math.floor(s.lifetimeCoins))
 	end)
 end
 

@@ -1,3 +1,4 @@
+local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("ItemNames"))
 --[[
 	GameUI (LocalScript, StarterPlayerScripts) — Junkyard Fusion v1
 
@@ -42,6 +43,8 @@ local NavButton = require(ReplicatedStorage:WaitForChild("NavButton"))
 local UIStyle = require(ReplicatedStorage:WaitForChild("UIStyle"))
 local itemModels = ReplicatedStorage:WaitForChild("ItemModels")
 
+local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
+
 local DARK   = Color3.fromRGB(18, 18, 22)
 local GOLD   = UIStyle.Palette.Gold
 local LIGHT  = Color3.fromRGB(235, 235, 240)
@@ -81,7 +84,7 @@ local function label(parent, text, size, color, font, textSize)
 	local l = Instance.new("TextLabel")
 	l.Size = size
 	l.BackgroundTransparency = 1
-	l.Text = text
+	l.Text = ItemNames.Display(text)
 	l.TextColor3 = color or LIGHT
 	l.Font = font or Enum.Font.FredokaOne
 	l.TextSize = textSize or 14
@@ -718,15 +721,9 @@ local function buildItemViewport(parent, itemName, tintColor, opts)
 	viewport.CurrentCamera = cam
 	cam.Parent = viewport
 
-	local template = itemModels:FindFirstChild(itemName)
-	if template then
-		local clone = template:Clone()
-		clone.Anchored = true
-		clone.CFrame = CFrame.new(0, 0, 0)
-		if tintColor then clone.Color = tintColor end
+	local clone, size = ItemVisuals.CloneForViewport(itemName, tintColor)
+	if clone then
 		clone.Parent = viewport
-
-		local size = clone.Size
 		local reach = math.max(size.X, size.Y, size.Z) * (opts.zoom or 1.5) + 0.2
 		cam.CFrame = CFrame.new(Vector3.new(reach * 0.6, reach * 0.5, reach * 0.85), Vector3.new(0, 0, 0))
 	end
@@ -1461,7 +1458,7 @@ function redrawInventory(items, capacity)
 
 	local stillSelected = false
 	for i, entry in ipairs(items) do
-		if searchBox.Text ~= "" and not string.find(string.lower(entry.name), string.lower(searchBox.Text), 1, true) then continue end
+		if searchBox.Text ~= "" and not string.find(string.lower(ItemNames.Display(entry.name)), string.lower(searchBox.Text), 1, true) then continue end
 		local baseName, mutationId = Mutations.Unwrap(entry.name)
 		local tintColor = Mutations.Color(mutationId)
 		local rarityKey = FusionRecipes.GetRarity(baseName)
@@ -2094,7 +2091,7 @@ local function showToast(message, big)
 	toast.Position = UDim2.new(0.5, -235, 0.5, big and -140 or -110)
 	toast.BackgroundColor3 = big and GOLD or DARK
 	toast.BackgroundTransparency = 0.08
-	toast.Text = message
+	toast.Text = ItemNames.Display(message)
 	toast.TextColor3 = big and DARK or LIGHT
 	toast.Font = big and Enum.Font.LuckiestGuy or Enum.Font.FredokaOne
 	toast.TextSize = big and 20 or 15
@@ -2129,7 +2126,7 @@ local function showAnnounce(message)
 	banner.Position = UDim2.new(0.5, -320, 0, -60)
 	banner.BackgroundColor3 = Color3.fromRGB(255, 205, 60)
 	banner.BackgroundTransparency = 0.05
-	banner.Text = message
+	banner.Text = ItemNames.Display(message)
 	banner.TextColor3 = DARK
 	banner.Font = Enum.Font.LuckiestGuy
 	banner.TextSize = 17
@@ -2191,7 +2188,7 @@ remote.OnClientEvent:Connect(function(data)
 
 	if data.companion ~= nil then
 		equippedCompanion = data.companion or nil
-		companionText.Text = equippedCompanion
+		companionText.Text = ItemNames.Display(equippedCompanion)
 			and string.format("Companion: %s (+%d%%)", equippedCompanion.name, equippedCompanion.bonusPercent)
 			or "No companion equipped"
 		redrawIndex()

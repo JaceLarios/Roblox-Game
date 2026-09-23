@@ -1,3 +1,4 @@
+local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("ItemNames"))
 --[[
 	Mutations (ModuleScript, ReplicatedStorage) — Junkyard Fusion v1
 
@@ -117,6 +118,7 @@ end
 -- the more exciting signal in that moment. Callers with a plain name should
 -- fall back to ItemRarity.Tag themselves; this only ever colors mutations.
 function Mutations.Tag(displayName, mutationId)
+	displayName = ItemNames.Display(displayName)
 	local tier = mutationId and BY_ID[mutationId]
 	if not tier then return displayName end
 	return string.format('<font color="%s">%s</font>', "#" .. tier.color:ToHex(), displayName)

@@ -40,11 +40,13 @@ function PlaytimeLeaderboardService.Snapshot(player)
 	return s and s.totalMinutes or 0
 end
 
+-- Ordered stores reject non-integers; minutes are whole today, but floor
+-- anyway so a fractional Record never silently stalls the board.
 function PlaytimeLeaderboardService.PushToStore(player)
 	local s = state[player]
 	if not s then return end
 	pcall(function()
-		store:SetAsync(tostring(player.UserId), s.totalMinutes)
+		store:SetAsync(tostring(player.UserId), math.floor(s.totalMinutes))
 	end)
 end
 

@@ -1,0 +1,713 @@
+[
+  {
+    "name": "Dirt Bike",
+    "attributes": {
+      "Revision": "DetailedLineup_20260922",
+      "VisualRevision": "DetailedJunkyard_20260923",
+      "PaletteRevision": "BoldPaint_20260922",
+      "DisplayName": "Dirt Bike"
+    },
+    "id": 1,
+    "class": "Model",
+    "properties": [],
+    "parent": 0
+  },
+  {
+    "name": "rear wheel",
+    "attributes": [],
+    "id": 2,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "rear wheel_geom",
+    "attributes": [],
+    "id": 3,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.0037717903032898903,
+          -0.6950498223304749,
+          -1.311848759651184,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://140170686600399",
+      "MeshId": "rbxassetid://121013052702877",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Rubber"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.47257813811302185,
+          1.269622564315796,
+          1.2653272151947021
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 2
+  },
+  {
+    "name": "front wheel",
+    "attributes": [],
+    "id": 4,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "front wheel_geom",
+    "attributes": [],
+    "id": 5,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.6392157077789307,
+          0.6352941393852234,
+          0.6470588445663452
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.0014774217270314693,
+          -0.6932981014251709,
+          1.319596290588379,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://104738273257835",
+      "MeshId": "rbxassetid://91285707667124",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Rubber"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.3907734155654907,
+          1.2609814405441284,
+          1.249893307685852
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 4
+  },
+  {
+    "name": "front fork",
+    "attributes": [],
+    "id": 6,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "front fork_geom",
+    "attributes": [],
+    "id": 7,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          1,
+          1,
+          1
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.00044229021295905113,
+          0.16457103192806244,
+          1.1541411876678467,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://139667795306433",
+      "MeshId": "rbxassetid://74697356236077",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Plastic"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.695286750793457,
+          1.8502050638198853,
+          1.2889127731323242
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 6
+  },
+  {
+    "name": "handlebars",
+    "attributes": [],
+    "id": 8,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "handlebars_geom",
+    "attributes": [],
+    "id": 9,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          1,
+          1,
+          1
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.000007642433047294617,
+          1.0735175609588623,
+          0.5598703622817993,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://88274722336246",
+      "MeshId": "rbxassetid://87393628442870",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Plastic"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          1.965785026550293,
+          0.512678325176239,
+          0.4197313189506531
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 8
+  },
+  {
+    "name": "frame",
+    "attributes": [],
+    "id": 10,
+    "class": "Model",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "frame_geom",
+    "attributes": {},
+    "id": 11,
+    "class": "MeshPart",
+    "properties": {
+      "Anchored": true,
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          1,
+          1,
+          1
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.00003763800486922264,
+          0.031010450795292854,
+          -0.5547624230384827,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "TextureID": "rbxassetid://93538366105631",
+      "MeshId": "rbxassetid://83164913286126",
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "DoubleSided": false,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Plastic"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.8841906189918518,
+          1.6787238121032715,
+          2.585681438446045
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 10
+  },
+  {
+    "name": "CraftedDetails",
+    "attributes": [],
+    "id": 12,
+    "class": "Folder",
+    "properties": [],
+    "parent": 1
+  },
+  {
+    "name": "EngineSideBolt",
+    "attributes": [],
+    "id": 13,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.37349632382392883,
+          -0.3371243178844452,
+          -0.22606423497200012,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.029486775398254395,
+          0.07371693849563599,
+          0.07371693849563599
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "CrashGuard",
+    "attributes": [],
+    "id": 14,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          -0.37349632382392883,
+          -0.6025052666664124,
+          -0.1769203543663025,
+          -1,
+          0,
+          0,
+          0,
+          0.9997166395187378,
+          -0.023802753537893295,
+          0,
+          -0.023802753537893295,
+          -0.9997166395187378
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.06388801336288452,
+          0.06388801336288452,
+          0.8258637189865112
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "EngineSideBolt",
+    "attributes": [],
+    "id": 15,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.37351158261299133,
+          -0.3371243178844452,
+          -0.22606423497200012,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Ball"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.029486775398254395,
+          0.07371693849563599,
+          0.07371693849563599
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "CrashGuard",
+    "attributes": [],
+    "id": 16,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.545098066329956,
+          0.572549045085907,
+          0.5490196347236633
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.37351158261299133,
+          -0.6025052666664124,
+          -0.1769203543663025,
+          -1,
+          0,
+          0,
+          0,
+          0.9997166395187378,
+          -0.023802753537893295,
+          0,
+          -0.023802753537893295,
+          -0.9997166395187378
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.06388801336288452,
+          0.06388801336288452,
+          0.8258637189865112
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "RearToolPouch",
+    "attributes": [],
+    "id": 17,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.4313725531101227,
+          0.27843138575553894,
+          0.15294118225574493
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.000007642433047294617,
+          0.5573077201843262,
+          -1.356391191482544,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Leather"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.5799065828323364,
+          0.18674957752227783,
+          0.34401237964630127
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  },
+  {
+    "name": "PouchStrap",
+    "attributes": [],
+    "id": 18,
+    "class": "Part",
+    "properties": {
+      "Reflectance": 0,
+      "CanCollide": false,
+      "Color": {
+        "v": [
+          0.125490203499794,
+          0.14901961386203766,
+          0.15294118225574493
+        ],
+        "t": "Color3"
+      },
+      "CFrame": {
+        "v": [
+          0.000007642433047294617,
+          0.6605116724967957,
+          -1.356391191482544,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "t": "CFrame"
+      },
+      "CanTouch": false,
+      "Shape": {
+        "e": "PartType",
+        "t": "EnumItem",
+        "v": "Block"
+      },
+      "Transparency": 0,
+      "Massless": false,
+      "CanQuery": false,
+      "Anchored": true,
+      "Material": {
+        "e": "Material",
+        "t": "EnumItem",
+        "v": "Metal"
+      },
+      "CastShadow": true,
+      "Size": {
+        "v": [
+          0.07371693849563599,
+          0.024572312831878662,
+          0.3636702299118042
+        ],
+        "t": "Vector3"
+      }
+    },
+    "parent": 12
+  }
+]
