@@ -79,7 +79,7 @@ local function modelView(parent, name)
 	return view
 end
 
-function Gallery.Create(gui, onEquip)
+function Gallery.Create(gui, onEquip, actions)
 	local api = {}
 	local activeArea, activeRarity = "junkyard", 1
 	local data, companion = {junkyard = {}, brainrot = {}, addons = {}}, nil
@@ -134,7 +134,7 @@ function Gallery.Create(gui, onEquip)
 	Style.Surface(search, Color3.new(1,1,1), 1.5)
 	local count = caption(panel, "DiscoveryCount", "", 23)
 	count.TextXAlignment = Enum.TextXAlignment.Left
-	local hint = caption(panel, "CompanionHint", "Select a discovered item to equip your companion", 16)
+	local hint = caption(panel, "CompanionHint", "Select an item for value, pad placement, or selling", 16)
 	hint.TextXAlignment = Enum.TextXAlignment.Right
 	hint.TextColor3 = Color3.fromRGB(100, 112, 111)
 	local scroll = make("ScrollingFrame", panel, "Gallery", {
@@ -147,6 +147,102 @@ function Gallery.Create(gui, onEquip)
 	})
 	local empty = caption(panel, "EmptyResults", "No discovered items match your search.", 24)
 	empty.Visible = false
+
+ -- Details use current inventory entries, never discovery-list positions.
+ local owned,placed,capacity={}, {},5
+ local selected,selectedArea,selectedCopy=nil,nil,1
+ local matches={} local pending=false
+ local detailOverlay=make("Frame",panel,"ItemDetailsOverlay",{Size=UDim2.fromScale(1,1),BackgroundColor3=Color3.fromRGB(0,24,55),BackgroundTransparency=.18,Visible=false,ZIndex=30,Active=true})
+ corner(detailOverlay,22)
+ local detail=make("Frame",detailOverlay,"ItemDetails",{Size=UDim2.fromOffset(860,580),AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),BackgroundColor3=Color3.fromRGB(16,151,220)})
+ Garage.Inset(detail) detail.BackgroundTransparency=.02
+ local ds=make("UIScale",detail,"Fit")
+ local function fitDetails()
+  ds.Scale=math.min(panel.Size.X.Offset*.94/860,panel.Size.Y.Offset*.94/580,1)
+ end
+ panel:GetPropertyChangedSignal("Size"):Connect(fitDetails)
+ local heading=Garage.Text(detail,"Heading","ITEM DETAILS",UDim2.fromOffset(24,15),UDim2.fromOffset(705,65),36)
+ Garage.Header(heading)
+ local function action(name,text,x,y,w,color)
+  local b=make("TextButton",detail,name,{Text=text,Position=UDim2.fromOffset(x,y),Size=UDim2.fromOffset(w,58),TextSize=26,BackgroundColor3=color,AutoButtonColor=true})
+  Garage.Button(b,color) return b
+ end
+ local back=action("Close","X",780,18,58,Color3.fromRGB(255,91,31))
+ back.Activated:Connect(function() detailOverlay.Visible=false end)
+ local artHolder=make("Frame",detail,"Preview",{Position=UDim2.fromOffset(14,95),Size=UDim2.fromOffset(392,318),BackgroundTransparency=1})
+ local itemName=Garage.Text(detail,"ItemName","",UDim2.fromOffset(22,413),UDim2.fromOffset(376,60),26) Garage.Plate(itemName)
+ local copyText=Garage.Text(detail,"Copy","",UDim2.fromOffset(84,490),UDim2.fromOffset(252,58),20,Color3.new(1,1,1))
+ local previous=action("PreviousCopy","‹",22,490,54,Color3.fromRGB(0,150,230))
+ local nextCopy=action("NextCopy","›",344,490,54,Color3.fromRGB(0,150,230))
+ local value=Garage.Text(detail,"Value","",UDim2.fromOffset(430,105),UDim2.fromOffset(402,58),26) Garage.Plate(value)
+ local income=Garage.Text(detail,"Income","",UDim2.fromOffset(430,174),UDim2.fromOffset(402,53),22) Garage.Plate(income)
+ local status=Garage.Text(detail,"Ownership","",UDim2.fromOffset(430,237),UDim2.fromOffset(402,64),20,Color3.new(1,1,1))
+ local place=action("PlaceOnPad","PLACE ON PAD",430,313,402,Color3.fromRGB(16,219,146))
+ local sell=action("Sell","SELL",430,383,402,Color3.fromRGB(255,91,31))
+ local companionButton=action("EquipCompanion","EQUIP COMPANION",430,453,402,Color3.fromRGB(0,161,239))
+ local note=Garage.Text(detail,"SaleNote","Sale bonuses are applied when you sell.",UDim2.fromOffset(430,524),UDim2.fromOffset(402,34),16,Color3.new(1,1,1))
+ local mutations=require(script.Parent:WaitForChild("Mutations"))
+ local recipes=require(script.Parent:WaitForChild("FusionRecipes"))
+ local brainrot=require(script.Parent:WaitForChild("BrainrotRecipes"))
+ local function renderDetails()
+  if not selected then return end
+  matches={}
+  for _,entry in ipairs(owned) do
+   local base=mutations.Unwrap(entry.name)
+   if base==selected.name then table.insert(matches,entry) end
+  end
+  selectedCopy=math.clamp(selectedCopy,1,math.max(1,#matches))
+  local entry=matches[selectedCopy]
+  local shownName=entry and entry.name or selected.name
+  itemName.Text=ItemNames.Display(shownName)
+  local amount=entry and entry.value or (selectedArea=="brainrot" and brainrot.GetValue(selected.name) or recipes.GetValue(selected.name))
+  value.Text=string.format("Base value: %s coins",tostring(math.floor(amount or 0)))
+  income.Text=entry and string.format("If placed: %.1f coins / sec",entry.perSecond or 0) or "No copy in inventory"
+  status.Text=pending and "Updating inventory..." or entry and string.format("%d in inventory • %d / %d pads used",#matches,#placed,capacity) or "Discovering an item does not give you a copy. Collect one to place or sell."
+  copyText.Text=entry and string.format("Copy %d / %d",selectedCopy,#matches) or "Not owned in inventory"
+  previous.Visible=#matches>1 nextCopy.Visible=#matches>1
+  place.Active=entry~=nil and #placed<capacity and not pending
+  sell.Active=entry~=nil and not pending
+  place.Text=#placed>=capacity and entry and "PADS FULL" or "PLACE ON PAD"
+  sell.Text="SELL"
+  companionButton.Text=companion and companion.name==selected.name and companion.island==ISLAND_OF[selectedArea] and "COMPANION EQUIPPED" or "EQUIP COMPANION"
+  if artHolder:GetAttribute("ShownName")~=shownName then
+   artHolder:ClearAllChildren() artHolder:SetAttribute("ShownName",shownName)
+   local view=modelView(artHolder,selected.name) view.Position=UDim2.fromOffset(0,0) view.Size=UDim2.fromScale(1,1)
+   local _,mutation=mutations.Unwrap(shownName)
+   local tint=mutations.Color(mutation)
+   if tint then for _,o in view:GetDescendants() do if o:IsA("BasePart") and not o:FindFirstAncestor("GaragePodium") then o.Color=tint end end end
+  end
+ end
+ local function showDetails(entry,area)
+  selected=entry selectedArea=area selectedCopy=1 pending=false
+  fitDetails() renderDetails() detailOverlay.Visible=true
+ end
+ previous.Activated:Connect(function() selectedCopy=math.max(1,selectedCopy-1) renderDetails() end)
+ nextCopy.Activated:Connect(function() selectedCopy=math.min(#matches,selectedCopy+1) renderDetails() end)
+ local function submit(kind)
+  if pending then return end
+  local entry=matches[selectedCopy] if not entry then return end
+  if kind=="place" and #placed>=capacity then return end
+  -- Re-resolve the current index and name before dispatch; updates can shift slots.
+  local current=nil
+  for _,v in ipairs(owned) do if v.index==entry.index and v.name==entry.name then current=v break end end
+  if not current then renderDetails() return end
+  pending=true renderDetails()
+  if actions and actions[kind] then actions[kind](current.index) end
+  task.delay(2,function() if pending then pending=false renderDetails() end end)
+ end
+ place.Activated:Connect(function() if place.Active then submit("place") end end)
+ sell.Activated:Connect(function() if sell.Active then submit("sell") end end)
+ companionButton.Activated:Connect(function() if selected then onEquip(selected.name,ISLAND_OF[selectedArea]) end end)
+ function api.UpdateOwned(items,pads,padCapacity)
+  if items~=nil then owned=items pending=false end
+  if pads~=nil then placed=pads end
+  if padCapacity~=nil then capacity=padCapacity end
+  if detailOverlay.Visible then renderDetails() end
+ end
+ panel:GetPropertyChangedSignal("Visible"):Connect(function() if not panel.Visible then detailOverlay.Visible=false end end)
+
 	local function layout()
 		local size = gui.AbsoluteSize
 		if size.X < 100 or size.Y < 100 then return end
@@ -291,7 +387,7 @@ function Gallery.Create(gui, onEquip)
 						card.Text = ""
 						card.AutoButtonColor = false
 						local island = ISLAND_OF[activeArea]
-						card.Activated:Connect(function() onEquip(entry.name, island) end)
+						card.Activated:Connect(function() showDetails(entry,activeArea) end)
 						modelView(card, entry.name)
 					else
 						local lock = caption(card,"Undiscovered","?",70)
@@ -329,7 +425,7 @@ function Gallery.Create(gui, onEquip)
 	search:GetPropertyChangedSignal("Text"):Connect(function() scroll.CanvasPosition=Vector2.zero redraw() end)
 	panel:GetPropertyChangedSignal("Visible"):Connect(function() dimmer.Visible=panel.Visible end)
 	function api.Toggle() panel.Visible=not panel.Visible end
-	function api.Update(nextData, nextCompanion) data=nextData companion=nextCompanion redraw() end
+	function api.Update(nextData, nextCompanion) data=nextData companion=nextCompanion redraw() if detailOverlay.Visible then renderDetails() end end
 	close.Activated:Connect(api.Toggle)
 	layout()
 	redraw()

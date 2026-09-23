@@ -589,7 +589,7 @@ local indexData = { junkyard = {}, brainrot = {}, addons = {} }
 local equippedCompanion = nil
 local indexGallery = require(ReplicatedStorage:WaitForChild("IndexGallery")).Create(gui, function(name, area)
 	equipCompanionRemote:FireServer(name, area)
-end)
+end, {place=function(index) placePetRemote:FireServer(index) end, sell=function(index) sellInventoryRemote:FireServer(index) end})
 local function redrawIndex()
 	indexGallery.Update(indexData, equippedCompanion)
 end
@@ -2042,6 +2042,8 @@ remote.OnClientEvent:Connect(function(data)
 			or "No companion equipped"
 		redrawIndex()
 	end
+
+	indexGallery.UpdateOwned(data.inventory, data.placed, data.placedCapacity)
 
 	if data.inventory then
 		redrawInventory(data.inventory, data.inventoryCapacity)
