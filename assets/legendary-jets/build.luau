@@ -2,6 +2,7 @@
 -- Requires the detailed Sept 23 base vehicles; never edits their templates.
 assert(not game:GetService("RunService"):IsRunning(),"Stop Play first")
 local templates=game.ReplicatedStorage:WaitForChild("ItemModels")
+assert(not game.ServerStorage:FindFirstChild("LegendaryBuildStaging_20260923"), "Inspect existing staging folder before rebuilding")
 local stage=Instance.new("Folder") stage.Name="LegendaryBuildStaging_20260923" stage.Parent=game.ServerStorage
 local steel=Color3.fromRGB(74,85,99)
 local dark=Color3.fromRGB(22,29,40)
@@ -58,6 +59,25 @@ local function turbine(parent,center,radius,length,paint)
  end
  -- Heat-darkened seams, wiring, inspection bolts and service access.
  bar(jet,"FuelLine",center+Vector3.new(radius*.5,radius*.8,-length*.3),center+Vector3.new(radius*.5,radius*.8,length*.3),.055,cyan)
+ -- Layered service panels, exposed fasteners and cooling ribs on both sides.
+ for _,side in {-1,1} do
+  local x=side*(radius*.94+.045)
+  part(jet,"ServicePanelGasket",Vector3.new(.035,.35,.69),CFrame.new(center+Vector3.new(x,0,.02)),dark)
+  part(jet,"ServicePanel",Vector3.new(.045,.29,.61),CFrame.new(center+Vector3.new(x+side*.025,0,.02)),paint)
+  for _,dy in {-.105,.105} do for _,dz in {-.23,.23} do
+   part(jet,"ServicePanelRivet",Vector3.new(.06,.045,.045),CFrame.new(center+Vector3.new(x+side*.06,dy,dz+.02)),silver,Enum.Material.Metal,Enum.PartType.Ball)
+  end end
+  for j=1,5 do
+   part(jet,"CoolingLouvre",Vector3.new(.065,.19,.035),CFrame.new(center+Vector3.new(x+side*.06,0,-.17+j*.065))*CFrame.Angles(.25,0,0),dark)
+  end
+  for j=1,3 do
+   part(jet,"WarningStripe",Vector3.new(.045,.16,.05),CFrame.new(center+Vector3.new(x+side*.02,.03,length*.31+j*.07))*CFrame.Angles(-.4,0,0),gold)
+  end
+ end
+ for j=1,3 do
+  ring(jet,"ExhaustCoolingRib",center+Vector3.new(0,0,-length*.32-j*.10),radius*.92,.045,.035,silver)
+ end
+ jet:SetAttribute("MountClearance",.20)
  return jet
 end
 local configs={
@@ -67,17 +87,20 @@ local configs={
 }
 local results={}
 for _,c in configs do
- assert(not templates:FindFirstChild(c.name),"Template already exists: "..c.name)
  local m=templates[c.base]:Clone() m.Name=c.name m.Parent=stage
  local cf,size=m:GetBoundingBox() m:PivotTo(CFrame.new(-cf.Position)*m:GetPivot())
  m:ScaleTo(m:GetScale()*c.length/size.Z)
+ local _,baseBounds=m:GetBoundingBox()
+ -- Keep the entire intake lip outside the base vehicle's bounding envelope.
+ local jetX=baseBounds.X/2+.59+.20
  local hardware=Instance.new("Model") hardware.Name="LegendaryJetHardware" hardware.Parent=m
  if c.base=="Dirt Bike" then
   -- A single side-mounted turbine retains the two-wheel bike silhouette.
-  turbine(hardware,Vector3.new(.88,.20,-.35),.59,3.35,c.color)
+  turbine(hardware,Vector3.new(jetX,.20,-.35),.59,3.35,c.color)
   for _,z in {-1.35,.7} do
-   bar(hardware,"WeldedEngineCradle",Vector3.new(.25,-.55,z),Vector3.new(1.0,-.45,z),.14,steel)
-   bar(hardware,"DiagonalEngineStay",Vector3.new(.18,.55,z),Vector3.new(.86,-.44,z),.085,silver)
+   bar(hardware,"WeldedEngineCradle",Vector3.new(.25,-.55,z),Vector3.new(jetX,-.45,z),.14,steel)
+   bar(hardware,"DiagonalEngineStay",Vector3.new(.18,.55,z),Vector3.new(jetX,-.44,z),.085,silver)
+   part(hardware,"CradleMountFoot",Vector3.new(.30,.12,.28),CFrame.new(jetX,-.45,z),gold)
   end
   part(hardware,"RearAeroFin",Vector3.new(.10,.60,1.15),CFrame.new(0,1.04,-1.93)*CFrame.Angles(.12,0,0),c.color)
   for _,x in {-.45,.45} do
@@ -88,9 +111,14 @@ for _,c in configs do
   local cop=c.base=="Cop Cruiser"
   local y=cop and .95 or .68
   for _,sign in {-1,1} do
-   turbine(hardware,Vector3.new(sign*1.40,y,-1.02),.56,2.85,c.color)
+   turbine(hardware,Vector3.new(sign*jetX,y,-1.02),.56,2.85,c.color)
    for _,z in {-1.85,-.15} do
-    bar(hardware,"ChassisPylon",Vector3.new(sign*.9,-.05,z),Vector3.new(sign*1.4,y-.53,z),.14,steel)
+    bar(hardware,"ChassisPylon",Vector3.new(sign*.9,-.05,z),Vector3.new(sign*jetX,y-.53,z),.14,steel)
+    bar(hardware,"TriangulatedMount",Vector3.new(sign*1.1,-.45,z+.25),Vector3.new(sign*jetX,y-.53,z),.09,silver)
+    part(hardware,"PylonSaddle",Vector3.new(.34,.12,.32),CFrame.new(sign*jetX,y-.53,z),gold)
+    for _,offset in {-.10,.10} do
+     part(hardware,"SaddleBolt",Vector3.new(.065,.065,.065),CFrame.new(sign*jetX+offset,y-.44,z),silver,Enum.Material.Metal,Enum.PartType.Ball)
+    end
    end
    part(hardware,"AeroFin",Vector3.new(.10,.76,1.10),CFrame.new(sign*1.1,y+.82,-1.80)*CFrame.Angles(.12,0,0),c.color)
    part(hardware,"FinStripe",Vector3.new(.112,.14,.78),CFrame.new(sign*1.1,y+.84,-1.77)*CFrame.Angles(.12,0,0),gold)
@@ -117,18 +145,17 @@ for _,c in configs do
  -- remains visible in ViewportFrames, unlike SurfaceGui-only wear.
  for i=1,12 do
   local side=i%2==0 and 1 or -1
-  local x=c.base=="Dirt Bike" and 1.47 or side*1.97
+  local x=c.base=="Dirt Bike" and jetX+.59 or side*(jetX+.57)
   local y=c.base=="Dirt Bike" and .20 or c.base=="Cop Cruiser" and .95 or .68
   part(hardware,"EdgeScuff",Vector3.new(.018,.022,.12+(i%3)*.04),CFrame.new(x,y+(i%4)*.07,-1.8+(i%6)*.33)*CFrame.Angles(.28,0,0),silver)
  end
  local _,bounds=m:GetBoundingBox()
  m:ScaleTo(m:GetScale()*7/math.max(bounds.X,bounds.Y,bounds.Z))
  local center=m:GetBoundingBox() m:PivotTo(CFrame.new(-center.Position)*m:GetPivot())
- m:SetAttribute("CodexModelRevision","LegendaryJetFusions_20260923")
+ m:SetAttribute("CodexModelRevision","LegendaryJetFusions_20260923_v2")
  m:SetAttribute("DisplayName",c.name) m:SetAttribute("BaseVehicle",c.base) m:SetAttribute("Addon","Jet Engine") m:SetAttribute("Rarity","Legendary")
  for _,p in m:GetDescendants() do if p:IsA("BasePart") then p.Anchored=true p.CanCollide=false p.CanTouch=false p.CanQuery=false end end
  local _,final=m:GetBoundingBox() local count=0 for _,p in m:GetDescendants() do if p:IsA("BasePart") then count+=1 end end
  table.insert(results,{name=c.name,size=tostring(final),parts=count})
 end
 return game.HttpService:JSONEncode(results)
-
