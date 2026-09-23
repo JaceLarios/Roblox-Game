@@ -1,5 +1,12 @@
 # Enclosed Salvage Works workshops — September 23
 
+## Latest revision: visibility windows (map version 10)
+Lock buttons are now at each workshop's rear center (local X=0, Z=35), with the rear benches split to keep access clear. Decorative writing, wall artwork, floor-number signs and owner signposts have been removed. Functional prompts and gate lock status remain.
+
+Each workshop has five large transparent, collidable glass openings: one on each side, one rear, and two flanking the front door. Walls are segmented around the glass, with low 3.5-stud sills for player-height visibility; there is no opaque wall backing. Enclosure and the eight pads are retained.
+
+Verified all eight bases have rear-center buttons, five collidable windows and no decorative TextLabels. Window raycasts hit glass; actual Play screenshots confirm visibility outside. Exercised all eight entrance laser colliders/visuals on and off, then used the actual rear LockPrompt to activate Plot1's eight doorway beams and barrier. Fresh Play Output showed no errors. Backup: ServerStorage.BeforeWorkshopWindows_1790185531. Earlier details below describe the initial workshop pass.
+
 Supersedes the open-map pass in 24ff658.
 
 ## Current build

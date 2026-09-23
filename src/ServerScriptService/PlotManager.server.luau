@@ -681,17 +681,6 @@ for i = 1, PLOT_COUNT do
 		Parent = model,
 	})
 
-	-- Sign shows who owns the plot.
-	local signPost = makePart({
-		Name = "Sign",
-		Size = Vector3.new(2, 10, 2),
-		-- Keep the owner sign off every base's straight return corridor.
-		Position = plotFrame:PointToWorldSpace(Vector3.new(20, 5, -PLOT_SIZE / 2 + 5)),
-		Material = Enum.Material.SmoothPlastic,
-		Color = Color3.fromRGB(255, 214, 0),
-		Parent = model,
-	})
-	local signLabel = makeLabel(signPost, "UNCLAIMED PLOT", 6, 260, Color3.fromRGB(255, 200, 80), 90)
 
 	-- The fusion pad: only its owner can use it.
 	local pad = makePart({
@@ -823,7 +812,7 @@ for i = 1, PLOT_COUNT do
 	-- uses owner-specific collision filtering.
 
 	-- Lock Base: owner-only, shuts every pad for LOCK_SECONDS.
-	local lockSpot = plotFrame:PointToWorldSpace(Vector3.new(17, 0, -32))
+	local lockSpot = plotFrame:PointToWorldSpace(Vector3.new(0, 0, 35))
 	makePart({
 		Name = "LockPedestal",
 		Size = Vector3.new(2.6, 2.6, 2.6),
@@ -880,7 +869,6 @@ for i = 1, PLOT_COUNT do
 		padLabel = padLabel,
 		padPrompt = padPrompt,
 		petPads = petPads,
-		signLabel = signLabel,
 	}
 end
 
@@ -3284,7 +3272,7 @@ local function assignPlot(player)
 	for i, plot in ipairs(plots) do
 		if plot.owner == nil then
 			plot.owner = player
-			plot.signLabel.Text = player.Name .. "'S YARD"
+
 			-- BaseRaid.client reads this to tell your pads from everyone else's.
 			plot.model:SetAttribute("OwnerUserId", player.UserId)
 			plot.lockedUntil = 0
@@ -3556,7 +3544,7 @@ Players.PlayerRemoving:Connect(function(player)
 			plot.lockedUntil = 0
 			plot.lockCooldownUntil = 0
 			refreshLock(plot)
-			plot.signLabel.Text = "UNCLAIMED PLOT"
+
 			plot.padLabel.Text = "FUSION PAD"
 			for slot = 1, PET_PAD_COUNT do
 				redrawPetPad(plot, slot, nil)

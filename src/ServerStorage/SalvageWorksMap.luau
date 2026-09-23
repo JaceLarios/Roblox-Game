@@ -96,14 +96,14 @@ function Map.Build()
  if at then at.Density=.16 at.Haze=.35 at.Glare=.08 at.Color=RGB(211,238,249) at.Decay=RGB(180,204,219) end
  local bloom=lighting:FindFirstChildOfClass("BloomEffect") if bloom then bloom.Intensity=.10 end
  local old=workspace:FindFirstChild("JunkyardRefresh")
- if old and old:GetAttribute("Version")==9 then return old end
+ if old and old:GetAttribute("Version")==10 then return old end
  -- Replaced map geometry is archived, not destroyed. Terrain/other islands remain.
  local archive=folder(game.ServerStorage,"BeforeOpenSalvage_"..os.time())
  for _,n in ipairs({"JunkyardScene","JunkyardRefresh","SalvageWorksTouchup"}) do
   local item=workspace:FindFirstChild(n) if item then item.Parent=archive end
  end
- local root=folder(workspace,"JunkyardRefresh") root:SetAttribute("Version",9)
- local scene=folder(workspace,"JunkyardScene") scene:SetAttribute("Version",9)
+ local root=folder(workspace,"JunkyardRefresh") root:SetAttribute("Version",10)
+ local scene=folder(workspace,"JunkyardScene") scene:SetAttribute("Version",10)
  local routes=folder(root,"Routes") local garages=folder(root,"Garages")
  local props=folder(root,"SalvageDisplays") local scenery=folder(root,"Perimeter")
  folder(root,"Motion")
