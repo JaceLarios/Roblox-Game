@@ -6,7 +6,7 @@
 
 Every junkyard fusion is one car plus one addon, so the recipe book is exactly 7 cars × 5 addons = 35 results. The addon sets the rarity, the car sets which result you get. That is live in the game now.
 
-Of the 35, **32 have a model and 3 do not**. Past those three, some models were built for a different recipe and now have to stand for one specific car, and a few are sized out of step with their rarity. Those three lists are what this page is for.
+Of the 35, **all 35 now have a model in the current Studio Edit place**. The three previously missing Legendary results were installed in this pass; see `assets/legendary-jets/README.md` for recovery files and verification limits. Some older models were built for a different recipe and now have to stand for one specific car, and a few are sized out of step with their rarity. Those remaining lists are below.
 
 The game loads a model straight out of `ReplicatedStorage.ItemModels` by the result's exact name, so a model shows up in game the moment it is in there under the right name. No code change needed for any of this.
 
@@ -14,7 +14,7 @@ This page covers the 35 fused results and the five addons. The seven base cars w
 
 ### What the detailed cars changed
 
-The seven rebuilt cars are multi-part models — 11 parts for the Dirt Bike, 159 for the Scrap Kart, 35 to 52 for the rest. **Every one of the 35 fused results is still a single mesh**, and so are the five addons.
+The seven rebuilt cars are multi-part models — 11 parts for the Dirt Bike, 159 for the Scrap Kart, 35 to 52 for the rest. **The three newly built Legendary jet results are now detailed multi-part models; the other 32 fused results still use their previous meshes**, as do the five addons.
 
 So the ladder now runs backwards: the scrap a player picks up off the floor, worth 5 coins, is the best-looking thing in the game, and the Scrapyard God they work toward at 1,667 coins/sec is one blob. That gap is bigger than any single model on the lists below.
 
@@ -30,9 +30,9 @@ Pets are not part of this at all any more. Since Sept 22 they are not items — 
 
 **Every rate on this page is the base rate**, before any of your multipliers. A rarer car earns more than a common one with the same addon, and a better addon outearns every result of the addon below it.
 
-## Still to build (3)
+## Completed: three missing Legendary models
 
-All three are Legendary — the Jet Engine results for cars that don't have one yet. They render as placeholder neon blocks in game until the models land, so these are the most visible gap.
+All three Legendary Jet Engine results below are now installed under their exact recipe names, with 7-stud longest sides. Their live ItemVisuals rendering and recipe lookup checks passed. This does not mean the place has been published; see the backup README for tests still outstanding.
 
 | Model | Made from | Earns | Brief |
 | --- | --- | --- | --- |
