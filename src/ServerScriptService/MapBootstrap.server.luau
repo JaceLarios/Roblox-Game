@@ -9,6 +9,7 @@ Map.DressYard()
 -- The crane, junk piles and container stacks inside the yard. Its own
 -- module, so it rebuilds itself whenever its VERSION changes.
 YardFeatures.Build()
+require(ServerStorage:WaitForChild("SalvageWorksTouchup")).Build()
 local plots = workspace:WaitForChild("Plots",30)
 if plots then
  local function dress(plot)
