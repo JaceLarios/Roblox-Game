@@ -176,7 +176,7 @@ Templates live in `ReplicatedStorage.ItemModels`, named by the item's stable key
 
 **Name templates by key, not by display name.** `Rusted Sedan` is the key; players see "Scrap Kart" through `ItemNames.Display`. The game looks a template up by key, so one named "Scrap Kart" would never be found. Every name on this page is a key.
 
-**The five addons are not part of the base-car rebuild, so they are still open here.** They get looked at on their own rather than only bolted onto a car — they lie on the yard floor before anyone grabs them, and they have their own tab in the Index. Only the Jet Engine has a current revision; Nitrous Tank, Inline 4, V6 and V8 are all old-roster models.
+**The five addons now have a first concept-based rebuild installed in Studio**, revision `AddonConcept_20260923_v1`. They get looked at on their own rather than only bolted onto a car — they lie on the yard floor before anyone grabs them, and they have their own tab in the Index. See `assets/addon-redesign/` for the actual preview, original concept, tested recovery files and verification limits. Nitrous Tank now uses a horizontal green bottle/cradle at 3 studs longest; the engines use blue, purple, red and orange designs. These are first-pass interpretations for visual review, not a claim of exact concept fidelity or a published-place update.
 
 11 models in `ItemModels` are unused by this plan — leave them where they are. Wreck Kraken, Junkyard Behemoth, Scrap Titan, Cone Sentinel, Trolley Interceptor and Lawn Missile could become secrets later; Monster Truck Tire, Traffic Cone, Shopping Cart, Riding Mower and Minivan are old spawn items with no role now.
 
