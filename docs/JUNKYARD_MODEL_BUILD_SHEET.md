@@ -16,7 +16,7 @@ This page covers the 35 fused results and the five addons. The seven base cars w
 
 The seven rebuilt cars are multi-part models — 11 parts for the Dirt Bike, 159 for the Scrap Kart, 35 to 52 for the rest. **The three newly built Legendary jet results are now detailed multi-part models; the other 32 fused results still use their previous meshes**, as do the five addons.
 
-So the ladder now runs backwards: the scrap a player picks up off the floor, worth 5 coins, is the best-looking thing in the game, and the Scrapyard God they work toward at 1,667 coins/sec is one blob. That gap is bigger than any single model on the lists below.
+So the ladder still runs backwards in places. The scrap a player picks up off the floor, worth 5 coins, is a detailed model, and so are the three new Jet results — but **Scrapyard God, the best item in the game at 1,667 coins/sec, is still a single mesh**, and next to Sky Marshal or Afterburner GT it now reads as the cheaper item. Same for Sonic Scrapheap, THE LAWNLORD and Jet Hauler. That gap is bigger than any single model on the lists below.
 
 It also means **"Fine" in the table further down only means the model reads as the right vehicle.** None of them match the new cars for detail. If the fused results get a detail pass to match, the tables are already ordered for it: highest earners first, since those are the builds players keep on their pads and look at.
 
@@ -40,7 +40,9 @@ All three Legendary Jet Engine results below are now installed under their exact
 | Afterburner GT | Muscle Car + Jet Engine | 806 coins/sec | A muscle car with jet afterburners |
 | Sky Marshal | Cop Cruiser + Jet Engine | 944 coins/sec | A jet-powered police cruiser |
 
-**Size them at about 7 studs long.** The three Legendary models that already exist — Sonic Scrapheap, THE LAWNLORD and Scrapyard God — are all exactly 7.0 on their longest side, and Legendary results should be the most impressive things in the game.
+**Checked in Studio on Sept 23:** all three are installed under their recipe names at exactly 7.0 studs on the longest side, 129 to 130 parts each, and each one builds, scales and grounds correctly through `ItemVisuals.Create`. Nothing else was needed to make them show up in game.
+
+**What this leaves:** four of the seven Legendary results are still single meshes — Sonic Scrapheap, THE LAWNLORD, Scrapyard God and Jet Hauler. They are now the plainest-looking items in their own rarity, and Scrapyard God is the single best item in the game. Bringing those four up to the standard of the three new ones is the highest-value art job left.
 
 ## Rebuild: models that now stand for one car
 
@@ -102,7 +104,7 @@ Right now the ladder is not monotonic — Soccer Mom Monster is an Uncommon at 6
 
 ## All 35 results
 
-Every row is one car plus one addon. **Build** means no model exists, **Rebuild** means the model is there but reads as the wrong vehicle, **Rescale** means it reads right but is the wrong size, and **Fine** means leave it alone. That comes to 15 fine, 15 to rebuild, 3 to build and 2 to rescale.
+Every row is one car plus one addon. **Rebuild** means the model is there but reads as the wrong vehicle, **Rescale** means it reads right but is the wrong size, **Detail** means it reads right and is the right size but is still a single mesh in a rarity where others are detailed, and **Fine** means leave it alone. Nothing is missing any more. That comes to 14 fine, 15 to rebuild, 4 to detail and 2 to rescale.
 
 ### Nitrous Tank — Uncommon
 
@@ -158,13 +160,13 @@ Every one of these is either an old-roster model or a generic hybrid name, so th
 
 | Result | Car | Earns | Model |
 | --- | --- | --- | --- |
-| Sonic Scrapheap | Rusted Sedan | 556 /sec | Fine |
-| Rocket Rider | Dirt Bike | 611 /sec | **Build** |
-| THE LAWNLORD | Golf Cart | 722 /sec | Fine |
-| Afterburner GT | Muscle Car | 806 /sec | **Build** |
-| Sky Marshal | Cop Cruiser | 944 /sec | **Build** |
-| Jet Hauler | Box Truck | 1,222 /sec | Rescale |
-| Scrapyard God | Monster Truck | 1,667 /sec | Fine |
+| Sonic Scrapheap | Rusted Sedan | 556 /sec | Detail |
+| Rocket Rider | Dirt Bike | 611 /sec | Done — detailed, Sept 23 |
+| THE LAWNLORD | Golf Cart | 722 /sec | Detail |
+| Afterburner GT | Muscle Car | 806 /sec | Done — detailed, Sept 23 |
+| Sky Marshal | Cop Cruiser | 944 /sec | Done — detailed, Sept 23 |
+| Jet Hauler | Box Truck | 1,222 /sec | Rescale, then detail |
+| Scrapyard God | Monster Truck | 1,667 /sec | Detail — the best item in the game |
 
 A build can also be upgraded: put a better addon on one and it becomes that addon's version of the same car, so a player moves along a row rather than starting over. Nothing extra to model for that — it lands on a result already in this table.
 
@@ -177,6 +179,19 @@ Templates live in `ReplicatedStorage.ItemModels`, named by the item's stable key
 **The five addons are not part of the base-car rebuild, so they are still open here.** They get looked at on their own rather than only bolted onto a car — they lie on the yard floor before anyone grabs them, and they have their own tab in the Index. Only the Jet Engine has a current revision; Nitrous Tank, Inline 4, V6 and V8 are all old-roster models.
 
 11 models in `ItemModels` are unused by this plan — leave them where they are. Wreck Kraken, Junkyard Behemoth, Scrap Titan, Cone Sentinel, Trolley Interceptor and Lawn Missile could become secrets later; Monster Truck Tire, Traffic Cone, Shopping Cart, Riding Mower and Minivan are old spawn items with no role now.
+
+## Still open from the fusion spec
+
+Three items from the redesign spec have not been picked up yet:
+
+1. **Index filters are still tier bands.** They read Base / Tier 2 / Tier 3 / Tier 4 / Secret and filter on `entry.tier`. They were meant to become Base / Uncommon / Rare / Epic / Mythic / Legendary, filtering on `entry.rarity`, which every Index entry now carries.
+2. **The Secret filter is dead.** There are no secret recipes in the new book, so clicking it gives "Secret • 0 / 0 discovered — No items in this rarity yet." It disappears on its own once the filters move to rarity bands.
+3. **The fusion pad's two slots are not labelled.** The pad takes one item and one addon, so labelling them (ITEM / ADDON) would stop people trying two cars. The server already sends the refusal toasts.
+
+Two more things found while testing on Sept 23:
+
+- **`assets/junkyard-models/verify-models.luau` is broken, not just stale.** It asserts every roster entry is a MeshPart with revision `Junkyard_20260914`, which the seven detailed cars and the three new Legendary models now fail, and it fuses every pair of its roster, which the one-item-plus-one-addon rule refuses. It needs the 7 cars, 5 addons and 35 results, fusing only car + addon pairs.
+- **Text overlap in the Index:** "Select a discovered item to equip your companion" renders underneath the Search box.
 
 ## One open question
 
