@@ -25,7 +25,6 @@ local remote = ReplicatedStorage:WaitForChild("GameUpdate")
 local buyRemote = ReplicatedStorage:WaitForChild("BuyUpgrade")
 local claimRemote = ReplicatedStorage:WaitForChild("ClaimDaily")
 local rebirthRemote = ReplicatedStorage:WaitForChild("RebirthPlayer")
-local equipCompanionRemote = ReplicatedStorage:WaitForChild("EquipCompanion")
 local sellInventoryRemote = ReplicatedStorage:WaitForChild("SellInventoryItem")
 local moveToCarryRemote = ReplicatedStorage:WaitForChild("MoveToCarry")
 local placePetRemote = ReplicatedStorage:WaitForChild("PlacePet")
@@ -36,7 +35,6 @@ local cancelTradeRemote = ReplicatedStorage:WaitForChild("CancelTrade")
 local startTradeWithRemote = ReplicatedStorage:WaitForChild("StartTradeWith")
 
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
-local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local EventConfig = require(ReplicatedStorage:WaitForChild("EventConfig"))
 local Mutations = require(ReplicatedStorage:WaitForChild("Mutations"))
@@ -121,10 +119,6 @@ local luckText = label(coinCard, "LUCK 0%", UDim2.new(0, 90, 0, 18), DIM, Enum.F
 luckText.Position = UDim2.new(0, 88, 0, 56)
 UIStyle.Outline(luckText,14)
 luckText.TextXAlignment = Enum.TextXAlignment.Right
-
-local companionText = label(coinCard, "No companion equipped", UDim2.new(1, -32, 0, 18), PURPLE, Enum.Font.FredokaOne, 12)
-companionText.Position = UDim2.new(0, 16, 0, 80)
-UIStyle.Outline(companionText,14)
 
 local function commas(n)
 	local formatted = tostring(n)
@@ -585,13 +579,10 @@ end
 
 
 local bookBtn = NavButton.Create(gui, "📖", "INDEX", PURPLE, NavButton.RailPosition("left", 3))
-local indexData = { junkyard = {}, brainrot = {}, addons = {} }
-local equippedCompanion = nil
-local indexGallery = require(ReplicatedStorage:WaitForChild("IndexGallery")).Create(gui, function(name, area)
-	equipCompanionRemote:FireServer(name, area)
-end)
+local indexData = { junkyard = {}, addons = {} }
+local indexGallery = require(ReplicatedStorage:WaitForChild("IndexGallery")).Create(gui)
 local function redrawIndex()
-	indexGallery.Update(indexData, equippedCompanion)
+	indexGallery.Update(indexData)
 end
 bookBtn.MouseButton1Click:Connect(indexGallery.Toggle)
 UserInputService.InputBegan:Connect(function(input, processed)
@@ -2038,14 +2029,6 @@ remote.OnClientEvent:Connect(function(data)
 		redrawRebirth(data.rebirth)
 	end
 
-	if data.companion ~= nil then
-		equippedCompanion = data.companion or nil
-		companionText.Text = ItemNames.Display(equippedCompanion)
-			and string.format("Companion: %s (+%d%%)", equippedCompanion.name, equippedCompanion.bonusPercent)
-			or "No companion equipped"
-		redrawIndex()
-	end
-
 	if data.inventory then
 		redrawInventory(data.inventory, data.inventoryCapacity)
 	end
@@ -2084,11 +2067,6 @@ remote.OnClientEvent:Connect(function(data)
 		indexData.addons = addons
 		redrawIndex()
 	end
-
-	if data.brainrotIndex then
-		indexData.brainrot = data.brainrotIndex
-		redrawIndex()
-	end
 end)
 
 ------------------------------------------------------------------
@@ -2105,14 +2083,12 @@ local WORLDS = {
 		gradientColors = { Color3.fromRGB(255, 214, 80), Color3.fromRGB(255, 130, 40) },
 	},
 	{
-		key = "brainrot", name = "BRAINROT ISLAND", emoji = "🧠",
-		blurb = "A separate island with its own creatures to fuse.",
-		gradientColors = { Color3.fromRGB(255, 110, 210), Color3.fromRGB(170, 80, 255) },
-	},
-	{
-		key = "haunted", name = "HAUNTED HOLLOW", emoji = "👻",
-		blurb = "A cursed graveyard with its own ghosts to fuse.",
-		gradientColors = { Color3.fromRGB(120, 80, 190), Color3.fromRGB(45, 45, 60) },
+		key = "racewars", name = "RACE WARS", emoji = "🏁",
+		blurb = "Drive your best car and outrun the monster. Every level you clear wins a crate.",
+		gradientColors = { Color3.fromRGB(255, 80, 80), Color3.fromRGB(190, 30, 40) },
+		-- Its own picture (assets/race-wars/travel_card.png): the travel
+		-- art sheet only has the old destinations.
+		scene = "rbxassetid://136532362963777",
 	},
 }
 
@@ -2175,12 +2151,16 @@ travelClose.MouseButton1Click:Connect(toggleTravel)
 -- Bold color-gradient cards with a giant emoji badge — reliably bright
 -- and fun on every screen, unlike a hand-lit 3D scene, which fought us
 -- on camera angles for three rounds before we gave up on it here.
-local function buildWorldRow(world)
- local index=world.key=="brainrot" and 1 or world.key=="haunted" and 2 or 0
- local color=({Color3.fromRGB(255,159,27),Color3.fromRGB(235,49,220),Color3.fromRGB(128,65,225)})[index+1]
- local row=Garage.New("TextButton",travelScroll,"Destination_"..world.key,{Size=UDim2.new(1,-12,0,210),Text="",LayoutOrder=index,BackgroundColor3=color,AutoButtonColor=false})
+local function buildWorldRow(world, order)
+ local color=world.key=="racewars" and Color3.fromRGB(226,52,52) or Color3.fromRGB(255,159,27)
+ local row=Garage.New("TextButton",travelScroll,"Destination_"..world.key,{Size=UDim2.new(1,-12,0,210),Text="",LayoutOrder=order,BackgroundColor3=color,AutoButtonColor=false})
  Garage.Gloss(row,color,20)
- Garage.Scene(row,index,UDim2.fromOffset(8,8),UDim2.new(.44,-12,1,-16))
+ if world.scene then
+  local art=Garage.New("ImageLabel",row,"DestinationArt",{Image=world.scene,Position=UDim2.fromOffset(8,8),Size=UDim2.new(.44,-12,1,-16),BackgroundTransparency=1,ScaleType=Enum.ScaleType.Crop,ZIndex=2})
+  Garage.New("UICorner",art,"Corner",{CornerRadius=UDim.new(0,18)})
+ else
+  Garage.Scene(row,0,UDim2.fromOffset(8,8),UDim2.new(.44,-12,1,-16))
+ end
  local name=Garage.Text(row,"DestinationName",world.name,UDim2.new(.46,0,0,13),UDim2.new(.52,-12,0,54),38,Color3.new(1,1,1))
  name.TextStrokeColor3=Color3.fromRGB(10,24,56) name.TextStrokeTransparency=0
  local desc=Garage.Text(row,"Description",world.blurb,UDim2.new(.46,0,0,79),UDim2.new(.29,-8,0,111),20)
@@ -2191,8 +2171,8 @@ local function buildWorldRow(world)
  go.Activated:Connect(travel) row.Activated:Connect(travel)
 end
 
-for _, world in ipairs(WORLDS) do
-	buildWorldRow(world)
+for order, world in ipairs(WORLDS) do
+	buildWorldRow(world, order)
 end
 
 -- Apply presentation after construction; future inventory/reward rows inherit it.

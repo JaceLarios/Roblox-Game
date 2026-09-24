@@ -43,10 +43,6 @@ local function defaultData()
 		placed = {}, -- legacy: the old physical placement system. No longer written; kept so an old save still loads.
 		inventory = {},
 		placedPets = {}, -- Up to eight earning items; saved slot order is preserved. See PlotManager.
-		brainrotDiscovered = {},
-		hauntedDiscovered = {},
-		ownedAreaPets = {}, -- keys into AreaPets.luau's flat pet lookup; each owned pet is a permanent stacking coin/speed multiplier, see AreaPetsService.
-		equippedAreaPet = false, -- which owned pet (if any) currently follows the player; see AreaPetsService.SetEquipped.
 		upgrades = { luck = 1, carry = 1, value = 1, speed = 1 }, -- magnet removed 2026-09-14; a stray old save's magnet field is simply never read again.
 		lastDailyDay = 0,
 		dailyStreak = 0,
@@ -55,10 +51,7 @@ local function defaultData()
 		lifetimeCoins = 0,
 		totalPlaytimeMinutes = 0,
 		redeemedCodes = {},
-		grantedPurchaseIds = {}, -- Developer Product receipts already granted (secret pets) — keyed by PurchaseId, never re-grant on a Roblox retry.
-		brainrotUnlocked = false, -- paid once with coins, not Robux — see PlotManager.server.luau's ensureBrainrotUnlocked.
-		hauntedUnlocked = false, -- same pattern as brainrotUnlocked, see ensureHauntedUnlocked.
-		starterPackGranted = false, -- true once the Starter Pack gamepass's one-time pet has been granted; the gamepass ownership itself is re-checked every session, this just guards against re-granting the pet.
+		crates = {}, -- Race Wars crates waiting to be opened; see RaceCrates.luau for the shape of one.
 	}
 end
 

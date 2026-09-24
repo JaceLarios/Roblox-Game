@@ -8,7 +8,7 @@
 	drop it, die, or get it knocked out of you.
 
 	Deliberately its own script rather than another section of
-	GameUI.client.luau — the same isolation pattern PetsUI and ShopUI use —
+	GameUI.client.luau — the same isolation pattern ShopUI uses —
 	and it is purely reactive to fields the existing GameUpdate payload
 	already carries (carrying, baseCentre, carryFrom).
 

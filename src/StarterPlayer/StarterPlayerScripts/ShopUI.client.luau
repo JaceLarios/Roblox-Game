@@ -5,7 +5,6 @@ local MarketplaceService=game:GetService("MarketplaceService")
 local ReplicatedStorage=game:GetService("ReplicatedStorage")
 local player=Players.LocalPlayer
 local Config=require(ReplicatedStorage:WaitForChild("GamepassConfig"))
-local SecretPets=require(ReplicatedStorage:WaitForChild("SecretPets"))
 local NavButton=require(ReplicatedStorage:WaitForChild("NavButton"))
 local Style=require(ReplicatedStorage:WaitForChild("UIStyle"))
 local redeemCodeRemote=ReplicatedStorage:WaitForChild("RedeemCode")
@@ -88,7 +87,7 @@ local function gridFit()
 end
 panel:GetAttributeChangedSignal("Compact"):Connect(gridFit) gridFit()
 local PASS_ACCENTS={DoubleCoins=Color3.fromRGB(243,162,101),ExtraCarry=Color3.fromRGB(95,185,174),AutoCollect=Color3.fromRGB(129,164,194),StarterPack=Color3.fromRGB(180,140,210)}
-local BENEFITS={DoubleCoins="Double your sale and reward coins!",ExtraCarry="Carry 2 extra items every trip!",AutoCollect="Collect nearby scrap automatically!",StarterPack="Exclusive pet + permanent coin & speed boost!"}
+local BENEFITS={DoubleCoins="Double your sale and reward coins!",ExtraCarry="Carry 2 extra items every trip!",AutoCollect="Collect nearby scrap automatically!",StarterPack="Permanent coin & speed boost!"}
 local refreshers={}
 local pendingId=nil
 for i,key in ipairs(PASS_ORDER) do
@@ -183,70 +182,6 @@ local function feature(name,kind,titleValue,description,order,color,action)
 	if action then button.Activated:Connect(action) end
 	return card
 end
--- Top spot in the shop, ahead of Gamepasses — the user's ask specifically:
--- "carve out a top spot in the shop to have the secret egg go into."
-section("Pets",5)
-do
-	-- Named "ExclusivePets" (the old placeholder's name) and the buy
-	-- button "Action" (not "Purchase") on purpose: reflowFeatures() below
-	-- already knows how to responsively resize a card with this exact
-	-- name/child shape for compact/portrait layouts. Renaming to match
-	-- reuses that existing system instead of duplicating it - and without
-	-- the rename, reflowFeatures would either skip this card, or worse,
-	-- error trying to index a nonexistent card.Action.
-	local card=Instance.new("Frame") card.Name="ExclusivePets" card.LayoutOrder=6 card.Size=UDim2.new(1,-12,0,220)
-	card.Parent=scroll corner(card,18) Style.Surface(card,Color3.fromRGB(206,234,220),3)
-	Garage.Art(card,"PETS",UDim2.fromOffset(18,18),UDim2.fromOffset(180,180))
-	local heading=text(card,"Title","Secret Pet Egg!",UDim2.fromOffset(218,24),UDim2.new(1,-440,0,52),34,true)
-	heading.TextXAlignment=Enum.TextXAlignment.Left
-	local oddsLines={}
-	for _,o in ipairs(SecretPets.Odds()) do
-		table.insert(oddsLines,string.format("%s%% %s",tostring(o.percent),o.name))
-	end
-	-- TextScaled as a safety net, not just a shorter string: this is the
-	-- same overflow bug class fixed twice already this session (missing
-	-- TextScaled on variable-length text in a fixed box), and 5 pets'
-	-- worth of odds is exactly the kind of content that can grow.
-	local desc=text(card,"Description","Odds: "..table.concat(oddsLines,"  •  "),UDim2.fromOffset(218,84),UDim2.new(1,-440,0,120),19,false)
-	desc.TextXAlignment=Enum.TextXAlignment.Left
-	desc.TextScaled=true
-	local buy=Instance.new("TextButton") buy.Name="Action" buy.Size=UDim2.fromOffset(180,64)
-	buy.Position=UDim2.new(1,-200,.5,-32) buy.Font=Enum.Font.FredokaOne buy.TextSize=24 buy.TextWrapped=true
-	buy.ZIndex=3 buy.Parent=card corner(buy,12) Style.Surface(buy,WHITE,2)
-	local eggInfo,eggLoading,eggPending=nil,false,false
-	local function refreshEgg()
-		local configured=SecretPets.IsConfigured()
-		local available=configured and eggInfo and eggInfo.IsForSale==true and type(eggInfo.PriceInRobux)=="number"
-		local enabled=available and not eggPending
-		buy.Active=enabled buy.AutoButtonColor=enabled
-		buy.BackgroundColor3=enabled and GOLD or WHITE buy.TextColor3=Color3.fromRGB(30,30,36)
-		if not configured then buy.Text="COMING SOON"
-		elseif eggPending then buy.Text="PLEASE WAIT"
-		elseif eggLoading or not eggInfo then buy.Text="CHECKING..."
-		elseif available then buy.Text=tostring(eggInfo.PriceInRobux).." Robux"
-		else buy.Text="UNAVAILABLE" end
-	end
-	buy.Activated:Connect(function()
-		if not buy.Active then return end
-		eggPending=true message.Text="" refreshEgg()
-		local ok=pcall(function() MarketplaceService:PromptProductPurchase(player,SecretPets.EggProductId) end)
-		if not ok then eggPending=false message.Text="Purchase prompt unavailable. Please try again." refreshEgg() end
-	end)
-	local function loadEggInfo()
-		if not SecretPets.IsConfigured() or eggLoading then refreshEgg() return end
-		eggLoading=true refreshEgg()
-		local ok,result=pcall(function() return MarketplaceService:GetProductInfo(SecretPets.EggProductId,Enum.InfoType.Product) end)
-		eggInfo=ok and result or nil eggLoading=false refreshEgg()
-	end
-	open.Activated:Connect(function() task.spawn(loadEggInfo) end)
-	refreshEgg()
-	MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId,productId,purchased)
-		if userId~=player.UserId or productId~=SecretPets.EggProductId then return end
-		eggPending=false
-		message.Text=purchased and "Purchase completed! Check your inventory for your new pet." or ""
-		refreshEgg()
-	end)
-end
 section("Boosts",200)
 feature("RewardBoosts","DoubleCoins","Reward Boosts!","Find timed boosts in your daily rewards.",210,Color3.fromRGB(245,218,174),function()
 	overlay.Visible=false
@@ -274,7 +209,7 @@ codeBox.FocusLost:Connect(function(enter) if enter then submitCode() end end)
 local function reflowFeatures()
  local compact=panel:GetAttribute("Compact")
  title.Text="SCRAP SHOP" title.TextSize=46 title.Size=UDim2.fromOffset(compact and 360 or 500,64)
- for _,n in {"PetsSection","BoostsSection","Redeem a CodeSection"} do local h=scroll:FindFirstChild(n) if h then h.Visible=false end end
+ for _,n in {"BoostsSection","Redeem a CodeSection"} do local h=scroll:FindFirstChild(n) if h then h.Visible=false end end
  for _,card in passGrid:GetChildren() do if card:IsA("Frame") then
   Garage.Inset(card)
   card.Title.Position=UDim2.new(0,8,0,153) card.Title.Size=UDim2.new(1,-16,0,35) card.Title.TextSize=21 Garage.Plate(card.Title)
@@ -284,24 +219,6 @@ local function reflowFeatures()
   if not card:FindFirstChild("DisplayPedestal") then Garage.Pedestal(card,Color3.fromRGB(59,229,204),UDim2.new(.04,0,0,113),UDim2.new(.92,0,0,65)) end
   card.Purchase.Position=UDim2.new(0,9,1,-48) card.Purchase.Size=UDim2.new(1,-18,0,41) card.Purchase.TextSize=22 Garage.Button(card.Purchase,Color3.fromRGB(121,154,200))
  end end
- local egg=scroll.ExclusivePets
- egg.Size=UDim2.new(1,-12,0,194) Garage.Inset(egg)
- egg.Title.Position=UDim2.new(.22,0,0,8) egg.Title.Size=UDim2.new(.55,0,0,44) egg.Title.TextSize=36
- local art=egg:FindFirstChild("GarageArt") art:Destroy()
- Garage.Art(egg,"egg",UDim2.fromOffset(12,10),UDim2.new(.21,0,0,190))
- egg.Description.Visible=false egg.Description.Position=UDim2.new(.25,0,0,52) egg.Description.Size=UDim2.new(.5,0,0,118)
- egg.Action.Position=UDim2.new(1,-212,1,-75) egg.Action.Size=UDim2.fromOffset(194,59) Garage.Button(egg.Action,Color3.fromRGB(123,145,190))
- local row=egg:FindFirstChild("Mysteries")
- if not row then
-  row=Garage.New("Frame",egg,"Mysteries",{Position=UDim2.new(.25,0,0,65),Size=UDim2.new(.54,0,0,103),BackgroundTransparency=1})
-  for i=1,5 do
-   Garage.Pedestal(row,Color3.fromRGB(35,205,248),UDim2.new((i-1)/5,0,0,65),UDim2.new(.18,0,0,35))
-   local silhouette=Garage.Art(row,"PETS",UDim2.new((i-1)/5,0,0,0),UDim2.new(.18,0,0,84)) silhouette.ImageColor3=Color3.fromRGB(9,48,92)
-   Garage.Text(row,"Question","?",UDim2.new((i-1)/5,0,0,24),UDim2.new(.18,0,0,40),34,Color3.fromRGB(140,233,255))
-  end
-  local odds=Garage.New("TextButton",egg,"Odds",{Text="View odds  ›",Position=UDim2.new(.36,0,1,-38),Size=UDim2.fromOffset(220,30),BackgroundTransparency=1,TextSize=23,TextColor3=Color3.fromRGB(0,37,97),Font=Enum.Font.FredokaOne,ZIndex=5})
-  odds.Activated:Connect(function() egg.Description.Visible=not egg.Description.Visible row.Visible=not egg.Description.Visible end)
- end
  local boosts=scroll.RewardBoosts boosts.Size=UDim2.new(1,-12,0,84) Garage.Inset(boosts)
  boosts.Title.Position=UDim2.fromOffset(85,4) boosts.Title.Size=UDim2.new(.55,-85,0,37) boosts.Title.TextSize=26
  boosts.Description.Position=UDim2.fromOffset(85,42) boosts.Description.Size=UDim2.new(.55,-85,0,29) boosts.Description.TextSize=17

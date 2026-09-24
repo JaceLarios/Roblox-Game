@@ -5,7 +5,7 @@
 	balance, since Rebirth deliberately resets that and a rebirthed
 	top player shouldn't vanish from the board the moment they cash in
 	their multiplier. Same small shared-module shape as GamepassService/
-	RebirthService/CompanionService.
+	RebirthService.
 
 	Uses a separate OrderedDataStore from DataManager's regular one, since
 	only ordered stores support a sorted top-N query. The actual DataStore

@@ -2,12 +2,11 @@
 	PickupEffects (ModuleScript, ServerStorage) — Junkyard Fusion v1
 
 	One-shot "flies to you and shrinks away" animation for grabbing an
-	item off the ground — the Junkyard's scrap grab, Brainrot's and
-	Haunted's creature grabs all used to just `itemPart:Destroy()`
-	instantly. Same controller/view split every other visual effect this
-	project uses (see FusionEffects.luau): the calling script decides
-	WHEN an item was picked up and by whom; this module owns 100% of
-	what that looks like.
+	item off the ground — the Junkyard's scrap grab used to just
+	`itemPart:Destroy()` instantly. Same controller/view split every other
+	visual effect this project uses (see FusionEffects.luau): the calling
+	script decides WHEN an item was picked up and by whom; this module
+	owns 100% of what that looks like.
 
 	Deliberately fire-and-forget and NOT part of the actual pickup
 	decision — call this AFTER the real game logic (inserting into carry

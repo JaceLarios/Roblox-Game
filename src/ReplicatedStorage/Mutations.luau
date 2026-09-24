@@ -3,8 +3,8 @@ local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("Ite
 	Mutations (ModuleScript, ReplicatedStorage) — Junkyard Fusion v1
 
 	A second, tier-independent rarity layer rolled on fusion results. Any
-	fused item — common or secret, Junkyard or Brainrot — can additionally
-	come out Shiny/Toxic/Golden/Cosmic, each a flat value multiplier and
+	fused item, common or rare, can additionally come out
+	Shiny/Toxic/Golden/Cosmic, each a flat value multiplier and
 	its own glow color, so items stay worth re-fusing long after a player
 	has 100%'d the Index.
 
@@ -12,7 +12,7 @@ local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("Ite
 	brackets: "[Shiny] Rusted Sedan". Every recipe/visual lookup always
 	needs the UNWRAPPED base name — mutations are a value/display layer on
 	top, never a new recipe or a separate Index entry — so Unwrap() must
-	run before calling into FusionRecipes/BrainrotRecipes/ItemVisuals.
+	run before calling into FusionRecipes/ItemVisuals.
 --]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

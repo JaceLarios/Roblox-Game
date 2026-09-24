@@ -27,6 +27,22 @@ As of Sept 23 nothing drops on the yard floor any more:
 - **The seven cars ride a conveyor** that loops round the middle of the yard, out of a black box and back into it. The game turns each car so its **+Z end leads**, because all seven are built with the nose (grille, headlights, front wheels) toward +Z. Keep that on any rebuild, or that car rides the belt backwards.
 - **Addons are bought, not found.** They no longer spawn at all; the Shop has a new Addons tab where each addon's own model turns on a podium. The five addon models are Shop display pieces now as well as pad items.
 
+## Race Wars (new, Sept 24) — art it still needs
+
+Pets, Brainrot Island and Haunted Hollow are gone. The game's second area is now **Race Wars** (Travel menu): you drive one of your cars down a long straight track through five levels while a monster chases you, and every level you clear wins a crate. Every car and fused result is raced using its own model from `ItemModels`, scaled to 13 studs long and driven nose-first along +Z. That's one more reason to keep the +Z rule above.
+
+Everything in Race Wars is working but built from placeholder parts. What would lift it most:
+
+| What | Where it goes | Now |
+| --- | --- | --- |
+| **The monster** | A Model named `RaceMonsterModel` in `ServerStorage`. It is used automatically, scaled to 30 studs tall, pivot on the floor, facing its LookVector. | A blocky scrap beast built in `RaceMonster.luau` |
+| Level scenery, five themes | Green Hills, Dune Run, Frost Pass, Magma Mile, Neon Rush, built in `RaceTrack.luau` (`THEMES`, `OBSTACLES`) | Checker-textured walls and floor; hedges, cacti, ice blocks, basalt rocks and neon barriers made of parts |
+| Crate art and the crate-opening moment | `RaceCrates.client.luau` (the Inventory's Crates tab) | The atlas `crate` icon; the reveal is a card with the item turning on a podium |
+| Race Garage, race HUD, countdown and banners | `RaceWarsView.luau` owns the whole look, so it can be restyled without touching race logic | Garage-kit placeholder |
+| Travel card picture | `WORLDS` in `GameUI.client.luau`, `scene = rbxassetid://136532362963777` | A drawn render of the track (`assets/race-wars/travel_card.png`) |
+
+Art that nothing uses any more: the egg and PETS icons, the travel atlas's Brainrot and Haunted scenes, and `Variants.brainrot` in `FusionCelebrationView.luau`.
+
 ## What a build earns
 
 Money comes from **placing** a build on one of your five base pads, not from selling it. A placed build earns its value ÷ 90 in coins every second, for as long as it stays on the pad, multiplied by your upgrades, rebirth, companion and pet bonuses.

@@ -112,10 +112,10 @@ function Map.Build()
  lighting.ShadowSoftness=0.35 lighting.GlobalShadows=true
  -- Distance fog: keeps the plot ring and everything inside it (out to
  -- ~225 studs) fully clear, fades the outer district road/trees, and
- -- fully hides anything past ~500 studs — which is what keeps Brainrot
- -- Island (900 studs out) from poking over the horizon while standing in
- -- the Foundry District, and vice versa, without touching either area's
- -- own local geometry.
+ -- fully hides anything past ~500 studs — which is what keeps the Race
+ -- Wars track (thousands of studs out) from poking over the horizon while
+ -- standing in the Foundry District. Race Wars opens the fog back up for
+ -- whoever is on it (RaceDrive).
  lighting.FogStart=180 lighting.FogEnd=500 lighting.FogColor=RGB(213,233,239)
  local atmosphere=lighting:FindFirstChildOfClass("Atmosphere")
  if atmosphere then atmosphere.Density=0.22 atmosphere.Haze=0.65 atmosphere.Glare=0.15 atmosphere.Color=RGB(213,233,239) atmosphere.Decay=RGB(180,194,209) end

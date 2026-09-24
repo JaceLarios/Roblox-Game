@@ -30,14 +30,12 @@ function Environment.Build()
   Environment.connected=true game.Players.PlayerAdded:Connect(function(player) player.CameraMaxZoomDistance=40 end)
  end
  local old=workspace:FindFirstChild("WorldBackdrop")
- if old and old:GetAttribute("Version")==4 then return old end
+ if old and old:GetAttribute("Version")==5 then return old end
  if old then old:Destroy() end
  -- Persistent keeps the horizon present when streaming is enabled.
- local root=Instance.new("Model",workspace) root.Name="WorldBackdrop" root.ModelStreamingMode=Enum.ModelStreamingMode.Persistent root:SetAttribute("Version",4)
+ local root=Instance.new("Model",workspace) root.Name="WorldBackdrop" root.ModelStreamingMode=Enum.ModelStreamingMode.Persistent root:SetAttribute("Version",5)
  local zones={
   {name="Junkyard",center=V(),radius=360,height=100,rock=RGB(109,123,111),green=RGB(92,151,73)},
-  {name="Brainrot",center=V(0,0,900),radius=183,height=100,rock=RGB(135,160,135),green=RGB(84,182,100)},
-  {name="Haunted",center=V(1000,0,900),radius=183,height=100,rock=RGB(100,107,129),green=RGB(77,120,110)},
  }
  for _,zone in ipairs(zones) do
   local f=Instance.new("Folder",root) f.Name=zone.name

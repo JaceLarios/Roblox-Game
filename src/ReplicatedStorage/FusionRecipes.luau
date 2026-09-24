@@ -223,8 +223,8 @@ function FusionRecipes.Fuse(itemA, itemB)
 end
 
 -- Rarity of any Junkyard name: a grabbable's own, or a result's (which is
--- its addon's). Nil for a name from outside this line (a secret pet), so
--- callers fall back to the tier colour for those.
+-- its addon's). Nil for a name from outside this line, so callers fall
+-- back to the tier colour for those.
 function FusionRecipes.GetRarity(name)
 	local base = baseByName[name]
 	if base then return base.rarity end
@@ -247,8 +247,8 @@ function FusionRecipes.GetValue(itemName)
 end
 
 -- The Junkyard has no secret recipes: with one result per car per addon,
--- every result is in plain sight in the book. Kept so the callers shared
--- with the Brainrot and Haunted lines, which do have secrets, still work.
+-- every result is in plain sight in the book. Kept for the callers that
+-- still ask (the Index's Secret filter, rarity colours).
 function FusionRecipes.IsSecretResult(_name)
 	return false
 end

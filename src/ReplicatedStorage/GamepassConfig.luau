@@ -24,7 +24,7 @@ return {
 	},
 	StarterPack = {
 		id = 0, name = "Starter Pack", icon = "🎒",
-		description = "A one-time head start: an exclusive pet you can't get any other way, plus a permanent coin and speed boost.",
+		description = "A permanent coin and speed boost from day one.",
 		bgIcons = { "🎒", "💨", "💰" },
 	},
 }

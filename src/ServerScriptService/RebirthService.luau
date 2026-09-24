@@ -1,12 +1,11 @@
 --[[
 	RebirthService (ModuleScript, ServerScriptService) — Junkyard Fusion v1
 
-	A permanent, account-wide coin multiplier both islands respect — same
-	small shared-module shape as GamepassService, so PlotManager and
-	BrainrotService can both require it without any circular dependency
-	between them. PlotManager owns the actual reset (coins, placed items,
-	upgrades) since it's the only place holding that state; this module
-	just tracks the rebirth count and looks up the multiplier for it.
+	A permanent, account-wide coin multiplier — same small shared-module
+	shape as GamepassService. PlotManager owns the actual reset (coins,
+	placed items, upgrades) since it's the only place holding that state;
+	this module just tracks the rebirth count and looks up the multiplier
+	for it.
 --]]
 
 local RebirthService = {}

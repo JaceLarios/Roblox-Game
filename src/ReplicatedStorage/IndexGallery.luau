@@ -1,6 +1,6 @@
 local Garage=require(script.Parent:WaitForChild("GarageTheme"))
 local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("ItemNames"))
--- Open Gallery presentation. Discovery and companion ownership remain server-owned.
+-- Open Gallery presentation. Discovery remains server-owned.
 local Style = require(script.Parent:WaitForChild("UIStyle"))
 local Rarity = require(script.Parent:WaitForChild("ItemRarity"))
 local Models = script.Parent:WaitForChild("ItemModels")
@@ -14,17 +14,14 @@ local ORDER = {1, 2, 3, 4, "secret"}
 -- Named for what they actually filter instead.
 local NAMES = {"Base", "Tier 2", "Tier 3", "Tier 4"}
 
--- Addons are junkyard finds, but they are parts you bolt ONTO something
+-- Addons are junkyard items, but they are parts you bolt ONTO something
 -- rather than things in their own right, so they get their own tab
--- instead of padding out the Junkyard list. Equipping one still reports
--- "junkyard" to the server: the tab is a view, not a new island.
+-- instead of padding out the Junkyard list. The tab is a view, not a new
+-- area.
 local AREAS = {
-	{ key = "junkyard", tab = "JunkyardTab", label = "Junkyard", island = "junkyard" },
-	{ key = "brainrot", tab = "BrainrotTab", label = "Brainrot", island = "brainrot" },
-	{ key = "addons",   tab = "AddonsTab",   label = "Addons",   island = "junkyard" },
+	{ key = "junkyard", tab = "JunkyardTab", label = "Junkyard" },
+	{ key = "addons",   tab = "AddonsTab",   label = "Addons" },
 }
-local ISLAND_OF = {}
-for _, a in ipairs(AREAS) do ISLAND_OF[a.key] = a.island end
 
 local function make(class, parent, name, props)
 	local o = Instance.new(class)
@@ -79,10 +76,10 @@ local function modelView(parent, name)
 	return view
 end
 
-function Gallery.Create(gui, onEquip)
+function Gallery.Create(gui)
 	local api = {}
 	local activeArea, activeRarity = "junkyard", 1
-	local data, companion = {junkyard = {}, brainrot = {}, addons = {}}, nil
+	local data = {junkyard = {}, addons = {}}
 	local dimmer = make("Frame", gui, "IndexBackdrop", {
 		Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(),
 		BackgroundTransparency = .35, BorderSizePixel = 0, Visible = false,
@@ -134,9 +131,6 @@ function Gallery.Create(gui, onEquip)
 	Style.Surface(search, Color3.new(1,1,1), 1.5)
 	local count = caption(panel, "DiscoveryCount", "", 23)
 	count.TextXAlignment = Enum.TextXAlignment.Left
-	local hint = caption(panel, "CompanionHint", "Select a discovered item to equip your companion", 16)
-	hint.TextXAlignment = Enum.TextXAlignment.Right
-	hint.TextColor3 = Color3.fromRGB(100, 112, 111)
 	local scroll = make("ScrollingFrame", panel, "Gallery", {
 		BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 6,
 		ScrollBarImageColor3 = P.Teal, CanvasSize = UDim2.new(),
@@ -162,8 +156,8 @@ function Gallery.Create(gui, onEquip)
 		close.Size = UDim2.fromOffset(portrait and 76 or 58, portrait and 76 or 58)
 		close.Position = UDim2.new(1, portrait and -84 or -65, 0, 12)
 		bookArt.Size = UDim2.fromOffset(88, 88)
-		-- Three tabs now, so they are narrower and start further left; in
-		-- portrait they still have to clear the title on their own row.
+		-- Sized and placed for up to three tabs; in portrait they still have
+		-- to clear the title on their own row.
 		for i, area in ipairs(AREAS) do
 			local b = areaTabs[area.key]
 			b.Size = UDim2.fromOffset(portrait and 178 or 182, portrait and 82 or 78)
@@ -183,9 +177,6 @@ function Gallery.Create(gui, onEquip)
 		count.Position = UDim2.fromOffset(28, portrait and (flatArea and 291 or 378) or 176)
 		count.Size = UDim2.new(1, -56, 0, 36)
 		count.TextSize = portrait and 22 or 23
-		hint.Position = UDim2.new(1, -510, 0, 179)
-		hint.Size = UDim2.fromOffset(482,30)
-		hint.Visible = not portrait
 		local top = portrait and (flatArea and 337 or 424) or 224
 		scroll.Position = UDim2.fromOffset(28, top)
 		scroll.Size = UDim2.new(1, -56, 1, -top-20)
@@ -252,17 +243,12 @@ function Gallery.Create(gui, onEquip)
 				if entry.known then known += 1 end
 				if query == "" or (entry.known and string.find(string.lower(ItemNames.Display(entry.name)), query, 1, true)) then
 					shown += 1
-					local selected = companion and companion.name == entry.name
-						and companion.island == ISLAND_OF[activeArea]
-					local card = make(entry.known and "TextButton" or "Frame", scroll, "Item"..i, {
+					local card = make("Frame", scroll, "Item"..i, {
 						BackgroundTransparency = 1, BorderSizePixel = 0, LayoutOrder = i,
 					})
 					card:SetAttribute("ItemName", entry.known and entry.name or "???")
 					card:SetAttribute("Known", entry.known == true)
 					corner(card, 16)
-					if selected then
-						make("UIStroke", card, "CompanionOutline", {Color=P.Teal,Thickness=2.5,ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
-					end
 					-- The disc behind an item is its RARITY, not a pastel picked
 					-- off a rotating list by grid position. The old version gave
 					-- the same item a different colour depending on where it
@@ -288,10 +274,6 @@ function Gallery.Create(gui, onEquip)
 						})
 					end
 					if entry.known then
-						card.Text = ""
-						card.AutoButtonColor = false
-						local island = ISLAND_OF[activeArea]
-						card.Activated:Connect(function() onEquip(entry.name, island) end)
 						modelView(card, entry.name)
 					else
 						local lock = caption(card,"Undiscovered","?",70)
@@ -303,7 +285,7 @@ function Gallery.Create(gui, onEquip)
 					name.Size,name.Position=UDim2.new(1,-12,0,46),UDim2.new(0,6,1,-62)
 					name.TextScaled=true
 					make("UITextSizeConstraint",name,"NameLimit",{MinTextSize=12,MaxTextSize=21})
-					local status=caption(card,"Status",selected and "COMPANION" or entry.known and "✓ Discovered" or "Keep exploring",13)
+					local status=caption(card,"Status",entry.known and "✓ Discovered" or "Keep exploring",13)
 					status.Size,status.Position=UDim2.new(1,-12,0,18),UDim2.new(0,6,1,-18)
 					status.TextColor3=entry.known and P.TealDeep or Color3.fromRGB(122,112,99)
 				end
@@ -329,7 +311,7 @@ function Gallery.Create(gui, onEquip)
 	search:GetPropertyChangedSignal("Text"):Connect(function() scroll.CanvasPosition=Vector2.zero redraw() end)
 	panel:GetPropertyChangedSignal("Visible"):Connect(function() dimmer.Visible=panel.Visible end)
 	function api.Toggle() panel.Visible=not panel.Visible end
-	function api.Update(nextData, nextCompanion) data=nextData companion=nextCompanion redraw() end
+	function api.Update(nextData) data=nextData redraw() end
 	close.Activated:Connect(api.Toggle)
 	layout()
 	redraw()

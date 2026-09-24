@@ -22,39 +22,32 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage     = game:GetService("ServerStorage")
 local RunService        = game:GetService("RunService")
 local PhysicsService    = game:GetService("PhysicsService")
-local MarketplaceService = game:GetService("MarketplaceService")
 local TweenService      = game:GetService("TweenService")
+local HttpService       = game:GetService("HttpService")
 
 local FusionEffects = require(ServerStorage:WaitForChild("FusionEffects"))
 local PickupEffects = require(ServerStorage:WaitForChild("PickupEffects"))
 local ScrapLabel    = require(ServerStorage:WaitForChild("ScrapLabel"))
 local CoilAura      = require(ServerStorage:WaitForChild("CoilAura"))
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
-local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
-local HauntedRecipes = require(ReplicatedStorage:WaitForChild("HauntedRecipes"))
 local ItemVisuals   = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local ItemRarity    = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local Mutations     = require(ReplicatedStorage:WaitForChild("Mutations"))
 local PromoCodes    = require(ReplicatedStorage:WaitForChild("PromoCodes"))
-local SecretPets    = require(ReplicatedStorage:WaitForChild("SecretPets"))
-local AreaPets      = require(ReplicatedStorage:WaitForChild("AreaPets"))
+local RaceConfig    = require(ReplicatedStorage:WaitForChild("RaceConfig"))
+local RaceCrates    = require(ReplicatedStorage:WaitForChild("RaceCrates"))
 local DataManager   = require(script.Parent:WaitForChild("DataManager"))
 local Gamepasses = require(script.Parent:WaitForChild("GamepassService"))
 local Rebirth = require(script.Parent:WaitForChild("RebirthService"))
-local Companions = require(script.Parent:WaitForChild("CompanionService"))
 local Leaderboard = require(script.Parent:WaitForChild("LeaderboardService"))
 local PlaytimeLeaderboard = require(script.Parent:WaitForChild("PlaytimeLeaderboardService"))
-local AreaPetsService = require(script.Parent:WaitForChild("AreaPetsService"))
 local Trade = require(script.Parent:WaitForChild("TradeService"))
+local RaceWars = require(script.Parent:WaitForChild("RaceService"))
 
 -- The big screen-covering celebration popup on fuse. Its own dedicated
 -- remote (not a new field on the small `GameUpdate` toast) and its own
 -- standalone client script, specifically so this doesn't touch or depend
 -- on GameUI/ShopUI while Codex is mid-rewrite on those — see HANDOFF.md.
--- Created here, before BrainrotService loads below, so BrainrotService's
--- own separate fuse pad on Brainrot Island can grab it at its own top
--- level the same way it already grabs the shared `GameUpdate` remote,
--- instead of this file having to hand it a reference after the fact.
 local fusionCelebrationRemote = ReplicatedStorage:FindFirstChild("FusionCelebration")
 if not fusionCelebrationRemote then
 	fusionCelebrationRemote = Instance.new("RemoteEvent")
@@ -62,8 +55,6 @@ if not fusionCelebrationRemote then
 	fusionCelebrationRemote.Parent = ReplicatedStorage
 end
 
-local Brainrot = require(script.Parent:WaitForChild("BrainrotService"))
-local Haunted = require(script.Parent:WaitForChild("HauntedService"))
 Gamepasses.Start()
 
 -- We position each character ourselves (their assigned plot, or wherever
@@ -205,42 +196,6 @@ local function upgradeCost(def, currentLevel)
 end
 -- ----------------------------
 
--- Companions: equip any discovered item (either island) to follow you and
--- earn a small permanent value bonus scaled by its tier (see
--- CompanionService.luau for the bonus table — this file only validates
--- equip requests and owns the follow visual). No new content needed —
--- reuses whatever's already been discovered.
-local COMPANION_SCALE = 0.45
-
-local function isBaseItemName(itemName, Recipes)
-	for _, item in ipairs(Recipes.BaseItems) do
-		if item.name == itemName then return true end
-	end
-	return false
-end
-
-local function recipesFor(island)
-	if island == "brainrot" then return BrainrotRecipes end
-	if island == "haunted" then return HauntedRecipes end
-	return FusionRecipes
-end
-
--- A player can equip anything they've actually discovered, base item or
--- curated result, on any island — same "known" definition the Index
--- already uses, just checked here instead of read off it.
-local function playerKnowsItem(s, player, itemName, island)
-	local Recipes = recipesFor(island)
-	if isBaseItemName(itemName, Recipes) then return true end
-	if island == "junkyard" then
-		return s.discovered[itemName] == true
-	end
-	local snapshotFn = island == "haunted" and Haunted.Snapshot or Brainrot.Snapshot
-	for _, name in ipairs(snapshotFn(player)) do
-		if name == itemName then return true end
-	end
-	return false
-end
-
 -- Whether this player has discovered a build at least this rare. Read
 -- off the discoveries themselves, so it needs nothing extra saved.
 local function hasDiscoveredRarity(s, rarity)
@@ -308,23 +263,6 @@ if not rebirthRemote then
 	rebirthRemote = Instance.new("RemoteEvent")
 	rebirthRemote.Name = "RebirthPlayer"
 	rebirthRemote.Parent = ReplicatedStorage
-end
-
-local equipCompanionRemote = ReplicatedStorage:FindFirstChild("EquipCompanion")
-if not equipCompanionRemote then
-	equipCompanionRemote = Instance.new("RemoteEvent")
-	equipCompanionRemote.Name = "EquipCompanion"
-	equipCompanionRemote.Parent = ReplicatedStorage
-end
-
--- Separate from EquipCompanion — an AreaPets egg pet, not a fusion result,
--- and its own equip slot (see AreaPetsService.SetEquipped's own comment
--- on why the two coexist instead of sharing one slot).
-local equipAreaPetRemote = ReplicatedStorage:FindFirstChild("EquipAreaPet")
-if not equipAreaPetRemote then
-	equipAreaPetRemote = Instance.new("RemoteEvent")
-	equipAreaPetRemote.Name = "EquipAreaPet"
-	equipAreaPetRemote.Parent = ReplicatedStorage
 end
 
 local selectTradeOfferRemote = ReplicatedStorage:FindFirstChild("SelectTradeOffer")
@@ -432,7 +370,7 @@ local DAILY_REWARDS = {
 	{ kind = "item",  label = "RARE CRATE",   sub = "guaranteed rare" },
 	{ kind = "boost", stat = "value", mult = 2, minutes = 15, label = "2x SELL",   sub = "15 minutes" },
 	{ kind = "coins", amount = 3000, label = "3,000 Coins",      sub = "" },
-	{ kind = "jackpot", amount = 7500, label = "JACKPOT",        sub = "coins + luck + secret pet" },
+	{ kind = "jackpot", amount = 7500, label = "JACKPOT",        sub = "coins + luck + Jet Engine" },
 }
 local DAILY_MAX_STREAK = #DAILY_REWARDS
 
@@ -490,11 +428,10 @@ local function boostMult(s, stat)
 end
 
 -- Shared by manual sells and passive income — the Haggler upgrade, any
--- timed sell boost, a player's permanent Rebirth multiplier, and their
--- equipped companion (if any) apply to everything a player's builds earn,
--- not just the moment you press Sell.
+-- timed sell boost and a player's permanent Rebirth multiplier apply to
+-- everything a player's builds earn, not just the moment you press Sell.
 local function valueMultiplier(player, s)
-	return (1 + (s.upgrades.value - 1) * 0.15) * boostMult(s, "value") * Rebirth.Multiplier(player) * Companions.Bonus(player)
+	return (1 + (s.upgrades.value - 1) * 0.15) * boostMult(s, "value") * Rebirth.Multiplier(player)
 end
 
 -- Best available colored tag for an item name that might carry a mutation
@@ -509,36 +446,12 @@ local function instanceTag(name)
 		FusionRecipes.GetRarity(baseName))
 end
 
--- Same idea as instanceTag, but for a name that's known to belong to a
--- specific island rather than possibly carrying a mutation prefix — used
--- for companion names, which are chosen by base recipe identity.
-local function islandTag(itemName, island)
-	local Recipes = recipesFor(island)
-	return ItemRarity.Tag(itemName, Recipes.GetTier(itemName), Recipes.IsSecretResult(itemName))
-end
-
 -- Tier/secret/value for any item name PlotManager could be holding —
 -- always a Junkyard name, but may carry a mutation prefix. Defined early
 -- since pushUI needs it for inventory stats, well before Trading (which
 -- also uses it) is defined.
 local function itemTierInfo(itemName)
 	local baseName, mutationId = Mutations.Unwrap(itemName)
-
-	-- Secret pets aren't in FusionRecipes/BrainrotRecipes at all (bought,
-	-- never fused, never a fusion result) — FusionRecipes.GetValue would
-	-- silently return 0 for a name it's never seen, so this has to be
-	-- checked first, not folded into the tables below.
-	local secretPet = SecretPets.ByName[baseName]
-	if secretPet then
-		-- tier is a don't-care here — ItemRarity.Color/.Name both check
-		-- isSecret first and never look at tier when it's true.
-		return {
-			tier = 4,
-			isSecret = true,
-			value = secretPet.value * Mutations.ValueMultiplier(mutationId),
-		}
-	end
-
 	return {
 		tier = FusionRecipes.GetTier(baseName),
 		rarity = FusionRecipes.GetRarity(baseName),
@@ -562,7 +475,7 @@ local function updateWalkSpeed(player)
 	if not (s and humanoid) then return end
 
 	local placedBonus = math.min(#s.placed * PLACED_SPEED_PER_ITEM, PLACED_SPEED_CAP)
-	local speedMult = (1 + (s.upgrades.speed - 1) * SPEED_UPGRADE_PER_LEVEL) * Gamepasses.SpeedMultiplier(player) * AreaPetsService.SpeedMultiplier(player)
+	local speedMult = (1 + (s.upgrades.speed - 1) * SPEED_UPGRADE_PER_LEVEL) * Gamepasses.SpeedMultiplier(player)
 	-- The coil is a held tool, so its bonus applies only while it is
 	-- actually equipped, and never while carrying: the coil is one of the
 	-- two things you give up to haul loot.
@@ -965,16 +878,6 @@ local function pushUI(player)
 	local dailyRewards = {}
 	for _, reward in ipairs(DAILY_REWARDS) do table.insert(dailyRewards, rewardInfo(player, reward)) end
 
-	local brainrotDiscovered = {}
-	for _, name in ipairs(Brainrot.Snapshot(player)) do
-		brainrotDiscovered[name] = true
-	end
-
-	local hauntedDiscovered = {}
-	for _, name in ipairs(Haunted.Snapshot(player)) do
-		hauntedDiscovered[name] = true
-	end
-
 	-- Full stats per item, computed here rather than on the client, since
 	-- value/tier/mutation logic already lives entirely server-side.
 	local inventoryInfo = {}
@@ -1007,39 +910,26 @@ local function pushUI(player)
 		})
 	end
 
-	-- `false`, never nil: RemoteEvent args drop nil-valued table keys, and
-	-- the client needs to tell "no companion" apart from "field absent"
-	-- (e.g. on a toast-only message) to know when to clear a stale display.
-	local equippedCompanion = Companions.Get(player)
-	local companionInfo = equippedCompanion and {
-		name = equippedCompanion.name,
-		island = equippedCompanion.island,
-		bonusPercent = math.floor((Companions.Bonus(player) - 1) * 100 + 0.5),
-	} or false
-
-	-- Just the owned-key set + which one's equipped — PetsUI.client.luau
-	-- requires AreaPets.luau directly for the full 45-pet catalog (name,
-	-- area, tier, multipliers), same as the client already does for
-	-- FusionRecipes/BrainrotRecipes, rather than resending that whole
-	-- catalog on every UI push.
-	local ownedAreaPetKeys = {}
-	for _, key in ipairs(AreaPetsService.Snapshot(player)) do
-		ownedAreaPetKeys[key] = true
+	-- Race Wars crates, without what is inside: that is a surprise until
+	-- the crate is opened. Seconds left rather than a timestamp, so the
+	-- client counts down without trusting its own clock.
+	local crateInfo = {}
+	local now = os.time()
+	for _, crate in ipairs(s.crates) do
+		local level = RaceConfig.Levels[crate.level]
+		table.insert(crateInfo, {
+			id = crate.id,
+			level = crate.level,
+			levelName = level and level.name or "Race Wars",
+			remaining = math.max(0, crate.readyAt - now),
+		})
 	end
+
 	-- Real total odds, matching grabItem's own formula exactly (upgrade
 	-- level, any active boost, AND the rebirth luck multiplier) — the
 	-- bottom-left HUD tracker shows this, not just the raw upgrade level.
 	local luckPercent = math.floor(math.min(LUCK_MAX_CHANCE,
 		(s.upgrades.luck * boostMult(s, "luck") - 1) * LUCK_PER_LEVEL * Rebirth.LuckMultiplier(player)) * 100 + 0.5)
-
-	local equippedPetKey = AreaPetsService.GetEquipped(player)
-	local equippedPet = equippedPetKey and AreaPets.GetPet(equippedPetKey)
-	local equippedAreaPetInfo = equippedPet and {
-		key = equippedPet.key,
-		name = equippedPet.name,
-		coinMult = equippedPet.coinMult,
-		speedMult = equippedPet.speedMult,
-	} or false
 
 	remote:FireClient(player, {
 		slots = s.slots,
@@ -1048,12 +938,6 @@ local function pushUI(player)
 		total = FusionRecipes.GetTotalDiscoveries(),
 		list = s.discoveredList,
 		index = FusionRecipes.GetIndex(s.discovered),
-		brainrotIndex = BrainrotRecipes.GetIndex(brainrotDiscovered),
-		-- Not yet rendered anywhere client-side — a 3rd Index tab is a
-		-- GameUI.client.luau change, and that file is off-limits while a
-		-- Codex pass is active (see HANDOFF.md). Sent anyway so adding
-		-- that tab later is purely a client change, no server work.
-		hauntedIndex = HauntedRecipes.GetIndex(hauntedDiscovered),
 		secretsFound = secretsFound,
 		secretTotal = secretTotal,
 		goalText = goal and goal.text or "All objectives complete",
@@ -1078,11 +962,10 @@ local function pushUI(player)
 			nextLuckMultiplier = Rebirth.NextLuckMultiplier(player),
 			maxed = Rebirth.IsMaxed(player),
 		},
-		companion = companionInfo,
-		ownedAreaPets = ownedAreaPetKeys,
-		equippedAreaPet = equippedAreaPetInfo,
 		inventory = inventoryInfo,
 		inventoryCapacity = INVENTORY_CAPACITY,
+		crates = crateInfo,
+		crateCapacity = RaceCrates.CAPACITY,
 		carrying = s.carrying and s.carrying.name or nil,
 		-- Where "home" is, so the client can point its RUN arrows at it
 		-- without having to work out which plot belongs to this player.
@@ -1278,7 +1161,6 @@ local function addCoins(player, amount)
 	local coins = stats:FindFirstChild("Coins")
 	if coins then
 		amount = Gamepasses.Coins(player, amount)
-		amount = AreaPetsService.Coins(player, amount)
 		coins.Value = coins.Value + amount
 		Leaderboard.Record(player, amount)
 		return amount
@@ -1418,8 +1300,7 @@ end
 -- Junkyard fusing is one item plus one addon and nothing else: no item
 -- with item, no addon with addon, and a fused build only takes an addon
 -- better than the one it has. Returns why a pair is not allowed, or nil
--- when it is. (Brainrot and Haunted fuse creatures and have no addons,
--- so they keep their own rules.)
+-- when it is.
 local function fusionPairProblem(a, b)
 	return FusionRecipes.PairProblem((Mutations.Unwrap(a)), (Mutations.Unwrap(b)))
 end
@@ -1434,15 +1315,6 @@ local function attemptFusion(player)
 	local a, b = s.slots[1], s.slots[2]
 	if not (a and b) then
 		toast(player, "You need an item and an addon to fuse.")
-		return
-	end
-
-	-- Belt-and-suspenders: canReceiveTradedItem already refuses to let a
-	-- secret pet reach a carry slot at all, so this should be unreachable
-	-- — but a paid item accidentally getting consumed by a fusion would be
-	-- bad enough to check for again right here, cheaply, before it happens.
-	if SecretPets.ByName[(Mutations.Unwrap(a))] or SecretPets.ByName[(Mutations.Unwrap(b))] then
-		toast(player, "Secret pets can't be fused.")
 		return
 	end
 
@@ -2232,329 +2104,124 @@ rebirthRemote.OnServerEvent:Connect(function(player)
 end)
 
 ------------------------------------------------------------------
--- Travel menu — the side panel's teleport buttons
+-- Race Wars, and the travel menu's teleports. RaceService runs the
+-- races; this is the part that touches player data: which cars you own,
+-- and the crate each cleared level wins.
 ------------------------------------------------------------------
 
-local BRAINROT_UNLOCK_COST = 5000
--- Added 2026-09-14 ("id like to lock island behind rebriths and then
--- needing to purschse them") — both islands now need a minimum Rebirth
--- count on top of the existing coin cost, Haunted's set higher than
--- Brainrot's to match its already-higher coin price in the progression.
-local BRAINROT_REBIRTH_REQUIRED = 1
+local function sendHome(player)
+	local s = state[player]
+	local plot = s and plots[s.plotIndex]
+	local character = player.Character
+	if plot and character then
+		RaceWars.Leave(player)
+		character:PivotTo(plot.frame * CFrame.new(0, 5, -20))
+	end
+end
 
--- The one real choke point for entering Brainrot Island, whether the
--- player got here via the physical gate (BrainrotService.luau, injected
--- into it right below) or the travel menu (right below that). A one-time
--- coin cost, not a per-visit toll: persisted as s.brainrotUnlocked, so
--- once it's paid it's paid for good.
-local function ensureBrainrotUnlocked(player)
+-- Luck for a crate roll: 1 plus the same chance the luck upgrade gives a
+-- grab (see grabItem), so everything that raises your luck helps here.
+local function crateLuck(player, s)
+	return 1 + math.min(LUCK_MAX_CHANCE,
+		(s.upgrades.luck * boostMult(s, "luck") - 1) * LUCK_PER_LEVEL * Rebirth.LuckMultiplier(player))
+end
+
+-- A crate for clearing `level`, rolled now and timed by what it holds.
+-- Returns whether one was given (not when the crate shelf is full).
+local function awardCrate(player, level)
 	local s = state[player]
 	if not s then return false end
-	if s.brainrotUnlocked then return true end
-
-	if Rebirth.Get(player) < BRAINROT_REBIRTH_REQUIRED then
-		toast(player, string.format("Brainrot Island needs Rebirth %d first.", BRAINROT_REBIRTH_REQUIRED))
+	if #s.crates >= RaceCrates.CAPACITY then
+		toast(player, "Your crate shelf is full — open some crates to win more.")
 		return false
 	end
-
-	local stats = player:FindFirstChild("leaderstats")
-	local coins = stats and stats:FindFirstChild("Coins")
-	if not coins then return false end
-
-	if coins.Value < BRAINROT_UNLOCK_COST then
-		toast(player, string.format("Brainrot Island costs %d coins to unlock. Need %d more.", BRAINROT_UNLOCK_COST, BRAINROT_UNLOCK_COST - coins.Value))
-		return false
-	end
-
-	coins.Value = coins.Value - BRAINROT_UNLOCK_COST
-	s.brainrotUnlocked = true
+	local item, rarity = RaceCrates.Roll(level, crateLuck(player, s))
+	table.insert(s.crates, {
+		id = HttpService:GenerateGUID(false),
+		level = level,
+		item = item,
+		readyAt = os.time() + (RaceCrates.OpenSeconds[rarity] or 60),
+	})
 	playSound(playerRoot(player), "big")
-	toast(player, string.format("BRAINROT ISLAND UNLOCKED\n-%d coins", BRAINROT_UNLOCK_COST), true)
 	pushUI(player)
 	return true
 end
 
-Brainrot.ConfigureUnlock(ensureBrainrotUnlocked, BRAINROT_UNLOCK_COST)
+local function ownsItem(s, itemName)
+	for _, name in ipairs(s.inventory) do
+		if name == itemName then return true end
+	end
+	for _, name in ipairs(s.placed) do
+		if name == itemName then return true end
+	end
+	return false
+end
 
--- Same choke point, same shape, for the 3rd island — priced higher than
--- Brainrot's since it's the later/harder unlock in the progression, not
--- because the mechanism differs at all.
-local HAUNTED_UNLOCK_COST = 15000
-local HAUNTED_REBIRTH_REQUIRED = 2
+RaceWars.Configure({
+	owns = function(player, itemName)
+		local s = state[player]
+		return s ~= nil and ownsItem(s, itemName)
+	end,
+	canRace = function(player)
+		local s = state[player]
+		if not s then return false, "Still loading — try again in a moment." end
+		if s.carrying then return false, "Take what you're carrying home first." end
+		return true
+	end,
+	levelCleared = awardCrate,
+	toast = toast,
+	broadcast = broadcast,
+	sendHome = sendHome,
+})
 
-local function ensureHauntedUnlocked(player)
+local openCrateRemote = ReplicatedStorage:FindFirstChild("OpenCrate")
+if not openCrateRemote then
+	openCrateRemote = Instance.new("RemoteEvent")
+	openCrateRemote.Name = "OpenCrate"
+	openCrateRemote.Parent = ReplicatedStorage
+end
+
+-- Opens a crate whose timer has run out, straight into Inventory. The
+-- answer goes back to the Crates tab too (RaceCrates.client shows it on
+-- the crate), since a toast can be hidden behind the open Inventory.
+openCrateRemote.OnServerEvent:Connect(function(player, crateId)
 	local s = state[player]
-	if not s then return false end
-	if s.hauntedUnlocked then return true end
+	if not s or type(crateId) ~= "string" then return end
+	local index
+	for i, crate in ipairs(s.crates) do
+		if crate.id == crateId then index = i break end
+	end
+	if not index then return end
+	local crate = s.crates[index]
 
-	if Rebirth.Get(player) < HAUNTED_REBIRTH_REQUIRED then
-		toast(player, string.format("Haunted Hollow needs Rebirth %d first.", HAUNTED_REBIRTH_REQUIRED))
-		return false
+	if os.time() < crate.readyAt then
+		openCrateRemote:FireClient(player, crateId, false, "wait")
+		return
+	end
+	if #s.inventory >= INVENTORY_CAPACITY then
+		toast(player, "Inventory full — sell or fuse something first.")
+		openCrateRemote:FireClient(player, crateId, false, "full")
+		return
 	end
 
-	local stats = player:FindFirstChild("leaderstats")
-	local coins = stats and stats:FindFirstChild("Coins")
-	if not coins then return false end
-
-	if coins.Value < HAUNTED_UNLOCK_COST then
-		toast(player, string.format("Haunted Hollow costs %d coins to unlock. Need %d more.", HAUNTED_UNLOCK_COST, HAUNTED_UNLOCK_COST - coins.Value))
-		return false
-	end
-
-	coins.Value = coins.Value - HAUNTED_UNLOCK_COST
-	s.hauntedUnlocked = true
+	table.remove(s.crates, index)
+	table.insert(s.inventory, crate.item)
 	playSound(playerRoot(player), "big")
-	toast(player, string.format("HAUNTED HOLLOW UNLOCKED\n-%d coins", HAUNTED_UNLOCK_COST), true)
-	pushUI(player)
-	return true
-end
-
-Haunted.ConfigureUnlock(ensureHauntedUnlocked, HAUNTED_UNLOCK_COST)
-
--- What a pet's permanent bonus reads as on a toast, shared by every
--- place that hands one out: the Starter Pack below, the Robux egg, and
--- the Day-7 streak jackpot.
-local function petBonusLine(entry)
-	return string.format("+%d%% coins, +%d%% speed — forever",
-		math.round((entry.coinMult - 1) * 100), math.round((entry.speedMult - 1) * 100))
-end
-
--- The Starter Pack's exclusive pet is a one-time grant, not a continuous
--- effect like its coin/speed bonuses (those just check Gamepasses.Has
--- live, see Service.Coins/SpeedMultiplier) — so it needs its own
--- persisted guard here, the same shape as the egg's grantedPurchaseIds.
--- Gamepasses.Changed fires once per session when ownership first becomes
--- known (join-time, once the async check resolves, or right after a live
--- purchase) — but it WILL fire again in a future session for the same
--- owner, since GamepassService's own bookkeeping is per-session, not
--- saved. s.starterPackGranted is what actually makes this one-time
--- forever.
-Gamepasses.Changed:Connect(function(player)
-	local s = state[player]
-	if not s or s.starterPackGranted then return end
-	if not Gamepasses.Has(player, "StarterPack") then return end
-
-	s.starterPackGranted = true
-	AreaPetsService.Grant(player, SecretPets.PackPet.key)
-	toast(player, string.format("STARTER PACK UNLOCKED\n%s\n%s",
-		SecretPets.PackPet.name, petBonusLine(SecretPets.PackPet)), true)
+	toast(player, string.format("CRATE OPENED\n%s", instanceTag(crate.item)), true)
+	openCrateRemote:FireClient(player, crateId, true, crate.item)
 	pushUI(player)
 end)
 
 travelRemote.OnServerEvent:Connect(function(player, destination)
-	local character = player.Character
-	if not character then return end
-
 	if destination == "junkyard" then
-		local s = state[player]
-		local plot = s and plots[s.plotIndex]
-		if plot then
-			character:PivotTo(plot.frame * CFrame.new(0, 5, -20))
-		end
-	elseif destination == "brainrot" then
-		if not ensureBrainrotUnlocked(player) then return end
-		character:PivotTo(CFrame.new(Brainrot.GetArrivalPosition()))
-	elseif destination == "haunted" then
-		-- No travel-menu button fires this yet (that's a GameUI.client.luau
-		-- change, off-limits while Codex's pass is active) — the physical
-		-- gate at (320, 1, 0) is the only way in today. Wired up now so
-		-- adding the button later needs zero server-side changes.
-		if not ensureHauntedUnlocked(player) then return end
-		character:PivotTo(CFrame.new(Haunted.GetArrivalPosition()))
+		sendHome(player)
+	elseif destination == "racewars" then
+		RaceWars.SendToLobby(player)
 	end
 end)
 
 ------------------------------------------------------------------
--- Companions — equip any discovered item to follow you and boost value
-------------------------------------------------------------------
-
-local companionParts = {} -- [player] = part
-local equippedPetParts = {} -- [player] = part (an equipped AreaPets pet — see "Pets UI" below)
-
-local function updateCompanionVisual(player)
-	local old = companionParts[player]
-	if old then
-		old:Destroy()
-		companionParts[player] = nil
-	end
-
-	local companion = Companions.Get(player)
-	if not companion then return end
-
-	local Recipes = recipesFor(companion.island)
-	-- Spawn right next to the player rather than a fixed world position —
-	-- with the ground-following lerp below, spawning far from wherever the
-	-- player actually is (Brainrot/Haunted sit 900+ studs from the origin)
-	-- would otherwise look like the pet slowly wandering in from across the map.
-	local root = playerRoot(player)
-	local spawnPos = root and (root.Position + Vector3.new(-4, 0, -3)) or Vector3.new(0, 5, 0)
-	local part = ItemVisuals.Create(companion.name, spawnPos, COMPANION_SCALE)
-	part.Anchored = true
-	part.CanCollide = false
-	part.Parent = workspace
-
-	local light = Instance.new("PointLight")
-	light.Color = ItemRarity.Color(Recipes.GetTier(companion.name), Recipes.IsSecretResult(companion.name))
-	light.Range = 10
-	light.Brightness = 1.5
-	light.Parent = part
-
-	companionParts[player] = part
-end
-
--- Same shape as updateCompanionVisual above, for the separate AreaPets
--- equip slot (see AreaPetsService.SetEquipped).
-local function updateEquippedPetVisual(player)
-	local old = equippedPetParts[player]
-	if old then
-		old:Destroy()
-		equippedPetParts[player] = nil
-	end
-
-	local petKey = AreaPetsService.GetEquipped(player)
-	if not petKey then return end
-	local pet = AreaPets.GetPet(petKey)
-	if not pet then return end
-
-	local root = playerRoot(player)
-	local spawnPos = root and (root.Position + Vector3.new(4, 0, -3)) or Vector3.new(0, 5, 0)
-	local part = ItemVisuals.Create(pet.name, spawnPos, COMPANION_SCALE)
-	part.Anchored = true
-	part.CanCollide = false
-	part.Parent = workspace
-
-	local light = Instance.new("PointLight")
-	-- A real per-pet/rarity color can replace this once real egg pet
-	-- models/tiers exist — every pet is still a TBD placeholder name.
-	light.Color = Color3.fromRGB(255, 215, 120)
-	light.Range = 10
-	light.Brightness = 1.5
-	light.Parent = part
-
-	equippedPetParts[player] = part
-end
-
--- Shared by the fusion companion above and the equipped AreaPets pet
--- below — both "a little creature follows you," just from two different
--- systems. Runs it on the ground (raycast down to find the real surface,
--- since different islands sit at different heights) with a light running
--- hop and facing its direction of travel, replacing the original fixed
--- floating orbit — the user's call 2026-09-14: "lets have the pets run on
--- the floor rather than float."
-local function updateGroundFollower(part, root, t, seed, offsetX, offsetZ, hoverHeight)
-	local behind = root.CFrame:VectorToWorldSpace(Vector3.new(offsetX, 0, offsetZ))
-	local targetXZ = Vector3.new(root.Position.X + behind.X, 0, root.Position.Z + behind.Z)
-
-	local rayParams = RaycastParams.new()
-	rayParams.FilterDescendantsInstances = { part }
-	rayParams.FilterType = Enum.RaycastFilterType.Exclude
-	local result = workspace:Raycast(targetXZ + Vector3.new(0, 20, 0), Vector3.new(0, -60, 0), rayParams)
-	local groundY = result and result.Position.Y or (root.Position.Y - 3)
-
-	local currentPos = part.Position
-	local desiredPos = Vector3.new(targetXZ.X, groundY + hoverHeight, targetXZ.Z)
-	-- Lerped, not snapped straight to the target — reads as running to
-	-- keep up rather than teleporting every frame.
-	local newPos = currentPos:Lerp(desiredPos, 0.12)
-
-	local flatMove = Vector3.new(newPos.X - currentPos.X, 0, newPos.Z - currentPos.Z)
-	local hop = flatMove.Magnitude > 0.02 and math.abs(math.sin(t * 10 + seed)) * 0.4 or 0
-	local finalPos = newPos + Vector3.new(0, hop, 0)
-
-	if flatMove.Magnitude > 0.05 then
-		part.CFrame = CFrame.lookAt(finalPos, finalPos + flatMove)
-	else
-		-- Not moving — keep whatever direction it last faced instead of
-		-- snapping back to a default rotation.
-		part.CFrame = CFrame.new(finalPos) * part.CFrame.Rotation
-	end
-end
-
--- Runs every frame (unlike the other background loops below, which only
--- need to tick every second or two) because a companion that visibly
--- stutters while following is worse than not having one at all.
-RunService.Heartbeat:Connect(function()
-	local t = os.clock()
-	for player, part in pairs(companionParts) do
-		local root = part.Parent and playerRoot(player)
-		if root then
-			updateGroundFollower(part, root, t, player.UserId, -4, -3, 1.2)
-		else
-			part:Destroy()
-			companionParts[player] = nil
-		end
-	end
-	-- Offset to the opposite side from the fusion companion (+X vs -X)
-	-- and a different sine seed, so both can be active at once without
-	-- overlapping or hopping in lockstep.
-	for player, part in pairs(equippedPetParts) do
-		local root = part.Parent and playerRoot(player)
-		if root then
-			updateGroundFollower(part, root, t, player.UserId + 10000, 4, -3, 1.0)
-		else
-			part:Destroy()
-			equippedPetParts[player] = nil
-		end
-	end
-end)
-
-equipCompanionRemote.OnServerEvent:Connect(function(player, itemName, island)
-	local s = state[player]
-	if not s then return end
-	if type(itemName) ~= "string" or (island ~= "junkyard" and island ~= "brainrot" and island ~= "haunted") then return end
-
-	if not playerKnowsItem(s, player, itemName, island) then
-		toast(player, "You haven't discovered that yet.")
-		return
-	end
-
-	-- Clicking the currently-equipped item again unequips it.
-	local current = Companions.Get(player)
-	if current and current.name == itemName and current.island == island then
-		Companions.Set(player, nil)
-		toast(player, "Companion unequipped.")
-	else
-		Companions.Set(player, { name = itemName, island = island })
-		toast(player, string.format("%s is now your companion.", islandTag(itemName, island)))
-	end
-
-	updateCompanionVisual(player)
-	pushUI(player)
-end)
-
--- Clicking the currently-equipped pet again unequips it, same UX as the
--- companion equip above. `petKey == false` from the client also means
--- "unequip" (PetsUI.client.luau sends false for its own "no selection").
-equipAreaPetRemote.OnServerEvent:Connect(function(player, petKey)
-	local s = state[player]
-	if not s then return end
-	if petKey ~= nil and petKey ~= false and type(petKey) ~= "string" then return end
-	if petKey == false then petKey = nil end
-
-	if petKey and AreaPetsService.GetEquipped(player) == petKey then
-		petKey = nil
-	end
-
-	if not AreaPetsService.SetEquipped(player, petKey) then
-		toast(player, "You don't own that pet yet.")
-		return
-	end
-
-	if petKey then
-		local pet = AreaPets.GetPet(petKey)
-		toast(player, string.format("%s is now following you.", pet and pet.name or "Your pet"))
-	else
-		toast(player, "Pet unequipped.")
-	end
-
-	updateEquippedPetVisual(player)
-	pushUI(player)
-end)
-
-------------------------------------------------------------------
--- Trading — 1-for-1, same server, proximity-triggered. Junkyard items
--- only: Brainrot creatures never sit in a carry slot or a placement zone
--- (that island pays out immediately), so there's nothing there to trade.
+-- Trading — 1-for-1, same server, proximity-triggered.
 ------------------------------------------------------------------
 
 -- True only if `player` really currently holds exactly this item where the
@@ -2605,21 +2272,12 @@ local function canReceiveTradedItem(player, itemName, source, outgoingRef)
 	if not s then return false end
 
 	if source == "carry" then
-		-- Secret pets are bought, not fused — block every path onto a
-		-- carry slot (move-to-carry, receiving one mid-trade), since the
-		-- carry slots are the only way anything ever reaches the fuse pad.
-		if SecretPets.ByName[(Mutations.Unwrap(itemName))] then return false end
 		local freeSlots = capacity(player, s) - #s.slots
 		if outgoingRef and outgoingRef.source == "carry" then
 			freeSlots = freeSlots + 1
 		end
 		return freeSlots > 0
 	elseif source == "inventory" then
-		-- Untradeable secret pets (the Day-7 streak pet) can't reach a
-		-- player via trade at all, not just via carry/fusion — the whole
-		-- point is you can only get one by playing 7 days yourself.
-		local secretPet = SecretPets.ByName[(Mutations.Unwrap(itemName))]
-		if secretPet and secretPet.untradeable then return false end
 		local freeSlots = INVENTORY_CAPACITY - #s.inventory
 		if outgoingRef and outgoingRef.source == "inventory" then
 			freeSlots = freeSlots + 1
@@ -2652,7 +2310,10 @@ end
 local function pushTradeUpdate(player)
 	local snapshot = Trade.Snapshot(player)
 	remote:FireClient(player, {
-		trade = snapshot or false, -- false, not nil: see the same note on `companion` above
+		-- false, not nil: a RemoteEvent drops nil-valued keys, and the client
+		-- needs "no trade" to be told apart from "field absent" to know when
+		-- to clear a stale trade window.
+		trade = snapshot or false,
 		myTradeItems = snapshot and getMyTradeItems(player) or nil,
 	})
 end
@@ -2997,80 +2658,6 @@ redeemCodeRemote.OnServerEvent:Connect(function(player, rawCode)
 end)
 
 ------------------------------------------------------------------
--- Secret pets — bought with real money (Developer Products), never
--- fused. The client prompts the purchase directly
--- (MarketplaceService:PromptProductPurchase), so there's no RemoteEvent
--- here — the server only cares about the result, via ProcessReceipt.
---
--- grantSecretPet does the actual work as its own function specifically
--- so it's directly callable/testable without needing a real purchase.
--- Granted straight into the owned pet set, so nothing about a full
--- inventory can make a paid purchase fail to deliver — and recorded in
--- s.grantedPurchaseIds so a Roblox retry of an already-handled receipt
--- never double-grants.
-------------------------------------------------------------------
-
-local function grantSecretPet(player, entry)
-	local s = state[player]
-	if not s then return false end
-
-	-- A pet, not an item (see SecretPets.luau): it goes straight into the
-	-- owned set for its permanent bonus and never touches the inventory,
-	-- so it can't be placed on a pad, sold, traded or fused.
-	AreaPetsService.Grant(player, entry.key)
-	toast(player, string.format("EGG OPENED\n%s\n%s", entry.name, petBonusLine(entry)), true)
-	pushUI(player)
-	return true
-end
-
--- Same shape as grantSecretPet, but for an AreaPets egg: the pet is a
--- permanent owned-set entry (a stacking coin/speed multiplier — see
--- AreaPetsService), never an inventory item, so there's no fusable name
--- to tag/insert, just the toast.
-local function grantAreaPet(player, areaKey, eggKey)
-	local pet = AreaPets.Roll(areaKey, eggKey)
-	if not pet then return end
-	AreaPetsService.Grant(player, pet.key)
-	toast(player, string.format("EGG OPENED\n%s", pet.name), true)
-	pushUI(player)
-end
-
-MarketplaceService.ProcessReceipt = function(receiptInfo)
-	local isSecretPetsEgg = receiptInfo.ProductId == SecretPets.EggProductId
-	local areaKey, areaEgg = AreaPets.FindEgg(receiptInfo.ProductId)
-
-	if not isSecretPetsEgg and not areaEgg then
-		-- Not a product this codebase has yet. Nothing to grant, but
-		-- still say so, rather than leaving Roblox retrying forever.
-		return Enum.ProductPurchaseDecision.PurchaseGranted
-	end
-
-	local player = Players:GetPlayerByUserId(receiptInfo.PlayerId)
-	local s = player and state[player]
-	if not s then
-		-- Not here right now, or still mid-join — ask Roblox to retry
-		-- later rather than losing the purchase.
-		return Enum.ProductPurchaseDecision.NotProcessedYet
-	end
-
-	if s.grantedPurchaseIds[receiptInfo.PurchaseId] then
-		-- Already handled — Roblox re-delivering a receipt we already granted.
-		return Enum.ProductPurchaseDecision.PurchaseGranted
-	end
-
-	-- Rolled fresh per purchase, not per receipt-retry: grantedPurchaseIds
-	-- below guards against ever re-rolling (and re-granting) the same
-	-- purchase twice, so this only ever runs once per real transaction.
-	if isSecretPetsEgg then
-		grantSecretPet(player, SecretPets.Roll())
-	else
-		grantAreaPet(player, areaKey, areaEgg.key)
-	end
-	s.grantedPurchaseIds[receiptInfo.PurchaseId] = true
-	return Enum.ProductPurchaseDecision.PurchaseGranted
-end
-
-------------------------------------------------------------------
 -- Auto-Collect gamepass — the old coin-bought "Scrap Magnet" upgrade
 -- (auto-grabbed the nearest scrap every tick, whether you wanted it or
 -- not) was removed 2026-09-14 at the user's request: "the upgrade is
@@ -3173,11 +2760,9 @@ local function grantReward(player, reward)
 	elseif reward.kind == "jackpot" then
 		addCoins(player, reward.amount)
 		giveBoost(player, "luck", 3, 20)
-		-- Straight into the owned pet set, same as the egg's own grant
-		-- (grantSecretPet, above): a secret pet is a permanent bonus, not
-		-- an item. The claim handler's own Day-7 toast covers telling the
-		-- player what they got, so no toast here.
-		AreaPetsService.Grant(player, SecretPets.StreakPet.key)
+		-- The best addon, straight into your hands. The claim handler's own
+		-- Day-7 toast says what you got, so no toast here.
+		giveItem(player, "Jet Engine")
 	end
 end
 
@@ -3205,7 +2790,7 @@ claimRemote.OnServerEvent:Connect(function(player)
 
 	if nextDay == DAILY_MAX_STREAK then
 		broadcast(string.format("%s completed a 7-day streak and hit the JACKPOT!", player.Name))
-		toast(player, string.format("DAY 7 JACKPOT\n%d coins + 3x Luck\n%s", displayReward.amount, SecretPets.StreakPet.name), true)
+		toast(player, string.format("DAY 7 JACKPOT\n%d coins + 3x Luck\n%s", displayReward.amount, instanceTag("Jet Engine")), true)
 	else
 		toast(player, string.format("DAY %d CLAIMED\n%s", nextDay, displayReward.label), true)
 	end
@@ -3268,11 +2853,7 @@ local function onPlayerAdded(player)
 	-- Load BEFORE anything else, so a slow DataStore can't be beaten
 	-- by the player picking something up.
 	local data = DataManager.Load(player)
-	Brainrot.Init(player, data.brainrotDiscovered)
-	Haunted.Init(player, data.hauntedDiscovered)
-	AreaPetsService.Init(player, data.ownedAreaPets, data.equippedAreaPet)
 	Rebirth.Init(player, data.rebirths)
-	Companions.Init(player, data.companion)
 	Leaderboard.Init(player, data.lifetimeCoins)
 	PlaytimeLeaderboard.Init(player, data.totalPlaytimeMinutes)
 
@@ -3322,26 +2903,23 @@ local function onPlayerAdded(player)
 		playMinutes = 0,
 		playtimeMilestonesClaimed = {},
 		redeemedCodes = data.redeemedCodes or {},
-		grantedPurchaseIds = data.grantedPurchaseIds or {},
-		brainrotUnlocked = data.brainrotUnlocked or false,
-		hauntedUnlocked = data.hauntedUnlocked or false,
-		starterPackGranted = data.starterPackGranted or false,
+		crates = data.crates or {},
 		plotIndex = index,
 		mutationPity = 0,
 	}
 
-	-- Secret pets stopped being items on 2026-09-22 (see grantSecretPet):
-	-- a save from before that can still hold one in its inventory or on a
-	-- pad, where it would keep earning coins it is no longer meant to
-	-- earn. Move each one into the owned set so its bonus carries over
-	-- instead of being lost.
+	-- Pets, Brainrot Island and Haunted Hollow were removed on 2026-09-23.
+	-- An older save can still hold one of their items (or a pet from before
+	-- pets stopped being items) in its inventory or on a pad; none of them
+	-- is a Junkyard item any more, so they go. Anything the recipe book
+	-- knows the rarity of is a Junkyard item and stays, and so does
+	-- anything a Race Wars crate can hold.
 	do
 		local s = state[player]
 		for _, field in ipairs({ "inventory", "placed" }) do
 			for i = #s[field], 1, -1 do
-				local pet = SecretPets.ByName[(Mutations.Unwrap(s[field][i]))]
-				if pet then
-					AreaPetsService.Grant(player, pet.key)
+				local baseName = Mutations.Unwrap(s[field][i])
+				if not FusionRecipes.GetRarity(baseName) and not RaceCrates.IsLoot(baseName) then
 					table.remove(s[field], i)
 				end
 			end
@@ -3383,8 +2961,6 @@ local function onPlayerAdded(player)
 		local humanoid = character:WaitForChild("Humanoid")
 		giveTools(player)
 		updateWalkSpeed(player)
-		updateCompanionVisual(player)
-		updateEquippedPetVisual(player)
 		attachTradePrompt(player, character)
 		task.wait(1)
 		pushUI(player)
@@ -3437,23 +3013,15 @@ local function snapshot(player)
 		sales = s.sales,
 		inventory = s.inventory,
 		placedPets = s.placed,
-		brainrotDiscovered = Brainrot.Snapshot(player),
-		hauntedDiscovered = Haunted.Snapshot(player),
-		ownedAreaPets = AreaPetsService.Snapshot(player),
-		equippedAreaPet = AreaPetsService.GetEquipped(player) or false,
 		upgrades = s.upgrades,
 		lastDailyDay = s.lastDailyDay,
 		dailyStreak = s.dailyStreak,
 		boosts = s.boosts,
 		rebirths = Rebirth.Snapshot(player),
-		companion = Companions.Snapshot(player),
 		lifetimeCoins = Leaderboard.Snapshot(player),
 		totalPlaytimeMinutes = PlaytimeLeaderboard.Snapshot(player),
 		redeemedCodes = s.redeemedCodes,
-		grantedPurchaseIds = s.grantedPurchaseIds,
-		brainrotUnlocked = s.brainrotUnlocked,
-		hauntedUnlocked = s.hauntedUnlocked,
-		starterPackGranted = s.starterPackGranted,
+		crates = s.crates,
 	}
 end
 
@@ -3530,26 +3098,10 @@ Players.PlayerRemoving:Connect(function(player)
 		end
 	end
 	state[player] = nil
-	Brainrot.Cleanup(player)
-	Haunted.Cleanup(player)
-	AreaPetsService.Cleanup(player)
 	Rebirth.Cleanup(player)
-	Companions.Cleanup(player)
 	Leaderboard.Cleanup(player)
 	PlaytimeLeaderboard.Cleanup(player)
 	DataManager.Forget(player)
-
-	local companionPart = companionParts[player]
-	if companionPart then
-		companionPart:Destroy()
-		companionParts[player] = nil
-	end
-
-	local equippedPetPart = equippedPetParts[player]
-	if equippedPetPart then
-		equippedPetPart:Destroy()
-		equippedPetParts[player] = nil
-	end
 end)
 
 print(string.format("[PlotManager] %d plots ready. %d combos to discover.",
