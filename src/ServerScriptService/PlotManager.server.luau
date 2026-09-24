@@ -286,6 +286,16 @@ if not buyRemote then
 	buyRemote.Parent = ReplicatedStorage
 end
 
+-- The Shop's Addons tab. Addons no longer spawn in the yard, so this is
+-- the only way to get one: bought for coins, straight into Inventory. Same
+-- rule as upgrades — the client names an addon, the server sets the price.
+local buyAddonRemote = ReplicatedStorage:FindFirstChild("BuyAddon")
+if not buyAddonRemote then
+	buyAddonRemote = Instance.new("RemoteEvent")
+	buyAddonRemote.Name = "BuyAddon"
+	buyAddonRemote.Parent = ReplicatedStorage
+end
+
 local claimRemote = ReplicatedStorage:FindFirstChild("ClaimDaily")
 if not claimRemote then
 	claimRemote = Instance.new("RemoteEvent")
@@ -1729,6 +1739,9 @@ local function grabItem(player, part)
 	local s = state[player]
 	if not s then return false end
 	if not part or not part.Parent then return false end
+	-- Already on its way to someone: it stays in the yard for the length
+	-- of the pickup flight, where Auto-Collect could otherwise take it too.
+	if part:GetAttribute("Collected") then return false end
 	-- One item at a time, and it goes into your hand rather than into
 	-- staging. Staging is only fed from the Inventory panel now.
 	if s.carrying then return false end
@@ -1749,6 +1762,9 @@ local function grabItem(player, part)
 
 	if not beginCarry(player, grabbed) then return false end
 
+	-- Taken: the conveyor lets go of it (ScrapSpawner), so the pickup
+	-- flight is not dragged back onto the belt.
+	part:SetAttribute("Collected", true)
 	local root = playerRoot(player)
 	PickupEffects.Play(part, root and root.Position or part.Position)
 
@@ -2138,6 +2154,38 @@ buyRemote.OnServerEvent:Connect(function(player, key)
 
 	playSound(playerRoot(player), "big")
 	toast(player, string.format("%s → Level %d\n%s", def.name, s.upgrades[key], def.describe(s.upgrades[key])), true)
+	pushUI(player)
+end)
+
+-- Every answer also goes straight back to the buyer's Addons tab
+-- (ShopAddons shows it on the button), because a toast is drawn underneath
+-- the open Shop and would never be seen.
+buyAddonRemote.OnServerEvent:Connect(function(player, addonName)
+	local s = state[player]
+	if not s or type(addonName) ~= "string" then return end
+	local price = FusionRecipes.AddonPrice(addonName)
+	if not price then return end
+
+	if #s.inventory >= INVENTORY_CAPACITY then
+		toast(player, "Inventory full — sell or fuse something first.")
+		buyAddonRemote:FireClient(player, addonName, "full")
+		return
+	end
+
+	local stats = player:FindFirstChild("leaderstats")
+	local coins = stats and stats:FindFirstChild("Coins")
+	if not coins then return end
+	if coins.Value < price then
+		toast(player, string.format("Not enough coins. Need %d.", price))
+		buyAddonRemote:FireClient(player, addonName, "coins")
+		return
+	end
+
+	coins.Value = coins.Value - price
+	table.insert(s.inventory, addonName)
+	playSound(playerRoot(player), "big")
+	toast(player, string.format("Bought %s — it's in your Inventory.", instanceTag(addonName)), true)
+	buyAddonRemote:FireClient(player, addonName, "bought")
 	pushUI(player)
 end)
 

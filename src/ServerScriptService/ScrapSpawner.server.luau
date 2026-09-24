@@ -1,8 +1,10 @@
 local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("ItemNames"))
 --[[
 	ScrapSpawner (Script, ServerScriptService) — Junkyard Fusion v1
-	Drops a random Tier 1 item into the yard every few seconds, and runs the
-	yard's timed events: Crane Drop, Scrap Rush and Mutation Frenzy.
+	Sends a random car out of the black box onto the yard's conveyor every
+	few seconds and moves everything riding it round the loop (YardConveyor
+	owns the belt itself). Also runs the yard's timed events: Crane Drop,
+	Scrap Rush and Mutation Frenzy.
 	Server-only on purpose: the server decides what spawns, never the client.
 --]]
 
@@ -10,6 +12,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
@@ -18,6 +21,7 @@ local Mutations = require(ReplicatedStorage:WaitForChild("Mutations"))
 local EventConfig = require(ReplicatedStorage:WaitForChild("EventConfig"))
 local YardFeatures = require(ServerStorage:WaitForChild("YardFeatures"))
 local ScrapLabel = require(ServerStorage:WaitForChild("ScrapLabel"))
+local Conveyor = require(ServerStorage:WaitForChild("YardConveyor"))
 
 -- Shared with PlotManager and the client UI.
 local remote = ReplicatedStorage:FindFirstChild("GameUpdate")
@@ -28,42 +32,28 @@ if not remote then
 end
 
 -- ---------- Tuning knobs. Change these, not the code below. ----------
-local SPAWN_INTERVAL = 3      -- seconds between drops
-local DESPAWN_AFTER  = 40     -- seconds before an ignored item disappears
--- Hard cap on items lying in the yard at once. At one drop every 3 s,
--- each lasting 40 s, the yard sits right at it: about 13 items, down from
--- about 22 when this was 45 and drops came every 2 s.
-local MAX_ITEMS      = 14
-local AREA_CENTER    = Vector3.new(0, 1.2, 0)  -- Y is the yard's ground surface, not an item's center
-local Layout = require(game.ReplicatedStorage:WaitForChild("JunkyardLayout"))
+local SPAWN_INTERVAL = 3      -- seconds between cars coming out of the box
+local DESPAWN_AFTER  = 40     -- seconds before an ignored crane prize disappears
+-- Most cars on the belt at once. One leaves the box every 3 s and a lap
+-- takes about 43 s, so the belt normally carries about 14; this only
+-- catches a hiccup, it is not what normally limits the count.
+local MAX_ITEMS      = 16
 
 -- Golden Scrap removed 2026-09-14 ("its litteary worthless now, get rid
 -- of the gold scrap idea in general") — its old role as "the exciting
 -- thing to chase" is replaced below by just announcing it when the
 -- regular roll itself lands on a naturally rare base item.
 -- Anything this rare or rarer gets the same "come get it" broadcast
--- Golden Scrap used to have: the Monster Truck, the V8 and the Jet Engine.
+-- Golden Scrap used to have: the Monster Truck, now that addons are bought
+-- in the Shop rather than found on the belt.
 local ANNOUNCE_RARITY = "mythic"
 
--- Hard ceiling on how many addons can be lying in the yard at once.
--- FusionRecipes.AddonSpawnChance sets the long-run rate; this stops the
--- short-run clumping a rate cannot. Four engines inside twenty drops is
--- unremarkable dice, and it reads as the yard being full of engines.
--- Three rather than two now that addons are 12% of drops, most of them
--- Nitrous Tanks.
-local MAX_ACTIVE_ADDONS = 3
-
--- Per-item limits on the map at once, on top of MAX_ITEMS. The rare end
--- is what made the yard feel flooded: two V8s and a Jet Engine lying
--- around together cheapens all three. A roll that lands on something
--- already at its limit becomes a vehicle instead.
+-- Per-item limits on the map at once, on top of MAX_ITEMS. Two Monster
+-- Trucks out together cheapens both. A roll that lands on something
+-- already at its limit becomes a more common car instead. (Addons are
+-- bought in the Shop now, so none of them ride the belt.)
 local MAX_ON_MAP = {
-	["Jet Engine"] = 1,
-	["V8 Engine"] = 1,
-	["V6 Engine"] = 1,
 	["Monster Truck"] = 1,
-	["Inline 4"] = 2,
-	["Nitrous Tank"] = 2,
 }
 
 -- Yard events. One every four to six minutes, never the same one twice in
@@ -73,11 +63,11 @@ local EVENT_FIRST_AFTER = 120
 local EVENT_GAP_MIN, EVENT_GAP_MAX = 240, 360
 local EVENT_WARNING = 10
 
--- Scrap Rush: drops twice as fast for a minute, with its own lower cap so
--- a rush fills the yard without burying it.
+-- Scrap Rush: cars come out of the box twice as fast for a minute, with
+-- its own cap so a rush fills the belt without burying it.
 local RUSH_SECONDS = 60
 local RUSH_INTERVAL = 1.5
-local RUSH_MAX_ITEMS = 22
+local RUSH_MAX_ITEMS = 30
 
 -- Mutation Frenzy: a quarter of drops land already mutated, and every
 -- fusion rolls mutations at double odds (EventConfig's own multiplier).
@@ -85,9 +75,9 @@ local FRENZY_SECONDS = 90
 local FRENZY_DROP_CHANCE = 0.25
 local FRENZY_DROP_WEIGHTS = { shiny = 60, toxic = 25, golden = 10, frenzy = 3, cosmic = 2 }
 
--- Crane Drop: the crate only ever holds something rare or better, picked
--- by rarity rather than by spawn rate so a crate stays worth racing for.
--- The Jet Engine is still the least likely thing in it (about 1 crate in 36).
+-- Crane Drop: the crate only ever holds a rare-or-better car (Cop Cruiser,
+-- Box Truck or Monster Truck), picked by rarity rather than by spawn rate
+-- so a crate stays worth racing for. Addons are Shop-only now.
 local CRATE_MIN_RARITY = "rare"
 local CRATE_DESPAWN_AFTER = 60
 local CRANE_SWING_SECONDS = 6
@@ -163,24 +153,77 @@ local function surfaceY(x, z)
 	return hit.Position.Y
 end
 
--- Uniform-area circular drops give all eight radial bases the same
--- distribution of return distances (the old square favored diagonal directions).
-local function randomSpawnPosition()
-	for _ = 1, 8 do
-		local angle = math.random() * math.pi * 2
-		local radius = math.sqrt(math.random()) * Layout.SpawnRadius
-		local x = AREA_CENTER.X + math.cos(angle) * radius
-		local z = AREA_CENTER.Z + math.sin(angle) * radius
-		-- The crane's legs stand inside this radius.
-		if x * x + z * z > 49 then
-			local y = surfaceY(x, z)
-			if y then
-				return Vector3.new(x, y, z)
+------------------------------------------------------------------
+-- The conveyor
+------------------------------------------------------------------
+
+Conveyor.Build()
+
+-- Everything riding the belt: [item] = how far along it is, how high its
+-- middle sits above the belt, and half its length, for knowing when it
+-- is fully inside the box. The Heartbeat below moves them all.
+local riders = {}
+
+local function ride(part, distance)
+	riders[part] = {
+		distance = distance,
+		lift = part.Size.Y / 2,
+		half = math.max(part.Size.X, part.Size.Z) / 2,
+	}
+end
+
+local function riderCount()
+	local count = 0
+	for _ in pairs(riders) do
+		count += 1
+	end
+	return count
+end
+
+RunService.Heartbeat:Connect(function(dt)
+	local moving, frames = {}, {}
+	local step = Conveyor.SPEED * dt
+	for part, rider in pairs(riders) do
+		if not part.Parent or part:GetAttribute("Collected") then
+			-- Grabbed (PlotManager marks it and flies it to the player), or
+			-- gone some other way: no longer ours to move.
+			riders[part] = nil
+		else
+			rider.distance += step
+			if rider.distance > Conveyor.Length + rider.half then
+				-- All the way into the box's rear: that is the end of its lap.
+				riders[part] = nil
+				part:Destroy()
+			else
+				local point, travel = Conveyor.PointAt(rider.distance)
+				local centre = point + Vector3.new(0, rider.lift, 0)
+				table.insert(moving, part)
+				-- The car models are built nose-first along +Z (grille,
+				-- headlights and front wheels on that end), the opposite of
+				-- LookVector, so +Z is what points down the belt.
+				table.insert(frames, CFrame.lookAt(centre, centre - travel))
 			end
 		end
 	end
-	return AREA_CENTER + Vector3.new(30, 0, 0)
-end
+	if #moving > 0 then
+		workspace:BulkMoveTo(moving, frames, Enum.BulkMoveMode.FireCFrameChanged)
+	end
+end)
+
+-- Anything a player drops onto the belt rides it too, rather than sitting
+-- still on a moving belt. Waits out the drop's fall first (PlotManager
+-- eases it down), then picks it up from where it landed.
+scrapFolder.ChildAdded:Connect(function(item)
+	if not item:GetAttribute("DroppedBy") then return end
+	task.delay(1, function()
+		if not item.Parent or riders[item] or not item:IsA("BasePart") then return end
+		if not Conveyor.IsOnBelt(item.Position) then return end
+		local distance = Conveyor.DistanceOf(item.Position)
+		if distance <= Conveyor.Length then
+			ride(item, distance)
+		end
+	end)
+end)
 
 ------------------------------------------------------------------
 -- What things look like
@@ -235,13 +278,10 @@ local function addBeam(part, colour)
 	light.Parent = beam
 end
 
--- The rarest base items — Golden Scrap's old "worth announcing" role, now
--- just surfacing when the regular roll itself lands on something already
--- rare instead of a separate spawn type. Addons need no special case: the
--- rarity bar lands on the V8 and the Jet Engine and skips the Nitrous
--- Tank, Inline 4 and V6, which is the right line. At a drop every
--- SPAWN_INTERVAL seconds, announcing every addon would fire several times
--- a minute and stop meaning anything.
+-- The rarest cars — Golden Scrap's old "worth announcing" role, now just
+-- surfacing when the regular roll itself lands on something already rare
+-- instead of a separate spawn type. Of the cars, only the Monster Truck
+-- clears the bar.
 -- The top mutations count too, whatever they landed on.
 local ANNOUNCE_MUTATIONS = { golden = true, cosmic = true, frenzy = true }
 local function isRareRoll(itemName)
@@ -252,16 +292,6 @@ local function isRareRoll(itemName)
 	local rarity = FusionRecipes.GetRarity(baseName)
 	return rarity ~= nil
 		and FusionRecipes.RarityIndex[rarity] >= FusionRecipes.RarityIndex[ANNOUNCE_RARITY]
-end
-
-local function activeAddonCount()
-	local live = 0
-	for _, item in ipairs(scrapFolder:GetChildren()) do
-		if item:GetAttribute("IsAddon") then
-			live += 1
-		end
-	end
-	return live
 end
 
 -- How many of this item (mutated or not) are lying in the yard right now.
@@ -278,15 +308,13 @@ end
 
 local function atLimit(itemName)
 	local baseName = Mutations.Unwrap(itemName)
-	if FusionRecipes.IsAddon(baseName) and activeAddonCount() >= MAX_ACTIVE_ADDONS then
-		return true
-	end
 	local cap = MAX_ON_MAP[baseName]
 	return cap ~= nil and liveCount(baseName) >= cap
 end
 
--- Everything that puts an item on the yard floor goes through here, so a
--- crate drop and a regular drop behave identically once they land.
+-- Everything that puts an item into the yard goes through here — a car
+-- onto the belt, or a crane prize onto the floor — so they all look and
+-- behave the same.
 local function spawnItemAt(itemName, position, opts)
 	opts = opts or {}
 	local baseName, mutationId = Mutations.Unwrap(itemName)
@@ -299,10 +327,6 @@ local function spawnItemAt(itemName, position, opts)
 	-- the part in Explorer won't break anything.
 	part:SetAttribute("ItemName", itemName)
 	part:SetAttribute("Tier", 1)
-	-- What activeAddonCount() counts. Set on the part rather than tracked
-	-- in a table so the despawn timer and any other removal path keep the
-	-- tally honest for free.
-	part:SetAttribute("IsAddon", FusionRecipes.IsAddon(baseName))
 
 	-- A textured mesh ignores Color, so a mutation is shown with a
 	-- highlight in its colour instead of by repainting the model.
@@ -330,18 +354,21 @@ local function spawnItemAt(itemName, position, opts)
 	-- the user's own call, "keep the one for when something rare spawns
 	-- like a jet engine"); it's the sole surviving world-spawn announcement.
 	if rare and not opts.silent then
-		announce(string.format("%s just dropped in the yard — grab it before it's gone!", itemTag(itemName)))
+		announce(string.format("%s is riding the conveyor — grab it before the black box does!", itemTag(itemName)))
 		print("[ScrapSpawner] RARE spawn:", itemName)
 	else
 		print("[ScrapSpawner] Dropped:", itemName)
 	end
 
-	-- Clean itself up later. task.delay doesn't block this loop.
-	task.delay(opts.despawnAfter or DESPAWN_AFTER, function()
-		if part and part.Parent then
-			part:Destroy()
-		end
-	end)
+	-- Clean itself up later. task.delay doesn't block this loop. A car on
+	-- the belt needs no timer: the black box takes it at the end of its lap.
+	if not opts.onBelt then
+		task.delay(opts.despawnAfter or DESPAWN_AFTER, function()
+			if part and part.Parent then
+				part:Destroy()
+			end
+		end)
+	end
 	return part
 end
 
@@ -357,15 +384,17 @@ end
 local function spawnScrap()
 	local now = os.clock()
 	local cap = now < rushUntil and RUSH_MAX_ITEMS or MAX_ITEMS
-	-- Respect the cap. Better to skip a drop than lag the server.
-	if #scrapFolder:GetChildren() >= cap then
+	-- Respect the cap. Better to skip a car than lag the server. Only the
+	-- belt counts: a crane prize or something a player dropped should not
+	-- stop cars coming out of the box.
+	if riderCount() >= cap then
 		return
 	end
 
 	local itemName = FusionRecipes.RollSpawn()
-	-- Already at its limit out there. Swap in a vehicle rather than skip
-	-- the drop, so the yard stays as busy as it always was; the most common
-	-- vehicle is the last resort, since nothing caps it.
+	-- Already at its limit out there. Swap in a more common car rather than
+	-- skip it, so the belt stays as busy as it always was; the most common
+	-- car is the last resort, since nothing caps it.
 	for _ = 1, 4 do
 		if not atLimit(itemName) then break end
 		itemName = FusionRecipes.RollBaseItem()
@@ -377,7 +406,10 @@ local function spawnScrap()
 		itemName = Mutations.Wrap(itemName, rollFrenzyMutation())
 	end
 
-	spawnItemAt(itemName, randomSpawnPosition())
+	-- Made just inside the box's front, so it rolls out through the flaps
+	-- rather than popping into view on the belt.
+	local part = spawnItemAt(itemName, (Conveyor.PointAt(0)), { onBelt = true })
+	ride(part, -math.max(part.Size.X, part.Size.Z) / 2)
 end
 
 ------------------------------------------------------------------
@@ -446,7 +478,7 @@ end
 local function rollCrateItem()
 	local floor = FusionRecipes.RarityIndex[CRATE_MIN_RARITY]
 	local pool = {}
-	for _, item in ipairs(FusionRecipes.BaseItems) do
+	for _, item in ipairs(FusionRecipes.Items) do
 		if FusionRecipes.RarityIndex[item.rarity] >= floor and not atLimit(item.name) then
 			table.insert(pool, item)
 		end
@@ -525,7 +557,7 @@ function runEvent.ScrapRush()
 	announce(string.format("<font color=\"#5ADC78\">SCRAP RUSH</font> in %d seconds — double drops incoming!", EVENT_WARNING))
 	task.wait(EVENT_WARNING)
 	rushUntil = os.clock() + RUSH_SECONDS
-	announce(string.format("<font color=\"#5ADC78\">SCRAP RUSH!</font> Scrap is dropping twice as fast for %d seconds!", RUSH_SECONDS))
+	announce(string.format("<font color=\"#5ADC78\">SCRAP RUSH!</font> The conveyor is running twice as many cars for %d seconds!", RUSH_SECONDS))
 	task.wait(RUSH_SECONDS)
 	announce("The Scrap Rush is over.")
 end
@@ -535,7 +567,7 @@ function runEvent.MutationFrenzy()
 	task.wait(EVENT_WARNING)
 	frenzyUntil = os.clock() + FRENZY_SECONDS
 	EventConfig.StartRuntime(FRENZY_SECONDS)
-	announce(string.format("<font color=\"#BE6EFF\">MUTATION FRENZY!</font> Mutated scrap is dropping and fusions mutate twice as often — %d seconds!", FRENZY_SECONDS))
+	announce(string.format("<font color=\"#BE6EFF\">MUTATION FRENZY!</font> Mutated cars are riding the conveyor and fusions mutate twice as often — %d seconds!", FRENZY_SECONDS))
 	task.wait(FRENZY_SECONDS)
 	announce("The Mutation Frenzy is over.")
 end
@@ -584,7 +616,7 @@ workspace:GetAttributeChangedSignal("TriggerYardEvent"):Connect(function()
 	end
 end)
 
-print("[ScrapSpawner] Running. Dropping scrap every", SPAWN_INTERVAL, "seconds.")
+print("[ScrapSpawner] Running. A car leaves the black box every", SPAWN_INTERVAL, "seconds.")
 
 while true do
 	spawnScrap()

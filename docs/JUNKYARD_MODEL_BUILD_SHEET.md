@@ -16,9 +16,16 @@ This page covers the 35 fused results and the five addons. The seven base cars w
 
 The seven rebuilt cars are multi-part models — 11 parts for the Dirt Bike, 159 for the Scrap Kart, 35 to 52 for the rest. **The five addons and the three newly built Legendary jet results are now detailed multi-part models too; the other 32 fused results still use their previous single meshes.**
 
-So the ladder still runs backwards in places. The scrap a player picks up off the floor, worth 5 coins, is a detailed model, and so are the three new Jet results — but **Scrapyard God, the best item in the game at 1,667 coins/sec, is still a single mesh**, and next to Sky Marshal or Afterburner GT it now reads as the cheaper item. Same for Sonic Scrapheap, THE LAWNLORD and Jet Hauler. That gap is bigger than any single model on the lists below.
+So the ladder still runs backwards in places. The scrap a player grabs off the conveyor, worth 5 coins, is a detailed model, and so are the three new Jet results — but **Scrapyard God, the best item in the game at 1,667 coins/sec, is still a single mesh**, and next to Sky Marshal or Afterburner GT it now reads as the cheaper item. Same for Sonic Scrapheap, THE LAWNLORD and Jet Hauler. That gap is bigger than any single model on the lists below.
 
 It also means **"Fine" in the table further down only means the model reads as the right vehicle.** None of them match the new cars for detail. If the fused results get a detail pass to match, the tables are already ordered for it: highest earners first, since those are the builds players keep on their pads and look at.
+
+### Where cars and addons show up now
+
+As of Sept 23 nothing drops on the yard floor any more:
+
+- **The seven cars ride a conveyor** that loops round the middle of the yard, out of a black box and back into it. The game turns each car so its **+Z end leads**, because all seven are built with the nose (grille, headlights, front wheels) toward +Z. Keep that on any rebuild, or that car rides the belt backwards.
+- **Addons are bought, not found.** They no longer spawn at all; the Shop has a new Addons tab where each addon's own model turns on a podium. The five addon models are Shop display pieces now as well as pad items.
 
 ## What a build earns
 

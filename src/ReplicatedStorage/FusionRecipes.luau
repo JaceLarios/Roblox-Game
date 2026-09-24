@@ -34,13 +34,17 @@ FusionRecipes.RarityWeight = {
 	legendary = 3,
 }
 
--- What the yard drops. `weight` is the percent of drops that are this
--- item, and the list adds up to 100: 88 for the seven cars and 12 for the
--- addons. `value` is what it sells for as a loose item.
+-- Everything grabbable in the Junkyard. `value` is what it sells for as a
+-- loose item.
 --
--- Cars carry a `multiplier`: a fused result is worth its addon's
--- `resultValue` times the car's multiplier, so the rarer the car the
--- higher its result sits in that addon's range.
+-- Cars ride the yard's conveyor. `weight` is how often each comes out of
+-- the black box, relative to the other cars (they add up to 88, so a
+-- Rusted Sedan is 24/88, about 27%). Cars carry a `multiplier`: a fused
+-- result is worth its addon's `resultValue` times the car's multiplier,
+-- so the rarer the car the higher its result sits in that addon's range.
+--
+-- Addons never spawn: they are bought in the Shop's Addons tab for their
+-- `price` in coins.
 FusionRecipes.BaseItems = {
 	{ name = "Rusted Sedan",  rarity = "common",   value = 5,  weight = 24,  multiplier = 1.0 },
 	{ name = "Dirt Bike",     rarity = "common",   value = 10, weight = 24,  multiplier = 1.1 },
@@ -55,11 +59,17 @@ FusionRecipes.BaseItems = {
 	-- The Nitrous Tank is a booster rather than an engine and exists so
 	-- fusing stays frequent now that every fusion uses an addon up; the
 	-- engines keep their order, Inline 4 < V6 < V8 < Jet.
-	{ name = "Nitrous Tank", rarity = "uncommon",  value = 20,  weight = 7.5, isAddon = true, resultValue = 150 },
-	{ name = "Inline 4",     rarity = "rare",      value = 45,  weight = 2.5, isAddon = true, resultValue = 500 },
-	{ name = "V6 Engine",    rarity = "epic",      value = 110, weight = 1.3, isAddon = true, resultValue = 2000 },
-	{ name = "V8 Engine",    rarity = "mythic",    value = 210, weight = 0.5, isAddon = true, resultValue = 10000 },
-	{ name = "Jet Engine",   rarity = "legendary", value = 300, weight = 0.2, isAddon = true, resultValue = 50000 },
+	--
+	-- Prices: new players start with no coins, so the Nitrous Tank costs
+	-- about what a few cars sell for, and its first fusion pays that back.
+	-- Each engine after it costs roughly one and a half to two times the
+	-- cheapest build it makes, so a placed build of that tier earns its
+	-- next addon back in a few minutes.
+	{ name = "Nitrous Tank", rarity = "uncommon",  value = 20,  price = 50,     isAddon = true, resultValue = 150 },
+	{ name = "Inline 4",     rarity = "rare",      value = 45,  price = 750,    isAddon = true, resultValue = 500 },
+	{ name = "V6 Engine",    rarity = "epic",      value = 110, price = 4000,   isAddon = true, resultValue = 2000 },
+	{ name = "V8 Engine",    rarity = "mythic",    value = 210, price = 20000,  isAddon = true, resultValue = 10000 },
+	{ name = "Jet Engine",   rarity = "legendary", value = 300, price = 100000, isAddon = true, resultValue = 50000 },
 }
 
 -- The whole recipe book: one result per car per addon, in the addon order
@@ -94,15 +104,6 @@ for _, item in ipairs(FusionRecipes.BaseItems) do
 		table.insert(FusionRecipes.Items, item)
 	end
 end
-
--- Share of drops that are an addon (0.12). Worked out from the weights
--- rather than set by hand, so the two can never disagree.
-local addonWeight, totalWeight = 0, 0
-for _, item in ipairs(FusionRecipes.BaseItems) do
-	totalWeight += item.weight
-	if item.isAddon then addonWeight += item.weight end
-end
-FusionRecipes.AddonSpawnChance = addonWeight / totalWeight
 
 local results = {}      -- [result name] = info about it (see below)
 local resultList = {}   -- in Index order: by rarity, then by car
@@ -287,9 +288,17 @@ local function weightedPick(pool)
 	return pool[#pool].name
 end
 
--- What the yard drops: any car or addon, at its own weight.
+-- What comes out of the black box onto the conveyor: a car, at its own
+-- weight. Addons never spawn; they are bought (FusionRecipes.AddonPrice).
 function FusionRecipes.RollSpawn()
-	return weightedPick(FusionRecipes.BaseItems)
+	return weightedPick(FusionRecipes.Items)
+end
+
+-- What an addon costs in the Shop, in coins; nil for anything that is not
+-- an addon for sale.
+function FusionRecipes.AddonPrice(name)
+	local item = baseByName[name]
+	return item and item.isAddon and item.price or nil
 end
 
 -- Cars only. Kept separate from RollSpawn so callers that want "a
