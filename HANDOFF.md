@@ -1,4 +1,20 @@
-# Latest handoff — Real modelled incubators on Brainrot, a drawn Pets icon, and a proper Pets panel revamp (2026-09-15)
+# Latest handoff — Scheduled group races, a phone layout, trade requests, a real bat (2026-09-24)
+
+A thirteen-item list from the user, all done and tested in Studio.
+
+**Race Wars is a scheduled group race now.** A race starts every 5 minutes (`RaceConfig.RACE_INTERVAL`) with everyone standing in the yellow line-up box painted in front of the start; the board over the start counts down and says how many are in line, and a lobby panel on screen says the same and whether you are in. Racers start from the middle of the grid outward (no more corner spawns), the track is 160 studs wide, cars pass through each other, and **one** monster chases the whole pack: it goes after whoever is at the back, sprints when they get too far ahead, and catches them first. Places are reported (finishers in order, then the caught, last caught highest), the level-clear banner is gone as asked (crates are still won, quietly), and the Race Garage only picks your car now (default: your fastest). The monster waits at d=18 on the track instead of in the lobby mouth, which is what had it clipping through the RACE WARS sign, and it is faster (60 → 1.15× the fastest car). `workspace:GetAttribute("RaceNextAt")` *is* the schedule, so setting it from the server starts a race at once — that is how the race was tested end to end: queue, centre-grid seat, countdown, go, monster released after 3 s, caught, result banner, back in the lobby facing the start.
+
+**Phones.** Tested in Studio's Device Simulator as an iPhone XR (801×334 usable). The nav buttons were 53 px and the coin counter sat on the INDEX button, with the thumbstick over INDEX and the jump button over TRADE. Now: each rail is a 2×2 grid in its top corner (76 px buttons), the coins sit top centre, `Garage.Canvas` menus (Upgrades, Rewards, Travel, Trading) show at the screen's width inside a screen-sized scroller instead of squeezed to 0.39 scale, the Index and Shop take the whole screen, the Inventory shows five tiles a row, and the Race Garage fills the screen. **The scrolling bug** behind "can't scroll on mobile" was real and one line repeated four times: Inventory, Index, Trade picker and Travel set `CanvasSize` from the layout's `AbsoluteContentSize`, which is on-screen pixels already shrunk by the panel's UIScale, so on a phone every list came out too short to scroll. They use `AutomaticCanvasSize` now. `GarageTheme.IsPhone` (GUI height < 480) is the one test everything shares.
+
+**Trading** is menu-only (the walk-up prompt is gone) and asks first: the other player gets an ACCEPT/DECLINE popup with their avatar and a 15-second bar (`TradeRequestUI.client.luau`, `TradeRequest` remote). It is faster too: the item picker and offer previews only rebuild their 3D viewports when the items actually change.
+
+**The bat** is a generated maple bat with grip tape (`ServerStorage.BatModel`), swings with the classic slash animation, and a hit launches the victim (`Knockback` remote, applied on their own client, ~90 studs) as well as knocking loose whatever they carry. **Dropped items** despawn after 30 s with a countdown under their name that turns red for the last ten. **Inventory space** is an upgrade now: 50 to start, +5 a level to level 5, +10 a level after. **Grabbing** takes 0.5 s. **Leaderboards** fold everyone in the server in at their live totals, so they are never empty while the ordered store catches up.
+
+Not tested with two real players: the bat hitting someone else, and a trade request between two people (the popup and its expiry were tested by firing the remote at the one test client).
+
+---
+
+# Previous handoff — Real modelled incubators on Brainrot, a drawn Pets icon, and a proper Pets panel revamp (2026-09-15)
 
 Fortieth pass. This one started with the user telling me flat out that my UI design was bad and asking whether I needed photos to do better. That was fair, and the honest answer had two halves: reference images genuinely would help with layout and hierarchy, but the deeper problem was that I'd been hand-building "art" out of rounded Frames and coloured circles, which will never sit next to Codex's illustrated sprites without looking like exactly what it is.
 

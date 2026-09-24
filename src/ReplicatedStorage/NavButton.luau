@@ -21,6 +21,22 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 	local slot = math.round((position.Y.Offset+270)/140)
 	local right = position.X.Scale == 1
 	local function fit()
+		-- On a phone on its side each rail becomes a two-by-two grid in its
+		-- top corner: twice the size a single column could be on a screen
+		-- that short, and clear of the thumbstick (bottom left) and the jump
+		-- button (bottom right).
+		local sg = holder:FindFirstAncestorOfClass("ScreenGui")
+		local gui = sg and sg.AbsoluteSize
+		if gui and gui.Y > 100 and gui.Y < 480 then
+			local factor = math.clamp(gui.Y / 610, 0.48, 0.62)
+			local w, h = 140 * factor, 156 * factor
+			local col, row = slot % 2, slot // 2
+			local x = 8 + col * (w + 2)
+			scale.Scale = factor
+			holder.Position = right and UDim2.new(1, -8 - (1 - col) * (w + 2) - w, 0, 4 + row * h)
+				or UDim2.new(0, x, 0, 4 + row * h)
+			return
+		end
 		local size = workspace.CurrentCamera.ViewportSize
 		local top = right and 340 or 240
 		if size.Y < 650 then top = 90 end
@@ -29,6 +45,7 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 		holder.Position = UDim2.new(right and 1 or 0, right and (-16-140*factor) or 16, 0, top+slot*156*factor)
 	end
 	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fit)
+	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
 	fit()
 	local btn = Instance.new("TextButton")
 	btn.Name = caption

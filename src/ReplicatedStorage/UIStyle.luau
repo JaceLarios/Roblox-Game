@@ -78,6 +78,13 @@ function Style.Navigation(holder)
 	table.insert(navigation,holder)
 	updateNavigation()
 end
+-- Whether any menu is open, for HUD pieces that should get out of its way.
+function Style.ModalOpen()
+	for _, modal in ipairs(modals) do
+		if modal.Parent and modal.Visible then return true end
+	end
+	return false
+end
 function Style.ScrollDetails(panel, height)
 	local scroll = Instance.new("ScrollingFrame")
 	scroll.Name = "DetailsScroll"

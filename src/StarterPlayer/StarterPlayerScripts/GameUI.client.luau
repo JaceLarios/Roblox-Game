@@ -180,6 +180,25 @@ boostLayout.FillDirection = Enum.FillDirection.Horizontal
 boostLayout.Padding = UDim.new(0, 6)
 boostLayout.Parent = boostBar
 
+-- On a phone on its side the bottom left is the thumbstick's, and the nav
+-- buttons fill the top corners, so the coins go top centre, a little
+-- smaller, with the boost chips under them.
+local coinScale = Instance.new("UIScale")
+coinScale.Parent = coinCard
+local function placeCoinCard()
+	local size = gui.AbsoluteSize
+	if size.Y < 100 then return end
+	local phone = Garage.IsPhone(size)
+	coinScale.Scale = phone and 0.72 or 1
+	coinCard.AnchorPoint = phone and Vector2.new(0.5, 0) or Vector2.zero
+	coinCard.Position = phone and UDim2.new(0.5, 0, 0, 10) or UDim2.new(0, 20, 1, -136)
+	boostBar.AnchorPoint = phone and Vector2.new(0.5, 0) or Vector2.zero
+	boostBar.Position = phone and UDim2.new(0.5, 0, 0, 68) or UDim2.new(0, 20, 0, 182)
+	boostLayout.HorizontalAlignment = phone and Enum.HorizontalAlignment.Center or Enum.HorizontalAlignment.Left
+end
+gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(placeCoinCard)
+placeCoinCard()
+
 local BOOST_STYLE = {
 	luck  = { text = "LUCK", color = Color3.fromRGB(120, 200, 255) },
 	value = { text = "SELL", color = Color3.fromRGB(150, 240, 165) },
@@ -708,6 +727,7 @@ local UPGRADE_COLORS = {
 	carry = BLUE,
 	value = RED,
 	speed = Color3.fromRGB(242,85,100),
+	storage = Color3.fromRGB(255,166,48),
 }
 
 -- Filled/empty pip row for the level, e.g. "●●●●○○○○○○" for Lv 4/10 —
@@ -984,6 +1004,12 @@ inventoryScroll.BackgroundTransparency = 1
 inventoryScroll.BorderSizePixel = 0
 inventoryScroll.ScrollBarThickness = 7
 inventoryScroll.ScrollBarImageColor3 = UIStyle.Palette.Steel
+-- Sized by Roblox from the tiles. Working it out here from the layout's
+-- AbsoluteContentSize went wrong under the panel's UIScale: that size is
+-- on-screen pixels, already shrunk, so on a phone the list came out too
+-- short to scroll to the bottom of.
+inventoryScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+inventoryScroll.CanvasSize = UDim2.new()
 inventoryScroll.Parent = gridBoard
 
 -- Without this the top row gets clipped by the ScrollingFrame's own edge:
@@ -1121,8 +1147,11 @@ local function relayout()
   gridBoard.Position=UDim2.fromOffset(18,gridTop) gridBoard.Size=UDim2.new(.69,-26,1,-gridTop-18)
   statPanel.Position=UDim2.new(.69,2,0,gridTop) statPanel.Size=UDim2.new(.31,-20,1,-gridTop-18) statPanel.Visible=true
  end
- local columns=compact and 2 or 3
- local width=compact and 516 or 744
+ -- Five smaller tiles a row on a phone on its side, where the grid is
+ -- short and three big ones showed barely a row at a time.
+ local phone=Garage.IsPhone(gui.AbsoluteSize)
+ local columns=compact and 2 or phone and 5 or 3
+ local width=compact and 516 or phone and 750 or 744
  local cell=math.floor((width-(columns-1)*16)/columns)
  inventoryLayout.CellPadding=UDim2.fromOffset(16,18)
  inventoryLayout.CellSize=UDim2.fromOffset(cell,cell*1.08)
@@ -1334,8 +1363,6 @@ function redrawInventory(items, capacity)
 		if isSelected then stillSelected = true end
 	end
 
-	inventoryScroll.CanvasSize = UDim2.new(0, 0, 0, inventoryLayout.AbsoluteContentSize.Y + 12)
-
 	if not stillSelected then
 		showStatsFor(nil)
 	end
@@ -1531,9 +1558,9 @@ task.spawn(function()
 end)
 
 ------------------------------------------------------------------
--- Trading — walk up to another player and press E on them to open this
--- for both sides at once. Nothing happens to either player's items until
--- both click CONFIRM, so opening it (even unintentionally) is harmless.
+-- Trading — opens for both sides once a trade request from the TRADE menu
+-- is accepted (TradeRequestUI). Nothing happens to either player's items
+-- until both click CONFIRM.
 ------------------------------------------------------------------
 
 myTradeItems = {}
@@ -1653,6 +1680,10 @@ tradePickerScroll.BackgroundTransparency = 1
 tradePickerScroll.BorderSizePixel = 0
 tradePickerScroll.ScrollBarThickness = 5
 tradePickerScroll.ZIndex = 5
+-- Sized by Roblox, as inventoryScroll is (a canvas worked out from the
+-- layout's on-screen size came out too short under the panel's UIScale).
+tradePickerScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+tradePickerScroll.CanvasSize = UDim2.new()
 tradePickerScroll.Parent = tradePickerFrame
 
 local tradePickerLayout = Instance.new("UIGridLayout")
@@ -1660,7 +1691,18 @@ tradePickerLayout.CellSize=UDim2.fromOffset(99,145)
 tradePickerLayout.CellPadding=UDim2.fromOffset(8,10)
 tradePickerLayout.Parent = tradePickerScroll
 
+-- Rebuilding every item's 3D preview on every trade update is what made
+-- trading feel slow, so the list is only rebuilt when the items in it
+-- actually change.
+local pickerSignature = nil
 local function redrawTradePicker()
+	local names = {}
+	for _, ref in ipairs(myTradeItems) do
+		table.insert(names, ref.source .. ":" .. ref.index .. ":" .. ref.itemName)
+	end
+	local signature = table.concat(names, "|")
+	if signature == pickerSignature then return end
+	pickerSignature = signature
 	for _, child in ipairs(tradePickerScroll:GetChildren()) do
 		if not child:IsA("UIGridLayout") then child:Destroy() end
 	end
@@ -1706,8 +1748,6 @@ local function redrawTradePicker()
 			tradePickerFrame.Visible = false
 		end)
 	end
-
-	tradePickerScroll.CanvasSize = UDim2.new(0, 0, 0, tradePickerLayout.AbsoluteContentSize.Y + 10)
 end
 
 chooseItemBtn.MouseButton1Click:Connect(function()
@@ -1731,6 +1771,7 @@ function redrawTrade(trade)
 	if not trade then
 		tradeFrame.Visible = false
 		tradePickerFrame.Visible = false
+		pickerSignature = nil
 		return
 	end
 
@@ -1738,8 +1779,13 @@ function redrawTrade(trade)
 	tradeTitle.Text = "TRADING WITH " .. string.upper(trade.partnerName)
 
 	local function fillOffer(offer, itemLbl, statusLbl, confirmed, whoseConfirmedText)
-  for _,c in itemLbl.Parent:GetChildren() do if c:IsA("ViewportFrame") then c:Destroy() end end
-  if offer then local base,tint=Mutations.Unwrap(offer.itemName) buildItemViewport(itemLbl.Parent,base,Mutations.Color(tint),{size=UDim2.new(1,-18,0,320),position=UDim2.fromOffset(9,65),zoom=1.7}) end
+  -- Only rebuild the preview when the offered item is a different one.
+  local box=itemLbl.Parent local shown=offer and offer.itemName or ""
+  if box:GetAttribute("ShownItem")~=shown then
+   box:SetAttribute("ShownItem",shown)
+   for _,c in box:GetChildren() do if c:IsA("ViewportFrame") then c:Destroy() end end
+   if offer then local base,tint=Mutations.Unwrap(offer.itemName) buildItemViewport(box,base,Mutations.Color(tint),{size=UDim2.new(1,-18,0,320),position=UDim2.fromOffset(9,65),zoom=1.7}) end
+  end
 		if offer then
 			itemLbl.Text = ItemRarity.Tag(offer.itemName, FusionRecipes.GetTier(offer.itemName), FusionRecipes.IsSecretResult(offer.itemName))
 		else
@@ -1767,9 +1813,8 @@ function redrawTrade(trade)
 end
 
 ------------------------------------------------------------------
--- Trading tab — click a name instead of walking up to someone. This
--- only replaces how a trade gets STARTED; once one's underway it's the
--- exact same tradeFrame/redrawTrade above either way.
+-- Trading tab — the only way to start a trade: click a name to send them
+-- a request. Once they accept, it's the tradeFrame/redrawTrade above.
 ------------------------------------------------------------------
 
 local tradeBtn = NavButton.Create(gui, "🤝", "TRADE", GREEN, NavButton.RailPosition("right", 4))
@@ -2137,9 +2182,10 @@ travelLayout.Padding = UDim.new(0, 22)
 travelLayout.SortOrder = Enum.SortOrder.LayoutOrder
 travelLayout.Parent = travelScroll
 
-travelLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-	travelScroll.CanvasSize = UDim2.new(0, 0, 0, travelLayout.AbsoluteContentSize.Y + 10)
-end)
+-- Sized by Roblox (see inventoryScroll: AbsoluteContentSize is shrunk by
+-- the panel's UIScale, so a hand-made canvas came out too short on phones).
+travelScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+travelScroll.CanvasSize = UDim2.new()
 
 local function toggleTravel()
 	travelFrame.Visible = not travelFrame.Visible

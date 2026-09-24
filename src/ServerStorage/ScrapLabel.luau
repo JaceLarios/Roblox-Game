@@ -65,4 +65,39 @@ function ScrapLabel.Attach(part, itemName)
 	return billboard
 end
 
+-- A countdown under a dropped item's name, ticking down the seconds until
+-- it despawns: white, then red for the last ten. The caller despawns it;
+-- this only shows how long is left.
+function ScrapLabel.Countdown(part, seconds)
+	local billboard = part:FindFirstChild("ScrapLabel")
+	if not billboard then return end
+	billboard.Size = UDim2.new(0, 160, 0, 56)
+	local name = billboard:FindFirstChildOfClass("TextLabel")
+	if name then name.Size = UDim2.fromScale(1, 0.6) end
+
+	local timer = Instance.new("TextLabel")
+	timer.Name = "Countdown"
+	timer.Position = UDim2.fromScale(0, 0.6)
+	timer.Size = UDim2.fromScale(1, 0.4)
+	timer.BackgroundTransparency = 1
+	timer.Font = FONT
+	timer.TextScaled = true
+	timer.TextColor3 = Color3.new(1, 1, 1)
+	timer.Parent = billboard
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = OUTLINE
+	stroke.Thickness = OUTLINE_THICKNESS
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+	stroke.Parent = timer
+
+	task.spawn(function()
+		for left = seconds, 1, -1 do
+			if not timer.Parent then return end
+			timer.Text = string.format("%ds", left)
+			timer.TextColor3 = left <= 10 and Color3.fromRGB(255, 90, 80) or Color3.new(1, 1, 1)
+			task.wait(1)
+		end
+	end)
+end
+
 return ScrapLabel

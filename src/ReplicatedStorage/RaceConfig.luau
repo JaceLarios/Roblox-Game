@@ -5,13 +5,16 @@
 	client (the car picker's speed readout, the race HUD). Tuning lives
 	here, not in the scripts that use it.
 
-	A race is one straight run through the levels in order. A monster
-	chases you the whole way, at the speed of whichever level you are on;
-	clear a level and you win that level's crate, get caught and the run
-	is over. Whether you get caught comes down to your car's top speed
-	against the monster's, and how cleanly you drive round the obstacles.
-	The monster gets a lot faster with every level, and the last level's
-	monster is faster than the best car in the game (see MonsterSpeed).
+	Races run on a schedule, every RACE_INTERVAL seconds: everyone standing
+	in the line-up in front of the start when the timer runs out races
+	together. A race is one straight run through the levels in order, with
+	one monster chasing the whole pack at the speed of whichever level it
+	is on; it catches the racer at the back first. Clear a level and you
+	win that level's crate; get caught and your run is over. Whether you
+	get caught comes down to your car's top speed against the monster's,
+	and how cleanly you drive round the obstacles. The monster gets a lot
+	faster with every level, and the last level's monster is faster than
+	the best car in the game (see MonsterSpeed).
 --]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -39,16 +42,21 @@ RaceConfig.Levels = {
 -- the whole curve to the best car: add faster cars and every level speeds
 -- up with them, so the last level is only ever just possible, in the very
 -- best car driven cleanly, and you can always lose.
-RaceConfig.FIRST_MONSTER_SPEED = 50
-RaceConfig.LAST_LEVEL_EDGE = 1.12
+RaceConfig.FIRST_MONSTER_SPEED = 60
+RaceConfig.LAST_LEVEL_EDGE = 1.15
+
+-- A race starts every this many seconds, with whoever is lined up.
+RaceConfig.RACE_INTERVAL = 300
 
 -- The monster waits this long after GO before it starts running.
 RaceConfig.MONSTER_DELAY = 3
--- However far ahead you get, the monster is never further behind than
--- this: it sprints to close any bigger gap. So a car slower than a level's
--- monster is caught within MAX_GAP / (difference in speed) seconds, and
--- only a fast enough car stays ahead for good.
+-- However far ahead the last racer gets, the monster is never much
+-- further behind than this: past it, the monster sprints at MONSTER_SPRINT
+-- times its speed to close the gap. So a car slower than a level's monster
+-- is caught within about MAX_GAP / (difference in speed) seconds, and only
+-- a fast enough car stays ahead for good.
 RaceConfig.MAX_GAP = 110
+RaceConfig.MONSTER_SPRINT = 3
 -- Caught when the monster is this close behind the car.
 RaceConfig.CATCH_DISTANCE = 7
 

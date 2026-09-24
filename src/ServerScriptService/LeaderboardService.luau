@@ -85,8 +85,33 @@ function LeaderboardService.RefreshIfStale()
 	cachedTop = top
 end
 
+-- The stored ranking with everyone in this server folded in at their live
+-- totals. The store only hears from a server every couple of minutes, so
+-- without this a player would not show up until their next save reached
+-- it and the next refresh read it back; a brand-new server's boards would
+-- sit empty with people standing right in front of them.
 function LeaderboardService.GetTopCached()
-	return cachedTop
+	local list, byId = {}, {}
+	for _, entry in ipairs(cachedTop) do
+		local copy = table.clone(entry)
+		byId[copy.userId] = copy
+		table.insert(list, copy)
+	end
+	for player, s in pairs(state) do
+		local live = math.floor(s.lifetimeCoins)
+		local entry = byId[player.UserId]
+		if entry then
+			entry.coins = math.max(entry.coins, live)
+			entry.name = player.Name
+		else
+			table.insert(list, { userId = player.UserId, name = player.Name, coins = live })
+		end
+	end
+	table.sort(list, function(a, b) return a.coins > b.coins end)
+	while #list > 100 do
+		table.remove(list)
+	end
+	return list
 end
 
 function LeaderboardService.Cleanup(player)

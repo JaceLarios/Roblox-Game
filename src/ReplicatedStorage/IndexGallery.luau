@@ -131,9 +131,14 @@ function Gallery.Create(gui)
 	Style.Surface(search, Color3.new(1,1,1), 1.5)
 	local count = caption(panel, "DiscoveryCount", "", 23)
 	count.TextXAlignment = Enum.TextXAlignment.Left
+	-- The canvas is sized by Roblox. Working it out from the grid's
+	-- AbsoluteContentSize went wrong under the panel's UIScale (that size
+	-- is on-screen pixels, already shrunk), so on a phone the list came
+	-- out too short to scroll through.
 	local scroll = make("ScrollingFrame", panel, "Gallery", {
 		BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 6,
 		ScrollBarImageColor3 = P.Teal, CanvasSize = UDim2.new(),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 		ScrollingDirection = Enum.ScrollingDirection.Y,
 	})
 	local grid = make("UIGridLayout", scroll, "Grid", {
@@ -145,10 +150,15 @@ function Gallery.Create(gui)
 		local size = gui.AbsoluteSize
 		if size.X < 100 or size.Y < 100 then return end
 		local portrait = size.X / size.Y < 1
+		-- A phone on its side: the panel takes the whole screen, the rows
+		-- above the items tighten up, and the cards get smaller, so there
+		-- is room to see and scroll the items at all.
+		local phone = not portrait and Garage.IsPhone(size)
 		local width = portrait and 600 or 1200
 		local factor = math.min((size.X - 32) / width, 1.5)
-		local height = (size.Y - 86) / factor
+		local height = (size.Y - (phone and 16 or 86)) / factor
 		panel.Size = UDim2.fromOffset(width, height)
+		panel.Position = UDim2.fromScale(.5, phone and .5 or .52)
 		scale.Scale = factor
 		title.Position = UDim2.fromOffset(108, 15)
 		title.Size = UDim2.fromOffset(portrait and 390 or 425, 80)
@@ -169,26 +179,23 @@ function Gallery.Create(gui)
 		-- whole set; in portrait the rows below move up into the space.
 		local flatArea = activeArea == "addons"
 		filter.Visible = not flatArea
-		filter.Position = UDim2.fromOffset(28, portrait and 205 or 118)
+		local row = phone and 100 or 118
+		filter.Position = UDim2.fromOffset(28, portrait and 205 or row)
 		filter.Size = UDim2.new(1, portrait and -48 or -350, 0, portrait and 74 or 44)
 		search.Position = portrait and UDim2.fromOffset(28, flatArea and 205 or 292)
-			or UDim2.new(1, -312, 0, 118)
+			or UDim2.new(1, -312, 0, row)
 		search.Size = portrait and UDim2.new(1, -56, 0, 74) or UDim2.fromOffset(284,44)
-		count.Position = UDim2.fromOffset(28, portrait and (flatArea and 291 or 378) or 176)
+		count.Position = UDim2.fromOffset(28, portrait and (flatArea and 291 or 378) or row + 52)
 		count.Size = UDim2.new(1, -56, 0, 36)
 		count.TextSize = portrait and 22 or 23
-		local top = portrait and (flatArea and 337 or 424) or 224
+		local top = portrait and (flatArea and 337 or 424) or row + 94
 		scroll.Position = UDim2.fromOffset(28, top)
-		scroll.Size = UDim2.new(1, -56, 1, -top-20)
-		local cols = portrait and 2 or 4
+		scroll.Size = UDim2.new(1, -56, 1, -top-(phone and 12 or 20))
+		local cols = portrait and 2 or phone and 5 or 4
 		local cellWidth = (width - 68 - 12*(cols-1))/cols
 		grid.CellSize = UDim2.fromOffset(cellWidth, math.max(cellWidth+30, (height-top-34)/2))
 		empty.Position, empty.Size = scroll.Position, scroll.Size
 	end
-	local function updateCanvas()
-		scroll.CanvasSize = UDim2.fromOffset(0, grid.AbsoluteContentSize.Y + 8)
-	end
-	grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
 	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
 	-- Studio can report a stale camera viewport while minimized. Use the UI's
 	-- own dimensions, and catch parent/safe-area changes after layout settles.
@@ -296,7 +303,6 @@ function Gallery.Create(gui)
 		empty.Text=query~="" and "No discovered items match your search."
 			or flatArea and "No addons found yet." or "No items in this rarity yet."
 		empty.Visible=shown==0
-		updateCanvas()
 	end
 	for area, tab in pairs(areaTabs) do
 		-- layout() before redraw(): the Addons tab hides the rarity filter,

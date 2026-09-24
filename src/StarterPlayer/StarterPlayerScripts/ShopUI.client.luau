@@ -41,11 +41,19 @@ panel.Parent=overlay corner(panel,24) Style.Surface(panel,WHITE,5)
 local scale=Instance.new("UIScale") scale.Parent=panel
 local function fit()
 	local size=overlay.AbsoluteSize
+	if size.Y<100 then return end
 	local compact=size.X<650
 	local width=compact and 600 or 1200
-	scale.Scale=math.min((size.X-34)/width,(size.Y-34)/820,1.45)
 	panel.Position=UDim2.fromScale(.5,.5)
-	panel.Size=UDim2.fromOffset(width,820)
+	if Garage.IsPhone(size) and not compact then
+		-- A phone on its side: as wide as the screen and as tall as it, not
+		-- the whole 820 squeezed in and unreadable. The sections scroll.
+		scale.Scale=math.min((size.X-16)/width,1)
+		panel.Size=UDim2.fromOffset(width,(size.Y-12)/scale.Scale)
+	else
+		scale.Scale=math.min((size.X-34)/width,(size.Y-34)/820,1.45)
+		panel.Size=UDim2.fromOffset(width,820)
+	end
 	panel:SetAttribute("Compact",compact)
 end
 overlay:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit) fit()

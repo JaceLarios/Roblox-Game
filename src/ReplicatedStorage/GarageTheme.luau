@@ -108,7 +108,7 @@ end
 Theme.IconAtlas = "rbxassetid://118283775447762"
 Theme.TravelAtlas = "rbxassetid://112069100804229"
 Theme.PetAtlas = "rbxassetid://108663379877358"
-local cells={DoubleCoins=0,value=0,coins=0,ExtraCarry=1,carry=1,AutoCollect=2,StarterPack=3,REWARDS=3,CODE=15,speed=4,luck=5,PETS=10,egg=6,crate=7,boost=8,rebirth=9,INVENTORY=11,TRADE=12,TRAVEL=13,UPGRADES=14,INDEX=11,SHOP=11}
+local cells={DoubleCoins=0,value=0,coins=0,ExtraCarry=1,carry=1,AutoCollect=2,StarterPack=3,REWARDS=3,CODE=15,speed=4,luck=5,PETS=10,egg=6,crate=7,boost=8,rebirth=9,INVENTORY=11,storage=11,TRADE=12,TRAVEL=13,UPGRADES=14,INDEX=11,SHOP=11}
 function Theme.New(class,parent,name,props)
  local o=Instance.new(class) o.Name=name o:SetAttribute("Designed",true)
  for k,v in props or {} do o[k]=v end
@@ -198,17 +198,62 @@ function Theme.Pedestal(parent,color,pos,size)
  end
  return holder
 end
+-- A phone on its side is short: the whole canvas squeezed into its height
+-- comes out too small to read or tap. There the canvas is shown at the
+-- screen's width instead, in a screen-sized scroller of its own, and the
+-- player scrolls it up and down. Everywhere else it fits the screen.
+Theme.PHONE_HEIGHT=480
+function Theme.IsPhone(size)
+ return size.Y<Theme.PHONE_HEIGHT
+end
+local function phoneScroller(panel)
+ local home=panel.Parent
+ local scroller=Instance.new("ScrollingFrame")
+ scroller.Name=panel.Name.."Scroller" scroller:SetAttribute("Designed",true)
+ scroller.Size=UDim2.fromScale(1,1) scroller.BackgroundTransparency=1 scroller.BorderSizePixel=0
+ scroller.ScrollBarThickness=6 scroller.ScrollBarImageColor3=INK
+ scroller.ScrollingDirection=Enum.ScrollingDirection.Y scroller.ElasticBehavior=Enum.ElasticBehavior.Never
+ -- Above the world backdrop Shell puts behind an open panel.
+ scroller.ZIndex=math.max(panel.ZIndex,10)
+ scroller.Visible=panel.Visible
+ scroller.Parent=home
+ panel.Parent=scroller
+ panel:GetPropertyChangedSignal("Visible"):Connect(function()
+  scroller.Visible=panel.Visible
+  if panel.Visible then scroller.CanvasPosition=Vector2.zero end
+  -- Shell decides whether its backdrop shows from the panel's ancestors,
+  -- this scroller among them, so it looks again once this has changed.
+  panel:SetAttribute("GarageShown",panel.Visible)
+ end)
+ return scroller
+end
 function Theme.Canvas(panel,width,height)
  local scale=panel:FindFirstChildOfClass("UIScale") or Instance.new("UIScale") scale.Parent=panel
  panel.AnchorPoint=Vector2.new(.5,.5)
+ local scroller
  local function update()
   local sg=panel:FindFirstAncestorOfClass("ScreenGui")
   local v=sg and sg.AbsoluteSize or workspace.CurrentCamera.ViewportSize
-  panel.Position=UDim2.fromScale(.5,.5)
+  if v.X<100 or v.Y<100 then return end
   panel.Size=UDim2.fromOffset(width,height)
-  scale.Scale=math.min((v.X-34)/width,(v.Y-34)/height,1.45)
+  local fitted=math.min((v.X-34)/width,(v.Y-34)/height,1.45)
+  local wide=math.min((v.X-16)/width,1)
+  if Theme.IsPhone(v) and wide>fitted*1.15 then
+   scroller=scroller or phoneScroller(panel)
+   scale.Scale=wide
+   panel.AnchorPoint=Vector2.new(.5,0)
+   panel.Position=UDim2.new(.5,0,0,8)
+   scroller.CanvasSize=UDim2.fromOffset(0,height*wide+16)
+  else
+   scale.Scale=fitted
+   panel.AnchorPoint=Vector2.new(.5,.5)
+   panel.Position=UDim2.fromScale(.5,.5)
+   if scroller then scroller.CanvasSize=UDim2.new() end
+  end
  end
  workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(update)
+ local sg=panel:FindFirstAncestorOfClass("ScreenGui")
+ if sg then sg:GetPropertyChangedSignal("AbsoluteSize"):Connect(update) end
  update() return scale
 end
 local oldShell=Theme.Shell
@@ -231,6 +276,7 @@ function Theme.Shell(panel)
    bg.Visible=shown
   end
   panel:GetPropertyChangedSignal("Visible"):Connect(vis)
+  panel:GetAttributeChangedSignal("GarageShown"):Connect(vis)
   if panel.Parent:IsA("GuiObject") then panel.Parent:GetPropertyChangedSignal("Visible"):Connect(vis) end
   panel.Destroying:Once(function() bg:Destroy() end) vis()
  end

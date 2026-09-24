@@ -31,6 +31,8 @@ As of Sept 23 nothing drops on the yard floor any more:
 
 Pets, Brainrot Island and Haunted Hollow are gone. The game's second area is now **Race Wars** (Travel menu): you drive one of your cars down a long straight track through five levels while a monster chases you, and every level you clear wins a crate. Every car and fused result is raced using its own model from `ItemModels`, scaled to 13 studs long and driven nose-first along +Z. That's one more reason to keep the +Z rule above.
 
+Races run every 5 minutes for everyone standing in the yellow line-up box in front of the start (the board over the start counts down). Racers start from the middle of the grid outward, pass through each other, and one monster chases the whole pack. The track is 160 studs wide.
+
 Everything in Race Wars works. The trees and rocks are real meshes now, but most of the rest is still placeholder. What would lift it most:
 
 | What | Where it goes | Now |
@@ -40,6 +42,11 @@ Everything in Race Wars works. The trees and rocks are real meshes now, but most
 | Crate art and the crate-opening moment | `RaceCrates.client.luau` (the Inventory's Crates tab) | The atlas `crate` icon; the reveal is a card with the item turning on a podium |
 | Race Garage, race HUD, countdown and banners | `RaceWarsView.luau` owns the whole look, so it can be restyled without touching race logic | Garage-kit placeholder |
 | Travel card picture | `WORLDS` in `GameUI.client.luau`, `scene = rbxassetid://136532362963777` | A drawn render of the track (`assets/race-wars/travel_card.png`) |
+| Line-up box and countdown board | `buildLobby` in `RaceTrack.luau` (`LineUp`, `QueueBoard`) | A painted yellow box and a plain black board |
+
+## The bat (Sept 24)
+
+The bat tool uses `ServerStorage.BatModel`, a single MeshPart standing upright, barrel up, 4.4 studs tall (a generated maple bat with black grip tape). Replace that part to change the bat; it is held near the knob. Without it the bat falls back to a plain wooden stick.
 
 Art that nothing uses any more: the egg and PETS icons, the travel atlas's Brainrot and Haunted scenes, and `Variants.brainrot` in `FusionCelebrationView.luau`.
 

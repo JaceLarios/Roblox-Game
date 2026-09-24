@@ -27,19 +27,19 @@ local Track = {}
 -- Start line centre, on the floor. Well past the Junkyard's fog.
 Track.ORIGIN = Vector3.new(-2600, 0, 0)
 -- Drivable width between the walls: room for a whole grid of racers.
-Track.WIDTH = 120
+Track.WIDTH = 160
 Track.Length = #RaceConfig.Levels * RaceConfig.LEVEL_LENGTH
 
 local WALL_HEIGHT = 46
 local WALL_THICKNESS = 6
 local LOBBY_DEPTH = 150
-local LOBBY_WIDTH = 180
+local LOBBY_WIDTH = 220
 -- The run-out past the last gate, where a winning car rolls to a stop.
 local FINISH_DEPTH = 160
 
 local FOLDER_NAME = "RaceWars"
 -- Bump when the geometry changes, so a stale build is replaced.
-local VERSION = 3
+local VERSION = 4
 
 -- White and light grey squares, tinted per level (assets/race-wars).
 local CHECKER = "rbxassetid://126970654411709"
@@ -77,12 +77,33 @@ function Track.LobbySpawn()
 	return CFrame.lookAt(Track.PointAt(-110, 0, 4), Track.PointAt(0, 0, 4))
 end
 
--- The starting grid: six places across the track just past the line.
--- Cars never collide with each other, so a busy grid just shares places.
-local GRID = { -50, -30, -10, 10, 30, 50 }
+-- The starting grid, filled from the middle of the track outward: the
+-- first racer starts dead centre, the next either side of them, and so on,
+-- PER_ROW to a row, with later rows lined up behind. Cars never collide
+-- with each other, so a crowd past the last row just shares its places.
+local GRID_FRONT = 58
+local GRID_BACK = 30
+local GRID_SPACING = 18
+local PER_ROW = 7
 function Track.GridFrame(place)
-	local offset = GRID[(place - 1) % #GRID + 1]
-	return CFrame.new(Track.PointAt(10, offset, 0)) * Track.Heading
+	local row = (place - 1) // PER_ROW
+	local slot = (place - 1) % PER_ROW
+	local offset = math.ceil(slot / 2) * GRID_SPACING * (slot % 2 == 1 and -1 or 1)
+	local distance = math.max(GRID_FRONT - row * 18, GRID_BACK)
+	return CFrame.new(Track.PointAt(distance, offset, 0)) * Track.Heading
+end
+
+-- Where the monster waits before it runs: on the track just past the
+-- gate, behind the grid and clear of the sign over the mouth.
+Track.MONSTER_START = 18
+
+-- The line-up: stand in this box in front of the start and you are in the
+-- next race.
+local QUEUE_NEAR, QUEUE_FAR, QUEUE_HALF = -10, -50, 40
+function Track.InQueue(position)
+	local distance, offset = Track.DistanceOf(position)
+	return distance <= QUEUE_NEAR and distance >= QUEUE_FAR and math.abs(offset) <= QUEUE_HALF
+		and position.Y > Track.ORIGIN.Y - 5 and position.Y < Track.ORIGIN.Y + 20
 end
 
 ------------------------------------------------------------------
@@ -366,13 +387,14 @@ local function buildLevel(root, index, level)
 	local first, last = start + (index == 1 and 160 or 80), start + length - 60
 	local rows = 12 + index * 3
 	local spacing = (last - first) / rows
-	local GAP = 26
+	local GAP = 30
 	for row = 1, rows do
 		local distance = first + (row - 0.5) * spacing + rng:NextNumber(-spacing, spacing) * 0.25
 		local gapCentre = rng:NextNumber(-half + GAP / 2 + 6, half - GAP / 2 - 6)
 		local count = 1
 		if index > 1 and rng:NextNumber() < 0.7 then count += 1 end
 		if index > 2 and rng:NextNumber() < 0.5 then count += 1 end
+		if index > 3 and rng:NextNumber() < 0.5 then count += 1 end
 		local placed = {}
 		for _ = 1, count do
 			local width = rng:NextNumber(10, 16)
@@ -466,11 +488,89 @@ local function buildLobby(root)
 	})
 	sign(signBoard, "RACE WARS", rgb(255, 255, 255), rgb(214, 44, 44))
 
+	-- The line-up box on the floor in front of the start, and the board over
+	-- the mouth counting down to the next race (RaceService keeps it
+	-- current through Track.SetBoard).
+	local queueDepth = QUEUE_NEAR - QUEUE_FAR
+	local lineup = part(folder, {
+		Name = "LineUp",
+		Size = Vector3.new(QUEUE_HALF * 2, 0.2, queueDepth),
+		CFrame = CFrame.new(Track.PointAt((QUEUE_NEAR + QUEUE_FAR) / 2, 0, 0.1)) * Track.Heading,
+		Color = rgb(255, 204, 60),
+		Material = Enum.Material.SmoothPlastic,
+		Transparency = 0.55,
+		CanCollide = false,
+		CanQuery = false,
+	})
+	local lineupText = Instance.new("SurfaceGui")
+	lineupText.Face = Enum.NormalId.Top
+	lineupText.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	lineupText.PixelsPerStud = 8
+	lineupText.LightInfluence = 0
+	lineupText.Parent = lineup
+	-- A top face's canvas runs along the track, so the words are turned a
+	-- quarter to run across the box and read the right way up for someone
+	-- walking toward the start.
+	local lineupLabel = Instance.new("TextLabel")
+	lineupLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+	lineupLabel.Position = UDim2.fromScale(0.5, 0.5)
+	lineupLabel.Size = UDim2.fromOffset(QUEUE_HALF * 2 * 8 * 0.9, queueDepth * 8 * 0.8)
+	lineupLabel.BackgroundTransparency = 1
+	lineupLabel.Text = "LINE UP HERE TO RACE"
+	lineupLabel.TextScaled = true
+	lineupLabel.Font = Enum.Font.FredokaOne
+	lineupLabel.TextColor3 = rgb(40, 40, 46)
+	lineupLabel.Rotation = 90
+	lineupLabel.Parent = lineupText
+	for _, side in ipairs({ -1, 1 }) do
+		part(folder, {
+			Name = "LineUpEdge",
+			Size = Vector3.new(1, 0.3, queueDepth),
+			CFrame = CFrame.new(Track.PointAt((QUEUE_NEAR + QUEUE_FAR) / 2, side * QUEUE_HALF, 0.15)) * Track.Heading,
+			Color = rgb(255, 204, 60),
+			Material = Enum.Material.Neon,
+			CanCollide = false,
+			CanQuery = false,
+		})
+	end
+
+	local board = part(folder, {
+		Name = "QueueBoard",
+		Size = Vector3.new(64, 12, 2),
+		CFrame = CFrame.new(Track.PointAt(-6, 0, 24)) * Track.Heading,
+		Color = rgb(24, 24, 28),
+	})
+	local boardGui = Instance.new("SurfaceGui")
+	boardGui.Name = "BoardText"
+	boardGui.Face = Enum.NormalId.Back
+	boardGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	boardGui.PixelsPerStud = 8
+	boardGui.LightInfluence = 0
+	boardGui.Parent = board
+	local function boardLine(name, y, height, colour)
+		local l = Instance.new("TextLabel")
+		l.Name = name
+		l.Position = UDim2.fromScale(0.03, y)
+		l.Size = UDim2.fromScale(0.94, height)
+		l.BackgroundTransparency = 1
+		l.TextScaled = true
+		l.Font = Enum.Font.FredokaOne
+		l.TextColor3 = colour
+		l.Text = ""
+		l.Parent = boardGui
+		local outline = Instance.new("UIStroke")
+		outline.Color = rgb(10, 10, 14)
+		outline.Thickness = 4
+		outline.Parent = l
+	end
+	boardLine("Headline", 0.06, 0.56, rgb(255, 255, 255))
+	boardLine("Detail", 0.62, 0.32, rgb(255, 204, 60))
+
 	-- The garage kiosk, where you pick a car and start a race.
 	local kiosk = part(folder, {
 		Name = "RaceGarage",
 		Size = Vector3.new(14, 10, 8),
-		CFrame = CFrame.new(Track.PointAt(-60, -54, 5)) * Track.Heading * CFrame.Angles(0, math.rad(-35), 0),
+		CFrame = CFrame.new(Track.PointAt(-80, -70, 5)) * Track.Heading * CFrame.Angles(0, math.rad(-35), 0),
 		Color = rgb(40, 40, 46),
 	})
 	local awning = part(folder, {
@@ -575,6 +675,16 @@ function Track.Build()
 	buildFinish(root)
 	root.Parent = workspace
 	return root
+end
+
+-- Writes the countdown board over the start.
+function Track.SetBoard(headline, detail)
+	local root = workspace:FindFirstChild(FOLDER_NAME)
+	local board = root and root:FindFirstChild("Lobby") and root.Lobby:FindFirstChild("QueueBoard")
+	local gui = board and board:FindFirstChild("BoardText")
+	if not gui then return end
+	gui.Headline.Text = headline
+	gui.Detail.Text = detail
 end
 
 -- The lobby's two prompts, for RaceService to connect.

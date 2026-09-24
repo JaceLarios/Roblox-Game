@@ -99,6 +99,20 @@ subtitle.TextStrokeTransparency = 0.2
 subtitle:SetAttribute("Designed", true)
 subtitle.Parent = gui
 
+-- On a phone on its side the top of the screen is Roblox's own buttons and
+-- then the coins, so the banner sits under them, smaller.
+local function fitBanner()
+	local size = workspace.CurrentCamera.ViewportSize
+	local phone = size.Y > 100 and size.Y < 540
+	banner.TextSize = phone and 50 or 80
+	banner.Size = phone and UDim2.fromOffset(240, 60) or UDim2.fromOffset(360, 96)
+	banner.Position = UDim2.new(0.5, 0, 0, phone and 128 or 14)
+	subtitle.TextSize = phone and 15 or 20
+	subtitle.Position = UDim2.new(0.5, 0, 0, phone and 186 or 104)
+end
+workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitBanner)
+fitBanner()
+
 ------------------------------------------------------------------
 -- Arrow home: body to door
 ------------------------------------------------------------------

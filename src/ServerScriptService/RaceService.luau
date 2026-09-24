@@ -1,24 +1,32 @@
 --[[
 	RaceService (ModuleScript, ServerScriptService) — Junkyard Fusion
 
-	Runs Race Wars races. A player in the lobby picks one of their cars
-	(RaceWarsUI), the server builds a drivable copy of it on the starting
-	grid and seats them in it, counts down, and lets them go. They drive it
-	themselves (RaceDrive, on their own client); a monster chases them at
-	the speed of whichever level they are on (RaceConfig). Every level
-	cleared wins a crate; the run ends when the monster catches them, they
-	reach the finish, or they leave the car.
+	Runs Race Wars races. They run on a schedule, one every
+	RaceConfig.RACE_INTERVAL seconds: everyone standing in the line-up box
+	in front of the start when the timer runs out races together. Each
+	racer gets a drivable copy of the car they picked in the Race Garage
+	(RaceWarsUI; their fastest car if they never picked), set on the
+	starting grid from the middle out, and drives it themselves (RaceDrive,
+	on their own client). Cars pass through each other.
+
+	One monster chases the whole pack at the speed of whichever level it
+	is on (RaceConfig), always after the racer at the back: it sprints to
+	catch up when that racer gets far ahead, and catches them first. Every
+	level a racer clears wins them a crate; their run ends when the monster
+	catches them, they reach the finish, or they leave the car. Places go
+	to finishers in the order they finish, then to everyone caught, last
+	caught highest.
 
 	Racing never uses the car up — the item stays wherever it is, in
 	Inventory or on a pad. What you drive is a copy.
 
 	PlotManager owns player data, so it hands this module what it needs
 	through Race.Configure (the same "inject after require" shape used for
-	other services): whether a player owns a car and can race right now,
-	and what to do when a level is cleared.
+	other services): which cars a player owns, whether they can race right
+	now, and what to do when a level is cleared.
 
 	The client drives its own car (so steering feels instant), which means
-	the server never trusts where the client says the car is: a race's
+	the server never trusts where the client says the car is: a racer's
 	progress only counts up as fast as that car could really have driven.
 --]]
 
@@ -30,6 +38,7 @@ local RunService = game:GetService("RunService")
 local RaceConfig = require(ReplicatedStorage:WaitForChild("RaceConfig"))
 local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local Mutations = require(ReplicatedStorage:WaitForChild("Mutations"))
+local ItemNames = require(ReplicatedStorage:WaitForChild("ItemNames"))
 local Track = require(ServerStorage:WaitForChild("RaceTrack"))
 local Monster = require(ServerStorage:WaitForChild("RaceMonster"))
 
@@ -45,15 +54,15 @@ local function remoteEvent(name)
 	return r
 end
 
--- Client -> server: start a race in this car.
-local startRemote = remoteEvent("RaceStart")
+-- Client -> server: the car to race in next time.
+local pickRemote = remoteEvent("RacePick")
 -- Server -> client: what is happening in your race, as { kind = ... }:
--- "arrived", "countdown", "go", "cleared", "caught", "finished", "bailed",
--- "ended".
+-- "arrived", "countdown", "go", "caught", "finished", "bailed", "ended".
 local eventRemote = remoteEvent("RaceEvent")
 
 -- Set by PlotManager (see the header).
 local hooks = {
+	cars = function() return {} end,
 	owns = function() return false end,
 	canRace = function() return true end,
 	levelCleared = function() return false end,
@@ -76,8 +85,17 @@ if not liveFolder then
 	liveFolder.Parent = workspace
 end
 
-local races = {}      -- [player] = race (see startRace)
-local lastStart = {}  -- [player] = os.clock() of their last start
+local queued = {}     -- [player] = os.clock() they stepped into the line-up
+local picks = {}      -- [player] = the car they picked in the Race Garage
+local racers = {}     -- [player] = racer, while their run is going
+local current = nil   -- the race being run (see startRace), or nil
+local monsters = {}   -- [race] = true while its monster is on screen
+
+-- When the next race starts, in workspace:GetServerTimeNow() time, which
+-- the clients share, so their countdowns match the board's. The attribute
+-- is the schedule itself: set it from the server (a test, an admin) and
+-- the next race moves with it.
+workspace:SetAttribute("RaceNextAt", workspace:GetServerTimeNow() + RaceConfig.RACE_INTERVAL)
 
 local COUNTDOWN = 3
 -- Race cars have no friction: the drive constraint alone decides how fast
@@ -205,97 +223,140 @@ end
 -- Races
 ------------------------------------------------------------------
 
+-- The fastest car a player owns, for anyone who never picked one.
+local function fastestCar(player)
+	local best, bestSpeed = nil, -1
+	for _, itemName in ipairs(hooks.cars(player)) do
+		local stats = RaceConfig.CarStats(itemName)
+		if stats and stats.topSpeed > bestSpeed then
+			best, bestSpeed = itemName, stats.topSpeed
+		end
+	end
+	return best
+end
+
+-- The car a player races in: the one they picked while they still own
+-- it, else their fastest.
+local function carFor(player)
+	local picked = picks[player]
+	if picked and hooks.owns(player, picked) then
+		return picked
+	end
+	return fastestCar(player)
+end
+
 -- Everything a racing character touches joins the race cars' collision
 -- group, so racers pass through each other and the lobby gate.
-local function setRacingGroup(race, racing)
-	local character = race.player.Character
+local function setRacingGroup(racer, racing)
+	local character = racer.player.Character
 	if racing then
-		race.savedGroups = {}
+		racer.savedGroups = {}
 		if character then
 			for _, p in ipairs(character:GetDescendants()) do
 				if p:IsA("BasePart") then
-					race.savedGroups[p] = p.CollisionGroup
+					racer.savedGroups[p] = p.CollisionGroup
 					p.CollisionGroup = Track.CAR_GROUP
 				end
 			end
 		end
 	else
-		for p, group in pairs(race.savedGroups or {}) do
+		for p, group in pairs(racer.savedGroups or {}) do
 			if p.Parent then p.CollisionGroup = group end
 		end
-		race.savedGroups = nil
+		racer.savedGroups = nil
 	end
 end
 
+local HUD_ATTRIBUTES = { "RaceLevel", "RaceDistance", "RaceGap", "RaceMonsterSpeed", "RacePlace", "RaceRacers" }
 local function clearHud(player)
-	player:SetAttribute("RaceLevel", nil)
-	player:SetAttribute("RaceDistance", nil)
-	player:SetAttribute("RaceGap", nil)
-	player:SetAttribute("RaceMonsterSpeed", nil)
+	for _, name in ipairs(HUD_ATTRIBUTES) do
+		player:SetAttribute(name, nil)
+	end
 end
 
--- Ends a race. `outcome` is what the player is told: "caught",
+-- The race is over once nobody is still running: the monster stays a
+-- moment on whoever it caught last, then goes.
+local function checkOver(race)
+	if race.state == "over" or race.finished + race.out < race.count then return end
+	race.state = "over"
+	if current == race then current = nil end
+	task.delay(2.5, function()
+		race.monster:Destroy()
+	end)
+end
+
+-- Ends one racer's run. `outcome` is what they are told: "caught",
 -- "finished", "bailed", or "left" (travelled away or quit — nothing to
 -- show, no trip back to the lobby).
-local function endRace(race, outcome)
-	if race.state == "ended" then return end
-	local player = race.player
-	race.state = "ended"
-	if races[player] == race then
-		races[player] = nil
+local function endRun(racer, outcome)
+	if racer.state == "out" then return end
+	local player, race = racer.player, racer.race
+	racer.state = "out"
+	if racers[player] == racer then
+		racers[player] = nil
+	end
+	if outcome == "finished" then
+		race.finished += 1
+		racer.place = race.finished
+	else
+		racer.place = race.count - race.out
+		race.out += 1
 	end
 	clearHud(player)
-	if race.seat.Parent then
-		race.seat:SetAttribute("Go", false)
+	if racer.seat.Parent then
+		racer.seat:SetAttribute("Go", false)
 	end
 	if outcome ~= "left" then
-		fire(player, { kind = outcome, cleared = race.cleared, level = race.level })
+		fire(player, { kind = outcome, cleared = racer.cleared, crates = racer.crates, place = racer.place, of = race.count })
 	else
 		fire(player, { kind = "ended" })
 	end
 	if outcome == "finished" then
-		hooks.broadcast(string.format("%s escaped the Race Wars monster in a %s!", player.Name, race.itemName))
+		local car = ItemNames.Display(racer.itemName)
+		if race.count > 1 and racer.place == 1 then
+			hooks.broadcast(string.format("%s won the Race Wars race in a %s!", player.Name, car))
+		else
+			hooks.broadcast(string.format("%s escaped the Race Wars monster in a %s!", player.Name, car))
+		end
 	end
 
 	local function tidy()
-		setRacingGroup(race, false)
-		if race.humanoid.Parent and race.humanoid.SeatPart == race.seat then
-			race.humanoid.Sit = false
+		setRacingGroup(racer, false)
+		if racer.humanoid.Parent and racer.humanoid.SeatPart == racer.seat then
+			racer.humanoid.Sit = false
 		end
-		race.car:Destroy()
-		race.monster:Destroy()
+		racer.car:Destroy()
 	end
 	if outcome == "left" then
 		tidy()
-		return
+	else
+		-- A moment to see what happened (the monster on you, or the
+		-- finish) before being sent back to the lobby.
+		task.delay(outcome == "finished" and 3 or 2, function()
+			tidy()
+			local character = player.Character
+			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+			if player.Parent and humanoid and humanoid.Health > 0 and not racers[player] then
+				task.wait(0.1)
+				character:PivotTo(Track.LobbySpawn())
+				fire(player, { kind = "arrived", facing = Track.Heading.LookVector })
+			end
+		end)
 	end
-	-- A moment to see what happened (the monster on you, or the finish)
-	-- before being sent back to the lobby.
-	task.delay(outcome == "finished" and 3 or 2, function()
-		tidy()
-		local character = player.Character
-		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-		if player.Parent and humanoid and humanoid.Health > 0 then
-			task.wait(0.1)
-			character:PivotTo(Track.LobbySpawn())
-			fire(player, { kind = "arrived" })
-		end
-	end)
+	checkOver(race)
 end
 
-local function startRace(player, itemName, stats)
+-- Puts one racer in their car on the grid, ready for the countdown.
+local function seatRacer(race, player, itemName, place)
 	local character = player.Character
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
-
-	local place = 1
-	for _ in pairs(races) do place += 1 end
+	local stats = RaceConfig.CarStats(itemName)
 	local frame = Track.GridFrame(place)
 	local car, chassis, seat = buildCar(player, itemName, stats, frame)
+	local distance, offset = Track.DistanceOf(chassis.Position)
 
-	local monster = Monster.Create()
-	monster.Parent = liveFolder
-
-	local race = {
+	local racer = {
+		race = race,
 		player = player,
 		itemName = itemName,
 		stats = stats,
@@ -303,50 +364,102 @@ local function startRace(player, itemName, stats)
 		chassis = chassis,
 		seat = seat,
 		humanoid = humanoid,
-		monster = monster,
 		state = "countdown",
 		level = 1,
 		cleared = 0,
-		distance = Track.DistanceOf(chassis.Position),
-		offset = select(2, Track.DistanceOf(chassis.Position)),
+		crates = 0,
+		distance = distance,
+		offset = offset,
 		checkedAt = os.clock(),
 		lastGood = chassis.CFrame,
-		-- Waiting in the lobby mouth behind the grid, in view of everyone.
-		monsterDistance = -30,
-		monsterOffset = 0,
 		hudAt = 0,
 	}
-	races[player] = race
+	racers[player] = racer
+	table.insert(race.racers, racer)
 
 	humanoid.Sit = false
 	character:PivotTo(seat.CFrame * CFrame.new(0, 3, 0))
 	seat:Sit(humanoid)
-	setRacingGroup(race, true)
+	setRacingGroup(racer, true)
 	player:SetAttribute("RaceLevel", 1)
-	player:SetAttribute("RaceMonsterSpeed", math.floor(RaceConfig.MonsterSpeed(1)))
-	fire(player, { kind = "countdown", seconds = COUNTDOWN, item = itemName, topSpeed = stats.topSpeed })
+	player:SetAttribute("RaceRacers", race.count)
+	player:SetAttribute("RacePlace", place)
+	player:SetAttribute("RaceGap", math.floor(distance - race.monsterDistance))
+	player:SetAttribute("RaceMonsterSpeed", math.floor(race.monsterSpeed))
+	fire(player, { kind = "countdown", seconds = COUNTDOWN, item = itemName, topSpeed = stats.topSpeed, racers = race.count })
+end
+
+-- Starts a race with everyone in the line-up, in the order they lined up:
+-- the first on the grid's centre spot, the rest out either side of them.
+local function startRace()
+	local lineup = {}
+	for player, since in pairs(queued) do
+		table.insert(lineup, { player = player, since = since })
+	end
+	table.sort(lineup, function(a, b) return a.since < b.since end)
+
+	local entries = {}
+	for _, entry in ipairs(lineup) do
+		local player = entry.player
+		local ok, reason = hooks.canRace(player)
+		local itemName = ok and carFor(player) or nil
+		if not ok then
+			hooks.toast(player, reason)
+		elseif not itemName then
+			hooks.toast(player, "You need a car to race — grab one off the conveyor in the Junkyard.")
+		else
+			table.insert(entries, { player = player, itemName = itemName })
+		end
+	end
+	table.clear(queued)
+	if #entries == 0 then return end
+
+	local race = {
+		racers = {},
+		count = #entries,
+		finished = 0,
+		out = 0,
+		state = "countdown",
+		monster = Monster.Create(),
+		monsterDistance = Track.MONSTER_START,
+		monsterOffset = 0,
+		monsterSpeed = RaceConfig.MonsterSpeed(1),
+	}
+	race.monster.Parent = liveFolder
+	monsters[race] = true
+	current = race
+	for place, entry in ipairs(entries) do
+		seatRacer(race, entry.player, entry.itemName, place)
+	end
 
 	task.delay(COUNTDOWN, function()
 		if race.state ~= "countdown" then return end
-		if seat.Occupant ~= humanoid then
-			endRace(race, "bailed")
-			return
-		end
-		chassis.Anchored = false
-		chassis:SetNetworkOwner(player)
-		seat:SetAttribute("Go", true)
 		race.state = "racing"
 		race.goAt = os.clock()
-		race.checkedAt = os.clock()
-		fire(player, { kind = "go" })
+		for _, racer in ipairs(race.racers) do
+			if racer.state == "countdown" then
+				if racer.seat.Occupant ~= racer.humanoid then
+					endRun(racer, "bailed")
+				else
+					racer.chassis.Anchored = false
+					racer.chassis:SetNetworkOwner(racer.player)
+					racer.seat:SetAttribute("Go", true)
+					racer.state = "racing"
+					racer.checkedAt = os.clock()
+					fire(racer.player, { kind = "go" })
+				end
+			end
+		end
 	end)
 end
 
-local function stepRace(race, dt, now)
-	local chassis, humanoid = race.chassis, race.humanoid
-	if not chassis.Parent or not humanoid.Parent or humanoid.Health <= 0 or race.seat.Occupant ~= humanoid then
-		endRace(race, "bailed")
-		return
+-- One racer's progress: checked, then counted toward levels and the
+-- finish. Returns false once their run is over.
+local function stepRacer(racer, now)
+	local chassis, humanoid = racer.chassis, racer.humanoid
+	if not chassis.Parent or not humanoid.Parent or humanoid.Health <= 0 or racer.seat.Occupant ~= humanoid then
+		endRun(racer, "bailed")
+		return false
 	end
 
 	-- Progress only counts as fast as this car could really have gone
@@ -361,92 +474,167 @@ local function stepRace(race, dt, now)
 		-- Fallen off, flying over the obstacles or through a wall: none of
 		-- that counts, and it goes back where it last was on the track.
 		chassis.AssemblyLinearVelocity = Vector3.zero
-		chassis.CFrame = race.lastGood
+		chassis.CFrame = racer.lastGood
 	else
-		local elapsed = now - race.checkedAt
-		race.distance = math.min(distance, race.distance + race.stats.topSpeed * elapsed * 1.3 + 6)
-		race.offset = offset
-		race.checkedAt = now
-		race.lastGood = chassis.CFrame
+		local elapsed = now - racer.checkedAt
+		racer.distance = math.min(distance, racer.distance + racer.stats.topSpeed * elapsed * 1.3 + 6)
+		racer.offset = offset
+		racer.checkedAt = now
+		racer.lastGood = chassis.CFrame
 	end
 
-	while race.level <= #RaceConfig.Levels and race.distance >= race.level * RaceConfig.LEVEL_LENGTH do
-		local won = hooks.levelCleared(race.player, race.level)
-		race.cleared = race.level
-		race.level += 1
-		-- Every level cleared, the monster gets a lot faster.
-		local faster = race.level <= #RaceConfig.Levels and RaceConfig.MonsterSpeed(race.level) or nil
-		fire(race.player, { kind = "cleared", level = race.cleared, crate = won == true, monsterSpeed = faster })
-		race.player:SetAttribute("RaceLevel", math.min(race.level, #RaceConfig.Levels))
-		race.player:SetAttribute("RaceMonsterSpeed", faster and math.floor(faster) or nil)
+	-- Every level cleared wins a crate, quietly: the race carries on.
+	while racer.level <= #RaceConfig.Levels and racer.distance >= racer.level * RaceConfig.LEVEL_LENGTH do
+		if hooks.levelCleared(racer.player, racer.level) == true then
+			racer.crates += 1
+		end
+		racer.cleared = racer.level
+		racer.level += 1
+		racer.player:SetAttribute("RaceLevel", math.min(racer.level, #RaceConfig.Levels))
 	end
-	if race.level > #RaceConfig.Levels then
-		endRace(race, "finished")
-		return
+	if racer.level > #RaceConfig.Levels then
+		endRun(racer, "finished")
+		return false
 	end
+	return true
+end
 
+local function stepRace(race, dt, now)
+	local running = {}
+	for _, racer in ipairs(race.racers) do
+		if racer.state == "racing" and stepRacer(racer, now) then
+			table.insert(running, racer)
+		end
+	end
+	if #running == 0 then return end
+
+	-- The monster goes after whoever is at the back, at its own level's
+	-- speed, sprinting when they have got too far ahead of it.
+	table.sort(running, function(a, b) return a.distance > b.distance end)
+	local last = running[#running]
+	local monsterLevel = math.clamp(math.floor(math.max(race.monsterDistance, 0) / RaceConfig.LEVEL_LENGTH) + 1,
+		1, #RaceConfig.Levels)
+	race.monsterSpeed = RaceConfig.MonsterSpeed(monsterLevel)
 	if now - race.goAt >= RaceConfig.MONSTER_DELAY then
-		local speed = RaceConfig.MonsterSpeed(race.level)
-		race.monsterDistance = math.max(race.monsterDistance + speed * dt, race.distance - RaceConfig.MAX_GAP)
-	end
-	race.monsterOffset += (race.offset - race.monsterOffset) * math.min(1, dt * 1.5)
+		local sprint = last.distance - race.monsterDistance > RaceConfig.MAX_GAP and RaceConfig.MONSTER_SPRINT or 1
+		race.monsterDistance += race.monsterSpeed * sprint * dt
+		race.monsterOffset += (last.offset - race.monsterOffset) * math.min(1, dt * 1.5)
 
-	if race.distance - race.monsterDistance <= RaceConfig.CATCH_DISTANCE then
-		race.monsterDistance = race.distance - 2
-		endRace(race, "caught")
-		return
+		-- Back to front, so it takes the last car first.
+		for i = #running, 1, -1 do
+			local racer = running[i]
+			if racer.distance - race.monsterDistance > RaceConfig.CATCH_DISTANCE then break end
+			endRun(racer, "caught")
+			table.remove(running, i)
+		end
 	end
 
-	if now - race.hudAt > 0.1 then
-		race.hudAt = now
-		race.player:SetAttribute("RaceDistance", math.floor(race.distance))
-		race.player:SetAttribute("RaceGap", math.floor(race.distance - race.monsterDistance))
+	for rank, racer in ipairs(running) do
+		if now - racer.hudAt > 0.1 then
+			racer.hudAt = now
+			local player = racer.player
+			player:SetAttribute("RaceDistance", math.floor(racer.distance))
+			player:SetAttribute("RaceGap", math.floor(racer.distance - race.monsterDistance))
+			player:SetAttribute("RaceMonsterSpeed", math.floor(race.monsterSpeed))
+			player:SetAttribute("RacePlace", race.finished + rank)
+		end
 	end
 end
 
 RunService.Heartbeat:Connect(function(dt)
-	local now = os.clock()
-	for _, race in pairs(races) do
-		if race.state == "racing" then
-			stepRace(race, dt, now)
-		end
+	local race = current
+	if race and race.state == "racing" then
+		stepRace(race, dt, os.clock())
 	end
-end)
 
--- Drawn every frame for every race still on screen, ended ones included
--- (a caught car's monster stays on it until the tidy-up).
-local drawn = {}
-RunService.Heartbeat:Connect(function()
+	-- Drawn every frame while on screen, finished races included (the
+	-- monster stays on whoever it caught last until the tidy-up).
 	local t = os.clock()
-	for _, race in pairs(races) do
-		drawn[race] = true
-	end
-	for race in pairs(drawn) do
-		if not race.monster.Parent then
-			drawn[race] = nil
+	for shown in pairs(monsters) do
+		if not shown.monster.Parent then
+			monsters[shown] = nil
 		else
 			local half = Track.WIDTH / 2 - 12
-			local offset = math.clamp(race.monsterOffset, -half, half)
-			Monster.Place(race.monster, CFrame.new(Track.PointAt(race.monsterDistance, offset, 0)) * Track.Heading, t)
+			local offset = math.clamp(shown.monsterOffset, -half, half)
+			Monster.Place(shown.monster, CFrame.new(Track.PointAt(shown.monsterDistance, offset, 0)) * Track.Heading, t)
 		end
 	end
 end)
 
-startRemote.OnServerEvent:Connect(function(player, itemName)
-	if type(itemName) ~= "string" or races[player] then return end
-	if lastStart[player] and os.clock() - lastStart[player] < 3 then return end
+------------------------------------------------------------------
+-- The line-up and the schedule
+------------------------------------------------------------------
 
-	local character = player.Character
-	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-	local root = character and character:FindFirstChild("HumanoidRootPart")
-	if not (humanoid and root and humanoid.Health > 0) then return end
-	if not Track.InLobby(root.Position) then
-		hooks.toast(player, "Start a race from the Race Wars garage.")
-		return
+local function setAttribute(instance, name, value)
+	if instance:GetAttribute(name) ~= value then
+		instance:SetAttribute(name, value)
 	end
+end
 
-	local stats = RaceConfig.CarStats(itemName)
-	if not stats then
+-- Who is standing in the line-up, and who is in the lobby at all (for
+-- the lobby's on-screen panel). Returns how many are lined up.
+local function refreshQueue()
+	local count = 0
+	for _, player in ipairs(Players:GetPlayers()) do
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		local here = humanoid ~= nil and root ~= nil and humanoid.Health > 0 and not racers[player]
+		local inLine = here and not humanoid.SeatPart and Track.InQueue(root.Position)
+		if inLine then
+			queued[player] = queued[player] or os.clock()
+			count += 1
+		else
+			queued[player] = nil
+		end
+		setAttribute(player, "RaceQueued", inLine == true)
+		setAttribute(player, "RaceLobby", (here and Track.InLobby(root.Position)) == true)
+	end
+	setAttribute(workspace, "RaceQueueCount", count)
+	return count
+end
+
+local function clock(seconds)
+	seconds = math.max(0, math.ceil(seconds))
+	return string.format("%d:%02d", seconds // 60, seconds % 60)
+end
+
+local function updateBoard(left, count)
+	local inLine = count == 1 and "1 RACER IN LINE" or string.format("%d RACERS IN LINE", count)
+	if current then
+		Track.SetBoard("RACE ON!", string.format("NEXT RACE %s · %s", clock(left), inLine))
+	else
+		Track.SetBoard("NEXT RACE " .. clock(left), count > 0 and inLine or "STAND IN THE YELLOW BOX TO JOIN")
+	end
+end
+
+task.spawn(function()
+	while true do
+		local count = refreshQueue()
+		local now = workspace:GetServerTimeNow()
+		local nextRaceAt = workspace:GetAttribute("RaceNextAt") or now
+		if now >= nextRaceAt then
+			if current then
+				-- The last race is somehow still going: start this one as
+				-- soon as it is over.
+				nextRaceAt = now + 5
+			else
+				nextRaceAt = now + RaceConfig.RACE_INTERVAL
+				if count > 0 then
+					startRace()
+				end
+			end
+			workspace:SetAttribute("RaceNextAt", nextRaceAt)
+		end
+		setAttribute(workspace, "RaceRunning", current ~= nil)
+		updateBoard(nextRaceAt - now, count)
+		task.wait(0.25)
+	end
+end)
+
+pickRemote.OnServerEvent:Connect(function(player, itemName)
+	if type(itemName) ~= "string" then return end
+	if not RaceConfig.CarStats(itemName) then
 		hooks.toast(player, "That can't be raced — pick a car.")
 		return
 	end
@@ -454,14 +642,8 @@ startRemote.OnServerEvent:Connect(function(player, itemName)
 		hooks.toast(player, "You don't own that car any more.")
 		return
 	end
-	local ok, reason = hooks.canRace(player)
-	if not ok then
-		hooks.toast(player, reason)
-		return
-	end
-
-	lastStart[player] = os.clock()
-	startRace(player, itemName, stats)
+	picks[player] = itemName
+	player:SetAttribute("RacePicked", itemName)
 end)
 
 local _, goHome = Track.Prompts()
@@ -471,30 +653,31 @@ if goHome then
 	end)
 end
 
--- Into the lobby, ending any race first.
+-- Into the lobby, ending any run first.
 function Race.SendToLobby(player)
-	local race = races[player]
-	if race then endRace(race, "left") end
+	local racer = racers[player]
+	if racer then endRun(racer, "left") end
 	local character = player.Character
 	if character then
 		character:PivotTo(Track.LobbySpawn())
-		fire(player, { kind = "arrived" })
+		fire(player, { kind = "arrived", facing = Track.Heading.LookVector })
 	end
 end
 
--- Ends any race this player is in without sending them anywhere.
+-- Ends any run this player is in without sending them anywhere.
 function Race.Leave(player)
-	local race = races[player]
-	if race then endRace(race, "left") end
+	local racer = racers[player]
+	if racer then endRun(racer, "left") end
 end
 
 function Race.IsRacing(player)
-	return races[player] ~= nil
+	return racers[player] ~= nil
 end
 
 Players.PlayerRemoving:Connect(function(player)
 	Race.Leave(player)
-	lastStart[player] = nil
+	queued[player] = nil
+	picks[player] = nil
 end)
 
 return Race

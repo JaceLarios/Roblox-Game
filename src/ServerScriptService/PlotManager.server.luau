@@ -91,7 +91,7 @@ local FUSE_STAGING_SLOTS = 2
 
 -- Grabbing is a deliberate commitment now, not an instant tap: you stand
 -- still for this long, in the open, before the item is yours.
-local GRAB_HOLD_SECONDS = 1.5
+local GRAB_HOLD_SECONDS = 0.5
 
 -- Physical carrying. Exactly ONE item at a time, visibly held in the hand,
 -- until you get it back to your own plot. Deliberately separate from
@@ -131,6 +131,10 @@ local BAT_RANGE = 12
 -- within range in any direction. ~0.5 is a 120-degree cone.
 local BAT_ARC_DOT = 0.5
 local FLOP_SECONDS = 2.5
+-- How hard a bat hit sends someone flying: studs per second away from the
+-- swinger, and upward.
+local BAT_KNOCK_SPEED = 85
+local BAT_KNOCK_LIFT = 70
 local COIL_SPEED_BONUS = 0.15
 -- MapRevamp paints this plot's guide rails at +/-11.5 from the road
 -- centreline, so a 24-wide bar spans the corridor with a little overhang.
@@ -161,6 +165,17 @@ local function isLocked(plot)
 	return plot.lockedUntil ~= nil and os.clock() < plot.lockedUntil
 end
 
+-- Inventory space: 50 to start, 5 more for each of the first four Storage
+-- Space upgrades, then 10 more for every one after that.
+local INVENTORY_BASE = 50
+local function storageSlots(level)
+	local slots = INVENTORY_BASE
+	for lv = 2, level do
+		slots += lv <= 5 and 5 or 10
+	end
+	return slots
+end
+
 local UPGRADES = {
 	{
 		key = "luck", name = "Lucky Wrench", start = 1, max = 10,
@@ -179,6 +194,11 @@ local UPGRADES = {
 		key = "speed", name = "Speed Boots", start = 1, max = 8,
 		baseCost = 700, mult = 1.85,
 		describe = function(lv) return string.format("+%d%% move speed", (lv - 1) * 8) end,
+	},
+	{
+		key = "storage", name = "Storage Space", start = 1, max = 10,
+		baseCost = 2500, mult = 1.8,
+		describe = function(lv) return string.format("%d inventory spaces", storageSlots(lv)) end,
 	},
 }
 
@@ -574,11 +594,12 @@ end
 local PLACEMENT_PAYBACK_SECONDS = 90
 local INCOME_TICK_SECONDS = 3
 
--- A flat cap rather than three tier-gated zone capacities (4+3+2=9 before)
--- — a little more generous since nothing about it is tier-specific
--- anymore, but still a real limit: sell or send things back to carry to
--- make room, same "make a choice" pressure the old zones created.
-local INVENTORY_CAPACITY = 15
+-- How many items a player's Inventory holds, set by their Storage Space
+-- upgrade (see storageSlots). Still a real limit: sell, place or fuse to
+-- make room.
+local function inventoryCapacity(s)
+	return storageSlots(s and s.upgrades and s.upgrades.storage or 1)
+end
 
 ------------------------------------------------------------------
 -- Build the eight plots in a ring around the yard
@@ -963,7 +984,7 @@ local function pushUI(player)
 			maxed = Rebirth.IsMaxed(player),
 		},
 		inventory = inventoryInfo,
-		inventoryCapacity = INVENTORY_CAPACITY,
+		inventoryCapacity = inventoryCapacity(s),
 		crates = crateInfo,
 		crateCapacity = RaceCrates.CAPACITY,
 		carrying = s.carrying and s.carrying.name or nil,
@@ -1218,6 +1239,18 @@ local function yardDropPosition()
 	return Vector3.new(math.random(10, 40), 1.2, math.random(10, 40))
 end
 
+-- Anything dropped stays loose this long, counting down over its name,
+-- and then it is gone for good.
+local DROPPED_ITEM_SECONDS = 30
+local function expireLater(part)
+	ScrapLabel.Countdown(part, DROPPED_ITEM_SECONDS)
+	task.delay(DROPPED_ITEM_SECONDS, function()
+		if part.Parent and not part:GetAttribute("Collected") then
+			part:Destroy()
+		end
+	end)
+end
+
 local function dropItemNearYard(itemName)
 	local position = yardDropPosition()
 	local baseName, mutationId = Mutations.Unwrap(itemName)
@@ -1226,6 +1259,7 @@ local function dropItemNearYard(itemName)
 	if mutationColor then ItemVisuals.Tint(part, mutationColor) end
 	part:SetAttribute("ItemName", itemName)
 	ScrapLabel.Attach(part, itemName)
+	expireLater(part)
 	part.Parent = getScrapFolder()
 end
 
@@ -1254,8 +1288,9 @@ local DROP_REGRAB_GRACE = 4
 
 -- Puts an item back into the world as an ordinary grabbable, falling from
 -- where it was let go to the floor below it, and wearing the same label
--- as everything else loose in the yard. Parenting into the scrap folder is
--- all a Grab prompt needs: its ChildAdded hook adds one.
+-- as everything else loose in the yard, with DROPPED_ITEM_SECONDS to go.
+-- Parenting into the scrap folder is all a Grab prompt needs: its
+-- ChildAdded hook adds one.
 local function layDownItem(itemName, fromPosition, dropper)
 	local floorY = floorBelow(fromPosition)
 	local baseName, mutationId = Mutations.Unwrap(itemName)
@@ -1268,6 +1303,7 @@ local function layDownItem(itemName, fromPosition, dropper)
 		part:SetAttribute("DroppedAt", os.clock())
 	end
 	ScrapLabel.Attach(part, itemName)
+	expireLater(part)
 
 	-- Start it where it was and let it fall, eased like gravity, for as
 	-- long as a real fall from that height would take.
@@ -1422,7 +1458,7 @@ local function attemptFusion(player)
 	-- (2 ingredients consumed, 1 result produced), so this can only ever
 	-- fail to fit if the inventory was already completely full before
 	-- this fusion even started; auto-sell instead of losing it.
-	if #s.inventory < INVENTORY_CAPACITY then
+	if #s.inventory < inventoryCapacity(s) then
 		table.insert(s.inventory, instanceName)
 	else
 		local mult = valueMultiplier(player, s)
@@ -1503,7 +1539,7 @@ local function returnStolen(victim, itemName, thief)
 	if #vs.placed < PET_PAD_COUNT then
 		table.insert(vs.placed, itemName)
 		refreshPlacedPets(victim)
-	elseif #vs.inventory < INVENTORY_CAPACITY then
+	elseif #vs.inventory < inventoryCapacity(vs) then
 		table.insert(vs.inventory, itemName)
 	else
 		return false
@@ -1558,7 +1594,7 @@ local function deliverCarried(player)
 	local s = state[player]
 	if not s or not s.carrying then return false end
 
-	if #s.inventory >= INVENTORY_CAPACITY then
+	if #s.inventory >= inventoryCapacity(s) then
 		-- Deliberately does NOT drop it: you keep hold of it and get told
 		-- why, rather than having it silently fall on your own doorstep.
 		toast(player, "Inventory full — sell or fuse something first.")
@@ -1687,6 +1723,16 @@ scrapFolder.ChildAdded:Connect(attachPickup)
 
 local batReadyAt = {}
 
+-- The victim's own client moves their character, so the launch itself is
+-- applied there (Knockback.client); the server decides who gets hit and
+-- which way.
+local knockbackRemote = ReplicatedStorage:FindFirstChild("Knockback")
+if not knockbackRemote then
+	knockbackRemote = Instance.new("RemoteEvent")
+	knockbackRemote.Name = "Knockback"
+	knockbackRemote.Parent = ReplicatedStorage
+end
+
 local function flopPlayer(target, seconds)
 	local char = target.Character
 	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
@@ -1702,7 +1748,7 @@ local function flopPlayer(target, seconds)
 	end)
 end
 
-local function swingBat(player)
+local function swingBat(player, bat)
 	local s = state[player]
 	if not s then return end
 	if s.carrying then
@@ -1713,6 +1759,15 @@ local function swingBat(player)
 	local now = os.clock()
 	if now < (batReadyAt[player] or 0) then return end
 	batReadyAt[player] = now + BAT_COOLDOWN
+
+	-- The default Animate script plays its slash animation when a tool
+	-- gets a "toolanim" value, the same trick the classic sword uses.
+	if bat then
+		local anim = Instance.new("StringValue")
+		anim.Name = "toolanim"
+		anim.Value = "Slash"
+		anim.Parent = bat
+	end
 
 	local root = playerRoot(player)
 	if not root then return end
@@ -1729,6 +1784,9 @@ local function swingBat(player)
 					-- is the difference between a steal and just a knockdown.
 					local knockedLoose = dropCarried(other, "You got whacked — you dropped it!")
 					flopPlayer(other, FLOP_SECONDS)
+					local away = Vector3.new(offset.X, 0, offset.Z)
+					away = away.Magnitude > 0.1 and away.Unit or Vector3.new(forward.X, 0, forward.Z).Unit
+					knockbackRemote:FireClient(other, away * BAT_KNOCK_SPEED + Vector3.new(0, BAT_KNOCK_LIFT, 0))
 					playSound(otherRoot, "big")
 					toast(player, knockedLoose
 						and string.format("You knocked it out of %s!", other.Name)
@@ -1762,14 +1820,27 @@ local function giveTools(player)
 	local bat = Instance.new("Tool")
 	bat.Name = "Bat"
 	bat.CanBeDropped = false
-	bat.ToolTip = "Whack someone to knock loose whatever they are carrying"
-	local batHandle = Instance.new("Part")
+	bat.ToolTip = "Whack someone to send them flying and knock loose whatever they are carrying"
+	-- A real bat model (ServerStorage.BatModel, a MeshPart standing upright,
+	-- barrel up) when there is one, else a plain wooden stick.
+	local model = ServerStorage:FindFirstChild("BatModel")
+	local batHandle
+	if model then
+		batHandle = model:Clone()
+		batHandle.Anchored = false
+	else
+		batHandle = Instance.new("Part")
+		batHandle.Size = Vector3.new(0.7, 4.4, 0.7)
+		batHandle.Color = Color3.fromRGB(156, 108, 62)
+		batHandle.Material = Enum.Material.Wood
+	end
 	batHandle.Name = "Handle"
-	batHandle.Size = Vector3.new(0.7, 4.4, 0.7)
-	batHandle.Color = Color3.fromRGB(156, 108, 62)
-	batHandle.Material = Enum.Material.Wood
+	batHandle.CanCollide = false
+	batHandle.Massless = true
 	batHandle.Parent = bat
-	bat.Activated:Connect(function() swingBat(player) end)
+	-- Held near the knob, barrel up.
+	bat.Grip = CFrame.new(0, -batHandle.Size.Y * 0.32, 0)
+	bat.Activated:Connect(function() swingBat(player, bat) end)
 	bat.Equipped:Connect(function() unequipIfCarrying(player) end)
 	bat.Parent = backpack
 
@@ -2038,7 +2109,7 @@ buyAddonRemote.OnServerEvent:Connect(function(player, addonName)
 	local price = FusionRecipes.AddonPrice(addonName)
 	if not price then return end
 
-	if #s.inventory >= INVENTORY_CAPACITY then
+	if #s.inventory >= inventoryCapacity(s) then
 		toast(player, "Inventory full — sell or fuse something first.")
 		buyAddonRemote:FireClient(player, addonName, "full")
 		return
@@ -2088,7 +2159,7 @@ rebirthRemote.OnServerEvent:Connect(function(player)
 	end
 
 	coins.Value = 0
-	s.upgrades = { luck = 1, carry = 1, value = 1, speed = 1 }
+	s.upgrades = { luck = 1, carry = 1, value = 1, speed = 1, storage = 1 }
 	s.inventory = {}
 	s.placed = {}
 	updateWalkSpeed(player)
@@ -2158,6 +2229,15 @@ local function ownsItem(s, itemName)
 end
 
 RaceWars.Configure({
+	cars = function(player)
+		local s = state[player]
+		local names = {}
+		if s then
+			for _, name in ipairs(s.inventory) do table.insert(names, name) end
+			for _, name in ipairs(s.placed) do table.insert(names, name) end
+		end
+		return names
+	end,
 	owns = function(player, itemName)
 		local s = state[player]
 		return s ~= nil and ownsItem(s, itemName)
@@ -2198,7 +2278,7 @@ openCrateRemote.OnServerEvent:Connect(function(player, crateId)
 		openCrateRemote:FireClient(player, crateId, false, "wait")
 		return
 	end
-	if #s.inventory >= INVENTORY_CAPACITY then
+	if #s.inventory >= inventoryCapacity(s) then
 		toast(player, "Inventory full — sell or fuse something first.")
 		openCrateRemote:FireClient(player, crateId, false, "full")
 		return
@@ -2278,7 +2358,7 @@ local function canReceiveTradedItem(player, itemName, source, outgoingRef)
 		end
 		return freeSlots > 0
 	elseif source == "inventory" then
-		local freeSlots = INVENTORY_CAPACITY - #s.inventory
+		local freeSlots = inventoryCapacity(s) - #s.inventory
 		if outgoingRef and outgoingRef.source == "inventory" then
 			freeSlots = freeSlots + 1
 		end
@@ -2368,18 +2448,23 @@ local function executeTrade(playerA, playerB)
 	pushUI(playerB)
 end
 
--- Trade prompts only show to players OTHER than their owner. A
--- ProximityPrompt parented to your own HumanoidRootPart is always at
--- distance 0 from you — left always "Enabled", it permanently wins
--- proximity over every other prompt in range (grab, fuse) and blocks
--- them, which is exactly the "can't pick anything up" bug this fixes.
--- Only enabled while some other player is actually within range.
-local TRADE_PROMPT_RANGE = 10
-local tradePrompts = {} -- [player] = { prompt = ProximityPrompt, root = BasePart }
+-- A trade starts with a request from the TRADE menu. The other player
+-- gets a popup (TradeRequestUI) and nothing opens for either of them until
+-- they accept it; a request nobody answers runs out after
+-- TRADE_REQUEST_SECONDS.
+local TRADE_REQUEST_SECONDS = 15
 
--- Shared by the physical prompt (walk up, press E) and the Trading tab's
--- player list (click a name) — both are just different ways of picking
--- who to trade with; what happens next is identical either way.
+local tradeRequestRemote = ReplicatedStorage:FindFirstChild("TradeRequest")
+if not tradeRequestRemote then
+	tradeRequestRemote = Instance.new("RemoteEvent")
+	tradeRequestRemote.Name = "TradeRequest"
+	tradeRequestRemote.Parent = ReplicatedStorage
+end
+
+-- [target] = { from = player, id = n }: the request waiting on target.
+local tradeRequests = {}
+local nextRequestId = 0
+
 local function startTradeWith(initiator, target)
 	if initiator == target then return end
 	local id = Trade.Start(initiator, target)
@@ -2387,31 +2472,40 @@ local function startTradeWith(initiator, target)
 		toast(initiator, "Can't start a trade right now — one of you is already trading.")
 		return
 	end
-	toast(initiator, "Trade started with " .. target.Name .. ".")
-	toast(target, initiator.Name .. " wants to trade with you!")
 	pushTradeUpdate(initiator)
 	pushTradeUpdate(target)
 end
 
-local function attachTradePrompt(player, character)
-	local root = character:WaitForChild("HumanoidRootPart")
-	local existing = root:FindFirstChild("TradePrompt")
-	if existing then existing:Destroy() end
-
-	local prompt = Instance.new("ProximityPrompt")
-	prompt.Name = "TradePrompt"
-	prompt.ActionText = "Trade"
-	prompt.ObjectText = player.Name
-	prompt.HoldDuration = 0.3
-	prompt.MaxActivationDistance = TRADE_PROMPT_RANGE
-	prompt.RequiresLineOfSight = false
-	prompt.Enabled = false
-	prompt.Parent = root
-
-	tradePrompts[player] = { prompt = prompt, root = root }
-
-	prompt.Triggered:Connect(function(triggeringPlayer)
-		startTradeWith(triggeringPlayer, player)
+local function requestTrade(initiator, target)
+	if initiator == target then return end
+	if Trade.Get(initiator) or Trade.Get(target) then
+		toast(initiator, "One of you is already in a trade.")
+		return
+	end
+	local waiting = tradeRequests[target]
+	if waiting and waiting.from ~= initiator and waiting.from.Parent then
+		toast(initiator, target.Name .. " is answering another trade request — try again in a moment.")
+		return
+	end
+	nextRequestId += 1
+	local id = nextRequestId
+	tradeRequests[target] = { from = initiator, id = id }
+	tradeRequestRemote:FireClient(target, {
+		kind = "request",
+		fromName = initiator.Name,
+		fromUserId = initiator.UserId,
+		seconds = TRADE_REQUEST_SECONDS,
+	})
+	toast(initiator, "Trade request sent to " .. target.Name .. ".")
+	task.delay(TRADE_REQUEST_SECONDS, function()
+		local still = tradeRequests[target]
+		if still and still.id == id then
+			tradeRequests[target] = nil
+			tradeRequestRemote:FireClient(target, { kind = "expired" })
+			if initiator.Parent then
+				toast(initiator, target.Name .. " didn't answer your trade request.")
+			end
+		end
 	end)
 end
 
@@ -2422,27 +2516,24 @@ startTradeRemote.OnServerEvent:Connect(function(player, targetUserId)
 		toast(player, "That player isn't here anymore.")
 		return
 	end
-	startTradeWith(player, target)
+	requestTrade(player, target)
 end)
 
-task.spawn(function()
-	while true do
-		task.wait(0.5)
-		for owner, info in pairs(tradePrompts) do
-			if info.root.Parent then
-				local nearbyOther = false
-				for _, other in ipairs(Players:GetPlayers()) do
-					if other ~= owner then
-						local otherRoot = playerRoot(other)
-						if otherRoot and (otherRoot.Position - info.root.Position).Magnitude <= TRADE_PROMPT_RANGE then
-							nearbyOther = true
-							break
-						end
-					end
-				end
-				info.prompt.Enabled = nearbyOther
-			end
-		end
+-- The answer to a request: accept opens the trade for both, decline tells
+-- the one who asked.
+tradeRequestRemote.OnServerEvent:Connect(function(player, accepted)
+	local waiting = tradeRequests[player]
+	if not waiting then return end
+	tradeRequests[player] = nil
+	local initiator = waiting.from
+	if not initiator.Parent then
+		toast(player, "They left before you answered.")
+		return
+	end
+	if accepted == true then
+		startTradeWith(initiator, player)
+	else
+		toast(initiator, player.Name .. " declined your trade request.")
 	end
 end)
 
@@ -2541,7 +2632,7 @@ returnSlotToInventory = function(player, index)
 	local itemName = type(index) == "number" and s.slots[index]
 	if not itemName then return end
 
-	if #s.inventory >= INVENTORY_CAPACITY then
+	if #s.inventory >= inventoryCapacity(s) then
 		toast(player, "Inventory's full — sell or place something first.")
 		return
 	end
@@ -2591,7 +2682,7 @@ local function unplacePet(player, slot)
 	local itemName = type(slot) == "number" and s.placed[slot]
 	if not itemName then return end
 
-	if #s.inventory >= INVENTORY_CAPACITY then
+	if #s.inventory >= inventoryCapacity(s) then
 		toast(player, "Inventory's full — sell something first.")
 		return
 	end
@@ -2883,6 +2974,7 @@ local function onPlayerAdded(player)
 
 	local upgrades = data.upgrades or { luck = 1, carry = 1, value = 1, speed = 1 }
 	upgrades.speed = upgrades.speed or 1 -- fills in for a save from before Speed Boots existed
+	upgrades.storage = upgrades.storage or 1 -- and before Storage Space existed
 
 	state[player] = {
 		slots = {},
@@ -2961,7 +3053,6 @@ local function onPlayerAdded(player)
 		local humanoid = character:WaitForChild("Humanoid")
 		giveTools(player)
 		updateWalkSpeed(player)
-		attachTradePrompt(player, character)
 		task.wait(1)
 		pushUI(player)
 
@@ -3079,7 +3170,7 @@ Players.PlayerRemoving:Connect(function(player)
 		toast(tradePartner, player.Name .. " left — trade cancelled.")
 		pushTradeUpdate(tradePartner)
 	end
-	tradePrompts[player] = nil
+	tradeRequests[player] = nil
 
 	local s = state[player]
 	if s then
