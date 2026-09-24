@@ -17,6 +17,7 @@ local ItemRarity = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local Mutations = require(ReplicatedStorage:WaitForChild("Mutations"))
 local EventConfig = require(ReplicatedStorage:WaitForChild("EventConfig"))
 local YardFeatures = require(ServerStorage:WaitForChild("YardFeatures"))
+local ScrapLabel = require(ServerStorage:WaitForChild("ScrapLabel"))
 
 -- Shared with PlotManager and the client UI.
 local remote = ReplicatedStorage:FindFirstChild("GameUpdate")
@@ -202,25 +203,10 @@ local function itemTag(itemName)
 end
 
 -- Floating name tag so you can tell items apart while testing.
+-- The look lives in ScrapLabel, shared with anything a player drops, so
+-- every loose item in the world wears the same bubbly name tag.
 local function addLabel(part, itemName)
-	local billboard = Instance.new("BillboardGui")
-	billboard.Size = UDim2.new(0, 150, 0, 32)
-	billboard.StudsOffset = Vector3.new(0, 2, 0)
-	billboard.AlwaysOnTop = true
-	-- Billboards hold a constant SCREEN size regardless of distance, so
-	-- without a cutoff every drop across the whole yard stays fully
-	-- legible at once and piles into an unreadable wall of text.
-	billboard.MaxDistance = 45
-	billboard.Parent = part
-
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.new(1, 0, 1, 0)
-	label.BackgroundTransparency = 1
-	label.Text = ItemNames.Display(itemName)
-	label.TextColor3 = itemColour(itemName)
-	label.TextStrokeTransparency = 0.4
-	label.TextScaled = true
-	label.Parent = billboard
+	ScrapLabel.Attach(part, itemName)
 end
 
 -- A tall pillar of light, visible from anywhere in the yard. Parented to

@@ -30,11 +30,13 @@ function Gate.Create(model,position,side,group,width,height)
  end
  return {barrier=barrier,bars=bars,labels=labels}
 end
-function Gate.Update(gate,locked,remaining,cooldown,owned)
+-- ownerName is the owning player's username, or nil for an empty base. An
+-- owned base that is not locked shows whose garage it is.
+function Gate.Update(gate,locked,remaining,cooldown,ownerName)
  gate.barrier.CanCollide=locked
  gate.barrier.Transparency=locked and .80 or 1
  for _,bar in ipairs(gate.bars) do bar.Transparency=locked and .12 or 1 end
- local text=not owned and "UNCLAIMED BASE" or (locked and ("LOCKED  "..math.max(0,math.ceil(remaining)).."s") or (cooldown>0 and ("OPEN / RECHARGING "..math.ceil(cooldown).."s") or "OPEN"))
+ local text=not ownerName and "UNCLAIMED BASE" or (locked and ("LOCKED  "..math.max(0,math.ceil(remaining)).."s") or (ownerName.."'s Garage"))
  for _,label in ipairs(gate.labels) do
   label.Text=text label.TextColor3=locked and Color3.fromRGB(255,211,167) or Color3.fromRGB(190,255,218)
  end

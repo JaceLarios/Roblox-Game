@@ -21,6 +21,8 @@ local plotsFolder = workspace:WaitForChild("Plots")
 local ROLE = {
 	StealPrompt = "visitor",
 	TakeOffPrompt = "owner",
+	-- Taking an item back off the fusion pad (PlotManager's refreshPad).
+	RemovePrompt = "owner",
 }
 
 local function forbidden(prompt)

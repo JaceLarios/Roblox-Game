@@ -23,9 +23,12 @@ local ServerStorage     = game:GetService("ServerStorage")
 local RunService        = game:GetService("RunService")
 local PhysicsService    = game:GetService("PhysicsService")
 local MarketplaceService = game:GetService("MarketplaceService")
+local TweenService      = game:GetService("TweenService")
 
 local FusionEffects = require(ServerStorage:WaitForChild("FusionEffects"))
 local PickupEffects = require(ServerStorage:WaitForChild("PickupEffects"))
+local ScrapLabel    = require(ServerStorage:WaitForChild("ScrapLabel"))
+local CoilAura      = require(ServerStorage:WaitForChild("CoilAura"))
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local BrainrotRecipes = require(ReplicatedStorage:WaitForChild("BrainrotRecipes"))
 local HauntedRecipes = require(ReplicatedStorage:WaitForChild("HauntedRecipes"))
@@ -118,7 +121,13 @@ local CARRY_HAND_GAP = 0.15
 -- Road lasers are permanent: the approach to every base is an obby you
 -- jump, not a hazard somebody switches on. Invisible barriers run down
 -- both sides of each road so the lasers cannot simply be walked around.
-local LASER_COUNT = 5
+local LASER_COUNT = 3
+-- Studs between neighbouring bars. Carrying loot you run at 22 studs/sec
+-- or more, so an ordinary jump covers about 12 studs: at 16 apart one jump
+-- clears one bar and lands with room to line up the next. At the old
+-- spacing (under 6) a jump either came down on the next bar or had to
+-- clear two at once.
+local LASER_SPACING = 16
 local BARRIER_HEIGHT = 16
 local BARRIER_HALF_WIDTH = Layout.RouteHalfWidth
 
@@ -375,6 +384,15 @@ if not removeFromCarryRemote then
 	removeFromCarryRemote = Instance.new("RemoteEvent")
 	removeFromCarryRemote.Name = "RemoveFromCarry"
 	removeFromCarryRemote.Parent = ReplicatedStorage
+end
+
+-- The Drop button on the item you are carrying overhead (CarryHud builds
+-- it on your own client). Lets go of the item wherever you are.
+local dropCarriedRemote = ReplicatedStorage:FindFirstChild("DropCarried")
+if not dropCarriedRemote then
+	dropCarriedRemote = Instance.new("RemoteEvent")
+	dropCarriedRemote.Name = "DropCarried"
+	dropCarriedRemote.Parent = ReplicatedStorage
 end
 
 -- The side travel menu asks for a destination key; the server decides
@@ -767,8 +785,12 @@ for i = 1, PLOT_COUNT do
 	local entranceGate = BaseGate.Create(model, radial * roadEnd + Vector3.new(0, 0.5, 0),
 		side, wallGroup(i), BARRIER_HALF_WIDTH * 2 + 1, 20)
 	BaseGate.Update(entranceGate, false, 0, 0, false)
+	-- Centred on the stretch between where the shoulder walls begin and the
+	-- door, so there is as much run-up before the first bar as landing room
+	-- after the last.
+	local laserMid = (Layout.BarrierStart + roadEnd) / 2
 	for k = 1, LASER_COUNT do
-		local r = Layout.LaserStart + (roadEnd - 12 - Layout.LaserStart) * (k / (LASER_COUNT + 1))
+		local r = laserMid + (k - (LASER_COUNT + 1) / 2) * LASER_SPACING
 		local laser = makePart({
 			Name = "RoadLaser",
 			Size = Vector3.new(LASER_WIDTH, 0.5, 1.2),
@@ -1111,6 +1133,16 @@ local function rollRareItem()
 	return pool[math.random(1, #pool)]
 end
 
+-- How close you have to stand to an item on the fusion pad for its Remove
+-- button to show. Short on purpose: the pad's own Fuse prompt is also on
+-- E, and the nearest E prompt is the one that shows, so this only wins
+-- when you are standing at that item rather than at the pad.
+local PAD_REMOVE_RANGE = 7
+-- Takes an item off the fusion pad and back into Inventory. Assigned next
+-- to the RemoveFromCarry remote further down; the pad's Remove buttons
+-- call it too.
+local returnSlotToInventory
+
 local function refreshPad(player)
 	local s = state[player]
 	if not s then return end
@@ -1158,6 +1190,25 @@ local function refreshPad(player)
 			local itemColor = mutationColor or ItemRarity.Color(FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
 				FusionRecipes.GetRarity(baseName))
 			makeLabel(slotPart, itemName, 1.8, 140, itemColor, 45)
+
+			-- Take it back off the pad: click or tap the button, or press E.
+			-- BaseRaid hides it from everyone but the owner, and the owner
+			-- check below is the real guard.
+			local removePrompt = Instance.new("ProximityPrompt")
+			removePrompt.Name = "RemovePrompt"
+			removePrompt.ActionText = "Remove"
+			removePrompt.ObjectText = ItemNames.Display(itemName)
+			removePrompt.KeyboardKeyCode = Enum.KeyCode.E
+			removePrompt.HoldDuration = 0
+			removePrompt.MaxActivationDistance = PAD_REMOVE_RANGE
+			removePrompt.RequiresLineOfSight = false
+			removePrompt.Parent = slotPart
+			local slotIndex = i
+			removePrompt.Triggered:Connect(function(who)
+				if who == player then
+					returnSlotToInventory(player, slotIndex)
+				end
+			end)
 			plot.slotParts[i] = slotPart
 		end
 	end
@@ -1282,10 +1333,67 @@ local function dropItemNearYard(itemName)
 	local mutationColor = Mutations.Color(mutationId)
 	if mutationColor then ItemVisuals.Tint(part, mutationColor) end
 	part:SetAttribute("ItemName", itemName)
-	local itemColor = mutationColor or ItemRarity.Color(FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
-		FusionRecipes.GetRarity(baseName))
-	makeLabel(part, itemName, 2, 150, itemColor, 45)
+	ScrapLabel.Attach(part, itemName)
 	part.Parent = getScrapFolder()
+end
+
+-- Where a dropped item comes to rest: the first solid thing straight below
+-- where it was let go. Players, loose scrap and anything you cannot stand
+-- on (laser bars, decoration) are skipped, so it lands on the floor rather
+-- than hanging in mid-air.
+local dropRay = RaycastParams.new()
+dropRay.FilterType = Enum.RaycastFilterType.Exclude
+dropRay.RespectCanCollide = true
+
+local function floorBelow(position)
+	local ignore = { getScrapFolder() }
+	for _, p in ipairs(Players:GetPlayers()) do
+		if p.Character then table.insert(ignore, p.Character) end
+	end
+	dropRay.FilterDescendantsInstances = ignore
+	local hit = workspace:Raycast(position + Vector3.new(0, 1, 0), Vector3.new(0, -200, 0), dropRay)
+	return hit and hit.Position.Y or 1.2
+end
+
+-- How long an item you let go of is off-limits to your own Auto-Collect.
+-- Without it the magnet would pick a dropped item straight back up, and
+-- the Drop button would do nothing for anyone who owns the pass.
+local DROP_REGRAB_GRACE = 4
+
+-- Puts an item back into the world as an ordinary grabbable, falling from
+-- where it was let go to the floor below it, and wearing the same label
+-- as everything else loose in the yard. Parenting into the scrap folder is
+-- all a Grab prompt needs: its ChildAdded hook adds one.
+local function layDownItem(itemName, fromPosition, dropper)
+	local floorY = floorBelow(fromPosition)
+	local baseName, mutationId = Mutations.Unwrap(itemName)
+	local part = ItemVisuals.Create(baseName, Vector3.new(fromPosition.X, floorY, fromPosition.Z), 1)
+	local mutationColor = Mutations.Color(mutationId)
+	if mutationColor then ItemVisuals.Tint(part, mutationColor) end
+	part:SetAttribute("ItemName", itemName)
+	if dropper then
+		part:SetAttribute("DroppedBy", dropper.UserId)
+		part:SetAttribute("DroppedAt", os.clock())
+	end
+	ScrapLabel.Attach(part, itemName)
+
+	-- Start it where it was and let it fall, eased like gravity, for as
+	-- long as a real fall from that height would take.
+	local rest = part.CFrame
+	local lift = fromPosition.Y - rest.Position.Y
+	part.Parent = getScrapFolder()
+	if lift > 0.3 then
+		part.CFrame = rest + Vector3.new(0, lift, 0)
+		local seconds = math.clamp(math.sqrt(2 * lift / workspace.Gravity), 0.12, 0.7)
+		TweenService:Create(part, TweenInfo.new(seconds, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+			{ CFrame = rest }):Play()
+	end
+	return part
+end
+
+local function justDroppedBy(part, player)
+	return part:GetAttribute("DroppedBy") == player.UserId
+		and os.clock() - (part:GetAttribute("DroppedAt") or 0) < DROP_REGRAB_GRACE
 end
 
 ------------------------------------------------------------------
@@ -1531,7 +1639,12 @@ local function dropCarried(player, reason)
 	local itemName = s.carrying.name
 	local victim = s.carrying.stolenFrom
 	local root = playerRoot(player)
-	local origin = root and root.Position or Vector3.new(0, 6, 0)
+	-- Let go from where the item actually was, over the player's head, so
+	-- it visibly falls rather than appearing on the floor.
+	local held = s.carrying.model
+	local origin = (held and held.Parent and held.Position)
+		or (root and root.Position)
+		or Vector3.new(0, 6, 0)
 
 	clearCarriedVisual(s)
 	s.carrying = nil
@@ -1544,9 +1657,7 @@ local function dropCarried(player, reason)
 		return true
 	end
 
-	local dropped = ItemVisuals.Create(Mutations.Unwrap(itemName), origin + Vector3.new(0, 3, 0), 1)
-	dropped:SetAttribute("ItemName", itemName)
-	dropped.Parent = getScrapFolder()
+	layDownItem(itemName, origin, player)
 
 	if reason then
 		toast(player, reason)
@@ -1554,6 +1665,12 @@ local function dropCarried(player, reason)
 	pushUI(player)
 	return true
 end
+
+dropCarriedRemote.OnServerEvent:Connect(function(player)
+	local s = state[player]
+	if not (s and s.carrying) then return end
+	dropCarried(player)
+end)
 
 local function deliverCarried(player)
 	local s = state[player]
@@ -1790,11 +1907,13 @@ local function giveTools(player)
 		local s = state[player]
 		if s then s.coilEquipped = true end
 		updateWalkSpeed(player)
+		CoilAura.Attach(player.Character)
 	end)
 	coil.Unequipped:Connect(function()
 		local s = state[player]
 		if s then s.coilEquipped = false end
 		updateWalkSpeed(player)
+		CoilAura.Detach(player.Character)
 	end)
 	coil.Parent = backpack
 end
@@ -1856,7 +1975,7 @@ local function refreshLock(plot)
 		shield.CanCollide = locked
 	end
 	plot.model:SetAttribute("Locked", locked)
-	BaseGate.Update(plot.gate, locked, plot.lockedUntil - now, plot.lockCooldownUntil - now, plot.owner ~= nil)
+	BaseGate.Update(plot.gate, locked, plot.lockedUntil - now, plot.lockCooldownUntil - now, plot.owner and plot.owner.Name)
 	if locked then
 		plot.lockLabel.Text = string.format("LOCKED  %ds", math.ceil(plot.lockedUntil - now))
 		plot.lockLabel.TextColor3 = Color3.fromRGB(120, 200, 255)
@@ -2707,7 +2826,7 @@ end)
 
 -- Lets a fresh grab sitting on the pad (not fused yet) go back to
 -- Inventory instead of being stuck there until you commit to a fuse.
-removeFromCarryRemote.OnServerEvent:Connect(function(player, index)
+returnSlotToInventory = function(player, index)
 	local s = state[player]
 	if not s then return end
 	local itemName = type(index) == "number" and s.slots[index]
@@ -2724,7 +2843,9 @@ removeFromCarryRemote.OnServerEvent:Connect(function(player, index)
 
 	toast(player, string.format("%s is back in your Inventory.", instanceTag(itemName)))
 	pushUI(player)
-end)
+end
+
+removeFromCarryRemote.OnServerEvent:Connect(returnSlotToInventory)
 
 ------------------------------------------------------------------
 -- Placing and unplacing pets — a pet only earns money while it's
@@ -2923,7 +3044,7 @@ task.spawn(function()
 					local nearest, nearestDist = nil, radius
 
 					for _, part in ipairs(getScrapFolder():GetChildren()) do
-						if part:IsA("BasePart") then
+						if part:IsA("BasePart") and not justDroppedBy(part, player) then
 							local dist = (part.Position - root.Position).Magnitude
 							if dist < nearestDist then
 								nearest, nearestDist = part, dist
@@ -3219,7 +3340,6 @@ local function onPlayerAdded(player)
 		attachTradePrompt(player, character)
 		task.wait(1)
 		pushUI(player)
-		toast(player, "Plot " .. index .. " is yours. Scrap spawns in the centre.")
 
 		humanoid.Died:Connect(function()
 			-- Dying loses the run: whatever you were carrying lands where you
