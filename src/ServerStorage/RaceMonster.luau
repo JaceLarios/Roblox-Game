@@ -14,7 +14,8 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local Monster = {}
 
-local HEIGHT = 30
+-- Big enough to loom over the whole width of the track.
+local HEIGHT = 38
 
 local function rgb(r, g, b) return Color3.fromRGB(r, g, b) end
 
@@ -93,6 +94,8 @@ function Monster.Create()
 		end
 	else
 		model = placeholder()
+		-- The placeholder is built 30 studs tall.
+		model:ScaleTo(HEIGHT / 30)
 	end
 	model.Name = "RaceMonster"
 	return model

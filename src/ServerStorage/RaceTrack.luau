@@ -19,26 +19,27 @@
 
 local PhysicsService = game:GetService("PhysicsService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 local RaceConfig = require(ReplicatedStorage:WaitForChild("RaceConfig"))
 
 local Track = {}
 
 -- Start line centre, on the floor. Well past the Junkyard's fog.
 Track.ORIGIN = Vector3.new(-2600, 0, 0)
--- Drivable width between the walls.
-Track.WIDTH = 72
+-- Drivable width between the walls: room for a whole grid of racers.
+Track.WIDTH = 120
 Track.Length = #RaceConfig.Levels * RaceConfig.LEVEL_LENGTH
 
 local WALL_HEIGHT = 46
 local WALL_THICKNESS = 6
 local LOBBY_DEPTH = 150
-local LOBBY_WIDTH = 150
+local LOBBY_WIDTH = 180
 -- The run-out past the last gate, where a winning car rolls to a stop.
 local FINISH_DEPTH = 160
 
 local FOLDER_NAME = "RaceWars"
 -- Bump when the geometry changes, so a stale build is replaced.
-local VERSION = 2
+local VERSION = 3
 
 -- White and light grey squares, tinted per level (assets/race-wars).
 local CHECKER = "rbxassetid://126970654411709"
@@ -76,9 +77,9 @@ function Track.LobbySpawn()
 	return CFrame.lookAt(Track.PointAt(-110, 0, 4), Track.PointAt(0, 0, 4))
 end
 
--- The starting grid: four places across the track just past the line.
+-- The starting grid: six places across the track just past the line.
 -- Cars never collide with each other, so a busy grid just shares places.
-local GRID = { -24, -8, 8, 24 }
+local GRID = { -50, -30, -10, 10, 30, 50 }
 function Track.GridFrame(place)
 	local offset = GRID[(place - 1) % #GRID + 1]
 	return CFrame.new(Track.PointAt(10, offset, 0)) * Track.Heading
@@ -158,9 +159,46 @@ local function sign(p, text, colour, stroke)
 end
 
 ------------------------------------------------------------------
+-- Props: real trees and rocks. Generated meshes, one tree and one rock
+-- per theme, kept as MeshParts in ServerStorage.RaceProps and named
+-- "<theme>_tree" / "<theme>_rock" (their ids are in
+-- assets/race-wars/README.md). A theme without them falls back to the
+-- part-built obstacles further down.
+------------------------------------------------------------------
+
+local function propTemplate(themeKey, kind)
+	local folder = ServerStorage:FindFirstChild("RaceProps")
+	return folder and folder:FindFirstChild(themeKey .. "_" .. kind)
+end
+
+-- A tree or rock standing on the floor, `width` studs across, turned to a
+-- random angle. A rock is solid all over. A tree's branches are not: an
+-- invisible post at its trunk is what you hit, so cars brush under the
+-- leaves instead of bouncing off thin air.
+local function placeProp(folder, template, kind, distance, offset, width, rng)
+	local prop = template:Clone()
+	prop.Size = template.Size * (width / math.max(template.Size.X, template.Size.Z))
+	prop.CFrame = CFrame.new(Track.PointAt(distance, offset, prop.Size.Y / 2))
+		* CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0)
+	prop.Anchored = true
+	prop.Parent = folder
+	if kind == "tree" then
+		local trunk = math.max(3, width * 0.22)
+		part(folder, {
+			Name = "TrunkPost",
+			Size = Vector3.new(trunk, 14, trunk),
+			CFrame = CFrame.new(Track.PointAt(distance, offset, 7)),
+			Transparency = 1,
+			CanQuery = false,
+		})
+	end
+	return prop
+end
+
+------------------------------------------------------------------
 -- Obstacles, one builder per theme. Each takes the level folder, a
 -- distance, an offset, a footprint width and a Random, and builds
--- something solid about that wide.
+-- something solid about that wide. Only used where a theme has no props.
 ------------------------------------------------------------------
 
 local OBSTACLES = {}
@@ -255,7 +293,7 @@ local function buildGate(folder, distance, text, colour)
 	banner.CFrame += Vector3.new(0, 26, 0)
 	sign(banner, text, colour, rgb(10, 10, 14))
 
-	local squares = 12
+	local squares = 20
 	local size = Track.WIDTH / squares
 	for row = 0, 1 do
 		for i = 0, squares - 1 do
@@ -305,33 +343,68 @@ local function buildLevel(root, index, level)
 		})
 	end
 
-	-- Obstacles in rows, more of them each level, and from level two some
-	-- rows have two. Every row leaves a gap at least GAP studs wide, so
-	-- there is always a way through.
-	local build = OBSTACLES[theme.obstacle] or OBSTACLES.bush
+	-- Obstacles in rows, more of them each level: trees and rocks where the
+	-- theme has props, its part-built obstacles where it has none. Every row
+	-- leaves a gap at least GAP studs wide, so there is always a way through,
+	-- and from level two most rows have two or three things to steer round.
+	local tree = propTemplate(level.theme, "tree")
+	local rock = propTemplate(level.theme, "rock")
+	local fallback = OBSTACLES[theme.obstacle] or OBSTACLES.bush
 	local rng = Random.new(index * 7919)
-	local rows = 10 + index * 3
+	local function obstacle(distance, offset, width)
+		local useTree = tree and (not rock or rng:NextNumber() < 0.4)
+		if useTree then
+			placeProp(folder, tree, "tree", distance, offset, width * 1.2, rng)
+		elseif rock then
+			placeProp(folder, rock, "rock", distance, offset, width, rng)
+		else
+			fallback(folder, distance, offset, width, rng)
+		end
+	end
+
 	-- Level 1 gives you a clear run off the grid to get up to speed.
 	local first, last = start + (index == 1 and 160 or 80), start + length - 60
+	local rows = 12 + index * 3
 	local spacing = (last - first) / rows
-	local GAP = 22
+	local GAP = 26
 	for row = 1, rows do
 		local distance = first + (row - 0.5) * spacing + rng:NextNumber(-spacing, spacing) * 0.25
-		local gapCentre = rng:NextNumber(-half + GAP / 2 + 4, half - GAP / 2 - 4)
-		local sides = {
-			{ from = -half + 2, to = gapCentre - GAP / 2 },
-			{ from = gapCentre + GAP / 2, to = half - 2 },
-		}
-		local count = (index > 1 and rng:NextNumber() < 0.55) and 2 or 1
-		for n = 1, count do
+		local gapCentre = rng:NextNumber(-half + GAP / 2 + 6, half - GAP / 2 - 6)
+		local count = 1
+		if index > 1 and rng:NextNumber() < 0.7 then count += 1 end
+		if index > 2 and rng:NextNumber() < 0.5 then count += 1 end
+		local placed = {}
+		for _ = 1, count do
 			local width = rng:NextNumber(10, 16)
-			local space = sides[(row + n) % 2 + 1]
-			if space.to - space.from < width then
-				space = sides[(row + n + 1) % 2 + 1]
+			-- A few tries at a spot clear of the gap and of this row's others.
+			for _ = 1, 8 do
+				local offset = rng:NextNumber(-half + width / 2 + 2, half - width / 2 - 2)
+				local clear = math.abs(offset - gapCentre) >= GAP / 2 + width / 2
+				for _, other in ipairs(placed) do
+					if math.abs(offset - other.offset) < (width + other.width) / 2 + 4 then
+						clear = false
+					end
+				end
+				if clear then
+					table.insert(placed, { offset = offset, width = width })
+					obstacle(distance, offset, width)
+					break
+				end
 			end
-			if space.to - space.from >= width then
-				local offset = rng:NextNumber(space.from + width / 2, space.to - width / 2)
-				build(folder, distance, offset, width, rng)
+		end
+	end
+
+	-- Scenery along both walls, like the reference's bushes and cacti:
+	-- trees mostly, the odd rock, tucked in against the wall.
+	if tree or rock then
+		local step = 64
+		for i = 0, math.floor(length / step) - 1 do
+			for _, side in ipairs({ -1, 1 }) do
+				local distance = start + (i + 0.5) * step + rng:NextNumber(-12, 12)
+				local isTree = tree and (not rock or rng:NextNumber() < 0.75)
+				local width = isTree and rng:NextNumber(14, 20) or rng:NextNumber(8, 12)
+				local offset = side * (half - width * (isTree and 0.3 or 0.5) - 1)
+				placeProp(folder, isTree and tree or rock, isTree and "tree" or "rock", distance, offset, width, rng)
 			end
 		end
 	end
@@ -397,7 +470,7 @@ local function buildLobby(root)
 	local kiosk = part(folder, {
 		Name = "RaceGarage",
 		Size = Vector3.new(14, 10, 8),
-		CFrame = CFrame.new(Track.PointAt(-60, -36, 5)) * Track.Heading * CFrame.Angles(0, math.rad(-35), 0),
+		CFrame = CFrame.new(Track.PointAt(-60, -54, 5)) * Track.Heading * CFrame.Angles(0, math.rad(-35), 0),
 		Color = rgb(40, 40, 46),
 	})
 	local awning = part(folder, {

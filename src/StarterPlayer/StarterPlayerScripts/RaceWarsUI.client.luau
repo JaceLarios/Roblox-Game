@@ -94,10 +94,10 @@ eventRemote.OnClientEvent:Connect(function(event)
 		View.ShowHud(#RaceConfig.Levels)
 		View.Countdown(event.seconds or 3)
 	elseif kind == "cleared" then
-		local level = RaceConfig.Levels[event.level]
+		local won = event.crate and "Crate won" or "Crate shelf full"
 		View.Banner(string.format("LEVEL %d CLEARED!", event.level),
-			event.crate and string.format("%s crate won — it's in your Inventory", level and level.name or "A")
-				or "Your crate shelf is full — open some crates",
+			event.monsterSpeed and string.format("%s · the monster speeds up to %d!", won, math.floor(event.monsterSpeed))
+				or won,
 			View.Colours.green)
 	elseif kind == "caught" then
 		racing = false
@@ -125,6 +125,7 @@ RunService.RenderStepped:Connect(function()
 	local levelIndex = player:GetAttribute("RaceLevel") or 1
 	local distance = player:GetAttribute("RaceDistance") or 0
 	local gap = player:GetAttribute("RaceGap") or RaceConfig.MAX_GAP
+	local monsterSpeed = player:GetAttribute("RaceMonsterSpeed") or 0
 	local level = RaceConfig.Levels[levelIndex] or RaceConfig.Levels[1]
 
 	local speed = 0
@@ -142,6 +143,7 @@ RunService.RenderStepped:Connect(function()
 		progress = distance / trackLength,
 		monsterProgress = (distance - gap) / trackLength,
 		gap = gap,
+		monsterSpeed = monsterSpeed,
 		speed = speed,
 		topSpeed = topSpeed,
 	})

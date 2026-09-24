@@ -249,14 +249,14 @@ function View.HideHud()
 end
 
 -- info: level, levelName, progress and monsterProgress (0 to 1 along the
--- whole track), gap (studs), speed, topSpeed.
+-- whole track), gap (studs), monsterSpeed, speed, topSpeed.
 function View.UpdateHud(info)
 	levelLabel.Text = string.format("LEVEL %d · %s", info.level, string.upper(info.levelName))
 	fill.Size = UDim2.fromScale(math.clamp(info.progress, 0, 1), 1)
 	carMarker.Position = UDim2.fromScale(math.clamp(info.progress, 0, 1), 0.5)
 	monsterMarker.Position = UDim2.fromScale(math.clamp(info.monsterProgress, 0, 1), 0.5)
 	local danger = info.gap < 35
-	gapLabel.Text = string.format("MONSTER %d STUDS BEHIND", math.max(0, math.floor(info.gap)))
+	gapLabel.Text = string.format("MONSTER %d STUDS BEHIND · SPEED %d", math.max(0, math.floor(info.gap)), info.monsterSpeed)
 	gapLabel.TextColor3 = danger and Color3.fromRGB(255, 120, 110) or WHITE
 	hud.BackgroundColor3 = danger and Color3.fromRGB(90, 16, 20):Lerp(INK, (math.sin(os.clock() * 12) + 1) / 2) or INK
 	speedLabel.Text = tostring(math.max(0, math.floor(info.speed)))

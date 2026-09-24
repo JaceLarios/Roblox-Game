@@ -31,12 +31,12 @@ As of Sept 23 nothing drops on the yard floor any more:
 
 Pets, Brainrot Island and Haunted Hollow are gone. The game's second area is now **Race Wars** (Travel menu): you drive one of your cars down a long straight track through five levels while a monster chases you, and every level you clear wins a crate. Every car and fused result is raced using its own model from `ItemModels`, scaled to 13 studs long and driven nose-first along +Z. That's one more reason to keep the +Z rule above.
 
-Everything in Race Wars is working but built from placeholder parts. What would lift it most:
+Everything in Race Wars works. The trees and rocks are real meshes now, but most of the rest is still placeholder. What would lift it most:
 
 | What | Where it goes | Now |
 | --- | --- | --- |
-| **The monster** | A Model named `RaceMonsterModel` in `ServerStorage`. It is used automatically, scaled to 30 studs tall, pivot on the floor, facing its LookVector. | A blocky scrap beast built in `RaceMonster.luau` |
-| Level scenery, five themes | Green Hills, Dune Run, Frost Pass, Magma Mile, Neon Rush, built in `RaceTrack.luau` (`THEMES`, `OBSTACLES`) | Checker-textured walls and floor; hedges, cacti, ice blocks, basalt rocks and neon barriers made of parts |
+| **The monster** | A Model named `RaceMonsterModel` in `ServerStorage`. It is used automatically, scaled to 38 studs tall, pivot on the floor, facing its LookVector. | A blocky scrap beast built in `RaceMonster.luau` |
+| Level scenery, five themes | Green Hills, Dune Run, Frost Pass, Magma Mile, Neon Rush, built in `RaceTrack.luau`. Trees and rocks come from `ServerStorage.RaceProps` (`<theme>_tree` / `<theme>_rock` MeshParts), so better props just replace those. | Generated tree and rock meshes (Sept 24, ids in `assets/race-wars/README.md`); walls and floor are checker-textured parts |
 | Crate art and the crate-opening moment | `RaceCrates.client.luau` (the Inventory's Crates tab) | The atlas `crate` icon; the reveal is a card with the item turning on a podium |
 | Race Garage, race HUD, countdown and banners | `RaceWarsView.luau` owns the whole look, so it can be restyled without touching race logic | Garage-kit placeholder |
 | Travel card picture | `WORLDS` in `GameUI.client.luau`, `scene = rbxassetid://136532362963777` | A drawn render of the track (`assets/race-wars/travel_card.png`) |
@@ -45,11 +45,9 @@ Art that nothing uses any more: the egg and PETS icons, the travel atlas's Brain
 
 ## What a build earns
 
-Money comes from **placing** a build on one of your five base pads, not from selling it. A placed build earns its value ÷ 90 in coins every second, for as long as it stays on the pad, multiplied by your upgrades, rebirth, companion and pet bonuses.
+Money comes from **placing** a build on one of your five base pads, not from selling it. A placed build earns its value ÷ 90 in coins every second, for as long as it stays on the pad, multiplied by your upgrades and rebirth.
 
 Selling is the opposite: one payment, and the build is gone. A placed build earns its whole sell price back every 90 seconds, so selling is only worth it for something you have no pad space for.
-
-Pets are not part of this at all any more. Since Sept 22 they are not items — owning one is a permanent coin and speed bonus, and they can't be placed or sold.
 
 **Every rate on this page is the base rate**, before any of your multipliers. A rarer car earns more than a common one with the same addon, and a better addon outearns every result of the addon below it.
 
@@ -215,7 +213,7 @@ Three items from the redesign spec have not been picked up yet:
 Two more things found while testing on Sept 23:
 
 - **`assets/junkyard-models/verify-models.luau` is broken, not just stale.** It asserts every roster entry is a MeshPart with revision `Junkyard_20260914`, which the seven detailed cars and the three new Legendary models now fail, and it fuses every pair of its roster, which the one-item-plus-one-addon rule refuses. It needs the 7 cars, 5 addons and 35 results, fusing only car + addon pairs.
-- **Text overlap in the Index:** "Select a discovered item to equip your companion" renders underneath the Search box.
+- **Text overlap in the Index — gone Sept 24.** The companion hint that rendered under the Search box was removed along with the Companion.
 - **Review models moved out of Workspace — done Sept 23.** Six review folders had been left in the live Workspace, 1,229 parts in all, and anything in Workspace ships to every player. All six now live in `ServerStorage.CodexReviewModels_20260923` under their original names; drag one back into Workspace to look at it, and please leave future review lineups in ServerStorage or remove them when done. Where they were:
 
   | Folder | Parts | Where |

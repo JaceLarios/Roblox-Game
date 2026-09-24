@@ -231,6 +231,7 @@ local function clearHud(player)
 	player:SetAttribute("RaceLevel", nil)
 	player:SetAttribute("RaceDistance", nil)
 	player:SetAttribute("RaceGap", nil)
+	player:SetAttribute("RaceMonsterSpeed", nil)
 end
 
 -- Ends a race. `outcome` is what the player is told: "caught",
@@ -322,6 +323,7 @@ local function startRace(player, itemName, stats)
 	seat:Sit(humanoid)
 	setRacingGroup(race, true)
 	player:SetAttribute("RaceLevel", 1)
+	player:SetAttribute("RaceMonsterSpeed", math.floor(RaceConfig.MonsterSpeed(1)))
 	fire(player, { kind = "countdown", seconds = COUNTDOWN, item = itemName, topSpeed = stats.topSpeed })
 
 	task.delay(COUNTDOWN, function()
@@ -371,9 +373,12 @@ local function stepRace(race, dt, now)
 	while race.level <= #RaceConfig.Levels and race.distance >= race.level * RaceConfig.LEVEL_LENGTH do
 		local won = hooks.levelCleared(race.player, race.level)
 		race.cleared = race.level
-		fire(race.player, { kind = "cleared", level = race.level, crate = won == true })
 		race.level += 1
+		-- Every level cleared, the monster gets a lot faster.
+		local faster = race.level <= #RaceConfig.Levels and RaceConfig.MonsterSpeed(race.level) or nil
+		fire(race.player, { kind = "cleared", level = race.cleared, crate = won == true, monsterSpeed = faster })
 		race.player:SetAttribute("RaceLevel", math.min(race.level, #RaceConfig.Levels))
+		race.player:SetAttribute("RaceMonsterSpeed", faster and math.floor(faster) or nil)
 	end
 	if race.level > #RaceConfig.Levels then
 		endRace(race, "finished")
@@ -381,7 +386,7 @@ local function stepRace(race, dt, now)
 	end
 
 	if now - race.goAt >= RaceConfig.MONSTER_DELAY then
-		local speed = RaceConfig.Levels[race.level].monsterSpeed
+		local speed = RaceConfig.MonsterSpeed(race.level)
 		race.monsterDistance = math.max(race.monsterDistance + speed * dt, race.distance - RaceConfig.MAX_GAP)
 	end
 	race.monsterOffset += (race.offset - race.monsterOffset) * math.min(1, dt * 1.5)
