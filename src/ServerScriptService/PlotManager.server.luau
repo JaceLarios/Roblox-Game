@@ -2728,7 +2728,7 @@ end)
 
 ------------------------------------------------------------------
 -- Placing and unplacing pets — a pet only earns money while it's
--- physically on one of a player's five pads. Placing happens from the
+-- physically on one of a player's pads. Placing happens from the
 -- Inventory popup (you're choosing which of your pets goes to work);
 -- unplacing happens either the same way or by walking up to an occupied
 -- pad and taking it off directly, same "physical prompt for the pad
@@ -2742,7 +2742,7 @@ placePetRemote.OnServerEvent:Connect(function(player, index)
 	if not itemName then return end
 
 	if #s.placed >= PET_PAD_COUNT then
-		toast(player, "All 5 pads are full — take one off first.")
+		toast(player, string.format("All %d pads are full — take one off first.", PET_PAD_COUNT))
 		return
 	end
 
@@ -2943,7 +2943,7 @@ end)
 ------------------------------------------------------------------
 -- Passive income from placed pets ONLY — sitting in Inventory doesn't
 -- earn a thing anymore; a pet has to actually be on one of a player's
--- five pads (see "Placing and unplacing pets" below) to make money.
+-- pads (see "Placing and unplacing pets" below) to make money.
 ------------------------------------------------------------------
 
 task.spawn(function()

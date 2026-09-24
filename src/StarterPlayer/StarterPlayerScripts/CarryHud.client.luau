@@ -31,13 +31,13 @@ local updateRemote = ReplicatedStorage:WaitForChild("GameUpdate")
 
 local RED = Color3.fromRGB(255, 40, 40)
 
--- Plots sit on a ring of this radius around the yard, each a square this
--- wide; the same two numbers PlotManager and MapRevamp use to lay roads.
-local RING_RADIUS = 190
-local PLOT_HALF = 35
--- Where a trail starts: just inside the yard, in front of the gate, so it
--- leads you INTO the road rather than starting halfway down it.
-local TRAIL_START = 76
+-- The map's dimensions come from the same shared layout PlotManager builds
+-- the workshops and roads from, so the trail can never drift out of step
+-- with where the doors actually are.
+local Layout = require(ReplicatedStorage:WaitForChild("JunkyardLayout"))
+-- Where a trail starts: the edge of the yard, where the road begins, so it
+-- leads you INTO the road rather than across the scrap.
+local TRAIL_START = Layout.RouteStart
 local ARROWS_PER_ROAD = 10
 
 -- One arrow: a shaft and a filled head, laid flat on the road.
@@ -192,11 +192,11 @@ local function addArrow(pos, dir)
 	table.insert(trail, parts)
 end
 
--- Where a base's road stops: the radial line through its centre meets the
--- edge of its square plot, which is further out for the four diagonal
--- plots than for the four straight ones.
-local function roadEnd(radial)
-	return RING_RADIUS - PLOT_HALF / math.max(math.abs(radial.X), math.abs(radial.Z))
+-- Where a base's road stops: its workshop doorway. Every workshop faces
+-- the yard, so the door is the same distance out on all eight roads — the
+-- same formula PlotManager uses to place the entrance gate.
+local function roadEnd(_radial)
+	return Layout.PlotRadius - Layout.PlotSize / 2
 end
 
 -- A row of arrows down one base's road, either out toward that base or in
