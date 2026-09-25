@@ -9,12 +9,16 @@
 	it could really have got (see RaceService).
 
 	Also lifts the Junkyard's distance fog while you are in the Race Wars
-	area, so you can see down the track, and puts it back when you leave.
+	area, so you can see down the track, and puts it back when you leave,
+	and turns the wheels of every car in the race as it goes.
 --]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
+
+local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 
 local player = Players.LocalPlayer
 
@@ -155,5 +159,35 @@ RunService.Heartbeat:Connect(function()
 		Lighting.FogEnd = saved.fogEnd
 		if atmosphere and saved.density then atmosphere.Density = saved.density end
 		saved = nil
+	end
+end)
+
+------------------------------------------------------------------
+-- Wheels
+------------------------------------------------------------------
+
+-- Every race car's wheels turn with its speed, yours and everyone else's,
+-- on this screen only: turned on the server, every wheel would be sent to
+-- every player each frame. A car is its item model (the body, nose along
+-- its +Z) welded onto an invisible Chassis (see RaceService.buildCar).
+-- Only models with separate wheels (Codex's rebuilds) have any to turn.
+local live = workspace:WaitForChild("RaceWarsLive")
+
+-- The most a wheel turns in a frame, in radians. At race speed a wheel
+-- would turn more than a spoke's width a frame and look still or even
+-- backwards; held to this it reads as a fast forward spin.
+local MAX_WHEEL_TURN = 0.35
+
+RunService.RenderStepped:Connect(function(dt)
+	for _, car in ipairs(live:GetChildren()) do
+		local chassis = car:IsA("Model") and car:FindFirstChild("Chassis")
+		if chassis then
+			for _, body in ipairs(car:GetChildren()) do
+				if body:IsA("BasePart") and body:GetAttribute("ItemAssembly") then
+					local speed = chassis.AssemblyLinearVelocity:Dot(body.CFrame.ZVector)
+					ItemVisuals.RollWheels(body, speed * dt, MAX_WHEEL_TURN)
+				end
+			end
+		end
 	end
 end)

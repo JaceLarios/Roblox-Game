@@ -159,15 +159,21 @@ end
 
 -- Distance-driven visual rolling. Positive distance is travel along the car's +Z.
 -- This keeps the conveyor deterministic; no unanchored physics or motor can shove an item off it.
--- Called on players' screens (ConveyorBelt), never the server: a wheel
+-- Called on players' screens (ConveyorBelt, RaceDrive), never the server: a wheel
 -- turned there is sent to every player, every frame.
-function ItemVisuals.RollWheels(object, distance)
+-- maxTurn, if given, is the most a wheel turns in one call (radians): past
+-- about a spoke a frame a fast wheel looks still or spinning backwards.
+function ItemVisuals.RollWheels(object, distance, maxTurn)
 	if distance ~= distance or math.abs(distance) == math.huge then return end
 	local rig = wheelRigs[object] or rigFromAttributes(object)
 	if not rig then return end
 	for _, wheel in rig do
 		if wheel.joint.Parent then
-			wheel.angle = (wheel.angle + distance / wheel.radius) % (math.pi * 2)
+			local turn = distance / wheel.radius
+			if maxTurn then
+				turn = math.clamp(turn, -maxTurn, maxTurn)
+			end
+			wheel.angle = (wheel.angle + turn) % (math.pi * 2)
 			wheel.joint.C0 = CFrame.new(wheel.pivot) * CFrame.Angles(wheel.angle, 0, 0)
 				* CFrame.new(-wheel.pivot) * wheel.rest
 		end
