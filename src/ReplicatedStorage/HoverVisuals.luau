@@ -6,9 +6,12 @@ function HoverVisuals.Sample(t, speed, steer, scale)
  speed = math.clamp(speed or 0, 0, 1)
  steer = math.clamp(steer or 0, -1, 1)
  scale = scale or 1
+ -- Held up off whatever it rests on (the model's lowest part sits right on
+ -- it), so the bottom of the bob and the lean still clears a pad or track.
+ local lift = .45 * scale
  local bob = (.13 + .04 * speed) * math.sin(t * 2.5) * scale
  local sway = math.rad(1.3) * math.sin(t * 1.6)
- return CFrame.new(0, bob, 0) * CFrame.Angles(math.rad(-2.5) * speed, 0, sway - math.rad(7) * steer),
+ return CFrame.new(0, lift + bob, 0) * CFrame.Angles(math.rad(-2.5) * speed, 0, sway - math.rad(7) * steer),
   .5 + .5 * math.sin(t * 3.6), speed
 end
 
@@ -82,7 +85,11 @@ function HoverVisuals.Attach(root, source)
   if math.abs(factor-lastFactor)>.0001 then clone:ScaleTo(originalScale*factor);lastFactor=factor end
   local motion, pulse = HoverVisuals.Sample(self.time,self.speed,self.steer,scale*factor)
   local scaledOffset = CFrame.new(offset.Position*factor)*offset.Rotation
-  clone:PivotTo(root.CFrame * scaledOffset * motion)
+  -- Bob and lean about the item's own centre (the root), not the Visual's
+  -- stored pivot: that stays where the item was made (a race car is made at
+  -- the world origin, then moved to the track), and leaning about a point
+  -- that far off swung the copy tens of studs away from the bike.
+  clone:PivotTo(root.CFrame * motion * scaledOffset)
   light.Brightness = 1.0 + pulse * 1.3
   for _, e in mist do e.Rate = 5 + self.speed * 5 end
   -- Honor concealment/fades owned by the game, so carried/hidden items do not leak.

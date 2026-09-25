@@ -65,6 +65,10 @@ function ItemVisuals.Create(name, position, sizeScale)
 	if template and template:IsA("Model") then
 		local visual = template:Clone()
 		visual.Name = "Visual"
+		-- Sent to players whole, never a few parts at a time (the place
+		-- streams): the wheel rig (RollWheels) and the Atom Rider's hover
+		-- copy (HoverVisuals) take the model as it is when it arrives.
+		visual.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 		visual:ScaleTo(visual:GetScale() * scale)
 		local cf, size = visual:GetBoundingBox()
 		local root = Instance.new("Part")
