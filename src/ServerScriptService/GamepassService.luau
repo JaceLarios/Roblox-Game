@@ -66,12 +66,14 @@ function Service.Coins(player, amount)
 	return math.floor(amount * mult)
 end
 
-function Service.Capacity(player, carryLevel)
-	return carryLevel + 1 + (Service.Has(player, "ExtraCarry") and 2 or 0)
+function Service.Capacity(_player, carryLevel)
+	return carryLevel + 1
 end
 
-function Service.Radius(player)
-	return Service.Has(player, "AutoCollect") and 20 or 0
+-- Extra inventory spaces the +50 Inventory Space pass adds on top of the
+-- Storage Space upgrade.
+function Service.ExtraStorage(player)
+	return Service.Has(player, "ExtraStorage") and 50 or 0
 end
 
 -- StarterPack's other half of "money/speed boost" - a flat permanent

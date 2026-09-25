@@ -83,10 +83,12 @@ local grid=Instance.new("UIGridLayout") grid.SortOrder=Enum.SortOrder.LayoutOrde
 -- 4 entries now (was 3, fixed at "one row" worth of height) — StarterPack
 -- added below. gridFit computes its height from the real count so a
 -- future 5th/6th gamepass doesn't silently clip or overlap again.
-local PASS_ORDER={"DoubleCoins","ExtraCarry","AutoCollect","StarterPack"}
+-- The Starter Pack is not in this grid: it has its own banner further
+-- down the Shop (see "The Starter Pack" below).
+local PASS_ORDER={"DoubleCoins","ExtraStorage"}
 local function gridFit()
 	local compact=panel:GetAttribute("Compact")
-	local cols=compact and 2 or 4
+	local cols=math.min(compact and 2 or 4,#PASS_ORDER)
 	local rows=math.ceil(#PASS_ORDER/cols)
 	local cellH=230
 	grid.FillDirectionMaxCells=cols
@@ -94,24 +96,14 @@ local function gridFit()
 	passGrid.Size=UDim2.new(1,-6,0,rows*cellH+(rows-1)*12+10)
 end
 panel:GetAttributeChangedSignal("Compact"):Connect(gridFit) gridFit()
-local PASS_ACCENTS={DoubleCoins=Color3.fromRGB(243,162,101),ExtraCarry=Color3.fromRGB(95,185,174),AutoCollect=Color3.fromRGB(129,164,194),StarterPack=Color3.fromRGB(180,140,210)}
-local BENEFITS={DoubleCoins="Double your sale and reward coins!",ExtraCarry="Carry 2 extra items every trip!",AutoCollect="Collect nearby scrap automatically!",StarterPack="Permanent coin & speed boost!"}
+local PASS_ACCENTS={DoubleCoins=Color3.fromRGB(243,162,101),ExtraStorage=Color3.fromRGB(95,185,174)}
+local BENEFITS={DoubleCoins="Double your sale and reward coins!",ExtraStorage="50 more inventory spaces, forever!"}
 local refreshers={}
 local pendingId=nil
-for i,key in ipairs(PASS_ORDER) do
+-- Makes `buy` the purchase button for gamepass `key`: its text follows
+-- ownership and the price, and it prompts the purchase.
+local function wirePurchase(key,buy)
 	local item=Config[key]
-	local banner=Instance.new("Frame") banner.Name=key banner.LayoutOrder=i banner.ClipsDescendants=true banner.Parent=passGrid
-	corner(banner,17) Style.Surface(banner,WHITE,3)
-	local gradient=Instance.new("UIGradient")
-	gradient.Color=ColorSequence.new(PASS_ACCENTS[key]:Lerp(WHITE,.6),PASS_ACCENTS[key])
-	gradient.Rotation=65 gradient.Parent=banner
-	text(banner,"Title",item.name,UDim2.fromOffset(10,13),UDim2.new(1,-20,0,58),36,true)
-	Garage.Art(banner,key,UDim2.new(0,5,0,84),UDim2.new(.51,0,0,186))
-	text(banner,"Description",BENEFITS[key],UDim2.new(.51,0,0,90),UDim2.new(.46,0,0,165),25,true)
-	local buy=Instance.new("TextButton")
-	buy.Name="Purchase" buy.Size=UDim2.new(1,-28,0,60) buy.Position=UDim2.new(0,14,1,-76)
-	buy.Font=Enum.Font.FredokaOne buy.TextSize=27 buy.TextWrapped=true buy.ZIndex=3 buy.Parent=banner
-	corner(buy,12) Style.Surface(buy,WHITE,2)
 	local info, loading = nil, false
 	local function refresh()
 		local owns = player:GetAttribute("Pass_" .. key) == true
@@ -167,6 +159,74 @@ for i,key in ipairs(PASS_ORDER) do
 	open.Activated:Connect(function() task.spawn(loadInfo) end)
 	refresh()
 end
+for i,key in ipairs(PASS_ORDER) do
+	local item=Config[key]
+	local banner=Instance.new("Frame") banner.Name=key banner.LayoutOrder=i banner.ClipsDescendants=true banner.Parent=passGrid
+	corner(banner,17) Style.Surface(banner,WHITE,3)
+	local gradient=Instance.new("UIGradient")
+	gradient.Color=ColorSequence.new(PASS_ACCENTS[key]:Lerp(WHITE,.6),PASS_ACCENTS[key])
+	gradient.Rotation=65 gradient.Parent=banner
+	text(banner,"Title",item.name,UDim2.fromOffset(10,13),UDim2.new(1,-20,0,58),36,true)
+	Garage.Art(banner,key,UDim2.new(0,5,0,84),UDim2.new(.51,0,0,186))
+	text(banner,"Description",BENEFITS[key],UDim2.new(.51,0,0,90),UDim2.new(.46,0,0,165),25,true)
+	local buy=Instance.new("TextButton")
+	buy.Name="Purchase" buy.Size=UDim2.new(1,-28,0,60) buy.Position=UDim2.new(0,14,1,-76)
+	buy.Font=Enum.Font.FredokaOne buy.TextSize=27 buy.TextWrapped=true buy.ZIndex=3 buy.Parent=banner
+	corner(buy,12) Style.Surface(buy,WHITE,2)
+	wirePurchase(key,buy)
+end
+
+------------------------------------------------------------------
+-- The Starter Pack: its own banner under the gamepasses, since it is a
+-- bundle rather than one perk, with what is in it spelled out.
+------------------------------------------------------------------
+
+section("Starter Pack",20)
+local PACK_PURPLE=Color3.fromRGB(128,74,206)
+local starter=Instance.new("Frame") starter.Name="StarterPackBanner" starter.LayoutOrder=21
+starter.Size=UDim2.new(1,-12,0,236) starter.ClipsDescendants=true starter.Parent=scroll
+Garage.Gloss(starter,PACK_PURPLE,20)
+local starterArt=Garage.Art(starter,"StarterPack",UDim2.fromOffset(20,10),UDim2.fromOffset(230,190))
+local starterPedestal=Garage.Pedestal(starter,GOLD,UDim2.fromOffset(28,158),UDim2.fromOffset(214,64))
+local starterTitle=Garage.Text(starter,"Title","STARTER PACK",UDim2.fromOffset(270,16),UDim2.new(1,-530,0,58),44,Color3.new(1,1,1))
+starterTitle.TextXAlignment=Enum.TextXAlignment.Left starterTitle.TextScaled=true
+local titleOutline=Instance.new("UIStroke") titleOutline.Color=Color3.fromRGB(40,16,80) titleOutline.Thickness=3 titleOutline.Parent=starterTitle
+local starterSub=Garage.Text(starter,"Subtitle","One purchase, yours forever. Best value for a new garage!",UDim2.fromOffset(270,74),UDim2.new(1,-530,0,32),20,Color3.fromRGB(240,226,255))
+starterSub.TextXAlignment=Enum.TextXAlignment.Left starterSub.TextScaled=true
+-- What is in it, as chips.
+local perks=Instance.new("Frame") perks.Name="Perks" perks.BackgroundTransparency=1
+perks.Position=UDim2.fromOffset(270,118) perks.Size=UDim2.new(1,-530,0,96) perks.Parent=starter
+local perkList=Instance.new("UIListLayout") perkList.Padding=UDim.new(0,8) perkList.SortOrder=Enum.SortOrder.LayoutOrder perkList.Parent=perks
+for order,perk in ipairs({{"+15% COINS FOREVER",GOLD},{"+10% WALK SPEED",Color3.fromRGB(110,209,172)}}) do
+	local chip=Garage.Text(perks,"Perk"..order,perk[1],UDim2.new(),UDim2.new(0,300,0,42),24,Style.Palette.Ink)
+	chip.LayoutOrder=order chip.TextScaled=true
+	Garage.Plate(chip,perk[2])
+	local pad=Instance.new("UIPadding") pad.PaddingLeft=UDim.new(0,12) pad.PaddingRight=UDim.new(0,12) pad.PaddingTop=UDim.new(0,4) pad.PaddingBottom=UDim.new(0,4) pad.Parent=chip
+end
+local ribbon=Garage.Text(starter,"Ribbon","BEST VALUE",UDim2.new(1,-16,0,16),UDim2.fromOffset(170,36),22,Color3.new(1,1,1))
+ribbon.AnchorPoint=Vector2.new(1,0) ribbon.BackgroundTransparency=0
+ribbon.BackgroundColor3=Color3.fromRGB(231,64,64) ribbon.ZIndex=6 corner(ribbon,10)
+local ribbonOutline=Instance.new("UIStroke") ribbonOutline.Color=Color3.fromRGB(40,16,80) ribbonOutline.Thickness=2 ribbonOutline.ApplyStrokeMode=Enum.ApplyStrokeMode.Contextual ribbonOutline.Parent=ribbon
+local starterBuy=Instance.new("TextButton")
+starterBuy.Name="Purchase" starterBuy.Size=UDim2.fromOffset(230,78) starterBuy.Position=UDim2.new(1,-250,.5,-26)
+starterBuy.Font=Enum.Font.FredokaOne starterBuy.TextSize=28 starterBuy.ZIndex=5 starterBuy.Parent=starter
+Garage.Button(starterBuy,GOLD)
+wirePurchase("StarterPack",starterBuy)
+-- Narrow panels stack it: the picture and title on top, the chips and
+-- the button underneath.
+local function layoutStarter()
+	local compact=panel:GetAttribute("Compact")
+	starter.Size=UDim2.new(1,-12,0,compact and 380 or 236)
+	starterArt.Position=UDim2.fromOffset(compact and 8 or 20,10) starterArt.Size=UDim2.fromOffset(compact and 170 or 230,compact and 140 or 190)
+	starterPedestal.Position=UDim2.fromOffset(compact and 14 or 28,compact and 112 or 158) starterPedestal.Size=UDim2.fromOffset(compact and 158 or 214,compact and 48 or 64)
+	starterTitle.Position=UDim2.fromOffset(compact and 186 or 270,compact and 26 or 16) starterTitle.Size=compact and UDim2.new(1,-200,0,50) or UDim2.new(1,-530,0,58)
+	starterSub.Position=UDim2.fromOffset(compact and 186 or 270,compact and 80 or 74) starterSub.Size=compact and UDim2.new(1,-200,0,50) or UDim2.new(1,-530,0,32)
+	starterSub.TextWrapped=true
+	perks.Position=UDim2.fromOffset(compact and 16 or 270,compact and 172 or 118) perks.Size=compact and UDim2.new(1,-32,0,96) or UDim2.new(1,-530,0,96)
+	starterBuy.Position=compact and UDim2.new(0,16,1,-96) or UDim2.new(1,-250,.5,-26) starterBuy.Size=compact and UDim2.new(1,-32,0,78) or UDim2.fromOffset(230,78)
+	ribbon.Visible=not compact
+end
+panel:GetAttributeChangedSignal("Compact"):Connect(layoutStarter) layoutStarter()
 
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(who, id, purchased)
 	if who ~= player or pendingId ~= id then return end

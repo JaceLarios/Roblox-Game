@@ -112,13 +112,14 @@ local CARRY_HAND_GAP = 0.15
 -- Road lasers are permanent: the approach to every base is an obby you
 -- jump, not a hazard somebody switches on. Invisible barriers run down
 -- both sides of each road so the lasers cannot simply be walked around.
-local LASER_COUNT = 3
+local LASER_COUNT = 4
 -- Studs between neighbouring bars. Carrying loot you run at 22 studs/sec
--- or more, so an ordinary jump covers about 12 studs: at 16 apart one jump
--- clears one bar and lands with room to line up the next. At the old
--- spacing (under 6) a jump either came down on the next bar or had to
--- clear two at once.
-local LASER_SPACING = 16
+-- or more, so an ordinary jump covers about 12 studs: at 14 apart one jump
+-- clears one bar and lands with just enough room to line up the next (a
+-- fourth bar, added to make the way in harder, left no room for 16). At
+-- the old spacing (under 6) a jump either came down on the next bar or
+-- had to clear two at once.
+local LASER_SPACING = 14
 local BARRIER_HEIGHT = 16
 local BARRIER_HALF_WIDTH = Layout.RouteHalfWidth
 
@@ -136,6 +137,10 @@ local FLOP_SECONDS = 2.5
 local BAT_KNOCK_SPEED = 85
 local BAT_KNOCK_LIFT = 70
 local COIL_SPEED_BONUS = 0.15
+-- The Bat Strength and Speed Coil upgrades: each level past the first hits
+-- 12% harder, and adds 5% to the coil's speed boost.
+local BAT_POWER_PER_LEVEL = 0.12
+local COIL_BONUS_PER_LEVEL = 0.05
 -- MapRevamp paints this plot's guide rails at +/-11.5 from the road
 -- centreline, so a 24-wide bar spans the corridor with a little overhang.
 local LASER_WIDTH = 24
@@ -176,6 +181,15 @@ local function storageSlots(level)
 	return slots
 end
 
+-- How hard a bat hit launches someone at a Bat Strength level (1 at
+-- level 1), and the coil's speed boost at a Speed Coil level.
+local function batPower(level)
+	return 1 + (math.max(level or 1, 1) - 1) * BAT_POWER_PER_LEVEL
+end
+local function coilBonus(level)
+	return COIL_SPEED_BONUS + (math.max(level or 1, 1) - 1) * COIL_BONUS_PER_LEVEL
+end
+
 local UPGRADES = {
 	{
 		key = "luck", name = "Lucky Wrench", start = 1, max = 10,
@@ -199,6 +213,16 @@ local UPGRADES = {
 		key = "storage", name = "Storage Space", start = 1, max = 10,
 		baseCost = 2500, mult = 1.8,
 		describe = function(lv) return string.format("%d inventory spaces", storageSlots(lv)) end,
+	},
+	{
+		key = "bat", name = "Bat Strength", start = 1, max = 10,
+		baseCost = 1500, mult = 1.7,
+		describe = function(lv) return string.format("Hits launch people %d%% as far", math.floor(batPower(lv) * 100 + 0.5)) end,
+	},
+	{
+		key = "coil", name = "Speed Coil", start = 1, max = 10,
+		baseCost = 1200, mult = 1.75,
+		describe = function(lv) return string.format("+%d%% speed with the coil out", math.floor(coilBonus(lv) * 100 + 0.5)) end,
 	},
 }
 
@@ -500,7 +524,7 @@ local function updateWalkSpeed(player)
 	-- actually equipped, and never while carrying: the coil is one of the
 	-- two things you give up to haul loot.
 	if s.coilEquipped and not s.carrying then
-		speedMult = speedMult * (1 + COIL_SPEED_BONUS)
+		speedMult = speedMult * (1 + coilBonus(s.upgrades.coil))
 	end
 	humanoid.WalkSpeed = (BASE_WALK_SPEED + placedBonus) * speedMult
 end
@@ -594,11 +618,11 @@ end
 local PLACEMENT_PAYBACK_SECONDS = 90
 local INCOME_TICK_SECONDS = 3
 
--- How many items a player's Inventory holds, set by their Storage Space
--- upgrade (see storageSlots). Still a real limit: sell, place or fuse to
--- make room.
-local function inventoryCapacity(s)
-	return storageSlots(s and s.upgrades and s.upgrades.storage or 1)
+-- How many items a player's Inventory holds: their Storage Space upgrade
+-- (see storageSlots) plus the +50 Inventory Space pass. Still a real
+-- limit: sell, place or fuse to make room.
+local function inventoryCapacity(s, player)
+	return storageSlots(s and s.upgrades and s.upgrades.storage or 1) + Gamepasses.ExtraStorage(player)
 end
 
 ------------------------------------------------------------------
@@ -848,9 +872,7 @@ require(game.ServerStorage:WaitForChild("CentralLeaderboards")).Start(Leaderboar
 
 local function capacity(player, s)
 	-- The Bigger Truck upgrade was retired when carrying became one physical
-	-- item overhead. The ExtraCarry GAMEPASS is deliberately still honoured
-	-- here, because it is a real-money purchase -- same call that was made
-	-- when Scrap Magnet was removed but the paid Auto-Collect was left alone.
+	-- item overhead, and the +2 Carry Slots pass became +50 Inventory Space.
 	return Gamepasses.Capacity(player, FUSE_STAGING_SLOTS - 1)
 end
 
@@ -984,7 +1006,7 @@ local function pushUI(player)
 			maxed = Rebirth.IsMaxed(player),
 		},
 		inventory = inventoryInfo,
-		inventoryCapacity = inventoryCapacity(s),
+		inventoryCapacity = inventoryCapacity(s, player),
 		crates = crateInfo,
 		crateCapacity = RaceCrates.CAPACITY,
 		carrying = s.carrying and s.carrying.name or nil,
@@ -1281,11 +1303,6 @@ local function floorBelow(position)
 	return hit and hit.Position.Y or 1.2
 end
 
--- How long an item you let go of is off-limits to your own Auto-Collect.
--- Without it the magnet would pick a dropped item straight back up, and
--- the Drop button would do nothing for anyone who owns the pass.
-local DROP_REGRAB_GRACE = 4
-
 -- Puts an item back into the world as an ordinary grabbable, falling from
 -- where it was let go to the floor below it, and wearing the same label
 -- as everything else loose in the yard, with DROPPED_ITEM_SECONDS to go.
@@ -1300,7 +1317,6 @@ local function layDownItem(itemName, fromPosition, dropper)
 	part:SetAttribute("ItemName", itemName)
 	if dropper then
 		part:SetAttribute("DroppedBy", dropper.UserId)
-		part:SetAttribute("DroppedAt", os.clock())
 	end
 	ScrapLabel.Attach(part, itemName)
 	expireLater(part)
@@ -1317,11 +1333,6 @@ local function layDownItem(itemName, fromPosition, dropper)
 			{ CFrame = rest }):Play()
 	end
 	return part
-end
-
-local function justDroppedBy(part, player)
-	return part:GetAttribute("DroppedBy") == player.UserId
-		and os.clock() - (part:GetAttribute("DroppedAt") or 0) < DROP_REGRAB_GRACE
 end
 
 ------------------------------------------------------------------
@@ -1458,7 +1469,7 @@ local function attemptFusion(player)
 	-- (2 ingredients consumed, 1 result produced), so this can only ever
 	-- fail to fit if the inventory was already completely full before
 	-- this fusion even started; auto-sell instead of losing it.
-	if #s.inventory < inventoryCapacity(s) then
+	if #s.inventory < inventoryCapacity(s, player) then
 		table.insert(s.inventory, instanceName)
 	else
 		local mult = valueMultiplier(player, s)
@@ -1539,7 +1550,7 @@ local function returnStolen(victim, itemName, thief)
 	if #vs.placed < PET_PAD_COUNT then
 		table.insert(vs.placed, itemName)
 		refreshPlacedPets(victim)
-	elseif #vs.inventory < inventoryCapacity(vs) then
+	elseif #vs.inventory < inventoryCapacity(vs, victim) then
 		table.insert(vs.inventory, itemName)
 	else
 		return false
@@ -1594,7 +1605,7 @@ local function deliverCarried(player)
 	local s = state[player]
 	if not s or not s.carrying then return false end
 
-	if #s.inventory >= inventoryCapacity(s) then
+	if #s.inventory >= inventoryCapacity(s, player) then
 		-- Deliberately does NOT drop it: you keep hold of it and get told
 		-- why, rather than having it silently fall on your own doorstep.
 		toast(player, "Inventory full — sell or fuse something first.")
@@ -1733,6 +1744,15 @@ if not knockbackRemote then
 	knockbackRemote.Parent = ReplicatedStorage
 end
 
+-- Tells everyone else to play a swing on this character (BatSwing.client
+-- animates it; the swinger's own client already has).
+local batSwingRemote = ReplicatedStorage:FindFirstChild("BatSwing")
+if not batSwingRemote then
+	batSwingRemote = Instance.new("RemoteEvent")
+	batSwingRemote.Name = "BatSwing"
+	batSwingRemote.Parent = ReplicatedStorage
+end
+
 local function flopPlayer(target, seconds)
 	local char = target.Character
 	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
@@ -1748,7 +1768,7 @@ local function flopPlayer(target, seconds)
 	end)
 end
 
-local function swingBat(player, bat)
+local function swingBat(player)
 	local s = state[player]
 	if not s then return end
 	if s.carrying then
@@ -1760,13 +1780,10 @@ local function swingBat(player, bat)
 	if now < (batReadyAt[player] or 0) then return end
 	batReadyAt[player] = now + BAT_COOLDOWN
 
-	-- The default Animate script plays its slash animation when a tool
-	-- gets a "toolanim" value, the same trick the classic sword uses.
-	if bat then
-		local anim = Instance.new("StringValue")
-		anim.Name = "toolanim"
-		anim.Value = "Slash"
-		anim.Parent = bat
+	for _, other in ipairs(Players:GetPlayers()) do
+		if other ~= player then
+			batSwingRemote:FireClient(other, player.Character)
+		end
 	end
 
 	local root = playerRoot(player)
@@ -1786,7 +1803,8 @@ local function swingBat(player, bat)
 					flopPlayer(other, FLOP_SECONDS)
 					local away = Vector3.new(offset.X, 0, offset.Z)
 					away = away.Magnitude > 0.1 and away.Unit or Vector3.new(forward.X, 0, forward.Z).Unit
-					knockbackRemote:FireClient(other, away * BAT_KNOCK_SPEED + Vector3.new(0, BAT_KNOCK_LIFT, 0))
+					local power = batPower(s.upgrades.bat)
+					knockbackRemote:FireClient(other, (away * BAT_KNOCK_SPEED + Vector3.new(0, BAT_KNOCK_LIFT, 0)) * power)
 					playSound(otherRoot, "big")
 					toast(player, knockedLoose
 						and string.format("You knocked it out of %s!", other.Name)
@@ -1840,14 +1858,16 @@ local function giveTools(player)
 	batHandle.Parent = bat
 	-- Held near the knob, barrel up.
 	bat.Grip = CFrame.new(0, -batHandle.Size.Y * 0.32, 0)
-	bat.Activated:Connect(function() swingBat(player, bat) end)
+	bat.Activated:Connect(function() swingBat(player) end)
 	bat.Equipped:Connect(function() unequipIfCarrying(player) end)
 	bat.Parent = backpack
 
 	local coil = Instance.new("Tool")
 	coil.Name = "Speed Coil"
 	coil.CanBeDropped = false
-	coil.ToolTip = string.format("+%d%% move speed while held", COIL_SPEED_BONUS * 100)
+	local owner = state[player]
+	coil.ToolTip = string.format("+%d%% move speed while held",
+		math.floor(coilBonus(owner and owner.upgrades.coil) * 100 + 0.5))
 	local coilHandle = Instance.new("Part")
 	coilHandle.Name = "Handle"
 	coilHandle.Size = Vector3.new(1.3, 1.3, 2.4)
@@ -2091,8 +2111,15 @@ buyRemote.OnServerEvent:Connect(function(player, key)
 	coins.Value = coins.Value - cost
 	s.upgrades[key] = level + 1
 
-	if key == "speed" then
+	if key == "speed" or key == "coil" then
 		updateWalkSpeed(player) -- feel it immediately, not on the next fuse/place
+	end
+	if key == "coil" then
+		local coil = player.Character and player.Character:FindFirstChild("Speed Coil")
+			or player:FindFirstChildOfClass("Backpack") and player:FindFirstChildOfClass("Backpack"):FindFirstChild("Speed Coil")
+		if coil then
+			coil.ToolTip = string.format("+%d%% move speed while held", math.floor(coilBonus(s.upgrades.coil) * 100 + 0.5))
+		end
 	end
 
 	playSound(playerRoot(player), "big")
@@ -2109,7 +2136,7 @@ buyAddonRemote.OnServerEvent:Connect(function(player, addonName)
 	local price = FusionRecipes.AddonPrice(addonName)
 	if not price then return end
 
-	if #s.inventory >= inventoryCapacity(s) then
+	if #s.inventory >= inventoryCapacity(s, player) then
 		toast(player, "Inventory full — sell or fuse something first.")
 		buyAddonRemote:FireClient(player, addonName, "full")
 		return
@@ -2159,7 +2186,7 @@ rebirthRemote.OnServerEvent:Connect(function(player)
 	end
 
 	coins.Value = 0
-	s.upgrades = { luck = 1, carry = 1, value = 1, speed = 1, storage = 1 }
+	s.upgrades = { luck = 1, carry = 1, value = 1, speed = 1, storage = 1, bat = 1, coil = 1 }
 	s.inventory = {}
 	s.placed = {}
 	updateWalkSpeed(player)
@@ -2278,7 +2305,7 @@ openCrateRemote.OnServerEvent:Connect(function(player, crateId)
 		openCrateRemote:FireClient(player, crateId, false, "wait")
 		return
 	end
-	if #s.inventory >= inventoryCapacity(s) then
+	if #s.inventory >= inventoryCapacity(s, player) then
 		toast(player, "Inventory full — sell or fuse something first.")
 		openCrateRemote:FireClient(player, crateId, false, "full")
 		return
@@ -2358,7 +2385,7 @@ local function canReceiveTradedItem(player, itemName, source, outgoingRef)
 		end
 		return freeSlots > 0
 	elseif source == "inventory" then
-		local freeSlots = inventoryCapacity(s) - #s.inventory
+		local freeSlots = inventoryCapacity(s, player) - #s.inventory
 		if outgoingRef and outgoingRef.source == "inventory" then
 			freeSlots = freeSlots + 1
 		end
@@ -2632,7 +2659,7 @@ returnSlotToInventory = function(player, index)
 	local itemName = type(index) == "number" and s.slots[index]
 	if not itemName then return end
 
-	if #s.inventory >= inventoryCapacity(s) then
+	if #s.inventory >= inventoryCapacity(s, player) then
 		toast(player, "Inventory's full — sell or place something first.")
 		return
 	end
@@ -2682,7 +2709,7 @@ local function unplacePet(player, slot)
 	local itemName = type(slot) == "number" and s.placed[slot]
 	if not itemName then return end
 
-	if #s.inventory >= inventoryCapacity(s) then
+	if #s.inventory >= inventoryCapacity(s, player) then
 		toast(player, "Inventory's full — sell something first.")
 		return
 	end
@@ -2746,45 +2773,6 @@ redeemCodeRemote.OnServerEvent:Connect(function(player, rawCode)
 	end
 
 	pushUI(player)
-end)
-
-------------------------------------------------------------------
--- Auto-Collect gamepass — the old coin-bought "Scrap Magnet" upgrade
--- (auto-grabbed the nearest scrap every tick, whether you wanted it or
--- not) was removed 2026-09-14 at the user's request: "the upgrade is
--- useless it pick up everything you get near even if you dont want
--- to." The paid Auto-Collect gamepass keeps working exactly as before —
--- this loop is unchanged for it, only the upgrade-driven radius is gone.
-------------------------------------------------------------------
-
-task.spawn(function()
-	while true do
-		task.wait(1.5)
-
-		for _, player in ipairs(Players:GetPlayers()) do
-			local s = state[player]
-			if s and Gamepasses.Radius(player) > 0 and #s.slots < capacity(player, s) then
-				local root = playerRoot(player)
-				if root then
-					local radius = Gamepasses.Radius(player)
-					local nearest, nearestDist = nil, radius
-
-					for _, part in ipairs(getScrapFolder():GetChildren()) do
-						if part:IsA("BasePart") and not justDroppedBy(part, player) then
-							local dist = (part.Position - root.Position).Magnitude
-							if dist < nearestDist then
-								nearest, nearestDist = part, dist
-							end
-						end
-					end
-
-					if nearest then
-						grabItem(player, nearest)
-					end
-				end
-			end
-		end
-	end
 end)
 
 ------------------------------------------------------------------
@@ -2975,6 +2963,8 @@ local function onPlayerAdded(player)
 	local upgrades = data.upgrades or { luck = 1, carry = 1, value = 1, speed = 1 }
 	upgrades.speed = upgrades.speed or 1 -- fills in for a save from before Speed Boots existed
 	upgrades.storage = upgrades.storage or 1 -- and before Storage Space existed
+	upgrades.bat = upgrades.bat or 1 -- and before Bat Strength and Speed Coil
+	upgrades.coil = upgrades.coil or 1
 
 	state[player] = {
 		slots = {},

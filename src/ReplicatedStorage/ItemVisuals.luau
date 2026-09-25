@@ -2,7 +2,17 @@
 -- Authored Models live in ItemModels; legacy single-part items still work.
 local RS = game:GetService("ReplicatedStorage")
 local templates = RS:WaitForChild("ItemModels")
+local FusionRecipes = require(RS:WaitForChild("FusionRecipes"))
 local ItemVisuals = { GLOBAL_SCALE = 1.4 }
+
+-- An item's own model, or, until it has one, the model standing in for it
+-- (FusionRecipes.StandIn: the nearest addon or build that has a model).
+local function templateFor(name)
+	local own = templates:FindFirstChild(name)
+	if own then return own end
+	local standIn = FusionRecipes.StandIn(name)
+	return standIn and templates:FindFirstChild(standIn)
+end
 
 local function parts(object)
 	local list = {}
@@ -30,7 +40,7 @@ end
 
 -- Viewports use an anchored Model, avoiding physics-dependent joint motion.
 function ItemVisuals.CloneForViewport(name, tint)
-	local template = templates:FindFirstChild(name)
+	local template = templateFor(name)
 	if not template then return nil end
 	local model = Instance.new("Model")
 	model.Name = name
@@ -50,7 +60,7 @@ end
 
 function ItemVisuals.Create(name, position, sizeScale)
 	local scale = (sizeScale or 1) * ItemVisuals.GLOBAL_SCALE
-	local template = templates:FindFirstChild(name)
+	local template = templateFor(name)
 	if template and template:IsA("Model") then
 		local visual = template:Clone()
 		visual.Name = "Visual"

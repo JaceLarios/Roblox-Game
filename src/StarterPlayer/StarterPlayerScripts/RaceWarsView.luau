@@ -3,11 +3,11 @@
 
 	How Race Wars looks on screen: the lobby panel (next race, the
 	line-up, your car), the Race Garage car picker, the race HUD (level,
-	place, progress, the monster's gap, speed) and the big countdown and
-	result banners. RaceWarsUI.client (the controller) decides WHEN
-	and with WHAT; this module owns 100% of the look, so it can be
-	restyled without touching any race logic. Built with GarageTheme, the
-	same kit as the Shop.
+	place, progress, the monster's gap), the gauge cluster (speed, revs,
+	gear) and the big countdown and result banners. RaceWarsUI.client
+	(the controller) decides WHEN and with WHAT; this module owns 100% of
+	the look, so it can be restyled without touching any race logic.
+	Built with GarageTheme, the same kit as the Shop.
 
 	The controller calls:
 	  View.ShowPicker(cars, chosen, onPick)   cars: { name, topSpeed, reach, reachName, onPad }
@@ -238,16 +238,122 @@ carMarker.TextColor3 = INK
 local gapLabel = Garage.Text(hud, "Gap", "", UDim2.fromOffset(16, 68), UDim2.new(1, -32, 0, 28), 21, WHITE)
 stroke(gapLabel, 2)
 
-local speedo = Garage.New("Frame", gui, "Speedometer", {
-	AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -24), Size = UDim2.fromOffset(240, 78),
-	BackgroundColor3 = INK, BackgroundTransparency = 0.25, Visible = false,
+------------------------------------------------------------------
+-- The gauge cluster (bottom right): a tachometer and a speedometer with
+-- real needles over a dark binnacle, the gear and the speed as digital
+-- readouts, and a row of shift lights. The dial faces and the needle are
+-- drawn art (assets/race-wars/gauges); every dial sweeps 270 degrees,
+-- from bottom left (-135) to bottom right (+135).
+------------------------------------------------------------------
+
+local SPEEDO_FACE = "rbxassetid://93176201233485"
+local TACH_FACE = "rbxassetid://89059919617558"
+local NEEDLE = "rbxassetid://80905574025786"
+local SPEED_DIAL_MAX = 160
+local RPM_DIAL_MAX = 8000
+local DIGITAL = Color3.fromRGB(120, 230, 255)
+
+-- Left of the nav buttons down the right side of the screen.
+local CLUSTER_POSITION = UDim2.new(1, -186, 1, -12)
+local cluster = Garage.New("Frame", gui, "GaugeCluster", {
+	AnchorPoint = Vector2.new(1, 1), Position = CLUSTER_POSITION, Size = UDim2.fromOffset(500, 280),
+	BackgroundTransparency = 1, Visible = false,
 })
-Garage.New("UICorner", speedo, "Corner", { CornerRadius = UDim.new(0, 18) })
-local speedLabel = Garage.Text(speedo, "Speed", "0", UDim2.fromOffset(10, 2), UDim2.new(0.55, -10, 1, -4), 48, WHITE)
-speedLabel.TextXAlignment = Enum.TextXAlignment.Right
-stroke(speedLabel, 3)
-local speedUnit = Garage.Text(speedo, "Unit", "/ 0\nTOP", UDim2.new(0.55, 8, 0, 8), UDim2.new(0.45, -16, 1, -16), 18, Color3.fromRGB(190, 215, 240))
-speedUnit.TextXAlignment = Enum.TextXAlignment.Left
+local clusterScale = Instance.new("UIScale")
+clusterScale.Parent = cluster
+
+local hood = Garage.New("Frame", cluster, "Binnacle", {
+	Position = UDim2.fromOffset(24, 84), Size = UDim2.new(1, -48, 0, 180),
+	BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 0.05, ZIndex = 1,
+})
+Garage.New("UICorner", hood, "Corner", { CornerRadius = UDim.new(0, 90) })
+Garage.New("UIGradient", hood, "Shade", {
+	Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(46, 50, 60), Color3.fromRGB(10, 11, 14)),
+})
+local hoodEdge = Instance.new("UIStroke")
+hoodEdge.Color = Color3.fromRGB(88, 94, 106)
+hoodEdge.Thickness = 3
+hoodEdge.Parent = hood
+
+local function dial(name, image, position, size)
+	local face = Garage.New("ImageLabel", cluster, name, {
+		Image = image, Position = position, Size = UDim2.fromOffset(size, size),
+		BackgroundTransparency = 1, ZIndex = 2,
+	})
+	local needle = Garage.New("ImageLabel", face, "Needle", {
+		Image = NEEDLE, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Rotation = -135, ZIndex = 4,
+	})
+	return face, needle
+end
+local tachFace, tachNeedle = dial("Tachometer", TACH_FACE, UDim2.fromOffset(0, 50), 228)
+local speedFace, speedNeedle = dial("Speedometer", SPEEDO_FACE, UDim2.new(1, -272, 0, 8), 272)
+
+local function readout(parent, name, y, height, colour)
+	local label = Garage.Text(parent, name, "0", UDim2.fromScale(0.5, y), UDim2.fromScale(0.42, height), 40, colour)
+	label.AnchorPoint = Vector2.new(0.5, 0.5)
+	label.Font = Enum.Font.GothamBlack
+	label.TextScaled = true
+	label.ZIndex = 3
+	return label
+end
+local speedDigits = readout(speedFace, "SpeedDigits", 0.69, 0.13, DIGITAL)
+local gearDigit = readout(tachFace, "Gear", 0.69, 0.15, Color3.fromRGB(255, 190, 60))
+
+-- A cyan mark on the speedometer's rim at the car's top speed.
+local topMark = Garage.New("Frame", speedFace, "TopSpeedMark", {
+	Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = 3,
+})
+Garage.New("Frame", topMark, "Mark", {
+	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 14), Size = UDim2.fromOffset(6, 26),
+	BackgroundColor3 = DIGITAL, BorderSizePixel = 0, ZIndex = 3,
+})
+
+-- Shift lights over the tachometer: green, then amber, then red as the
+-- revs climb, all flashing red at the limiter.
+local SHIFT_COLOURS = {
+	Color3.fromRGB(60, 220, 110), Color3.fromRGB(60, 220, 110), Color3.fromRGB(60, 220, 110),
+	Color3.fromRGB(255, 200, 40), Color3.fromRGB(255, 200, 40),
+	Color3.fromRGB(255, 60, 50), Color3.fromRGB(255, 60, 50),
+}
+local shiftRow = Garage.New("Frame", cluster, "ShiftLights", {
+	AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.fromOffset(114, 18), Size = UDim2.fromOffset(170, 22),
+	BackgroundColor3 = Color3.fromRGB(12, 13, 16), BackgroundTransparency = 0.1, ZIndex = 2,
+})
+Garage.New("UICorner", shiftRow, "Corner", { CornerRadius = UDim.new(1, 0) })
+local shiftLights = {}
+for i = 1, #SHIFT_COLOURS do
+	local light = Garage.New("Frame", shiftRow, "Light" .. i, {
+		AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new((i - 0.5) / #SHIFT_COLOURS, 0, 0.5, 0),
+		Size = UDim2.fromOffset(14, 14), BackgroundColor3 = Color3.fromRGB(40, 42, 48), BorderSizePixel = 0, ZIndex = 3,
+	})
+	Garage.New("UICorner", light, "Corner", { CornerRadius = UDim.new(1, 0) })
+	shiftLights[i] = light
+end
+
+local function dialAngle(value, max)
+	return -135 + 270 * math.clamp(value / max, 0, 1)
+end
+
+local shownSpeed, shownRpm = 0, 0
+local function updateCluster(speed, topSpeed, rpm, gear)
+	-- Eased a little, the way a real needle swings rather than jumps.
+	shownSpeed += (math.max(speed, 0) - shownSpeed) * 0.35
+	shownRpm += (rpm - shownRpm) * 0.3
+	speedNeedle.Rotation = dialAngle(shownSpeed, SPEED_DIAL_MAX)
+	tachNeedle.Rotation = dialAngle(shownRpm, RPM_DIAL_MAX)
+	topMark.Rotation = dialAngle(topSpeed, SPEED_DIAL_MAX)
+	speedDigits.Text = tostring(math.floor(math.max(speed, 0) + 0.5))
+	gearDigit.Text = speed < 0.5 and "N" or tostring(gear)
+	local lit = math.clamp((shownRpm - 4800) / (6800 - 4800), 0, 1) * #SHIFT_COLOURS
+	local limiter = shownRpm > 6900 and math.floor(os.clock() * 12) % 2 == 0
+	for i, light in ipairs(shiftLights) do
+		if limiter then
+			light.BackgroundColor3 = SHIFT_COLOURS[#SHIFT_COLOURS]
+		else
+			light.BackgroundColor3 = i <= lit and SHIFT_COLOURS[i] or Color3.fromRGB(40, 42, 48)
+		end
+	end
+end
 
 local hint = Garage.Text(gui, "BailHint", "", UDim2.new(0.5, -200, 1, -130), UDim2.fromOffset(400, 24), 17, WHITE)
 stroke(hint, 2)
@@ -268,20 +374,21 @@ function View.ShowHud(levelCount)
 		})
 	end
 	hud.Visible = true
-	speedo.Visible = true
+	cluster.Visible = true
+	shownSpeed, shownRpm = 0, 0
 	hint.Text = hintText()
 	hint.Visible = true
 end
 
 function View.HideHud()
 	hud.Visible = false
-	speedo.Visible = false
+	cluster.Visible = false
 	hint.Visible = false
 end
 
 -- info: level, levelName, place ("2ND / 5", or nil racing alone),
 -- progress and monsterProgress (0 to 1 along the whole track), gap
--- (studs), monsterSpeed, speed, topSpeed.
+-- (studs), monsterSpeed, speed, topSpeed, rpm, gear.
 function View.UpdateHud(info)
 	levelLabel.Text = string.format("LEVEL %d · %s", info.level, string.upper(info.levelName))
 		.. (info.place and "  ·  " .. info.place or "")
@@ -292,8 +399,7 @@ function View.UpdateHud(info)
 	gapLabel.Text = string.format("MONSTER %d STUDS BEHIND · SPEED %d", math.max(0, math.floor(info.gap)), info.monsterSpeed)
 	gapLabel.TextColor3 = danger and Color3.fromRGB(255, 120, 110) or WHITE
 	hud.BackgroundColor3 = danger and Color3.fromRGB(90, 16, 20):Lerp(INK, (math.sin(os.clock() * 12) + 1) / 2) or INK
-	speedLabel.Text = tostring(math.max(0, math.floor(info.speed)))
-	speedUnit.Text = string.format("/ %d\nTOP", math.floor(info.topSpeed))
+	updateCluster(info.speed, info.topSpeed, info.rpm or 0, info.gear or 1)
 end
 
 ------------------------------------------------------------------
@@ -335,6 +441,9 @@ local function fitLobby()
 	lobby.Position = UDim2.new(0.5, 0, 0, phone and 72 or 10)
 	hud.Position = UDim2.new(0.5, 0, 0, phone and 72 or 10)
 	hudScale.Scale = phone and 0.8 or 1
+	-- Smaller on a phone, and left of the jump button.
+	clusterScale.Scale = phone and 0.56 or 1
+	cluster.Position = phone and UDim2.new(1, -132, 1, -4) or CLUSTER_POSITION
 end
 gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitLobby)
 fitLobby()

@@ -33,6 +33,26 @@ local eventRemote = ReplicatedStorage:WaitForChild("RaceEvent")
 local owned = { inventory = {}, placed = {} }
 local racing = false
 local topSpeed = 0
+
+-- The engine the gauge cluster shows. Cars have no real gears, so the revs
+-- come from the speed: six gears spread evenly up to the car's top speed,
+-- each running from about 3,400 to 7,000 rpm before the next one takes
+-- over, revving off the line at a standstill and bouncing off the limiter
+-- flat out.
+local GEARS = 6
+local function engine(speed, top, throttle)
+	local fraction = math.clamp(speed / math.max(top, 1), 0, 1)
+	local gear = math.clamp(math.floor(fraction * GEARS * 0.999) + 1, 1, GEARS)
+	local within = math.clamp(fraction * GEARS - (gear - 1), 0, 1)
+	local rpm = gear == 1 and (900 + within * 6100) or (3400 + within * 3600)
+	if throttle > 0 and fraction < 0.04 then
+		rpm = math.max(rpm, 2800)
+	end
+	if throttle > 0 and fraction > 0.985 then
+		rpm = 7000 + math.sin(os.clock() * 45) * 200
+	end
+	return rpm, gear
+end
 local trackLength = #RaceConfig.Levels * RaceConfig.LEVEL_LENGTH
 
 gameUpdate.OnClientEvent:Connect(function(data)
@@ -199,6 +219,8 @@ RunService.RenderStepped:Connect(function()
 	if chassis then
 		speed = chassis.AssemblyLinearVelocity:Dot(chassis.CFrame.LookVector)
 	end
+	local throttle = seat and seat:IsA("VehicleSeat") and seat.Throttle or 0
+	local rpm, gear = engine(math.max(speed, 0), topSpeed, throttle)
 
 	View.UpdateHud({
 		level = levelIndex,
@@ -210,5 +232,7 @@ RunService.RenderStepped:Connect(function()
 		monsterSpeed = monsterSpeed,
 		speed = speed,
 		topSpeed = topSpeed,
+		rpm = rpm,
+		gear = gear,
 	})
 end)

@@ -12,15 +12,10 @@ return {
 		description = "Double coins from sales, objectives, daily rewards and playtime. Stacks with sell boosts.",
 		bgIcons = { "💰", "✨", "💰", "✨" },
 	},
-	ExtraCarry = {
-		id = 0, name = "+2 Carry Slots", icon = "📦",
-		description = "Two extra slots on top of your Bigger Truck upgrades.",
-		bgIcons = { "📦", "🚚", "📦" },
-	},
-	AutoCollect = {
-		id = 0, name = "Auto-Collect", icon = "🧲",
-		description = "Collect nearby scrap within 20 studs. Earned magnet upgrades can extend this range.",
-		bgIcons = { "🧲", "✨", "🧲" },
+	ExtraStorage = {
+		id = 0, name = "+50 Inventory Space", icon = "📦",
+		description = "Fifty more inventory spaces on top of your Storage Space upgrades.",
+		bgIcons = { "📦", "🎒", "📦" },
 	},
 	StarterPack = {
 		id = 0, name = "Starter Pack", icon = "🎒",

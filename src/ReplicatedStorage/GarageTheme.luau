@@ -108,7 +108,7 @@ end
 Theme.IconAtlas = "rbxassetid://118283775447762"
 Theme.TravelAtlas = "rbxassetid://112069100804229"
 Theme.PetAtlas = "rbxassetid://108663379877358"
-local cells={DoubleCoins=0,value=0,coins=0,ExtraCarry=1,carry=1,AutoCollect=2,StarterPack=3,REWARDS=3,CODE=15,speed=4,luck=5,PETS=10,egg=6,crate=7,boost=8,rebirth=9,INVENTORY=11,storage=11,TRADE=12,TRAVEL=13,UPGRADES=14,INDEX=11,SHOP=11}
+local cells={DoubleCoins=0,value=0,coins=0,ExtraStorage=11,carry=1,StarterPack=3,bat="rbxassetid://90509580020108",coil=8,REWARDS=3,CODE=15,speed=4,luck=5,PETS=10,egg=6,crate=7,boost=8,rebirth=9,INVENTORY=11,storage=11,TRADE=12,TRAVEL=13,UPGRADES=14,INDEX=11,SHOP=11}
 function Theme.New(class,parent,name,props)
  local o=Instance.new(class) o.Name=name o:SetAttribute("Designed",true)
  for k,v in props or {} do o[k]=v end
@@ -122,6 +122,11 @@ return Theme.New("TextLabel",parent,name,{Text=text,Position=pos,Size=size,TextS
 end
 function Theme.Art(parent,kind,pos,size)
  local i=cells[kind] or 14
+ -- A few icons are drawn on their own rather than in the atlas (the bat's
+ -- is in assets/race-wars/gauges): those cells hold the image itself.
+ if type(i)=="string" then
+  return Theme.New("ImageLabel",parent,"GarageArt",{Image=i,Position=pos,Size=size,BackgroundTransparency=1,ScaleType=Enum.ScaleType.Fit,ZIndex=3})
+ end
  return Theme.New("ImageLabel",parent,"GarageArt",{Image=Theme.IconAtlas,ImageRectOffset=Vector2.new(math.floor((i%4)*1024/4),math.floor(math.floor(i/4)*1024/4)),ImageRectSize=Vector2.new(256,256),Position=pos,Size=size,BackgroundTransparency=1,ScaleType=Enum.ScaleType.Fit,ZIndex=3})
 end
 function Theme.PetArt(parent,index,pos,size)

@@ -4,7 +4,7 @@
 
 ## What this is
 
-Every junkyard fusion is one car plus one addon, so the recipe book is exactly 7 cars × 5 addons = 35 results. The addon sets the rarity, the car sets which result you get. That is live in the game now.
+Every junkyard fusion is one car plus one addon. The addon sets the rarity, the car sets which result you get. **As of Sept 24 there are 15 addons, not 5, so the book is 7 cars × 15 addons = 105 results**: the original 35 below, plus 70 new ones from ten new addons (see "Ten new addons" right after this section). That is live in the game now.
 
 Of the 35, **all 35 now have a model in the current Studio Edit place**. The three previously missing Legendary results were installed in this pass; see `assets/legendary-jets/README.md` for recovery files and verification limits. Some older models were built for a different recipe and now have to stand for one specific car, and a few are sized out of step with their rarity. Those remaining lists are below.
 
@@ -27,6 +27,49 @@ As of Sept 23 nothing drops on the yard floor any more:
 - **The seven cars ride a conveyor** that loops round the middle of the yard, out of a black box and back into it. The game turns each car so its **+Z end leads**, because all seven are built with the nose (grille, headlights, front wheels) toward +Z. Keep that on any rebuild, or that car rides the belt backwards.
 - **Addons are bought, not found.** They no longer spawn at all; the Shop has a new Addons tab where each addon's own model turns on a podium. The five addon models are Shop display pieces now as well as pad items.
 
+## Ten new addons (Sept 24): 10 addon models and 70 builds to make
+
+The user asked for more addons and for Codex to model them. There are now three addons to a rarity: the original one first, then two a little stronger (their builds are worth 5% and 10% more), so a build can still step up within its rarity. Every Race Wars crate now holds a random addon too, rarer the further into the race it was won.
+
+**Until a model exists the game borrows one**, so nothing shows as a blank block: a new addon shows its rarity's original addon, and a new build shows the same car's build with that original addon (Hover Heap shows as Redline Reaper). Drop a model into `ReplicatedStorage.ItemModels` under the exact name and it takes over at once; no code change. Addons follow the same rules as the five you already made (detailed multi-part models, sized like the others of their rarity).
+
+| Addon | Rarity | Shows as until modelled | What it is |
+| --- | --- | --- | --- |
+| **Straight Pipes** | Uncommon | Nitrous Tank | A pair of chrome exhaust pipes with blued, heat-stained tips on a small bolt-on bracket. Cheap and loud. |
+| **Scrap Turbo** | Uncommon | Nitrous Tank | A turbocharger cobbled together from scrap: dented snail housing, mismatched bolts, a hose held on with tape. |
+| **Rotary Engine** | Rare | Inline 4 | A compact rotary (Wankel) engine, clean and glossy, with a window showing the triangular rotor inside. |
+| **Twin Turbo** | Rare | Inline 4 | An inline engine with two matching turbochargers and polished crossover piping. |
+| **Supercharger** | Epic | V6 Engine | A big roots blower with a belt drive and a shiny intake scoop, the kind that sticks up through a hood. |
+| **Diesel Stack** | Epic | V6 Engine | A heavy diesel block with twin vertical smokestacks, sooty black at the tips, truck style. |
+| **V12 Engine** | Mythic | V8 Engine | A long, exotic V12 with twelve red intake trumpets and carbon-fibre covers. |
+| **Hover Fans** | Mythic | V8 Engine | Four ducted fan pods on a frame with glowing cyan blades: the part that turns a car into a hovercraft. |
+| **Rocket Booster** | Legendary | Jet Engine | A big rocket motor with a flared nozzle, fins and yellow-and-black warning stripes. |
+| **Fusion Core** | Legendary | Jet Engine | The game's namesake: a glowing plasma-blue reactor sphere in a cage of scrap metal and cables. |
+
+### The 70 new builds
+
+Same car, new part: each should read as that car wearing that addon, like the originals do.
+
+**Straight Pipes** (Uncommon): Rusted Sedan → Loud Lemon, Dirt Bike → Screamer Bike, Golf Cart → Putter Popper, Muscle Car → Rumble Pony, Cop Cruiser → Siren Screamer, Box Truck → Rattle Hauler, Monster Truck → Stomp Pipes
+
+**Scrap Turbo** (Uncommon): Rusted Sedan → Turbo Tin Can, Dirt Bike → Dust Devil, Golf Cart → Turbo Tee, Muscle Car → Boost Stallion, Cop Cruiser → Patrol Spooler, Box Truck → Turbo Mover, Monster Truck → Crusher Turbo
+
+**Rotary Engine** (Rare): Rusted Sedan → Spin Cycle Sedan, Dirt Bike → Wankel Wheelie, Golf Cart → Rotary Roller, Muscle Car → Rotor Rebel, Cop Cruiser → Rotary Ranger, Box Truck → Rotary Rig, Monster Truck → Rotary Wrecker
+
+**Twin Turbo** (Rare): Rusted Sedan → Double Trouble, Dirt Bike → Twin Spool Trail, Golf Cart → Double Bogey, Muscle Car → Twin Turbo Thunder, Cop Cruiser → Twin Chase, Box Truck → Twin Turbo Freight, Monster Truck → Twin Turbo Titan
+
+**Supercharger** (Epic): Rusted Sedan → Whine Machine, Dirt Bike → Blower Bike, Golf Cart → Sand Trap Supreme, Muscle Car → Blown Charger, Cop Cruiser → Supercharged Sheriff, Box Truck → Blown Big Rig, Monster Truck → Supercharged Smasher
+
+**Diesel Stack** (Epic): Rusted Sedan → Smoke Screen Sedan, Dirt Bike → Mud Stomper, Golf Cart → Diesel Driver, Muscle Car → Coal Roller, Cop Cruiser → Riot Rig, Box Truck → Diesel Dynamo, Monster Truck → Black Smoke Beast
+
+**V12 Engine** (Mythic): Rusted Sedan → Grand Tourer Ghost, Dirt Bike → Twelve Cylinder Chopper, Golf Cart → Hole in Twelve, Muscle Car → Grand Growler, Cop Cruiser → Pursuit Prime, Box Truck → Titan Twelve, Monster Truck → V12 Leviathan
+
+**Hover Fans** (Mythic): Rusted Sedan → Hover Heap, Dirt Bike → Hoverbike, Golf Cart → Hover Caddy, Muscle Car → Street Levitator, Cop Cruiser → Hover Patrol, Box Truck → Cargo Hoverer, Monster Truck → Hover Hulk
+
+**Rocket Booster** (Legendary): Rusted Sedan → Retro Rocket, Dirt Bike → Moonshot Moto, Golf Cart → Eagle Launcher, Muscle Car → Rocket Stallion, Cop Cruiser → Orbital Enforcer, Box Truck → Rocket Freight, Monster Truck → Rocket Juggernaut
+
+**Fusion Core** (Legendary): Rusted Sedan → Reactor Rustbucket, Dirt Bike → Atom Rider, Golf Cart → Atomic Albatross, Muscle Car → Fusion Fury, Cop Cruiser → Plasma Patrol, Box Truck → Core Carrier, Monster Truck → Fusion Colossus
+
 ## Race Wars (new, Sept 24) — art it still needs
 
 Pets, Brainrot Island and Haunted Hollow are gone. The game's second area is now **Race Wars** (Travel menu): you drive one of your cars down a long straight track through five levels while a monster chases you, and every level you clear wins a crate. Every car and fused result is raced using its own model from `ItemModels`, scaled to 13 studs long and driven nose-first along +Z. That's one more reason to keep the +Z rule above.
@@ -43,6 +86,11 @@ Everything in Race Wars works. The trees and rocks are real meshes now, but most
 | Race Garage, race HUD, countdown and banners | `RaceWarsView.luau` owns the whole look, so it can be restyled without touching race logic | Garage-kit placeholder |
 | Travel card picture | `WORLDS` in `GameUI.client.luau`, `scene = rbxassetid://136532362963777` | A drawn render of the track (`assets/race-wars/travel_card.png`) |
 | Line-up box and countdown board | `buildLobby` in `RaceTrack.luau` (`LineUp`, `QueueBoard`) | A painted yellow box and a plain black board |
+
+## Drawn art added Sept 24
+
+- **Gauge cluster** for Race Wars driving (bottom right while racing): a tachometer face, a speedometer face and a needle, drawn in code and uploaded (`assets/race-wars/gauges/`, ids in `RaceWarsView.luau`). A restyle only needs new images at the same size (512×512, dial sweeping 270° from bottom left to bottom right).
+- **Bat Strength upgrade icon** (`assets/race-wars/gauges/bat_icon.png`), drawn to sit with the atlas icons since the atlas has no bat. The Speed Coil upgrade uses the atlas's lightning battery for now. Both are fair game for a proper atlas pass.
 
 ## The bat (Sept 24)
 

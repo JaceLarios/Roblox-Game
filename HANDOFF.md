@@ -1,4 +1,26 @@
-# Latest handoff — Scheduled group races, a phone layout, trade requests, a real bat (2026-09-24)
+# Latest handoff — Ten new addons, crates that drop them, a gauge cluster, a cross swing, and two new upgrades (2026-09-24)
+
+Nine asks, all built, synced and play-tested in Studio (the Studio instance id changed mid-session; `list_roblox_studios` found it).
+
+**Ten new addons, three to a rarity.** Straight Pipes and Scrap Turbo (Uncommon), Rotary Engine and Twin Turbo (Rare), Supercharger and Diesel Stack (Epic), V12 Engine and Hover Fans (Mythic), Rocket Booster and Fusion Core (Legendary), each after its rarity's original part. A straight ladder of fifteen addons, each beating every build of the one before, would have needed values in the hundreds of millions, so the rule is now per rarity: a better rarity always beats every build below it, and within a rarity each addon's builds are worth 5% then 10% more than the original's, so a build can still step up. `FusionRecipes` asserts both at load. That is 70 new builds, all named (Hover Heap, Twin Turbo Thunder, Fusion Colossus...), 105 in all. Until Codex models them, `FusionRecipes.StandIn` lends each new addon its rarity's original model and each new build the same car's build with that original addon, so nothing shows as a cyan block; `ItemVisuals` uses it everywhere. The build sheet lists all ten with a description to model from, and all seventy builds.
+
+**Race crates hold addons now**, any of the fifteen, weighted by rarity and tipped by luck: the player's own times the crate's, which grows 1.4x per level. Measured over 20,000 rolls: Level 1 gives a Legendary 0.3% of the time, Level 5 18%.
+
+**The monster starts faster**: 72 instead of 60 (72/85/101/119/142 across the levels).
+
+**A fourth laser** on every road into a base, the bars 14 studs apart instead of 16 so four fit.
+
+**Gamepasses**: Auto-Collect is gone (the pass, its loop and the drop-regrab grace that only existed for it), and +2 Carry Slots became **+50 Inventory Space** (`ExtraStorage`, added in `inventoryCapacity`). **The Starter Pack has its own banner** under the passes in the Shop: the gift art on a pedestal, "STARTER PACK", its two perks as chips, a BEST VALUE tag and the buy button, stacking on narrow screens. The pass buy logic became one `wirePurchase(key, button)` both use.
+
+**A gauge cluster** replaces the little speed box while racing: a tachometer and a speedometer with drawn faces and a needle (PIL, uploaded; `assets/race-wars/gauges/`), a digital speed and gear, a cyan mark at the car's top speed, and shift lights that flash at the limiter. The revs come from the speed through six notional gears (`engine` in RaceWarsUI). Bottom right, left of the nav buttons; smaller and left of the jump button on phones.
+
+**The bat swings across**, not down: `BatSwing.client` overrides the right arm's joints for 0.45 s after the Animator each frame (wind up to the right, sweep to the left, wrist turned so the bat is held out level, body turning with it). Your own swing plays on click; the server sends everyone else's on the new `BatSwing` remote. Verified: the shoulder runs -99 to +80 degrees through a real swing on the R15 rig.
+
+**Two new upgrades**: Bat Strength (each level launches people 12% further) and Speed Coil (+5% on the coil's boost per level, from 15%). Tested by buying a coil level: walk speed with the coil out went 46.6 to 48.7 and the tooltip followed. The Bat Strength card has a drawn bat icon (the theme's `Art` now takes an image id as well as an atlas cell). **Also fixed**: the Upgrades list had a screenful of empty space below the last card (Roblox's automatic canvas miscounted); it is sized from the cards now.
+
+---
+
+# Previous handoff — Scheduled group races, a phone layout, trade requests, a real bat (2026-09-24)
 
 A thirteen-item list from the user, all done and tested in Studio.
 

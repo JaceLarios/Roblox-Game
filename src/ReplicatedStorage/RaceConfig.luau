@@ -42,7 +42,7 @@ RaceConfig.Levels = {
 -- the whole curve to the best car: add faster cars and every level speeds
 -- up with them, so the last level is only ever just possible, in the very
 -- best car driven cleanly, and you can always lose.
-RaceConfig.FIRST_MONSTER_SPEED = 60
+RaceConfig.FIRST_MONSTER_SPEED = 72
 RaceConfig.LAST_LEVEL_EDGE = 1.15
 
 -- A race starts every this many seconds, with whoever is lined up.

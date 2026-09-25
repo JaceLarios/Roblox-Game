@@ -728,6 +728,8 @@ local UPGRADE_COLORS = {
 	value = RED,
 	speed = Color3.fromRGB(242,85,100),
 	storage = Color3.fromRGB(255,166,48),
+	bat = Color3.fromRGB(196,122,64),
+	coil = Color3.fromRGB(64,190,255),
 }
 
 -- Filled/empty pip row for the level, e.g. "●●●●○○○○○○" for Lv 4/10 —
@@ -2250,6 +2252,18 @@ Garage.Button(claimBtn,Color3.fromRGB(255,163,19))
 Garage.Canvas(shopFrame,1200,820)
 shopLayout.CellSize=UDim2.fromOffset(548,250) shopLayout.FillDirectionMaxCells=2 shopLayout.CellPadding=UDim2.fromOffset(18,18)
 shopScroll.Position=UDim2.fromOffset(28,104) shopScroll.Size=UDim2.new(1,-56,0,526)
+-- The list's canvas follows the cards. Roblox's automatic sizing counted
+-- something well below the last card and left a screenful of empty space.
+-- The layout's size is in on-screen pixels, so it is scaled back first.
+shopScroll.AutomaticCanvasSize=Enum.AutomaticSize.None
+local function sizeShopCanvas()
+ local scale=shopScroll.AbsoluteSize.Y/math.max(shopScroll.Size.Y.Offset,1)
+ if scale<=0 then return end
+ shopScroll.CanvasSize=UDim2.fromOffset(0,shopLayout.AbsoluteContentSize.Y/scale+16)
+end
+shopLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(sizeShopCanvas)
+shopScroll:GetPropertyChangedSignal("AbsoluteSize"):Connect(sizeShopCanvas)
+sizeShopCanvas()
 shopFrame.Illustration:Destroy() Garage.Art(shopFrame,"UPGRADES",UDim2.fromOffset(14,8),UDim2.fromOffset(78,78))
 shopTitle.Size=UDim2.fromOffset(480,64)
 rebirthRow.Position=UDim2.fromOffset(24,648) rebirthRow.Size=UDim2.new(1,-48,0,145)
