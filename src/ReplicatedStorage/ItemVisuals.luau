@@ -102,6 +102,10 @@ function ItemVisuals.Create(name, position, sizeScale)
 				local worldPivot = visual:GetPivot():PointToWorldSpace(localPivot * scale)
 				table.insert(rig, { joint = joint, pivot = root.CFrame:PointToObjectSpace(worldPivot),
 					radius = radius * scale, rest = joint.C0, angle = 0 })
+				-- The same axle, sized for this copy, for players' screens
+				-- to roll the wheel from (see RollWheels).
+				p:SetAttribute("RollPivot", root.CFrame:PointToObjectSpace(worldPivot))
+				p:SetAttribute("RollRadius", radius * scale)
 			end
 		end
 		return root
@@ -122,11 +126,44 @@ function ItemVisuals.Create(name, position, sizeScale)
 	return part
 end
 
+-- A copy made on the server, as a player's screen sees it: its wheels
+-- from the RollPivot/RollRadius that Create left on them. Built again if
+-- more of the car arrives after it was first looked at.
+local function rigFromAttributes(object)
+	if not object:GetAttribute("ItemAssembly") then return nil end
+	local rig = {}
+	for _, joint in object:GetChildren() do
+		if joint:IsA("Weld") and joint.Name == "VisualJoint" and joint.Part1 then
+			local pivot, radius = joint.Part1:GetAttribute("RollPivot"), joint.Part1:GetAttribute("RollRadius")
+			if typeof(pivot) == "Vector3" and type(radius) == "number" and radius > 0 then
+				table.insert(rig, { joint = joint, pivot = pivot, radius = radius, rest = joint.C0, angle = 0 })
+			end
+		end
+	end
+	wheelRigs[object] = rig
+	local added, gone
+	added = object.ChildAdded:Connect(function()
+		added:Disconnect()
+		gone:Disconnect()
+		wheelRigs[object] = nil
+	end)
+	gone = object.AncestryChanged:Connect(function()
+		if not object:IsDescendantOf(game) then
+			added:Disconnect()
+			gone:Disconnect()
+			wheelRigs[object] = nil
+		end
+	end)
+	return rig
+end
+
 -- Distance-driven visual rolling. Positive distance is travel along the car's +Z.
 -- This keeps the conveyor deterministic; no unanchored physics or motor can shove an item off it.
+-- Called on players' screens (ConveyorBelt), never the server: a wheel
+-- turned there is sent to every player, every frame.
 function ItemVisuals.RollWheels(object, distance)
 	if distance ~= distance or math.abs(distance) == math.huge then return end
-	local rig = wheelRigs[object]
+	local rig = wheelRigs[object] or rigFromAttributes(object)
 	if not rig then return end
 	for _, wheel in rig do
 		if wheel.joint.Parent then
