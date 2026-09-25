@@ -202,6 +202,7 @@ RunService.Heartbeat:Connect(function(dt)
 				-- headlights and front wheels on that end), the opposite of
 				-- LookVector, so +Z is what points down the belt.
 				table.insert(frames, CFrame.lookAt(centre, centre - travel))
+				ItemVisuals.RollWheels(part, step)
 			end
 		end
 	end

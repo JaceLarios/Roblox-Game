@@ -1,0 +1,171 @@
+{
+  "models": [
+    {
+      "name": "Rusty Splice",
+      "bounds": [
+        3.7047,
+        2.59232,
+        4.8262
+      ],
+      "wheels": 4,
+      "triangles": 68804,
+      "valid": true
+    },
+    {
+      "name": "Loud Lemon",
+      "bounds": [
+        3.7047,
+        2.59232,
+        4.97412
+      ],
+      "wheels": 4,
+      "triangles": 72132,
+      "valid": true
+    },
+    {
+      "name": "Turbo Tin Can",
+      "bounds": [
+        3.75492,
+        2.60036,
+        4.8262
+      ],
+      "wheels": 4,
+      "triangles": 71156,
+      "valid": true
+    },
+    {
+      "name": "Boosted Beater",
+      "bounds": [
+        3.75212,
+        2.59232,
+        4.8262
+      ],
+      "wheels": 4,
+      "triangles": 74432,
+      "valid": true
+    },
+    {
+      "name": "Spin Cycle Sedan",
+      "bounds": [
+        3.7047,
+        2.59232,
+        4.86804
+      ],
+      "wheels": 4,
+      "triangles": 72412,
+      "valid": true
+    },
+    {
+      "name": "Double Trouble",
+      "bounds": [
+        3.7047,
+        2.59232,
+        4.9088
+      ],
+      "wheels": 4,
+      "triangles": 82188,
+      "valid": true
+    },
+    {
+      "name": "Street Menace",
+      "bounds": [
+        3.77608,
+        2.59232,
+        5.2274
+      ],
+      "wheels": 4,
+      "triangles": 80548,
+      "valid": true
+    },
+    {
+      "name": "Whine Machine",
+      "bounds": [
+        3.7839,
+        2.79064,
+        5.43546
+      ],
+      "wheels": 4,
+      "triangles": 87104,
+      "valid": true
+    },
+    {
+      "name": "Smoke Screen Sedan",
+      "bounds": [
+        3.85272,
+        2.82006,
+        4.8262
+      ],
+      "wheels": 4,
+      "triangles": 72056,
+      "valid": true
+    },
+    {
+      "name": "Redline Reaper",
+      "bounds": [
+        3.89344,
+        2.59232,
+        5.2215
+      ],
+      "wheels": 4,
+      "triangles": 86824,
+      "valid": true
+    },
+    {
+      "name": "Grand Tourer Ghost",
+      "bounds": [
+        3.89344,
+        2.59232,
+        6.1124
+      ],
+      "wheels": 4,
+      "triangles": 91908,
+      "valid": true
+    },
+    {
+      "name": "Hover Heap",
+      "bounds": [
+        4.7374,
+        2.40324,
+        4.838
+      ],
+      "wheels": 0,
+      "triangles": 16304,
+      "valid": true
+    },
+    {
+      "name": "Sonic Scrapheap",
+      "bounds": [
+        4.56658,
+        3.28164,
+        6.5525
+      ],
+      "wheels": 4,
+      "triangles": 87849,
+      "valid": true
+    },
+    {
+      "name": "Retro Rocket",
+      "bounds": [
+        4.18366,
+        2.98544,
+        6.3605
+      ],
+      "wheels": 4,
+      "triangles": 95980,
+      "valid": true
+    },
+    {
+      "name": "Reactor Rustbucket",
+      "bounds": [
+        4.18366,
+        2.86982,
+        5.8109
+      ],
+      "wheels": 4,
+      "triangles": 89316,
+      "valid": true
+    }
+  ],
+  "uniqueMeshes": 317,
+  "totalParts": 460
+}

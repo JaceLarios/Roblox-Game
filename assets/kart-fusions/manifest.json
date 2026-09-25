@@ -1,0 +1,182 @@
+[
+  {
+    "name": "Rusty Splice",
+    "file": "Rusty_Splice.json",
+    "rarity": "uncommon",
+    "size": [
+      3.704709053039551,
+      2.592311382293701,
+      4.826200008392334
+    ],
+    "parts": 34,
+    "triangles": 68804
+  },
+  {
+    "name": "Loud Lemon",
+    "file": "Loud_Lemon.json",
+    "rarity": "uncommon",
+    "size": [
+      3.704709053039551,
+      2.592311382293701,
+      4.974118709564209
+    ],
+    "parts": 34,
+    "triangles": 72132
+  },
+  {
+    "name": "Turbo Tin Can",
+    "file": "Turbo_Tin_Can.json",
+    "rarity": "uncommon",
+    "size": [
+      3.754929780960083,
+      2.6003530025482178,
+      4.826200008392334
+    ],
+    "parts": 30,
+    "triangles": 71156
+  },
+  {
+    "name": "Boosted Beater",
+    "file": "Boosted_Beater.json",
+    "rarity": "rare",
+    "size": [
+      3.7521228790283203,
+      2.592311382293701,
+      4.826200008392334
+    ],
+    "parts": 30,
+    "triangles": 74432
+  },
+  {
+    "name": "Spin Cycle Sedan",
+    "file": "Spin_Cycle_Sedan.json",
+    "rarity": "rare",
+    "size": [
+      3.704709053039551,
+      2.592311382293701,
+      4.868031024932861
+    ],
+    "parts": 30,
+    "triangles": 72412
+  },
+  {
+    "name": "Double Trouble",
+    "file": "Double_Trouble.json",
+    "rarity": "rare",
+    "size": [
+      3.704709053039551,
+      2.592311382293701,
+      4.908799648284912
+    ],
+    "parts": 31,
+    "triangles": 82188
+  },
+  {
+    "name": "Street Menace",
+    "file": "Street_Menace.json",
+    "rarity": "epic",
+    "size": [
+      3.7760753631591797,
+      2.592311382293701,
+      5.2273993492126465
+    ],
+    "parts": 29,
+    "triangles": 80548
+  },
+  {
+    "name": "Whine Machine",
+    "file": "Whine_Machine.json",
+    "rarity": "epic",
+    "size": [
+      3.7838971614837646,
+      2.790635347366333,
+      5.4354658126831055
+    ],
+    "parts": 32,
+    "triangles": 87104
+  },
+  {
+    "name": "Smoke Screen Sedan",
+    "file": "Smoke_Screen_Sedan.json",
+    "rarity": "epic",
+    "size": [
+      3.8527281284332275,
+      2.8200526237487793,
+      4.826200008392334
+    ],
+    "parts": 25,
+    "triangles": 72056
+  },
+  {
+    "name": "Redline Reaper",
+    "file": "Redline_Reaper.json",
+    "rarity": "mythic",
+    "size": [
+      3.8934333324432373,
+      2.592311382293701,
+      5.221499919891357
+    ],
+    "parts": 28,
+    "triangles": 86824
+  },
+  {
+    "name": "Grand Tourer Ghost",
+    "file": "Grand_Tourer_Ghost.json",
+    "rarity": "mythic",
+    "size": [
+      3.8934333324432373,
+      2.592311382293701,
+      6.112399578094482
+    ],
+    "parts": 29,
+    "triangles": 91908
+  },
+  {
+    "name": "Hover Heap",
+    "file": "Hover_Heap.json",
+    "rarity": "mythic",
+    "size": [
+      4.737407207489014,
+      2.403233766555786,
+      4.8379998207092285
+    ],
+    "parts": 13,
+    "triangles": 16304
+  },
+  {
+    "name": "Sonic Scrapheap",
+    "file": "Sonic_Scrapheap.json",
+    "rarity": "legendary",
+    "size": [
+      4.56657600402832,
+      3.281646728515625,
+      6.552496910095215
+    ],
+    "parts": 39,
+    "triangles": 87849
+  },
+  {
+    "name": "Retro Rocket",
+    "file": "Retro_Rocket.json",
+    "rarity": "legendary",
+    "size": [
+      4.183657169342041,
+      2.98543643951416,
+      6.360500812530518
+    ],
+    "parts": 37,
+    "triangles": 95980
+  },
+  {
+    "name": "Reactor Rustbucket",
+    "file": "Reactor_Rustbucket.json",
+    "rarity": "legendary",
+    "size": [
+      4.183657169342041,
+      2.869818925857544,
+      5.810909748077393
+    ],
+    "parts": 39,
+    "triangles": 89316
+  }
+]

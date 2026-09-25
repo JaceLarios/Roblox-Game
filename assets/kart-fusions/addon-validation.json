@@ -1,0 +1,147 @@
+[
+  {
+    "model": "Rusty Splice",
+    "addon": "Nitrous Tank",
+    "geometrySignatures": {
+      "Blue nitrous bottle": 2,
+      "Nitrous valve": 2,
+      "Braided nitrous hose": 2
+    },
+    "valid": true
+  },
+  {
+    "model": "Loud Lemon",
+    "addon": "Straight Pipes",
+    "geometrySignatures": {
+      "Straight chrome exhaust": 8,
+      "Blued straight pipe tip": 8,
+      "Exhaust bolt-on bracket": 2
+    },
+    "valid": true
+  },
+  {
+    "model": "Turbo Tin Can",
+    "addon": "Scrap Turbo",
+    "geometrySignatures": {
+      "Turbo snail housing": 1,
+      "Turbo welded patch": 1,
+      "Hose tape wrap": 3
+    },
+    "valid": true
+  },
+  {
+    "model": "Boosted Beater",
+    "addon": "Inline 4",
+    "geometrySignatures": {
+      "Cast engine block": 1,
+      "Colored cylinder bank": 1,
+      "Individual intake trumpet rolled lip": 4
+    },
+    "valid": true
+  },
+  {
+    "model": "Spin Cycle Sedan",
+    "addon": "Rotary Engine",
+    "geometrySignatures": {
+      "Rotary housing": 1,
+      "Visible triangular Wankel rotor": 1,
+      "Rotor inspection window rim": 1
+    },
+    "valid": true
+  },
+  {
+    "model": "Double Trouble",
+    "addon": "Twin Turbo",
+    "geometrySignatures": {
+      "Turbo snail housing": 2,
+      "Polished crossover": 1
+    },
+    "valid": true
+  },
+  {
+    "model": "Street Menace",
+    "addon": "V6 Engine",
+    "geometrySignatures": {
+      "Colored cylinder bank": 2,
+      "Individual intake trumpet rolled lip": 6
+    },
+    "valid": true
+  },
+  {
+    "model": "Whine Machine",
+    "addon": "Supercharger",
+    "geometrySignatures": {
+      "Roots blower case": 1,
+      "Oversized blower scoop": 1,
+      "Blower drive belt": 1
+    },
+    "valid": true
+  },
+  {
+    "model": "Smoke Screen Sedan",
+    "addon": "Diesel Stack",
+    "geometrySignatures": {
+      "Tall truck smokestack": 8,
+      "Soot black stack tip": 8
+    },
+    "valid": true
+  },
+  {
+    "model": "Redline Reaper",
+    "addon": "V8 Engine",
+    "geometrySignatures": {
+      "Colored cylinder bank": 2,
+      "Individual intake trumpet rolled lip": 8
+    },
+    "valid": true
+  },
+  {
+    "model": "Grand Tourer Ghost",
+    "addon": "V12 Engine",
+    "geometrySignatures": {
+      "Colored cylinder bank": 2,
+      "Individual intake trumpet rolled lip": 12
+    },
+    "valid": true
+  },
+  {
+    "model": "Hover Heap",
+    "addon": "Hover Fans",
+    "geometrySignatures": {
+      "Hover fan hub": 4,
+      "Cyan fan rotor blade": 28,
+      "Ducted hover fan": 16
+    },
+    "valid": true
+  },
+  {
+    "model": "Sonic Scrapheap",
+    "addon": "Jet Engine",
+    "geometrySignatures": {
+      "Jet intake mouth": 4,
+      "Jet fan blade": 13,
+      "Jet afterburner outlet": 4
+    },
+    "valid": true
+  },
+  {
+    "model": "Retro Rocket",
+    "addon": "Rocket Booster",
+    "geometrySignatures": {
+      "Rocket combustion chamber": 2,
+      "Rocket bell nozzle": 8,
+      "Rocket hazard band": 12
+    },
+    "valid": true
+  },
+  {
+    "model": "Reactor Rustbucket",
+    "addon": "Fusion Core",
+    "geometrySignatures": {
+      "Plasma reactor sphere": 1,
+      "Scrap reactor containment ring": 3,
+      "Plasma power conduit": 2
+    },
+    "valid": true
+  }
+]

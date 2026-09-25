@@ -1,0 +1,122 @@
+[
+  {
+    "name": "Rusty Splice",
+    "addon": "Nitrous Tank",
+    "rarity": "uncommon",
+    "color": "Turquoise",
+    "accent": "Orange",
+    "style": "Approved Rusted Sedan / Scrap Kart body with Nitrous Tank fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Loud Lemon",
+    "addon": "Straight Pipes",
+    "rarity": "uncommon",
+    "color": "Lemon",
+    "accent": "White",
+    "style": "Approved Rusted Sedan / Scrap Kart body with Straight Pipes fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Turbo Tin Can",
+    "addon": "Scrap Turbo",
+    "rarity": "uncommon",
+    "color": "Green",
+    "accent": "Orange",
+    "style": "Approved Rusted Sedan / Scrap Kart body with Scrap Turbo fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Boosted Beater",
+    "addon": "Inline 4",
+    "rarity": "rare",
+    "color": "Blue",
+    "accent": "Lemon",
+    "style": "Approved Rusted Sedan / Scrap Kart body with Inline 4 fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Spin Cycle Sedan",
+    "addon": "Rotary Engine",
+    "rarity": "rare",
+    "color": "Purple",
+    "accent": "Turquoise",
+    "style": "Approved Rusted Sedan / Scrap Kart body with Rotary Engine fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Double Trouble",
+    "addon": "Twin Turbo",
+    "rarity": "rare",
+    "color": "Orange",
+    "accent": "Blue",
+    "style": "Approved Rusted Sedan / Scrap Kart body with Twin Turbo fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Street Menace",
+    "addon": "V6 Engine",
+    "rarity": "epic",
+    "color": "Red",
+    "accent": "White",
+    "style": "Approved Rusted Sedan / Scrap Kart body with V6 Engine fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Whine Machine",
+    "addon": "Supercharger",
+    "rarity": "epic",
+    "color": "Pink",
+    "accent": "Gold",
+    "style": "Approved Rusted Sedan / Scrap Kart body with Supercharger fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Smoke Screen Sedan",
+    "addon": "Diesel Stack",
+    "rarity": "epic",
+    "color": "Copper",
+    "accent": "Lemon",
+    "style": "Approved Rusted Sedan / Scrap Kart body with Diesel Stack fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Redline Reaper",
+    "addon": "V8 Engine",
+    "rarity": "mythic",
+    "color": "Red",
+    "accent": "Black",
+    "style": "Approved Rusted Sedan / Scrap Kart body with V8 Engine fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Grand Tourer Ghost",
+    "addon": "V12 Engine",
+    "rarity": "mythic",
+    "color": "Cream",
+    "accent": "Purple",
+    "style": "Approved Rusted Sedan / Scrap Kart body with V12 Engine fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Hover Heap",
+    "addon": "Hover Fans",
+    "rarity": "mythic",
+    "color": "Turquoise",
+    "accent": "Purple",
+    "style": "Approved Rusted Sedan / Scrap Kart body with Hover Fans fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Sonic Scrapheap",
+    "addon": "Jet Engine",
+    "rarity": "legendary",
+    "color": "Blue",
+    "accent": "Orange",
+    "style": "Approved Rusted Sedan / Scrap Kart body with Jet Engine fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Retro Rocket",
+    "addon": "Rocket Booster",
+    "rarity": "legendary",
+    "color": "Orange",
+    "accent": "Cream",
+    "style": "Approved Rusted Sedan / Scrap Kart body with Rocket Booster fusion hardware and rarity-specific wheels and trim"
+  },
+  {
+    "name": "Reactor Rustbucket",
+    "addon": "Fusion Core",
+    "rarity": "legendary",
+    "color": "Green",
+    "accent": "Purple",
+    "style": "Approved Rusted Sedan / Scrap Kart body with Fusion Core fusion hardware and rarity-specific wheels and trim"
+  }
+]

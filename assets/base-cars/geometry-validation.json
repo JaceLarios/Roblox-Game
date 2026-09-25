@@ -1,0 +1,79 @@
+[
+  {
+    "name": "Rusted Sedan",
+    "bounds": [
+      3.3,
+      2.3,
+      4.945
+    ],
+    "parts": 32,
+    "triangles": 70124,
+    "valid": true
+  },
+  {
+    "name": "Dirt Bike",
+    "bounds": [
+      2.0,
+      2.56428,
+      4.485
+    ],
+    "parts": 16,
+    "triangles": 37218,
+    "valid": true
+  },
+  {
+    "name": "Golf Cart",
+    "bounds": [
+      3.1,
+      4.35624,
+      5.865
+    ],
+    "parts": 26,
+    "triangles": 68838,
+    "valid": true
+  },
+  {
+    "name": "Muscle Car",
+    "bounds": [
+      2.6,
+      1.72934,
+      5.175
+    ],
+    "parts": 24,
+    "triangles": 67441,
+    "valid": true
+  },
+  {
+    "name": "Cop Cruiser",
+    "bounds": [
+      3.1,
+      2.96964,
+      5.98
+    ],
+    "parts": 25,
+    "triangles": 67110,
+    "valid": true
+  },
+  {
+    "name": "Box Truck",
+    "bounds": [
+      3.6,
+      4.6785,
+      7.475
+    ],
+    "parts": 26,
+    "triangles": 86394,
+    "valid": true
+  },
+  {
+    "name": "Monster Truck",
+    "bounds": [
+      3.55,
+      3.02008,
+      4.485
+    ],
+    "parts": 29,
+    "triangles": 80710,
+    "valid": true
+  }
+]

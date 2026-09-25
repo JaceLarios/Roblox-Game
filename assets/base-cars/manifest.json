@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Rusted Sedan",
+    "file": "Rusted_Sedan.json",
+    "size": [
+      3.299999952316284,
+      2.299999713897705,
+      4.945000171661377
+    ],
+    "components": 363,
+    "parts": 32,
+    "triangles": 70124
+  },
+  {
+    "name": "Dirt Bike",
+    "file": "Dirt_Bike.json",
+    "size": [
+      2.0,
+      2.5642881393432617,
+      4.485000133514404
+    ],
+    "components": 207,
+    "parts": 16,
+    "triangles": 37218
+  },
+  {
+    "name": "Golf Cart",
+    "file": "Golf_Cart.json",
+    "size": [
+      3.0999999046325684,
+      4.356247901916504,
+      5.865000247955322
+    ],
+    "components": 443,
+    "parts": 26,
+    "triangles": 68838
+  },
+  {
+    "name": "Muscle Car",
+    "file": "Muscle_Car.json",
+    "size": [
+      2.5999996662139893,
+      1.7293354272842407,
+      5.175000190734863
+    ],
+    "components": 444,
+    "parts": 24,
+    "triangles": 67441
+  },
+  {
+    "name": "Cop Cruiser",
+    "file": "Cop_Cruiser.json",
+    "size": [
+      3.1000001430511475,
+      2.969640016555786,
+      5.980000019073486
+    ],
+    "components": 456,
+    "parts": 25,
+    "triangles": 67110
+  },
+  {
+    "name": "Box Truck",
+    "file": "Box_Truck.json",
+    "size": [
+      3.5999996662139893,
+      4.678498268127441,
+      7.47499942779541
+    ],
+    "components": 554,
+    "parts": 26,
+    "triangles": 86394
+  },
+  {
+    "name": "Monster Truck",
+    "file": "Monster_Truck.json",
+    "size": [
+      3.549999952316284,
+      3.020082950592041,
+      4.485000133514404
+    ],
+    "components": 381,
+    "parts": 29,
+    "triangles": 80710
+  }
+]
