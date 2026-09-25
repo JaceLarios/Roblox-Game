@@ -266,19 +266,6 @@ function FusionRecipes.IsAddon(name)
 	return addonRank[name] ~= nil
 end
 
--- The least and most any build with this addon is worth (its worst car
--- and its best), or nil for something that is not an addon.
-function FusionRecipes.BuildValueRange(addonName)
-	if not addonRank[addonName] then return nil end
-	local lowest, highest = math.huge, 0
-	for _, car in ipairs(FusionRecipes.Items) do
-		local value = results[recipe[car.name][addonName]].value
-		lowest = math.min(lowest, value)
-		highest = math.max(highest, value)
-	end
-	return lowest, highest
-end
-
 -- The name whose model stands in for this one until it has its own in
 -- ItemModels (an addon's `standIn`, or a build's; see above), or nil.
 function FusionRecipes.StandIn(name)
