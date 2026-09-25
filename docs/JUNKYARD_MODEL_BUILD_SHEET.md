@@ -29,7 +29,7 @@ As of Sept 23 nothing drops on the yard floor any more:
 
 ## Ten new addons (Sept 24): 10 addon models and 70 builds to make
 
-The user asked for more addons and for Codex to model them. There are now three addons to a rarity: the original one first, then two a little stronger (their builds are worth 5% and 10% more), so a build can still step up within its rarity. Every Race Wars crate now holds a random addon too, rarer the further into the race it was won.
+The user asked for more addons and for Codex to model them. There are now three addons to a rarity: the original one first, then two a little stronger (their builds are worth 5% and 9% more), so a build can still step up within its rarity and every rarity has one best addon. No two items in the game are worth the same. Every Race Wars crate now holds a random addon too, rarer the further into the race it was won.
 
 **Until a model exists the game borrows one**, so nothing shows as a blank block: a new addon shows its rarity's original addon, and a new build shows the same car's build with that original addon (Hover Heap shows as Redline Reaper). Drop a model into `ReplicatedStorage.ItemModels` under the exact name and it takes over at once; no code change. Addons follow the same rules as the five you already made (detailed multi-part models, sized like the others of their rarity).
 

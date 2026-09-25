@@ -89,7 +89,7 @@ local gridLayout = Garage.New("UIGridLayout", grid, "Grid", {
 local spinning = {}
 local function modelView(card, name)
 	local view = Garage.New("ViewportFrame", card, "Model", {
-		BackgroundTransparency = 1, Position = UDim2.fromOffset(8, 8), Size = UDim2.new(1, -16, 0, 176),
+		BackgroundTransparency = 1, Position = UDim2.fromOffset(8, 8), Size = UDim2.new(1, -16, 0, 158),
 		Ambient = Color3.fromRGB(205, 205, 215), LightColor = Color3.new(1, 1, 1),
 		LightDirection = Vector3.new(-1, -1, -1), ZIndex = 3,
 	})
@@ -108,6 +108,14 @@ local function modelView(card, name)
 	table.insert(spinning, { model = model, base = model:GetPivot() })
 end
 
+local function outlined(label)
+	local s = Instance.new("UIStroke")
+	s.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+	s.Color = Color3.fromRGB(8, 43, 77)
+	s.Thickness = 2
+	s.Parent = label
+end
+
 local cards = {}
 for order, addon in ipairs(FusionRecipes.Addons) do
 	local card = Garage.New("Frame", grid, addon.name, { LayoutOrder = order })
@@ -115,18 +123,37 @@ for order, addon in ipairs(FusionRecipes.Addons) do
 	modelView(card, addon.name)
 
 	local title = Garage.Text(card, "Title", ItemNames.Display(addon.name),
-		UDim2.new(0, 8, 0, 190), UDim2.new(1, -16, 0, 36), 24)
+		UDim2.new(0, 8, 0, 170), UDim2.new(1, -16, 0, 36), 24)
 	Garage.Plate(title)
 	title.TextScaled = true
 
 	local rarityName = ItemRarity.RarityName(addon.rarity) or string.upper(addon.rarity)
+	local rarityColour = ItemRarity.RarityColor(addon.rarity)
 	local makes = Garage.Text(card, "Makes", "Makes " .. rarityName .. " builds",
-		UDim2.new(0, 8, 0, 230), UDim2.new(1, -16, 0, 26), 19, ItemRarity.RarityColor(addon.rarity))
-	local makesStroke = Instance.new("UIStroke")
-	makesStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
-	makesStroke.Color = Color3.fromRGB(8, 43, 77)
-	makesStroke.Thickness = 2
-	makesStroke.Parent = makes
+		UDim2.new(0, 8, 0, 208), UDim2.new(1, -16, 0, 24), 19, rarityColour)
+	outlined(makes)
+
+	-- What its builds are worth, so the three addons of a rarity can be
+	-- told apart: each is a step up on the one before.
+	local lowest, highest = FusionRecipes.BuildValueRange(addon.name)
+	local worth = Garage.Text(card, "Worth", string.format("Builds worth %s–%s", commas(lowest), commas(highest)),
+		UDim2.new(0, 8, 0, 234), UDim2.new(1, -16, 0, 24), 17, Color3.new(1, 1, 1))
+	worth.TextScaled = true
+	outlined(worth)
+
+	-- The best addon of its rarity is the last of the three.
+	local nextAddon = FusionRecipes.Addons[order + 1]
+	if not nextAddon or nextAddon.rarity ~= addon.rarity then
+		local best = Garage.Text(card, "Best", "BEST " .. rarityName,
+			UDim2.new(1, -10, 0, 10), UDim2.fromOffset(120, 28), 16, Color3.new(1, 1, 1))
+		best.AnchorPoint = Vector2.new(1, 0)
+		best.TextScaled = true
+		best.ZIndex = 6
+		best.BackgroundTransparency = 0
+		best.BackgroundColor3 = rarityColour
+		Garage.New("UICorner", best, "Corner", { CornerRadius = UDim.new(0, 8) })
+		outlined(best)
+	end
 
 	local buy = Garage.New("TextButton", card, "Purchase", {
 		Text = commas(addon.price) .. " Coins", TextSize = 24, Font = Enum.Font.FredokaOne,

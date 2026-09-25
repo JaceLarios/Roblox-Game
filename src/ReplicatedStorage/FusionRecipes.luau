@@ -58,9 +58,12 @@ FusionRecipes.BaseItems = {
 	-- ADDONS, worst to best: the order is the upgrade ladder, so keep it.
 	-- An addon's own rarity is also the rarity of everything it makes.
 	-- Three to a rarity: the original part first, then two a little
-	-- stronger (their builds are worth 5% and 10% more). A better rarity
-	-- always beats every build of the one below it; within a rarity the
-	-- later addon is a small step up, so a build can still take it.
+	-- stronger (their builds are worth 5% and 9% more), so every rarity has
+	-- one addon better than the rest. A better rarity always beats every
+	-- build of the one below it; within a rarity the later addon is a small
+	-- step up, so a build can still take it. No two things in the game are
+	-- worth the same (checked below), which is why the steps are 5% and 9%
+	-- and not a round 10%: that tied Hover Heap with Chaos Hybrid.
 	-- The Nitrous Tank is a booster rather than an engine and exists so
 	-- fusing stays frequent now that every fusion uses an addon up.
 	--
@@ -74,19 +77,19 @@ FusionRecipes.BaseItems = {
 	-- own in ItemModels (see FusionRecipes.StandIn).
 	{ name = "Nitrous Tank",   rarity = "uncommon",  value = 20,  price = 50,     isAddon = true, resultValue = 150 },
 	{ name = "Straight Pipes", rarity = "uncommon",  value = 24,  price = 80,     isAddon = true, resultValue = 158, standIn = "Nitrous Tank" },
-	{ name = "Scrap Turbo",    rarity = "uncommon",  value = 28,  price = 110,    isAddon = true, resultValue = 165, standIn = "Nitrous Tank" },
+	{ name = "Scrap Turbo",    rarity = "uncommon",  value = 28,  price = 110,    isAddon = true, resultValue = 164, standIn = "Nitrous Tank" },
 	{ name = "Inline 4",       rarity = "rare",      value = 45,  price = 750,    isAddon = true, resultValue = 500 },
 	{ name = "Rotary Engine",  rarity = "rare",      value = 52,  price = 900,    isAddon = true, resultValue = 525, standIn = "Inline 4" },
-	{ name = "Twin Turbo",     rarity = "rare",      value = 60,  price = 1100,   isAddon = true, resultValue = 550, standIn = "Inline 4" },
+	{ name = "Twin Turbo",     rarity = "rare",      value = 60,  price = 1100,   isAddon = true, resultValue = 545, standIn = "Inline 4" },
 	{ name = "V6 Engine",      rarity = "epic",      value = 110, price = 4000,   isAddon = true, resultValue = 2000 },
 	{ name = "Supercharger",   rarity = "epic",      value = 125, price = 4800,   isAddon = true, resultValue = 2100, standIn = "V6 Engine" },
-	{ name = "Diesel Stack",   rarity = "epic",      value = 140, price = 5600,   isAddon = true, resultValue = 2200, standIn = "V6 Engine" },
+	{ name = "Diesel Stack",   rarity = "epic",      value = 140, price = 5600,   isAddon = true, resultValue = 2180, standIn = "V6 Engine" },
 	{ name = "V8 Engine",      rarity = "mythic",    value = 210, price = 20000,  isAddon = true, resultValue = 10000 },
 	{ name = "V12 Engine",     rarity = "mythic",    value = 235, price = 24000,  isAddon = true, resultValue = 10500, standIn = "V8 Engine" },
-	{ name = "Hover Fans",     rarity = "mythic",    value = 260, price = 28000,  isAddon = true, resultValue = 11000, standIn = "V8 Engine" },
+	{ name = "Hover Fans",     rarity = "mythic",    value = 260, price = 28000,  isAddon = true, resultValue = 10900, standIn = "V8 Engine" },
 	{ name = "Jet Engine",     rarity = "legendary", value = 300, price = 100000, isAddon = true, resultValue = 50000 },
-	{ name = "Rocket Booster", rarity = "legendary", value = 330, price = 120000, isAddon = true, resultValue = 52500, standIn = "Jet Engine" },
-	{ name = "Fusion Core",    rarity = "legendary", value = 360, price = 140000, isAddon = true, resultValue = 55000, standIn = "Jet Engine" },
+	{ name = "Rocket Booster", rarity = "legendary", value = 335, price = 120000, isAddon = true, resultValue = 52500, standIn = "Jet Engine" },
+	{ name = "Fusion Core",    rarity = "legendary", value = 360, price = 140000, isAddon = true, resultValue = 54500, standIn = "Jet Engine" },
 }
 
 -- The whole recipe book: one result per car per addon, in the addon order
@@ -243,8 +246,37 @@ do
 	assert(rarityLow > bestBelow, "FusionRecipes: " .. tostring(rarity) .. " builds overlap the rarity below them")
 end
 
+-- Every car, addon and build is worth something different, so nothing
+-- ties with anything else and each rarity has one best.
+do
+	local seen = {}
+	local function claim(value, name)
+		assert(not seen[value], "FusionRecipes: " .. name .. " is worth the same as " .. tostring(seen[value]))
+		seen[value] = name
+	end
+	for _, item in ipairs(FusionRecipes.BaseItems) do
+		claim(item.value, item.name)
+	end
+	for _, entry in ipairs(resultList) do
+		claim(entry.value, entry.name)
+	end
+end
+
 function FusionRecipes.IsAddon(name)
 	return addonRank[name] ~= nil
+end
+
+-- The least and most any build with this addon is worth (its worst car
+-- and its best), or nil for something that is not an addon.
+function FusionRecipes.BuildValueRange(addonName)
+	if not addonRank[addonName] then return nil end
+	local lowest, highest = math.huge, 0
+	for _, car in ipairs(FusionRecipes.Items) do
+		local value = results[recipe[car.name][addonName]].value
+		lowest = math.min(lowest, value)
+		highest = math.max(highest, value)
+	end
+	return lowest, highest
 end
 
 -- The name whose model stands in for this one until it has its own in
