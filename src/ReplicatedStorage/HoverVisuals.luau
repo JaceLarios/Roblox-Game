@@ -37,17 +37,21 @@ function HoverVisuals.Attach(root, source)
  local glowHost
  for _, p in parts do if p.Name:find('Energy') then glowHost = p; break end end
  glowHost = glowHost or parts[1]
+ -- The pulsing plasma light, for a build with a reactor core (Atom Rider). One without (the Hover Fans
+ -- builds) hovers with no core light.
  local corePosition = source:GetAttribute('ReactorLocalCenter')
  local core = clone:FindFirstChild('FusionCoreEffects',true)
- if not (core and core:IsA('Attachment')) then
-  if typeof(corePosition) ~= 'Vector3' then clone:Destroy(); error('Atom Rider requires an authored FusionCoreEffects attachment or ReactorLocalCenter attribute') end
+ if not (core and core:IsA('Attachment')) and typeof(corePosition) == 'Vector3' then
   core = Instance.new('Attachment'); core.Name = 'FusionCoreEffects'
   core.Position = glowHost.CFrame:PointToObjectSpace(source:GetPivot():PointToWorldSpace(corePosition))
   core.Parent = glowHost
  end
- local light = core:FindFirstChild('PlasmaGlow') or Instance.new('PointLight')
- light.Name = 'PlasmaGlow'; light.Color = Color3.fromRGB(50,220,255)
- light.Range = 6 * scale; light.Shadows = false; light.Brightness = 1.2; light.Parent = core
+ local light
+ if core and core:IsA('Attachment') then
+  light = core:FindFirstChild('PlasmaGlow') or Instance.new('PointLight')
+  light.Name = 'PlasmaGlow'; light.Color = Color3.fromRGB(50,220,255)
+  light.Range = 6 * scale; light.Shadows = false; light.Brightness = 1.2; light.Parent = core
+ end
  local mist = {}
  for _, y in {-bounds.Z * .28, bounds.Z * .28} do
   local a = Instance.new('Attachment'); a.Name = 'DownwardEnergy'
@@ -90,7 +94,7 @@ function HoverVisuals.Attach(root, source)
   -- the world origin, then moved to the track), and leaning about a point
   -- that far off swung the copy tens of studs away from the bike.
   clone:PivotTo(root.CFrame * motion * scaledOffset)
-  light.Brightness = 1.0 + pulse * 1.3
+  if light then light.Brightness = 1.0 + pulse * 1.3 end
   for _, e in mist do e.Rate = 5 + self.speed * 5 end
   -- Honor concealment/fades owned by the game, so carried/hidden items do not leak.
   for _, p in parts do

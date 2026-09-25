@@ -1,12 +1,30 @@
--- Independent Atom Rider cosmetics. RaceDrive, wheel joints, seats and physics stay owned by the race system.
+-- Independent hover cosmetics for every build with no wheels (Atom Rider, Hoverbike, Hover Heap, and any
+-- later ones). RaceDrive, wheel joints, seats and physics stay owned by the race system.
 local RS = game:GetService('ReplicatedStorage')
 local RunService = game:GetService('RunService')
 local CollectionService = game:GetService('CollectionService')
 local HoverVisuals = require(RS:WaitForChild('HoverVisuals'))
+local templates = RS:WaitForChild('ItemModels')
 local tag = 'ReactorHoverVisual'
 local active, pending = {}, {}
+-- A build hovers when its own model has no wheels: a Model made for a car + addon (FusionBase) with no
+-- part carrying WheelPivot. Older one-piece models have their wheels baked in and never match.
+local hoverCache = {}
+local function hovers(name)
+ if hoverCache[name] == nil then
+  local template = templates:FindFirstChild(name)
+  local wheelless = template ~= nil and template:IsA('Model') and template:GetAttribute('FusionBase') ~= nil
+  if wheelless then
+   for _, d in template:GetDescendants() do
+    if d:GetAttribute('WheelPivot') then wheelless = false; break end
+   end
+  end
+  hoverCache[name] = wheelless
+ end
+ return hoverCache[name]
+end
 local function eligible(root)
- return root:IsA('BasePart') and ((root.Name == 'Atom Rider' and root:GetAttribute('ItemAssembly') == true) or CollectionService:HasTag(root,tag))
+ return root:IsA('BasePart') and ((root:GetAttribute('ItemAssembly') == true and hovers(root.Name)) or CollectionService:HasTag(root,tag))
 end
 local function consider(root)
  if not eligible(root) or active[root] or pending[root] then return end
