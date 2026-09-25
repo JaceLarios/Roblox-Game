@@ -1,4 +1,14 @@
-# Latest handoff — Ten new addons, crates that drop them, a gauge cluster, a cross swing, and two new upgrades (2026-09-24)
+# Latest model handoff — Ten Blender addons installed and textured (2026-09-24)
+
+All ten new addon templates now exist under their exact names in `ReplicatedStorage.ItemModels`. They replace the visual stand-ins without gameplay script changes. See [assets/new-addons/README.md](assets/new-addons/README.md) for editable Blender source, raw mesh geometry, original PBR texture PNGs, preview images, installed asset manifests and the standalone staging-only `restore.edit.luau` recovery script.
+
+The approved bright detail pass includes a rebuilt V12 with angled cylinder banks and twelve open intake stacks, and a twin-rotor engine with a triangular rotor inspection window. All ten have appropriate cast, brushed, enamel, rubber, oxidized or carbon materials. Existing five addons and all fused-result models are untouched. The seventy new fused-result models remain separate unfinished work.
+
+Revision `BlenderAddons_20260924_v2`, texture revision `AddonMaterials_20260924_v2`. Previous ten templates preserved in `ServerStorage.AddonBackup_BeforeColorDetail_1790310653`. Geometry/rarity sizing, model lookup, viewport clones and welded pickup assemblies verified for all ten; visually reviewed in Studio. Temporary gallery removed. Full live gameplay, published-server asset access and mobile performance are untested. The user reported publishing everything before requesting this GitHub backup; publication was not independently verified. Recovery script has static checks only. No player data or gameplay scripts changed in this model pass.
+
+---
+
+# Previous gameplay handoff — Ten new addons, crates that drop them, a gauge cluster, a cross swing, and two new upgrades (2026-09-24)
 
 Nine asks, all built, synced and play-tested in Studio (the Studio instance id changed mid-session; `list_roblox_studios` found it).
 

@@ -1,4 +1,10 @@
-# Latest model backup — 2026-09-14
+# Latest addon backup — 2026-09-24
+
+The ten new addons have a complete authored-source package in [assets/new-addons](assets/new-addons/README.md): two Blender files, exact geometry JSON, twenty texture PNGs, asset IDs/transforms/material settings, previews and a staging-only Studio recovery script. The user reported publishing the updated models before this backup. Existing latest gameplay changes from GitHub were retained unchanged. Native place files, Creator Hub settings and player DataStores are not included.
+
+---
+
+# Earlier model backup — 2026-09-14
 
 The 38 installed Junkyard models now have a [final asset manifest](assets/junkyard-models/asset-manifest.json) and [Studio recovery script](assets/junkyard-models/restore-from-assets.luau). The [original template inventory](assets/junkyard-models/original-models.json) also records the earlier mesh/texture IDs and sizes. This supersedes the historical statement below that no item IDs are recorded in GitHub.
 

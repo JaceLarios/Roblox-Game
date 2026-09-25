@@ -27,7 +27,9 @@ As of Sept 23 nothing drops on the yard floor any more:
 - **The seven cars ride a conveyor** that loops round the middle of the yard, out of a black box and back into it. The game turns each car so its **+Z end leads**, because all seven are built with the nose (grille, headlights, front wheels) toward +Z. Keep that on any rebuild, or that car rides the belt backwards.
 - **Addons are bought, not found.** They no longer spawn at all; the Shop has a new Addons tab where each addon's own model turns on a podium. The five addon models are Shop display pieces now as well as pad items.
 
-## Ten new addons (Sept 24): 10 addon models and 70 builds to make
+## Ten new addons (Sept 24): addon models complete; 70 builds remain
+
+**Model update Sept 24:** all ten addon models below are now installed in Studio with exact names, rarity-matched sizes, bright detail and textured surfaces. Source, previews, manifests and recovery are in [assets/new-addons](../assets/new-addons/README.md). The user reported publishing them. The stand-in names below describe the fallback that was used before installation. This pass did not build or replace the seventy fused results listed afterward.
 
 The user asked for more addons and for Codex to model them. There are now three addons to a rarity: the original one first, then two a little stronger (their builds are worth 5% and 9% more), so a build can still step up within its rarity and every rarity has one best addon. No two items in the game are worth the same. Every Race Wars crate now holds a random addon too, rarer the further into the race it was won.
 

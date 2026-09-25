@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Straight Pipes",
+    "file": "Straight_Pipes.json",
+    "rarity": "uncommon",
+    "maxDimension": 3,
+    "parts": 8,
+    "components": 33,
+    "triangles": 9676
+  },
+  {
+    "name": "Scrap Turbo",
+    "file": "Scrap_Turbo.json",
+    "rarity": "uncommon",
+    "maxDimension": 3,
+    "parts": 9,
+    "components": 45,
+    "triangles": 5845
+  },
+  {
+    "name": "Rotary Engine",
+    "file": "Rotary_Engine.json",
+    "rarity": "rare",
+    "maxDimension": 3.30019,
+    "parts": 9,
+    "components": 68,
+    "triangles": 11556
+  },
+  {
+    "name": "Twin Turbo",
+    "file": "Twin_Turbo.json",
+    "rarity": "rare",
+    "maxDimension": 3.30019,
+    "parts": 9,
+    "components": 94,
+    "triangles": 10150
+  },
+  {
+    "name": "Supercharger",
+    "file": "Supercharger.json",
+    "rarity": "epic",
+    "maxDimension": 3.49989,
+    "parts": 8,
+    "components": 48,
+    "triangles": 4720
+  },
+  {
+    "name": "Diesel Stack",
+    "file": "Diesel_Stack.json",
+    "rarity": "epic",
+    "maxDimension": 3.49989,
+    "parts": 7,
+    "components": 82,
+    "triangles": 12988
+  },
+  {
+    "name": "V12 Engine",
+    "file": "V12_Engine.json",
+    "rarity": "mythic",
+    "maxDimension": 4,
+    "parts": 9,
+    "components": 170,
+    "triangles": 20868
+  },
+  {
+    "name": "Hover Fans",
+    "file": "Hover_Fans.json",
+    "rarity": "mythic",
+    "maxDimension": 4,
+    "parts": 9,
+    "components": 92,
+    "triangles": 13456
+  },
+  {
+    "name": "Rocket Booster",
+    "file": "Rocket_Booster.json",
+    "rarity": "legendary",
+    "maxDimension": 4.4999,
+    "parts": 11,
+    "components": 52,
+    "triangles": 7984
+  },
+  {
+    "name": "Fusion Core",
+    "file": "Fusion_Core.json",
+    "rarity": "legendary",
+    "maxDimension": 4.4999,
+    "parts": 12,
+    "components": 80,
+    "triangles": 24112
+  }
+]

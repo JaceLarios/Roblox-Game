@@ -1,0 +1,112 @@
+[
+  {
+    "name": "Straight Pipes",
+    "size": [
+      1.56024,
+      0.78158,
+      3.0
+    ],
+    "parts": 8,
+    "triangles": 9676,
+    "geometryValidated": true
+  },
+  {
+    "name": "Scrap Turbo",
+    "size": [
+      3.0,
+      2.31038,
+      2.3682
+    ],
+    "parts": 9,
+    "triangles": 5845,
+    "geometryValidated": true
+  },
+  {
+    "name": "Rotary Engine",
+    "size": [
+      3.09802,
+      3.21112,
+      3.30018
+    ],
+    "parts": 9,
+    "triangles": 11556,
+    "geometryValidated": true
+  },
+  {
+    "name": "Twin Turbo",
+    "size": [
+      3.30018,
+      2.37742,
+      3.29558
+    ],
+    "parts": 9,
+    "triangles": 10150,
+    "geometryValidated": true
+  },
+  {
+    "name": "Supercharger",
+    "size": [
+      3.162,
+      2.9016,
+      3.4999
+    ],
+    "parts": 8,
+    "triangles": 4720,
+    "geometryValidated": true
+  },
+  {
+    "name": "Diesel Stack",
+    "size": [
+      2.98606,
+      3.25752,
+      3.49989
+    ],
+    "parts": 7,
+    "triangles": 12988,
+    "geometryValidated": true
+  },
+  {
+    "name": "V12 Engine",
+    "size": [
+      3.22772,
+      2.255,
+      4.0
+    ],
+    "parts": 9,
+    "triangles": 20868,
+    "geometryValidated": true
+  },
+  {
+    "name": "Hover Fans",
+    "size": [
+      4.0,
+      0.61088,
+      4.0
+    ],
+    "parts": 9,
+    "triangles": 13456,
+    "geometryValidated": true
+  },
+  {
+    "name": "Rocket Booster",
+    "size": [
+      2.78632,
+      2.78632,
+      4.4999
+    ],
+    "parts": 11,
+    "triangles": 7984,
+    "geometryValidated": true
+  },
+  {
+    "name": "Fusion Core",
+    "size": [
+      4.4999,
+      4.44366,
+      4.01776
+    ],
+    "parts": 12,
+    "triangles": 24112,
+    "geometryValidated": true
+  }
+]
