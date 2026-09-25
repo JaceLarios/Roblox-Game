@@ -32,12 +32,19 @@ if not remote then
 end
 
 -- ---------- Tuning knobs. Change these, not the code below. ----------
-local SPAWN_INTERVAL = 3      -- seconds between cars coming out of the box
+local SPAWN_INTERVAL = 5      -- seconds between cars coming out of the box (was 3: too many at once)
 local DESPAWN_AFTER  = 40     -- seconds before an ignored crane prize disappears
--- Most cars on the belt at once. One leaves the box every 3 s and a lap
--- takes about 43 s, so the belt normally carries about 14; this only
+-- Most cars on the belt at once. One leaves the box every 5 s and a lap
+-- takes about 43 s, so the belt normally carries about 9; this only
 -- catches a hiccup, it is not what normally limits the count.
-local MAX_ITEMS      = 16
+local MAX_ITEMS      = 12
+
+-- The secret Legendary: every LEGENDARY_EVERY seconds a random Legendary
+-- build (any car with a Jet Engine, Rocket Booster or Fusion Core) rolls
+-- out of the box, for whoever gets to it first. Its time is workspace's
+-- "LegendaryDropAt" (server time), which the timer in every base counts
+-- down to; setting it to now drops one straight away (the admin panel).
+local LEGENDARY_EVERY = 20 * 60
 
 -- Golden Scrap removed 2026-09-14 ("its litteary worthless now, get rid
 -- of the gold scrap idea in general") — its old role as "the exciting
@@ -412,6 +419,44 @@ local function spawnScrap()
 	local part = spawnItemAt(itemName, (Conveyor.PointAt(0)), { onBelt = true })
 	ride(part, -math.max(part.Size.X, part.Size.Z) / 2)
 end
+
+-- Every Legendary build in the recipe book.
+local legendaryBuilds = {}
+for _, entry in ipairs(FusionRecipes.GetAllResults()) do
+	local name = type(entry) == "table" and entry.name or entry
+	if FusionRecipes.GetRarity(name) == "legendary" then
+		table.insert(legendaryBuilds, name)
+	end
+end
+
+-- The secret Legendary rolls out of the box, whatever the belt's cap.
+local function spawnSecretLegendary()
+	local itemName = legendaryBuilds[math.random(1, #legendaryBuilds)]
+	local part = spawnItemAt(itemName, (Conveyor.PointAt(0)), { onBelt = true, beam = true, silent = true })
+	ride(part, -math.max(part.Size.X, part.Size.Z) / 2)
+	workspace:SetAttribute("LegendaryDroppedAt", workspace:GetServerTimeNow())
+	announce(string.format("<font color=\"#FFCD28\">SECRET LEGENDARY!</font> %s just rolled out of the black box — first to grab it keeps it!",
+		itemTag(itemName)))
+	print("[ScrapSpawner] Secret Legendary:", itemName)
+end
+
+workspace:SetAttribute("LegendaryDropAt", workspace:GetServerTimeNow() + LEGENDARY_EVERY)
+task.spawn(function()
+	while true do
+		task.wait(0.5)
+		local now = workspace:GetServerTimeNow()
+		local dropAt = workspace:GetAttribute("LegendaryDropAt") or now
+		if now >= dropAt then
+			-- The next one is a full LEGENDARY_EVERY from now, so an early
+			-- drop (the admin panel) restarts the 20 minutes.
+			workspace:SetAttribute("LegendaryDropAt", now + LEGENDARY_EVERY)
+			local ok, err = pcall(spawnSecretLegendary)
+			if not ok then
+				warn("[ScrapSpawner] Secret Legendary failed: " .. tostring(err))
+			end
+		end
+	end
+end)
 
 ------------------------------------------------------------------
 -- Yard events

@@ -8,11 +8,10 @@ local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("Ite
 	  1. Scrap spawns in the shared yard at the centre of the map.
 	  2. Anyone can press E on scrap to carry it (2+ slots per player).
 	  3. You carry it back to YOUR OWN plot and fuse it there.
-	  4. The result goes straight into your Inventory, where it earns coins
-	     every few seconds for as long as you keep it — sell it anytime from
-	     the Inventory popup for an instant payout instead of waiting on the
-	     passive income, or send it back to carry to fuse into something
-	     bigger.
+	  4. The result goes straight into your Inventory; place it on a pad and
+	     it earns coins every few seconds for as long as it stays there, or
+	     send it back to carry to fuse into something bigger. Nothing is
+	     sold for coins.
 
 	Everything below is per-player. No shared slots, no shared discoveries.
 --]]
@@ -24,6 +23,7 @@ local RunService        = game:GetService("RunService")
 local PhysicsService    = game:GetService("PhysicsService")
 local TweenService      = game:GetService("TweenService")
 local HttpService       = game:GetService("HttpService")
+local CollectionService = game:GetService("CollectionService")
 
 local FusionEffects = require(ServerStorage:WaitForChild("FusionEffects"))
 local PickupEffects = require(ServerStorage:WaitForChild("PickupEffects"))
@@ -75,11 +75,11 @@ local PLOT_SIZE   = Layout.PlotSize
 local PET_PAD_COUNT = Layout.PetPadCount
 local PET_PAD_SIZE = 7
 
--- Luck: applied when you GRAB, not when scrap spawns. The yard is shared,
--- so a per-player spawn table is impossible — but a per-player reroll at
--- pickup gives the same feeling and keeps the middle fair.
-local LUCK_PER_LEVEL = 0.06   -- +6% upgrade chance per luck level above 1
-local LUCK_MAX_CHANCE = 0.40  -- never more than a 40% chance
+-- Luck only helps the crates you win in Race Wars (see crateLuck). It used
+-- to reroll what you grabbed into a rarer car too, which read as grabbing
+-- a bike and getting a Box Truck, so a grab is now always what you took.
+local LUCK_PER_LEVEL = 0.06   -- +6% crate luck per luck level above 1
+local LUCK_MAX_CHANCE = 0.40  -- never more than +40%
 
 -- Upgrades. All four are PERSONAL — none of them touch the shared yard,
 -- so buying them can't make the middle unfair for everyone else.
@@ -195,20 +195,12 @@ local UPGRADES = {
 		key = "luck", name = "Lucky Wrench", start = 1, max = 10,
 		baseCost = 500, mult = 1.9,
 		describe = function(lv)
-			return string.format("%d%% chance to upgrade scrap on pickup",
+			return string.format("+%d%% luck on the crates you win in races",
 				math.floor(math.min(LUCK_MAX_CHANCE, (lv - 1) * LUCK_PER_LEVEL) * 100))
 		end,
 	},
-	{
-		key = "value", name = "Haggler", start = 1, max = 8,
-		baseCost = 1000, mult = 2.0,
-		describe = function(lv) return string.format("+%d%% sell price", (lv - 1) * 15) end,
-	},
-	{
-		key = "speed", name = "Speed Boots", start = 1, max = 8,
-		baseCost = 700, mult = 1.85,
-		describe = function(lv) return string.format("+%d%% move speed", (lv - 1) * 8) end,
-	},
+	-- Haggler (sell price) went with selling, and Speed Boots went for
+	-- being unfair; old saves keep their levels, which nothing reads now.
 	{
 		key = "storage", name = "Storage Space", start = 1, max = 10,
 		baseCost = 2500, mult = 1.8,
@@ -258,7 +250,7 @@ end
 local GOALS = {
 	{ text = "Fuse anything at your pad",         reward = 100,   check = function(s) return s.count >= 1 end },
 	{ text = "Discover 3 different builds",       reward = 250,   check = function(s) return s.count >= 3 end },
-	{ text = "Sell a build for coins",            reward = 250,   check = function(s) return s.sales >= 1 end },
+	{ text = "Place a build on an earning pad",   reward = 250,   check = function(s) return #s.placed >= 1 end },
 	{ text = "Discover 6 different builds",       reward = 600,   check = function(s) return s.count >= 6 end },
 	{ text = "Fuse an Epic build (V6 Engine)",    reward = 1500,  check = function(s) return hasDiscoveredRarity(s, "epic") end },
 	{ text = "Discover 12 different builds",      reward = 3000,  check = function(s) return s.count >= 12 end },
@@ -341,13 +333,6 @@ if not startTradeRemote then
 	startTradeRemote.Parent = ReplicatedStorage
 end
 
-local sellInventoryRemote = ReplicatedStorage:FindFirstChild("SellInventoryItem")
-if not sellInventoryRemote then
-	sellInventoryRemote = Instance.new("RemoteEvent")
-	sellInventoryRemote.Name = "SellInventoryItem"
-	sellInventoryRemote.Parent = ReplicatedStorage
-end
-
 local moveToCarryRemote = ReplicatedStorage:FindFirstChild("MoveToCarry")
 if not moveToCarryRemote then
 	moveToCarryRemote = Instance.new("RemoteEvent")
@@ -412,7 +397,7 @@ local DAILY_REWARDS = {
 	{ kind = "boost", stat = "luck",  mult = 3, minutes = 10, label = "3x LUCK",  sub = "10 minutes" },
 	{ kind = "coins", amount = 1500, label = "1,500 Coins",      sub = "" },
 	{ kind = "item",  label = "RARE CRATE",   sub = "guaranteed rare" },
-	{ kind = "boost", stat = "value", mult = 2, minutes = 15, label = "2x SELL",   sub = "15 minutes" },
+	{ kind = "boost", stat = "value", mult = 2, minutes = 15, label = "2x INCOME", sub = "15 minutes" },
 	{ kind = "coins", amount = 3000, label = "3,000 Coins",      sub = "" },
 	{ kind = "jackpot", amount = 7500, label = "JACKPOT",        sub = "coins + luck + Jet Engine" },
 }
@@ -461,7 +446,7 @@ local state = {}   -- [player] = { slots, discovered, count, plotIndex }
 
 -- Boosts are timed multipliers stored as an expiry timestamp, so they
 -- keep ticking across a rejoin instead of resetting on every session.
--- Defined up here because grabItem and the sell prompt both call it,
+-- Defined up here because several things further up the file call it,
 -- and in Lua a local declared further down is simply not in scope above.
 local function boostMult(s, stat)
 	local b = s.boosts and s.boosts[stat]
@@ -471,11 +456,11 @@ local function boostMult(s, stat)
 	return 1
 end
 
--- Shared by manual sells and passive income — the Haggler upgrade, any
--- timed sell boost and a player's permanent Rebirth multiplier apply to
--- everything a player's builds earn, not just the moment you press Sell.
+-- What a player's builds earn on the pads is multiplied by: any timed
+-- income boost and their permanent Rebirth multiplier. (Selling, and the
+-- Haggler upgrade that raised its price, are gone.)
 local function valueMultiplier(player, s)
-	return (1 + (s.upgrades.value - 1) * 0.15) * boostMult(s, "value") * Rebirth.Multiplier(player)
+	return boostMult(s, "value") * Rebirth.Multiplier(player)
 end
 
 -- Best available colored tag for an item name that might carry a mutation
@@ -505,13 +490,12 @@ local function itemTierInfo(itemName)
 end
 
 -- Cars as transportation: every pet actually placed and earning (not just
--- sitting in Inventory) makes you faster, on top of the Speed Boots
--- upgrade below. Placement is capped at PET_PAD_COUNT, so this is now a
--- flat per-pad bonus instead of the old per-inventory-item one.
+-- sitting in Inventory) makes you faster. Placement is capped at
+-- PET_PAD_COUNT, so this is a flat per-pad bonus. (The Speed Boots
+-- upgrade that stacked on top is gone: it made the game unfair.)
 local BASE_WALK_SPEED = 22
 local PLACED_SPEED_PER_ITEM = 2
 local PLACED_SPEED_CAP = 10 -- Preserve movement balance with eight earning pads.
-local SPEED_UPGRADE_PER_LEVEL = 0.08 -- +8% per level above 1
 
 local function updateWalkSpeed(player)
 	local s = state[player]
@@ -519,7 +503,7 @@ local function updateWalkSpeed(player)
 	if not (s and humanoid) then return end
 
 	local placedBonus = math.min(#s.placed * PLACED_SPEED_PER_ITEM, PLACED_SPEED_CAP)
-	local speedMult = (1 + (s.upgrades.speed - 1) * SPEED_UPGRADE_PER_LEVEL) * Gamepasses.SpeedMultiplier(player)
+	local speedMult = Gamepasses.SpeedMultiplier(player)
 	-- The coil is a held tool, so its bonus applies only while it is
 	-- actually equipped, and never while carrying: the coil is one of the
 	-- two things you give up to haul loot.
@@ -581,7 +565,6 @@ local SOUNDS = {
 	fuse    = { id = "rbxasset://sounds/electronicpingshort.wav", pitch = 0.85, volume = 0.7 },
 	big     = { id = "rbxasset://sounds/bass.wav",                pitch = 1.0,  volume = 0.9 },
 	fail    = { id = "rbxasset://sounds/switch.wav",              pitch = 0.6,  volume = 0.5 },
-	sell    = { id = "rbxasset://sounds/electronicpingshort.wav", pitch = 1.5,  volume = 0.5 },
 }
 
 local function playSound(parent, key)
@@ -609,18 +592,18 @@ end
 -- Inventory — where a fusion result actually goes. No more physical
 -- display zones: the pad is the only place a new item enters a player's
 -- hands (grabbed scrap into carry, or a fusion result into here), and
--- selling / sending something back to carry to re-fuse both happen from
--- the Inventory popup instead of walking to a physical slot.
+-- sending something back to carry to re-fuse happens from the Inventory
+-- popup instead of walking to a physical slot.
 ------------------------------------------------------------------
 
--- Roughly how long passive income takes to match a manual sell of the
--- same item — after that it's pure profit for as long as it's held.
+-- How long a placed build takes to earn its own worth once (its worth
+-- divided by this is what it earns a second).
 local PLACEMENT_PAYBACK_SECONDS = 90
 local INCOME_TICK_SECONDS = 3
 
 -- How many items a player's Inventory holds: their Storage Space upgrade
 -- (see storageSlots) plus the +50 Inventory Space pass. Still a real
--- limit: sell, place or fuse to make room.
+-- limit: place or fuse to make room.
 local function inventoryCapacity(s, player)
 	return storageSlots(s and s.upgrades and s.upgrades.storage or 1) + Gamepasses.ExtraStorage(player)
 end
@@ -821,6 +804,14 @@ for i = 1, PLOT_COUNT do
 		Parent = model,
 	})
 	local lockLabel = makeLabel(lockButton, "LOCK BASE", 3, 200, Color3.fromRGB(120, 255, 150), 60)
+
+	-- The countdown to the next secret Legendary on the conveyor (every
+	-- 20 minutes, see ScrapSpawner), up over the Lock Base button in every
+	-- base. Players' screens run the clock (LegendaryTimer.client).
+	local legendaryTimer = makeLabel(lockButton, "SECRET LEGENDARY", 8, 300, Color3.fromRGB(255, 205, 40), 90)
+	legendaryTimer.Parent.Name = "LegendaryTimer"
+	legendaryTimer.Parent.Size = UDim2.fromOffset(300, 84)
+	CollectionService:AddTag(legendaryTimer.Parent, "LegendaryTimer")
 	local lockPrompt = Instance.new("ProximityPrompt")
 	lockPrompt.Name = "LockPrompt"
 	lockPrompt.ActionText = "Lock Base"
@@ -888,6 +879,10 @@ end
 local function pushUI(player)
 	local s = state[player]
 	if not s then return end
+
+	-- For the Race Wars lobby panel: whether races are still locked for
+	-- this player (they unlock with the first Rebirth).
+	player:SetAttribute("RaceLocked", Rebirth.Get(player) < 1)
 
 	local secretsFound, secretTotal = FusionRecipes.GetSecretProgress(s.discovered)
 	local goal = GOALS[s.goalIndex]
@@ -1034,27 +1029,6 @@ end
 -- is that other players see it and react.
 local function broadcast(message)
 	remote:FireAllClients({ announce = message })
-end
-
--- Items ordered rarest first, for luck upgrades. Vehicles only on
--- purpose: a lucky pickup should hand you a better CAR, not silently
--- turn one into an engine.
-local function rarerThan(itemName)
-	local current
-	for _, item in ipairs(FusionRecipes.Items) do
-		if item.name == itemName then current = item end
-	end
-	if not current then return nil end
-
-	local candidates = {}
-	for _, item in ipairs(FusionRecipes.Items) do
-		if item.weight < current.weight then
-			table.insert(candidates, item.name)
-		end
-	end
-
-	if #candidates == 0 then return nil end
-	return candidates[math.random(1, #candidates)]
 end
 
 -- Picks a rare car for the daily reward: a Cop Cruiser, Box Truck or
@@ -1339,8 +1313,8 @@ end
 -- Fusion
 ------------------------------------------------------------------
 
--- Selling and sending an item back to carry both live down in the
--- Inventory section below, next to the remotes that trigger them —
+-- Sending an item back to carry lives down in the Inventory section
+-- below, next to the remote that triggers it —
 -- there's no more physical placement step for a fusion result to go
 -- through here.
 
@@ -1415,7 +1389,7 @@ local function attemptFusion(player)
 	local bTag = instanceTag(b)
 
 	-- The "how much money it'll make you" half of the fusion pop-up — a
-	-- rate, not the flat sell value, since a fused item only ever earns
+	-- rate, not a flat worth, since a fused item only ever earns
 	-- once actually placed on a pad (see PLACEMENT_PAYBACK_SECONDS above).
 	local rarityName = ItemRarity.Name(info.tier, false, info.rarity)
 	local rateLine = string.format("%s — +%.1f coins/sec if placed",
@@ -1467,14 +1441,12 @@ local function attemptFusion(player)
 	-- Straight into inventory — the pad is the only place a new item
 	-- enters a player's hands now. Fusing always nets -1 slot overall
 	-- (2 ingredients consumed, 1 result produced), so this can only ever
-	-- fail to fit if the inventory was already completely full before
-	-- this fusion even started; auto-sell instead of losing it.
-	if #s.inventory < inventoryCapacity(s, player) then
-		table.insert(s.inventory, instanceName)
-	else
-		local mult = valueMultiplier(player, s)
-		local payout = addCoins(player, math.floor(instanceValue * mult)) or 0
-		toast(player, string.format("Inventory's full — %s auto-sold for %d coins instead.", resultTag, payout))
+	-- overfill an inventory that was already completely full before this
+	-- fusion started. It goes in anyway: nothing is sold for coins any
+	-- more, and a build is never simply lost.
+	table.insert(s.inventory, instanceName)
+	if #s.inventory > inventoryCapacity(s, player) then
+		toast(player, string.format("%s squeezed into a full Inventory — place or fuse something to make room.", resultTag))
 	end
 	updateWalkSpeed(player)
 
@@ -1608,7 +1580,7 @@ local function deliverCarried(player)
 	if #s.inventory >= inventoryCapacity(s, player) then
 		-- Deliberately does NOT drop it: you keep hold of it and get told
 		-- why, rather than having it silently fall on your own doorstep.
-		toast(player, "Inventory full — sell or fuse something first.")
+		toast(player, "Inventory full — fuse or place something first.")
 		return false
 	end
 
@@ -1665,19 +1637,8 @@ local function grabItem(player, part)
 	-- staging. Staging is only fed from the Inventory panel now.
 	if s.carrying then return false end
 
+	-- Exactly what you took: luck no longer rerolls a grab (see LUCK_PER_LEVEL).
 	local grabbed = part:GetAttribute("ItemName") or part.Name
-
-	-- Silent — no popup on a lucky upgrade anymore (see the "remove pickup
-	-- popups" note by grabItem's own header comment above); the upgrade
-	-- itself still happens, you just notice by looking at what you're
-	-- carrying rather than a toast interrupting you.
-	local chance = math.min(LUCK_MAX_CHANCE, (s.upgrades.luck * boostMult(s, "luck") - 1) * LUCK_PER_LEVEL * Rebirth.LuckMultiplier(player))
-	if math.random() < chance then
-		local upgraded = rarerThan(grabbed)
-		if upgraded then
-			grabbed = upgraded
-		end
-	end
 
 	if not beginCarry(player, grabbed) then return false end
 
@@ -2111,10 +2072,8 @@ buyRemote.OnServerEvent:Connect(function(player, key)
 	coins.Value = coins.Value - cost
 	s.upgrades[key] = level + 1
 
-	if key == "speed" or key == "coil" then
-		updateWalkSpeed(player) -- feel it immediately, not on the next fuse/place
-	end
 	if key == "coil" then
+		updateWalkSpeed(player) -- feel it immediately, not on the next fuse/place
 		local coil = player.Character and player.Character:FindFirstChild("Speed Coil")
 			or player:FindFirstChildOfClass("Backpack") and player:FindFirstChildOfClass("Backpack"):FindFirstChild("Speed Coil")
 		if coil then
@@ -2137,7 +2096,7 @@ buyAddonRemote.OnServerEvent:Connect(function(player, addonName)
 	if not price then return end
 
 	if #s.inventory >= inventoryCapacity(s, player) then
-		toast(player, "Inventory full — sell or fuse something first.")
+		toast(player, "Inventory full — fuse or place something first.")
 		buyAddonRemote:FireClient(player, addonName, "full")
 		return
 	end
@@ -2196,7 +2155,8 @@ rebirthRemote.OnServerEvent:Connect(function(player)
 	local level = Rebirth.Get(player)
 	local mult = Rebirth.Multiplier(player)
 	playSound(playerRoot(player), "big")
-	toast(player, string.format("REBIRTH %d\nPermanent x%.2f coin multiplier", level, mult), true)
+	toast(player, string.format("REBIRTH %d\nPermanent x%.2f coin multiplier%s", level, mult,
+		level == 1 and "\nRace Wars unlocked!" or ""), true)
 	broadcast(string.format("%s reached Rebirth %d!", player.Name, level))
 	pushUI(player)
 end)
@@ -2217,8 +2177,9 @@ local function sendHome(player)
 	end
 end
 
--- Luck for a crate roll: 1 plus the same chance the luck upgrade gives a
--- grab (see grabItem), so everything that raises your luck helps here.
+-- Luck for a crate roll: 1 plus your luck (the Lucky Wrench level, any
+-- luck boost and your Rebirth luck), capped at LUCK_MAX_CHANCE. This is
+-- the only thing luck does now.
 local function crateLuck(player, s)
 	return 1 + math.min(LUCK_MAX_CHANCE,
 		(s.upgrades.luck * boostMult(s, "luck") - 1) * LUCK_PER_LEVEL * Rebirth.LuckMultiplier(player))
@@ -2255,6 +2216,10 @@ local function ownsItem(s, itemName)
 	return false
 end
 
+-- Race Wars is locked until your first Rebirth (the Rebirth row in
+-- Upgrades says so too).
+local RACE_LOCKED_MESSAGE = "Races unlock after your first Rebirth — find it in Upgrades."
+
 RaceWars.Configure({
 	cars = function(player)
 		local s = state[player]
@@ -2272,8 +2237,13 @@ RaceWars.Configure({
 	canRace = function(player)
 		local s = state[player]
 		if not s then return false, "Still loading — try again in a moment." end
+		if Rebirth.Get(player) < 1 then return false, RACE_LOCKED_MESSAGE end
 		if s.carrying then return false, "Take what you're carrying home first." end
 		return true
+	end,
+	-- Races unlock with your first Rebirth; until then you cannot line up.
+	unlocked = function(player)
+		return Rebirth.Get(player) >= 1
 	end,
 	levelCleared = awardCrate,
 	toast = toast,
@@ -2306,7 +2276,7 @@ openCrateRemote.OnServerEvent:Connect(function(player, crateId)
 		return
 	end
 	if #s.inventory >= inventoryCapacity(s, player) then
-		toast(player, "Inventory full — sell or fuse something first.")
+		toast(player, "Inventory full — fuse or place something first.")
 		openCrateRemote:FireClient(player, crateId, false, "full")
 		return
 	end
@@ -2597,30 +2567,12 @@ cancelTradeRemote.OnServerEvent:Connect(function(player)
 end)
 
 ------------------------------------------------------------------
--- Inventory — selling and sending an item back to carry (to re-fuse it
--- into something bigger) both happen from the Inventory popup now,
--- instead of walking to a physical slot. Reuses the same remove/give
+-- Inventory — sending an item back to carry (to re-fuse it into
+-- something bigger) happens from the Inventory popup, instead of walking
+-- to a physical slot. Nothing is sold for coins. Reuses the same remove/give
 -- helpers Trading already validated, with "inventory" as just another
 -- itemRef source alongside "carry".
 ------------------------------------------------------------------
-
-sellInventoryRemote.OnServerEvent:Connect(function(player, index)
-	local s = state[player]
-	if not s then return end
-	local itemName = type(index) == "number" and s.inventory[index]
-	if not itemName then return end
-
-	local mult = valueMultiplier(player, s)
-	local payout = addCoins(player, math.floor(itemTierInfo(itemName).value * mult)) or 0
-	removeTradedItem(player, { source = "inventory", index = index, itemName = itemName })
-
-	playSound(playerRoot(player), "sell")
-	toast(player, string.format("Sold %s for %d coins.", instanceTag(itemName), payout))
-
-	s.sales = s.sales + 1
-	checkGoals(player)
-	pushUI(player)
-end)
 
 moveToCarryRemote.OnServerEvent:Connect(function(player, index)
 	local s = state[player]
@@ -2640,7 +2592,7 @@ moveToCarryRemote.OnServerEvent:Connect(function(player, index)
 	end
 
 	if not canReceiveTradedItem(player, itemName, "carry") then
-		toast(player, "Hands full — fuse or sell something first.")
+		toast(player, "Hands full — fuse or place something first.")
 		return
 	end
 
@@ -2660,7 +2612,7 @@ returnSlotToInventory = function(player, index)
 	if not itemName then return end
 
 	if #s.inventory >= inventoryCapacity(s, player) then
-		toast(player, "Inventory's full — sell or place something first.")
+		toast(player, "Inventory's full — fuse or place something first.")
 		return
 	end
 
@@ -2700,6 +2652,7 @@ placePetRemote.OnServerEvent:Connect(function(player, index)
 	refreshPlacedPets(player)
 
 	toast(player, string.format("%s is on the job — earning coins now.", instanceTag(itemName)))
+	checkGoals(player)
 	pushUI(player)
 end)
 
@@ -2710,7 +2663,7 @@ local function unplacePet(player, slot)
 	if not itemName then return end
 
 	if #s.inventory >= inventoryCapacity(s, player) then
-		toast(player, "Inventory's full — sell something first.")
+		toast(player, "Inventory's full — fuse something first.")
 		return
 	end
 

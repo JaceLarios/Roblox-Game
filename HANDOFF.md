@@ -1,4 +1,28 @@
-# Latest model handoff — Ten Blender addons installed and textured (2026-09-24)
+# Latest gameplay handoff — No selling, luck for crates only, races after Rebirth, a secret Legendary, admin tools (2026-09-25)
+
+Built, synced and play-tested in Studio.
+
+**Luck only helps race crates now.** The Lucky Wrench used to reroll a grab into a rarer car (a bike grabbed became a Box Truck in hand); a grab is now always what you took. Its card reads "+N% luck on the crates you win in races".
+
+**No selling.** The SELL button, the sell remote and every value label in the Inventory are gone (cards show name and rarity only; the details panel keeps "If placed: X / sec"). A fusion into a full Inventory goes in anyway instead of auto-selling. The "Sell a build" objective became "Place a build on an earning pad"; the day-5 daily reward is "2x INCOME" (it multiplies pad income). **Haggler and Speed Boots are removed** from Upgrades (old saves keep their levels; nothing reads them). New players' first coins come from the day-one daily reward, playtime and pads.
+
+**Inventory is sorted** best rarity first, then by hidden worth, then name.
+
+**Races unlock at Rebirth 1** (first Rebirth is 100k, with its coin and luck boost). Locked players standing in the yellow box are not lined up and get told why; the lobby panel and the Rebirth row say so.
+
+**Conveyor**: a car every 5 s (was 3). **Every 20 minutes a secret Legendary build** (any car with a Jet Engine, Rocket Booster or Fusion Core) rolls out of the black box with a beam and an announcement. **A countdown billboard sits over the Lock Base button in every base** (`LegendaryTimer` tag; `LegendaryTimer.client` runs the clock). It is a plain functional billboard: Codex, restyle freely.
+
+**Admin**: an ADMIN button top right for the owner only (`AdminConfig`), opening test tools: show the whole Index on your screen (saved discoveries untouched), drop the secret Legendary now, start the next race now, run a Crane Drop / Scrap Rush / Mutation Frenzy now. Server checks every action (`AdminService`). Also functional-only styling.
+
+**Race start hardening**: RaceDrive waits for the car's drive parts for as long as you are seated (it gave up after 5 s, which could leave a car sitting still all race); race cars stream whole; each car gets "Go" on its own.
+
+**Also today**: conveyor and race wheels spin on players' screens (never the server); every build with no wheels (Atom Rider, Hoverbike, Hover Heap) hovers, via Codex's `HoverVisuals`/`AtomHover` with fixes (whole-model streaming, lean about the item's centre, lifted clear of the ground).
+
+**For Codex, models**: **Cart Rocket** (Golf Cart + Nitrous Tank) is currently a white dirt bike and needs redoing as a golf cart. Bent Fusion is correctly a bike (Dirt Bike + Nitrous Tank).
+
+---
+
+# Previous model handoff — Ten Blender addons installed and textured (2026-09-24)
 
 All ten new addon templates now exist under their exact names in `ReplicatedStorage.ItemModels`. They replace the visual stand-ins without gameplay script changes. See [assets/new-addons/README.md](assets/new-addons/README.md) for editable Blender source, raw mesh geometry, original PBR texture PNGs, preview images, installed asset manifests and the standalone staging-only `restore.edit.luau` recovery script.
 

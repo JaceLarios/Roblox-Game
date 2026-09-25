@@ -454,8 +454,9 @@ local function clock(seconds)
 end
 
 -- info: secondsLeft (to the next race), running (a race is on now),
--- inLine (how many are lined up), queued (whether you are), carName and
--- carSpeed (what you would race in, or nil with no car).
+-- inLine (how many are lined up), queued (whether you are), locked
+-- (races not unlocked yet: no Rebirth), carName and carSpeed (what you
+-- would race in, or nil with no car).
 function View.UpdateLobby(info)
 	if overlay.Visible or UIStyle.ModalOpen() then
 		lobby.Visible = false
@@ -464,7 +465,10 @@ function View.UpdateLobby(info)
 	lobby.Visible = true
 	nextLabel.Text = (info.running and "RACE ON! · NEXT " or "NEXT RACE ") .. clock(info.secondsLeft)
 	local others = info.inLine == 1 and "1 in line" or string.format("%d in line", info.inLine)
-	if not info.carName then
+	if info.locked then
+		statusLabel.Text = "Races unlock after your first Rebirth"
+		statusLabel.TextColor3 = Color3.fromRGB(255, 150, 140)
+	elseif not info.carName then
 		statusLabel.Text = "You need a car to race"
 		statusLabel.TextColor3 = Color3.fromRGB(255, 150, 140)
 	elseif info.queued then

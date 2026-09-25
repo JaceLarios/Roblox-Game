@@ -65,6 +65,7 @@ local hooks = {
 	cars = function() return {} end,
 	owns = function() return false end,
 	canRace = function() return true end,
+	unlocked = function() return true end,
 	levelCleared = function() return false end,
 	toast = function() end,
 	broadcast = function() end,
@@ -126,6 +127,9 @@ local function buildCar(player, itemName, stats, frame)
 
 	local car = Instance.new("Model")
 	car.Name = player.Name .. "'s car"
+	-- Sent to players whole (the place streams): the driver's RaceDrive
+	-- needs the seat, the Chassis and its drive constraints all at once.
+	car.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 
 	local chassisHeight = math.clamp(size.Y * 0.55, 2.5, 6)
 	local chassis = Instance.new("Part")
@@ -442,7 +446,12 @@ local function startRace()
 					endRun(racer, "bailed")
 				else
 					racer.chassis.Anchored = false
-					racer.chassis:SetNetworkOwner(racer.player)
+					-- Each car on its own: a car that cannot be handed to its
+					-- driver must not stop everyone after it getting "Go".
+					local ok, err = pcall(racer.chassis.SetNetworkOwner, racer.chassis, racer.player)
+					if not ok then
+						warn("[RaceService] Could not give " .. racer.player.Name .. " their car: " .. tostring(err))
+					end
 					racer.seat:SetAttribute("Go", true)
 					racer.state = "racing"
 					racer.checkedAt = os.clock()
@@ -573,6 +582,7 @@ end
 
 -- Who is standing in the line-up, and who is in the lobby at all (for
 -- the lobby's on-screen panel). Returns how many are lined up.
+local lockedTold = {} -- [player] = true once told races are locked, until they leave the box
 local function refreshQueue()
 	local count = 0
 	for _, player in ipairs(Players:GetPlayers()) do
@@ -580,7 +590,19 @@ local function refreshQueue()
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		local here = humanoid ~= nil and root ~= nil and humanoid.Health > 0 and not racers[player]
-		local inLine = here and not humanoid.SeatPart and Track.InQueue(root.Position)
+		local inBox = here and not humanoid.SeatPart and Track.InQueue(root.Position)
+		-- Races are locked until a player's first Rebirth: standing in the
+		-- box does not line them up, and they are told why, once a visit.
+		local inLine = inBox and hooks.unlocked(player)
+		if inBox and not inLine then
+			if not lockedTold[player] then
+				lockedTold[player] = true
+				local _, reason = hooks.canRace(player)
+				hooks.toast(player, reason or "Races are locked for you right now.")
+			end
+		elseif not inBox then
+			lockedTold[player] = nil
+		end
 		if inLine then
 			queued[player] = queued[player] or os.clock()
 			count += 1
@@ -678,6 +700,7 @@ Players.PlayerRemoving:Connect(function(player)
 	Race.Leave(player)
 	queued[player] = nil
 	picks[player] = nil
+	lockedTold[player] = nil
 end)
 
 return Race

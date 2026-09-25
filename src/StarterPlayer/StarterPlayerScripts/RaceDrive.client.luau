@@ -45,13 +45,26 @@ local function stopDriving()
 	end
 end
 
+local attempt = nil -- the latest drive() call; an older one still waiting gives way to it
+
 local function drive(humanoid, seat)
 	stopDriving()
+	local mine = {}
+	attempt = mine
 	local car = seat.Parent
-	local chassis = car and car:WaitForChild("Chassis", 5)
-	local velocity = chassis and chassis:WaitForChild("DriveVelocity", 5)
-	local heading = chassis and chassis:WaitForChild("DriveHeading", 5)
-	if not (velocity and heading) then return end
+	-- Wait for the car's drive parts for as long as you are still in the
+	-- seat. Giving up after a few seconds (as this used to) left a car
+	-- whose parts reached this screen late (the place streams) sitting
+	-- still for the whole race.
+	local chassis, velocity, heading
+	while attempt == mine and humanoid.SeatPart == seat and seat.Parent do
+		chassis = car and car:FindFirstChild("Chassis")
+		velocity = chassis and chassis:FindFirstChild("DriveVelocity")
+		heading = chassis and chassis:FindFirstChild("DriveHeading")
+		if velocity and heading then break end
+		task.wait(0.1)
+	end
+	if attempt ~= mine or humanoid.SeatPart ~= seat or not (velocity and heading) then return end
 
 	local speed = 0
 	local _, yaw = chassis.CFrame:ToOrientation()

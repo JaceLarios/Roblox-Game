@@ -238,7 +238,7 @@ openRemote.OnClientEvent:Connect(function(_, ok, detail)
 	elseif detail == "full" then
 		revealToken += 1
 		reveal.Visible = false
-		blurb.Text = "Your Inventory is full — sell or fuse something, then open it."
+		blurb.Text = "Your Inventory is full — place or fuse something, then open it."
 		blurb.TextColor3 = Color3.fromRGB(200, 60, 50)
 		task.delay(3, function()
 			blurb.Text = "Clear levels in Race Wars to win crates. The longer a crate's timer, the better what's inside."

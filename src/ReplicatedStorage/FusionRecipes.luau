@@ -35,8 +35,9 @@ FusionRecipes.RarityWeight = {
 	legendary = 3,
 }
 
--- Everything grabbable in the Junkyard. `value` is what it sells for as a
--- loose item.
+-- Everything grabbable in the Junkyard. `value` is what it is worth: what
+-- it earns placed on a pad goes by it (nothing is sold for coins, and no
+-- worth is ever shown to players).
 --
 -- Cars ride the yard's conveyor. `weight` is how often each comes out of
 -- the black box, relative to the other cars (they add up to 88, so a
@@ -67,8 +68,9 @@ FusionRecipes.BaseItems = {
 	-- The Nitrous Tank is a booster rather than an engine and exists so
 	-- fusing stays frequent now that every fusion uses an addon up.
 	--
-	-- Prices: new players start with no coins, so the Nitrous Tank costs
-	-- about what a few cars sell for, and its first fusion pays that back.
+	-- Prices: new players start with no coins, so the Nitrous Tank is cheap
+	-- enough for the first day's daily reward, and its first fusion pays
+	-- that back.
 	-- Each rarity's first addon costs roughly one and a half to two times
 	-- the cheapest build it makes, so a placed build of that tier earns its
 	-- next addon back in a few minutes; the two after it cost a bit more.

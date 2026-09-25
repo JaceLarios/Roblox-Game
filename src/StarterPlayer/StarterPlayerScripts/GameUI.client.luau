@@ -25,7 +25,6 @@ local remote = ReplicatedStorage:WaitForChild("GameUpdate")
 local buyRemote = ReplicatedStorage:WaitForChild("BuyUpgrade")
 local claimRemote = ReplicatedStorage:WaitForChild("ClaimDaily")
 local rebirthRemote = ReplicatedStorage:WaitForChild("RebirthPlayer")
-local sellInventoryRemote = ReplicatedStorage:WaitForChild("SellInventoryItem")
 local moveToCarryRemote = ReplicatedStorage:WaitForChild("MoveToCarry")
 local placePetRemote = ReplicatedStorage:WaitForChild("PlacePet")
 local unplacePetRemote = ReplicatedStorage:WaitForChild("UnplacePet")
@@ -201,7 +200,7 @@ placeCoinCard()
 
 local BOOST_STYLE = {
 	luck  = { text = "LUCK", color = Color3.fromRGB(120, 200, 255) },
-	value = { text = "SELL", color = Color3.fromRGB(150, 240, 165) },
+	value = { text = "INCOME", color = Color3.fromRGB(150, 240, 165) },
 }
 
 local activeBoosts = {}
@@ -603,6 +602,39 @@ local indexGallery = require(ReplicatedStorage:WaitForChild("IndexGallery")).Cre
 local function redrawIndex()
 	indexGallery.Update(indexData)
 end
+
+-- The latest Index list off the server, and it split into the two tabs.
+local lastIndex = nil
+local function applyIndex()
+	if not lastIndex then return end
+	-- An admin can switch on seeing every entry (AdminPanel.client), to
+	-- check every model without discovering it. Only on their screen:
+	-- their saved discoveries are untouched.
+	local showAll = player:GetAttribute("AdminShowAllIndex") == true
+	-- One list off the server, split here: addons get their own Index
+	-- tab, so they should not also sit in the Junkyard list.
+	local junk, addons = {}, {}
+	for _, entry in ipairs(lastIndex) do
+		if showAll and not entry.known and entry.car and entry.addon then
+			-- The server hides an undiscovered name ("???"), but the recipe
+			-- book here knows it from the car and addon.
+			entry = table.clone(entry)
+			entry.name = FusionRecipes.Fuse(entry.car, entry.addon) or entry.name
+			entry.known = true
+		end
+		table.insert(entry.isAddon and addons or junk, entry)
+	end
+	-- Worst engine to best, so the tab reads as the ladder it is.
+	-- GetIndex sorts by name within a tier, and every addon is tier 1,
+	-- which would file the Jet Engine second between Inline 4 and V6.
+	table.sort(addons, function(x, y)
+		return (FusionRecipes.RarityIndex[x.rarity] or 0)
+			< (FusionRecipes.RarityIndex[y.rarity] or 0)
+	end)
+	indexData.junkyard = junk
+	indexData.addons = addons
+	redrawIndex()
+end
 bookBtn.MouseButton1Click:Connect(indexGallery.Toggle)
 UserInputService.InputBegan:Connect(function(input, processed)
 	if not processed and input.KeyCode == Enum.KeyCode.B then indexGallery.Toggle() end
@@ -802,9 +834,10 @@ local function redrawRebirth(info)
 		rebirthBtn.TextColor3 = DIM
 		rebirthBtn.Active = false
 	else
+		-- The first Rebirth also unlocks Race Wars.
 		rebirthNext.Text = string.format(
-			"Next: x%.2f coins, x%.2f luck — %d coins (clears inventory/upgrades only)",
-			info.nextMultiplier, info.nextLuckMultiplier, info.nextCost)
+			"Next: x%.2f coins, x%.2f luck%s — %d coins (clears inventory/upgrades only)",
+			info.nextMultiplier, info.nextLuckMultiplier, info.level == 0 and " + unlocks RACES" or "", info.nextCost)
 		rebirthBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 		rebirthBtn.Active = true
 		setRebirthArmed(rebirthArmed)
@@ -827,8 +860,8 @@ end)
 ------------------------------------------------------------------
 -- Inventory (top-center — the leaderboard used to live here, but that
 -- moved to a physical monument in the yard). A fusion result lands here
--- now instead of a physical display; selling or sending something back
--- to carry to re-fuse it both happen from this popup.
+-- now instead of a physical display; placing it on a pad or sending it
+-- back to carry to re-fuse it both happen from this popup.
 --
 -- Wrapped in `do...end`: this section alone builds ~25 top-level locals
 -- (frames, labels, buttons, layouts) that nothing outside it ever needs.
@@ -1064,12 +1097,10 @@ statNameCap.MaxTextSize = 21
 statNameCap.MinTextSize = 11
 statNameCap.Parent = statName
 
-local statValue = label(statPanel, "", UDim2.new(1, -28, 0, 22), Color3.fromRGB(106, 99, 87), Enum.Font.FredokaOne, 15)
-statValue.Position = UDim2.new(0, 14, 0, 222)
-statValue.TextXAlignment = Enum.TextXAlignment.Left
-
+-- What an item is worth is not shown (it is something only we know);
+-- what it earns a second once placed is.
 local statPerSecond = label(statPanel, "", UDim2.new(1, -28, 0, 22), Color3.fromRGB(106, 99, 87), Enum.Font.FredokaOne, 15)
-statPerSecond.Position = UDim2.new(0, 14, 0, 246)
+statPerSecond.Position = UDim2.new(0, 14, 0, 222)
 statPerSecond.TextXAlignment = Enum.TextXAlignment.Left
 
 local function actionButton(text, fill, textColor, offsetFromBottom, name)
@@ -1093,11 +1124,11 @@ local function actionButton(text, fill, textColor, offsetFromBottom, name)
 	return btn
 end
 
-local placeBtn = actionButton("PLACE ON PAD", UIStyle.Palette.Mint, INK, 158, "PlaceButton")
-local moveToCarryBtn = actionButton("CARRY TO FUSE", UIStyle.Palette.Steel, Color3.new(1, 1, 1), 106, "CarryToFuseButton")
-local sellBtn = actionButton("SELL", UIStyle.Palette.Copper, Color3.new(1, 1, 1), 54, "SellButton")
+-- No SELL button: nothing is sold for coins any more.
+local placeBtn = actionButton("PLACE ON PAD", UIStyle.Palette.Mint, INK, 106, "PlaceButton")
+local moveToCarryBtn = actionButton("CARRY TO FUSE", UIStyle.Palette.Steel, Color3.new(1, 1, 1), 54, "CarryToFuseButton")
 
-local emptyHint = label(statPanel, "Tap an item to see what it's worth.", UDim2.new(1, -28, 0, 44), Color3.fromRGB(140, 132, 118), Enum.Font.FredokaOne, 15)
+local emptyHint = label(statPanel, "Tap an item to take a closer look.", UDim2.new(1, -28, 0, 44), Color3.fromRGB(140, 132, 118), Enum.Font.FredokaOne, 15)
 emptyHint.Position = UDim2.new(0, 14, 0, 222)
 emptyHint.TextWrapped = true
 emptyHint.TextXAlignment = Enum.TextXAlignment.Left
@@ -1164,12 +1195,10 @@ local function relayout()
  statViewportHolder.Position=UDim2.fromOffset(10,12) statViewportHolder.Size=UDim2.new(1,-20,0,previewHeight)
  statViewportHolder.BackgroundTransparency=1
  statName.Position=UDim2.fromOffset(14,previewHeight+22) statName.Size=UDim2.new(1,-28,0,36)
- statValue.Position=UDim2.fromOffset(14,previewHeight+64)
- statValue.Size=UDim2.new(1,-28,0,30)
- statPerSecond.Position=UDim2.fromOffset(14,previewHeight+97)
+ statPerSecond.Position=UDim2.fromOffset(14,previewHeight+64)
  statPerSecond.Size=UDim2.new(1,-28,0,30)
  emptyHint.Position=UDim2.fromOffset(14,previewHeight+62)
- for _,btn in {placeBtn,moveToCarryBtn,sellBtn} do btn.Size=UDim2.new(1,-28,0,42) btn.TextSize=20 end
+ for _,btn in {placeBtn,moveToCarryBtn} do btn.Size=UDim2.new(1,-28,0,42) btn.TextSize=20 end
 end
 
 inventoryFrame:GetAttributeChangedSignal("Compact"):Connect(relayout)
@@ -1195,11 +1224,9 @@ local function showStatsFor(entry)
 
 	if not entry then
 		statName.Text = "Select an item"
-		statValue.Text = ""
 		statPerSecond.Text = ""
 		emptyHint.Visible = true
 		statViewportHolder.Visible = false
-		sellBtn.Visible = false
 		moveToCarryBtn.Visible = false
 		placeBtn.Visible = false
 		return
@@ -1216,10 +1243,8 @@ local function showStatsFor(entry)
 
 	statName.Text = ItemNames.Display(entry.name)
 	statName.RichText=false
-	statValue.Text = string.format("Value:  %d coins", math.floor(entry.value))
 	statPerSecond.Text = string.format("If placed:  %.1f / sec", entry.perSecond)
 	emptyHint.Visible = false
-	sellBtn.Visible = true
 	moveToCarryBtn.Visible = true
 	placeBtn.Visible = true
 	UIStyle.Surface(placeBtn,#currentPlaced >= currentPlacedCapacity and Color3.fromRGB(89,122,144) or Color3.fromRGB(20,218,157),3)
@@ -1243,7 +1268,7 @@ do
 end
 
 function redrawInventory(items, capacity)
-	-- Selling or moving an earlier-indexed item shifts everything after it
+	-- Placing or moving an earlier-indexed item shifts everything after it
 	-- down by one (table.remove semantics), so a plain index match after
 	-- the swap can land on a completely different item that happened to
 	-- inherit the old selection's slot. Comparing the name too catches that.
@@ -1264,8 +1289,26 @@ function redrawInventory(items, capacity)
 		empty.TextXAlignment = Enum.TextXAlignment.Center
 	end
 
+	-- Shown best first: rarest rarity at the top, and within a rarity the
+	-- better item first (by its hidden worth), then by name. Each entry
+	-- keeps its own `index` into the server's list, so sorting the display
+	-- changes nothing the buttons send.
+	local sorted = table.clone(items)
+	local function rankOf(entry)
+		if entry.isSecret then return 99 end
+		local rarityKey = FusionRecipes.GetRarity((Mutations.Unwrap(entry.name)))
+		return rarityKey and FusionRecipes.RarityIndex[rarityKey] or 0
+	end
+	table.sort(sorted, function(a, b)
+		local ra, rb = rankOf(a), rankOf(b)
+		if ra ~= rb then return ra > rb end
+		if a.value ~= b.value then return a.value > b.value end
+		if a.name ~= b.name then return a.name < b.name end
+		return a.index < b.index
+	end)
+
 	local stillSelected = false
-	for i, entry in ipairs(items) do
+	for i, entry in ipairs(sorted) do
 		if searchBox.Text ~= "" and not string.find(string.lower(ItemNames.Display(entry.name)), string.lower(searchBox.Text), 1, true) then continue end
 		local baseName, mutationId = Mutations.Unwrap(entry.name)
 		local tintColor = Mutations.Color(mutationId)
@@ -1334,8 +1377,9 @@ function redrawInventory(items, capacity)
 			zIndex = 2,
 		})
 
-		-- Name and value sit straight on the panel now, so both carry a dark
-		-- text outline for legibility rather than a coloured strip behind them.
+		-- The name sits straight on the panel, with a dark text outline for
+		-- legibility rather than a coloured strip behind it. (No worth label:
+		-- what an item is worth is not shown.)
 		local nameLbl = mark(label(card, ItemNames.Display(entry.name), UDim2.new(1, -6, 0, 20), rarityColor, Enum.Font.FredokaOne, 13))
 		nameLbl.Position = UDim2.new(0, 8, 1, -62)
 		nameLbl.Size=UDim2.new(1,-16,0,30)
@@ -1348,14 +1392,6 @@ function redrawInventory(items, capacity)
 		nameLbl.TextStrokeColor3 = INK
 		nameLbl.TextStrokeTransparency = 1
 		nameLbl.ZIndex = 4
-
-		local shown = entry.value >= 1000 and string.format("%.1fk", entry.value / 1000) or tostring(math.floor(entry.value))
-		local valueLbl = mark(label(card, shown, UDim2.fromOffset(58, 18), UIStyle.Palette.Gold, Enum.Font.FredokaOne, 13))
-		valueLbl.Position = UDim2.new(1, -60, 0, 2)
-		valueLbl.TextXAlignment = Enum.TextXAlignment.Right
-		valueLbl.TextStrokeColor3 = INK
-		valueLbl.TextStrokeTransparency = 0.1
-		valueLbl.ZIndex = 4
 
 		card.MouseButton1Click:Connect(function()
 			showStatsFor(entry)
@@ -1457,9 +1493,6 @@ function redrawPlaced(items, capacity)
 	end
 end
 
-sellBtn.MouseButton1Click:Connect(function()
-	if selectedIndex then sellInventoryRemote:FireServer(selectedIndex) end
-end)
 moveToCarryBtn.MouseButton1Click:Connect(function()
 	if selectedIndex then moveToCarryRemote:FireServer(selectedIndex) end
 end)
@@ -1487,16 +1520,15 @@ showStatsFor(nil)
 Garage.Shell(inventoryFrame)
 Garage.Header(inventoryTitle)
 Garage.Inset(gridBoard) Garage.Inset(statPanel) Garage.Inset(placedRow)
-Garage.Plate(statValue) Garage.Plate(statPerSecond)
+Garage.Plate(statPerSecond)
 Garage.Plate(statName)
 statName.BackgroundColor3=Color3.fromRGB(255,243,209)
 statName.TextColor3=INK statName.TextStrokeTransparency=1
 statViewportHolder:FindFirstChildOfClass("UIStroke").Transparency=1
 UIStyle.Surface(moveToCarryBtn,Color3.fromRGB(0,165,250),3)
 UIStyle.Surface(placeBtn,Color3.fromRGB(20,218,157),3)
-UIStyle.Surface(sellBtn,Color3.fromRGB(255,91,35),3)
-for _,btn in {placeBtn,moveToCarryBtn,sellBtn} do UIStyle.Surface(btn,btn.BackgroundColor3,3) UIStyle.Outline(btn,20) for _,g in btn:GetChildren() do if g:IsA("UIGradient") then g:Destroy() end end end
-for _,b in {placeBtn,moveToCarryBtn,sellBtn} do Garage.Button(b) end
+for _,btn in {placeBtn,moveToCarryBtn} do UIStyle.Surface(btn,btn.BackgroundColor3,3) UIStyle.Outline(btn,20) for _,g in btn:GetChildren() do if g:IsA("UIGradient") then g:Destroy() end end end
+for _,b in {placeBtn,moveToCarryBtn} do Garage.Button(b) end
 inventoryFrame.Illustration:Destroy()
 Garage.Art(inventoryFrame,"INVENTORY",UDim2.fromOffset(14,8),UDim2.fromOffset(78,78))
 relayout()
@@ -2097,24 +2129,14 @@ remote.OnClientEvent:Connect(function(data)
 	end
 
 	if data.index then
-		-- One list off the server, split here: addons get their own Index
-		-- tab, so they should not also sit in the Junkyard list.
-		local junk, addons = {}, {}
-		for _, entry in ipairs(data.index) do
-			table.insert(entry.isAddon and addons or junk, entry)
-		end
-		-- Worst engine to best, so the tab reads as the ladder it is.
-		-- GetIndex sorts by name within a tier, and every addon is tier 1,
-		-- which would file the Jet Engine second between Inline 4 and V6.
-		table.sort(addons, function(x, y)
-			return (FusionRecipes.RarityIndex[x.rarity] or 0)
-				< (FusionRecipes.RarityIndex[y.rarity] or 0)
-		end)
-		indexData.junkyard = junk
-		indexData.addons = addons
-		redrawIndex()
+		lastIndex = data.index
+		applyIndex()
 	end
 end)
+
+-- The admin panel's "show the whole Index" switch (AdminPanel.client sets
+-- this attribute on you, on your screen only): every entry shows as found.
+player:GetAttributeChangedSignal("AdminShowAllIndex"):Connect(applyIndex)
 
 ------------------------------------------------------------------
 -- Travel menu — a single button opens a big picker listing each

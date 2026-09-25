@@ -195,6 +195,7 @@ local function updateLobby()
 		running = workspace:GetAttribute("RaceRunning") == true,
 		inLine = workspace:GetAttribute("RaceQueueCount") or 0,
 		queued = player:GetAttribute("RaceQueued") == true,
+		locked = player:GetAttribute("RaceLocked") == true,
 		carName = car and car.name,
 		carSpeed = car and car.topSpeed,
 	})

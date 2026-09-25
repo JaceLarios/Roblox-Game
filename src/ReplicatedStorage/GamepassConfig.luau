@@ -9,7 +9,7 @@
 return {
 	DoubleCoins = {
 		id = 0, name = "2x Coins", icon = "💰",
-		description = "Double coins from sales, objectives, daily rewards and playtime. Stacks with sell boosts.",
+		description = "Double coins from your earning pads, objectives, daily rewards and playtime. Stacks with income boosts.",
 		bgIcons = { "💰", "✨", "💰", "✨" },
 	},
 	ExtraStorage = {
