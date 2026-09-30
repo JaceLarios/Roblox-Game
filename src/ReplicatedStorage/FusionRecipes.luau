@@ -252,9 +252,12 @@ end
 -- in Race Wars. They have their own tab in the Index, "???" until found.
 -- Their names are made up: real car brands are trademarks, and Roblox
 -- takes games down for using them. `model` is the ItemModels entry that
--- shows the car, when its name differs.
+-- shows the car, when its name differs. `credit` is the attribution its
+-- model's licence asks for, shown in game (its Index card and its
+-- Inventory details) as well as in the game's description.
 FusionRecipes.SecretCars = {
-	{ name = "Toro SVO", rarity = "secret", value = 400000, model = "SVO" },
+	{ name = "Toro SVO", rarity = "secret", value = 400000, model = "SVO",
+		credit = "Model by SDC PERFORMANCE (Sketchfab), CC BY 4.0, modified" },
 }
 local secretByName = {}
 for _, car in ipairs(FusionRecipes.SecretCars) do
@@ -314,6 +317,12 @@ end
 -- True for a Secret car (bare name).
 function FusionRecipes.IsSecretCar(name)
 	return secretByName[name] ~= nil
+end
+
+-- The credit a Secret car's model needs shown (see SecretCars), or nil.
+function FusionRecipes.Credit(name)
+	local car = secretByName[name]
+	return car and car.credit
 end
 
 -- A Secret car at random, for the rare roll out of the black box.
@@ -542,6 +551,8 @@ function FusionRecipes.GetIndex(discovered, secretFound)
 			name     = known and car.name or "???",
 			-- For the admin panel's "show whole Index" only.
 			hiddenName = car.name,
+			-- Shown on its card, found or not (the model's licence).
+			credit   = car.credit,
 			tier     = MAX_TIER,
 			rarity   = car.rarity,
 			isSecret = true,

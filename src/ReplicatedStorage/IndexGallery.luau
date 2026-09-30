@@ -296,9 +296,14 @@ function Gallery.Create(gui)
 					name.Size,name.Position=UDim2.new(1,-12,0,46),UDim2.new(0,6,1,-62)
 					name.TextScaled=true
 					make("UITextSizeConstraint",name,"NameLimit",{MinTextSize=12,MaxTextSize=21})
-					local status=caption(card,"Status",entry.known and "✓ Discovered" or "Keep exploring",13)
+					-- A Secret car's card carries its model's credit instead.
+					local status=caption(card,"Status",entry.credit or (entry.known and "✓ Discovered" or "Keep exploring"),13)
 					status.Size,status.Position=UDim2.new(1,-12,0,18),UDim2.new(0,6,1,-18)
 					status.TextColor3=entry.known and P.TealDeep or Color3.fromRGB(122,112,99)
+					if entry.credit then
+						status.TextScaled=true
+						make("UITextSizeConstraint",status,"CreditLimit",{MinTextSize=8,MaxTextSize=13})
+					end
 				end
 			end
 		end
