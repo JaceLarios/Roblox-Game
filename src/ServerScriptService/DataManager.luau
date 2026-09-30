@@ -58,6 +58,7 @@ local function defaultData()
 		-- save, for offline earnings) and tutorialDone (the first-join
 		-- tutorial finished or skipped) start out absent. PlotManager tells
 		-- a missing tutorialDone on an old save from a new player's.
+		secretCars = {}, -- names of the Secret cars this player has found (the Index's Secret tab).
 	}
 end
 

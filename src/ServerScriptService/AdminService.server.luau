@@ -10,6 +10,7 @@
 	              whoever is lined up (RaceService's RaceNextAt)
 	  CraneDrop, ScrapRush, MutationFrenzy
 	              run that yard event now (ScrapSpawner's TriggerYardEvent)
+	  SecretCar   a Secret car rolls out of the black box now (the same way)
 	Showing the whole Index needs nothing from the server: it is only on
 	the admin's own screen.
 --]]
@@ -25,7 +26,7 @@ if not remote then
 	remote.Parent = ReplicatedStorage
 end
 
-local YARD_EVENTS = { CraneDrop = true, ScrapRush = true, MutationFrenzy = true }
+local YARD_EVENTS = { CraneDrop = true, ScrapRush = true, MutationFrenzy = true, SecretCar = true }
 
 remote.OnServerEvent:Connect(function(player, action)
 	if not AdminConfig.IsAdmin(player) or type(action) ~= "string" then

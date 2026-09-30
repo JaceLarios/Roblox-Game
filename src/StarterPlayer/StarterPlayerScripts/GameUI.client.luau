@@ -636,7 +636,11 @@ local function applyIndex()
 	-- tab, so they should not also sit in the Junkyard list.
 	local junk, addons = {}, {}
 	for _, entry in ipairs(lastIndex) do
-		if showAll and not entry.known and entry.car and entry.addon then
+		if showAll and not entry.known and entry.hiddenName then
+			-- A Secret car the admin has not found yet.
+			entry.name = entry.hiddenName
+			entry.known = true
+		elseif showAll and not entry.known and entry.car and entry.addon then
 			-- The server hides an undiscovered name ("???"), but the recipe
 			-- book here knows it from the car and addon.
 			entry = table.clone(entry)

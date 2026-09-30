@@ -25,7 +25,7 @@ local TIER_NAMES = {
 }
 local MAX_TIER = 4
 
-local SECRET_COLOR = Color3.fromRGB(255, 205, 40)   -- gold
+local SECRET_COLOR = Color3.fromRGB(255, 60, 200)   -- hot pink, as RARITY_COLORS.secret
 
 -- Grabbable base items carry their own six-step rarity ladder, separate
 -- from the fusion tier ladder above. They have to: every base item is
@@ -39,14 +39,15 @@ local RARITY_COLORS = {
 	epic      = Color3.fromRGB(190, 110, 255),  -- purple
 	mythic    = Color3.fromRGB(255, 70, 70),    -- red
 	legendary = Color3.fromRGB(255, 221, 51),   -- yellow
+	secret    = Color3.fromRGB(255, 60, 200),   -- hot pink: the Secret cars
 }
 local RARITY_NAMES = {
 	common = "COMMON", uncommon = "UNCOMMON", rare = "RARE",
-	epic = "EPIC", mythic = "MYTHIC", legendary = "LEGENDARY",
+	epic = "EPIC", mythic = "MYTHIC", legendary = "LEGENDARY", secret = "SECRET",
 }
 -- Best first, so anything that needs to sort or compare rarities has a
 -- single source of truth for the order rather than re-deriving it.
-ItemRarity.Order = { "legendary", "mythic", "epic", "rare", "uncommon", "common" }
+ItemRarity.Order = { "secret", "legendary", "mythic", "epic", "rare", "uncommon", "common" }
 
 function ItemRarity.RarityColor(key)
 	return RARITY_COLORS[key]

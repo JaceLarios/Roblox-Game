@@ -4,6 +4,7 @@ local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("Ite
 local Style = require(script.Parent:WaitForChild("UIStyle"))
 local Rarity = require(script.Parent:WaitForChild("ItemRarity"))
 local Models = script.Parent:WaitForChild("ItemModels")
+local FusionRecipes = require(script.Parent:WaitForChild("FusionRecipes"))
 local P = Style.Palette
 local Gallery = {}
 local ORDER = {1, 2, 3, 4, "secret"}
@@ -48,7 +49,10 @@ local function modelView(parent, name)
 		Ambient = Color3.fromRGB(205, 205, 215), LightColor = Color3.new(1, 1, 1),
 		LightDirection = Vector3.new(-1, -1, -1), ZIndex = 3,
 	})
-	local template = Models:FindFirstChild(name)
+	-- Its own model, or the one standing in for it (a Secret car's model can
+	-- have another name, and a build without a model yet borrows one).
+	local standIn = FusionRecipes.StandIn(name)
+	local template = Models:FindFirstChild(name) or (standIn and Models:FindFirstChild(standIn))
 	if not template then return view end
 	local world = make("WorldModel", view, "World")
 	local clone = template:Clone()

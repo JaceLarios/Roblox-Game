@@ -995,7 +995,17 @@ local function pushUI(player)
 	-- this player (they unlock with the first Rebirth).
 	player:SetAttribute("RaceLocked", Rebirth.Get(player) < 1)
 
-	local secretsFound, secretTotal = FusionRecipes.GetSecretProgress(s.discovered)
+	-- A Secret car counts as found (the Index's Secret tab) the moment it is
+	-- anywhere of yours: carried home, traded for, staged or placed.
+	for _, list in ipairs({ s.inventory, s.placed, s.slots }) do
+		for _, itemName in pairs(list) do
+			local baseName = Mutations.Unwrap(itemName)
+			if FusionRecipes.IsSecretCar(baseName) then
+				s.secretCars[baseName] = true
+			end
+		end
+	end
+	local secretsFound, secretTotal = FusionRecipes.GetSecretProgress(s.secretCars)
 	local goal = GOALS[s.goalIndex]
 
 	local shop = {}
@@ -1086,7 +1096,7 @@ local function pushUI(player)
 		discoveredCount = s.count,
 		total = FusionRecipes.GetTotalDiscoveries(),
 		list = s.discoveredList,
-		index = FusionRecipes.GetIndex(s.discovered),
+		index = FusionRecipes.GetIndex(s.discovered, s.secretCars),
 		secretsFound = secretsFound,
 		secretTotal = secretTotal,
 		goalText = goal and goal.text or "All objectives complete",
@@ -1781,6 +1791,9 @@ local function deliverCarried(player)
 	table.insert(s.inventory, itemName)
 	playSound(playerRoot(player), "big")
 	toast(player, string.format("Delivered %s to your base.", instanceTag(itemName)), true)
+	if FusionRecipes.IsSecretCar((Mutations.Unwrap(itemName))) then
+		broadcast(string.format("%s got a SECRET %s home!", player.Name, instanceTag(itemName)))
+	end
 	if victim and victim.Parent then
 		toast(victim, string.format("%s got away with your %s!", player.Name, instanceTag(itemName)), true)
 		broadcast(string.format("%s got away with %s from %s's base!", player.Name, instanceTag(itemName), victim.Name))
@@ -3206,7 +3219,13 @@ local function onPlayerAdded(player)
 			or (data.tutorialDone == nil and (#data.discoveredList > 0 or (data.rebirths or 0) > 0)),
 		plotIndex = index,
 		mutationPity = 0,
+		-- The Secret cars this player has ever found, as a set of names
+		-- (saved as a list).
+		secretCars = {},
 	}
+	for _, name in ipairs(data.secretCars or {}) do
+		state[player].secretCars[name] = true
+	end
 
 	-- Pets, Brainrot Island and Haunted Hollow were removed on 2026-09-23.
 	-- An older save can still hold one of their items (or a pet from before
@@ -3352,6 +3371,12 @@ local function snapshot(player)
 		raceBest = RaceBoard.Snapshot(player),
 		-- When they were last here, for offline earnings next time.
 		lastSeen = os.time(),
+		secretCars = (function()
+			local list = {}
+			for name in pairs(s.secretCars) do table.insert(list, name) end
+			table.sort(list)
+			return list
+		end)(),
 	}
 end
 

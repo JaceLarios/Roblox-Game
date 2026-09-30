@@ -63,6 +63,16 @@ local MAX_ON_MAP = {
 	["Monster Truck"] = 1,
 }
 
+-- Secret cars (FusionRecipes.SecretCars): about one drop in SECRET_CHANCE
+-- is one of them instead, announced to the whole server, and a Crane Drop
+-- crate holds one CRATE_SECRET_CHANCE of the time. Never two of the same
+-- out at once.
+local SECRET_CHANCE = 1 / 500
+local CRATE_SECRET_CHANCE = 0.04
+for _, car in ipairs(FusionRecipes.SecretCars) do
+	MAX_ON_MAP[car.name] = 1
+end
+
 -- Yard events. One every four to six minutes, never the same one twice in
 -- a row, each announced EVENT_WARNING seconds ahead so people can get
 -- into position.
@@ -275,7 +285,14 @@ local function addBeam(part, colour)
 	beam.Shape = Enum.PartType.Cylinder
 	beam.Size = Vector3.new(BEAM_HEIGHT, 1.1, 1.1)
 	beam.CFrame = CFrame.new(part.Position.X, base + BEAM_HEIGHT / 2, part.Position.Z) * CFrame.Angles(0, 0, math.rad(90))
-	beam.Anchored = true
+	-- Welded on, so it rides the belt with the item instead of staying
+	-- where the item came out of the box.
+	beam.Anchored = false
+	beam.Massless = true
+	local weld = Instance.new("WeldConstraint")
+	weld.Part0 = part
+	weld.Part1 = beam
+	weld.Parent = beam
 	beam.CanCollide = false
 	beam.CanQuery = false
 	beam.CanTouch = false
@@ -367,7 +384,11 @@ local function spawnItemAt(itemName, position, opts)
 	-- type needed to make a rare drop feel exciting. Keep this one (per
 	-- the user's own call, "keep the one for when something rare spawns
 	-- like a jet engine"); it's the sole surviving world-spawn announcement.
-	if rare and not opts.silent then
+	if FusionRecipes.IsSecretCar(baseName) and not opts.silent then
+		announce(string.format("<font color=\"#FF3CC8\">SECRET CAR!</font> %s just appeared in the yard — first to get it home keeps it!",
+			itemTag(itemName)))
+		print("[ScrapSpawner] SECRET car:", itemName)
+	elseif rare and not opts.silent then
 		announce(string.format("%s is riding the conveyor — grab it before the black box does!", itemTag(itemName)))
 		print("[ScrapSpawner] RARE spawn:", itemName)
 	else
@@ -415,6 +436,13 @@ local function spawnScrap()
 	end
 	if atLimit(itemName) then
 		itemName = FusionRecipes.Items[1].name
+	end
+	-- Very rarely, a Secret car instead.
+	if math.random() < SECRET_CHANCE then
+		local secret = FusionRecipes.RollSecretCar()
+		if not atLimit(secret) then
+			itemName = secret
+		end
 	end
 	if now < frenzyUntil and math.random() < FRENZY_DROP_CHANCE then
 		itemName = Mutations.Wrap(itemName, rollFrenzyMutation())
@@ -529,6 +557,10 @@ local function dropMarker(spot)
 end
 
 local function rollCrateItem()
+	if math.random() < CRATE_SECRET_CHANCE then
+		local secret = FusionRecipes.RollSecretCar()
+		if not atLimit(secret) then return secret end
+	end
 	local floor = FusionRecipes.RarityIndex[CRATE_MIN_RARITY]
 	local pool = {}
 	for _, item in ipairs(FusionRecipes.Items) do
@@ -629,6 +661,13 @@ function runEvent.MutationFrenzy()
 	announce(string.format("<font color=\"#BE6EFF\">MUTATION FRENZY!</font> Mutated cars are riding the conveyor and fusions mutate twice as often — %d seconds!", FRENZY_SECONDS))
 	task.wait(FRENZY_SECONDS)
 	announce("The Mutation Frenzy is over.")
+end
+
+-- For the admin panel only (never in EVENT_ORDER): a Secret car rolls out
+-- of the black box right now.
+function runEvent.SecretCar()
+	local part = spawnItemAt(FusionRecipes.RollSecretCar(), (Conveyor.PointAt(0)), { onBelt = true })
+	ride(part, -math.max(part.Size.X, part.Size.Z) / 2)
 end
 
 local EVENT_ORDER = { "CraneDrop", "ScrapRush", "MutationFrenzy" }

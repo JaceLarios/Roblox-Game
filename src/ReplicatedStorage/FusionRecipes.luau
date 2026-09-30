@@ -19,6 +19,8 @@ local FusionRecipes = {}
 -- "better than" means the same thing everywhere.
 local RARITY_INDEX = {
 	common = 1, uncommon = 2, rare = 3, epic = 4, mythic = 5, legendary = 6,
+	-- Only the Secret cars (see FusionRecipes.SecretCars below).
+	secret = 7,
 }
 FusionRecipes.RarityIndex = RARITY_INDEX
 
@@ -33,6 +35,7 @@ FusionRecipes.RarityWeight = {
 	epic      = 16,
 	mythic    = 7,
 	legendary = 3,
+	secret    = 1,
 }
 
 -- Everything grabbable in the Junkyard. `value` is what it is worth: what
@@ -241,6 +244,25 @@ do
 	end
 end
 
+-- SECRET CARS: finished supercars based on real ones, the rarest things in
+-- the game. They are already built, so they never take an addon (and need
+-- one model each, not a set of builds). They roll out of the black box
+-- very rarely, or come down in a Crane Drop crate (ScrapSpawner), are worth
+-- more than any build (the best earners on a pad) and are the fastest cars
+-- in Race Wars. They have their own tab in the Index, "???" until found.
+-- Their names are made up: real car brands are trademarks, and Roblox
+-- takes games down for using them. `model` is the ItemModels entry that
+-- shows the car, when its name differs.
+FusionRecipes.SecretCars = {
+	{ name = "Toro SVO", rarity = "secret", value = 400000, model = "SVO" },
+}
+local secretByName = {}
+for _, car in ipairs(FusionRecipes.SecretCars) do
+	assert(not baseByName[car.name] and not results[car.name], "FusionRecipes: " .. car.name .. " is used twice")
+	secretByName[car.name] = car
+	baseByName[car.name] = car
+end
+
 -- Better rarities always win: the cheapest build of each rarity has to be
 -- worth more than the best build of the rarity below it, and within a
 -- rarity each addon's builds are worth more than the same car's build
@@ -289,6 +311,17 @@ function FusionRecipes.IsAddon(name)
 	return addonRank[name] ~= nil
 end
 
+-- True for a Secret car (bare name).
+function FusionRecipes.IsSecretCar(name)
+	return secretByName[name] ~= nil
+end
+
+-- A Secret car at random, for the rare roll out of the black box.
+function FusionRecipes.RollSecretCar()
+	local cars = FusionRecipes.SecretCars
+	return cars[math.random(1, #cars)].name
+end
+
 -- True for an exclusive addon (the Warp Drive) and every build made with
 -- one: things that only come from the Day 7 streak, never from the Shop,
 -- a crate or the secret Legendary drop. Bare names.
@@ -303,7 +336,7 @@ end
 -- ItemModels (an addon's `standIn`, or a build's; see above), or nil.
 function FusionRecipes.StandIn(name)
 	local base = baseByName[name]
-	if base then return base.standIn end
+	if base then return base.model or base.standIn end
 	local entry = results[name]
 	return entry and entry.standIn
 end
@@ -312,6 +345,9 @@ end
 -- was an upgrade, or nil and the reason it cannot fuse (a sentence fit to
 -- show the player). Takes bare names, without a mutation prefix.
 local function resolve(itemA, itemB)
+	if secretByName[itemA] or secretByName[itemB] then
+		return nil, "Secret cars are already finished. They can't take an addon."
+	end
 	local rankA, rankB = addonRank[itemA], addonRank[itemB]
 	if rankA and rankB then
 		return nil, "You can't fuse two addons together. Pair an addon with a car."
@@ -398,15 +434,21 @@ function FusionRecipes.GetValue(itemName)
 	return entry and entry.value or 0
 end
 
--- The Junkyard has no secret recipes: with one result per car per addon,
--- every result is in plain sight in the book. Kept for the callers that
--- still ask (the Index's Secret filter, rarity colours).
-function FusionRecipes.IsSecretResult(_name)
-	return false
+-- No fusion result is secret (one result per car per addon, all in plain
+-- sight in the book); the Secret cars are. Callers use this for the
+-- Index's Secret tab and for sorting and colouring.
+function FusionRecipes.IsSecretResult(name)
+	return secretByName[name] ~= nil
 end
 
-function FusionRecipes.GetSecretProgress(_discovered)
-	return 0, 0
+-- How many Secret cars a player has found, out of how many. `found` is a
+-- set of bare names.
+function FusionRecipes.GetSecretProgress(found)
+	local count = 0
+	for _, car in ipairs(FusionRecipes.SecretCars) do
+		if found and found[car.name] then count += 1 end
+	end
+	return count, #FusionRecipes.SecretCars
 end
 
 function FusionRecipes.GetAllResults()
@@ -464,9 +506,11 @@ end
 -- results by rarity and then by car. Each carries its `rarity` for the
 -- rarity filters, and a result carries the `car` and `addon` that make it,
 -- so the book can be laid out as cars by addons. An undiscovered result's
--- name stays hidden.
-function FusionRecipes.GetIndex(discovered)
+-- name stays hidden. The Secret cars come last, found or not per
+-- `secretFound` (a set of names), for the Index's Secret tab.
+function FusionRecipes.GetIndex(discovered, secretFound)
 	discovered = discovered or {}
+	secretFound = secretFound or {}
 	local items = {}
 
 	for _, base in ipairs(FusionRecipes.BaseItems) do
@@ -487,6 +531,21 @@ function FusionRecipes.GetIndex(discovered)
 			addon    = entry.addon,
 			isSecret = false,
 			isBase   = false,
+			isAddon  = false,
+			known    = known,
+		})
+	end
+
+	for _, car in ipairs(FusionRecipes.SecretCars) do
+		local known = secretFound[car.name] == true
+		table.insert(items, {
+			name     = known and car.name or "???",
+			-- For the admin panel's "show whole Index" only.
+			hiddenName = car.name,
+			tier     = MAX_TIER,
+			rarity   = car.rarity,
+			isSecret = true,
+			isBase   = true,
 			isAddon  = false,
 			known    = known,
 		})
