@@ -25,7 +25,7 @@ real car brands are trademarks (see HANDOFF.md).
 ```
 3D model credits (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/):
 • Toro SVO: based on "Lamborghini Aventador SVJ SDC ( FREE )" by SDC PERFORMANCE (sketchfab.com/Lambo_SC04). Modified by RaceWerks.
-• [Temerario car's in-game name]: based on "Lamborghini Temerario (2025)" by Harsh Palan (sketchfab.com/harshpalan). Modified by RaceWerks.
+• Toro: based on "Lamborghini Temerario (2025)" by Harsh Palan (sketchfab.com/harshpalan). Modified by RaceWerks.
 Car names and badges changed. Not affiliated with or endorsed by any car maker.
 ```
 
@@ -55,11 +55,11 @@ Full credit:
 > Junkyard Fusion: repainted, new decals and wheels, badges and brand
 > lettering removed, detail reduced and renamed.
 
-### 2. Lamborghini Temerario (next up, not in the game yet)
+### 2. Toro (from the Temerario model; next up, not in the game yet)
 
 | | |
 |---|---|
-| In-game name | *not picked yet* (a made-up name, like the Toro SVO) |
+| In-game name | Toro (Secret car) |
 | Studio model | *not imported yet* |
 | Original title | Lamborghini Temerario (2025) |
 | Creator | Harsh Palan (@harshpalan), <https://sketchfab.com/harshpalan> |
