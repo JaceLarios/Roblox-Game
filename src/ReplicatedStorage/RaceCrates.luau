@@ -5,7 +5,8 @@
 
 	Every level you clear in Race Wars puts one crate in your Inventory
 	(the Crates tab). Inside is an addon, rolled the moment you win the
-	crate, from every addon in the game (FusionRecipes.Addons). Each addon
+	crate, from every addon the Shop sells (FusionRecipes.ShopAddons: the
+	Day 7 Warp Drive never comes out of a crate). Each addon
 	comes up at its rarity's weight below, and luck tips the roll toward
 	the rarer ones: yours (the same luck that helps a grab) times the
 	crate's own, which is higher the further into the race you got. So a
@@ -61,19 +62,19 @@ function RaceCrates.Roll(level, luck)
 	luck = math.max(1, luck or 1) * RaceCrates.LevelLuck(level)
 	local lowest = FusionRecipes.RarityIndex.uncommon
 	local weights, total = {}, 0
-	for i, addon in ipairs(FusionRecipes.Addons) do
+	for i, addon in ipairs(FusionRecipes.ShopAddons) do
 		local steps = (FusionRecipes.RarityIndex[addon.rarity] or lowest) - lowest
 		weights[i] = (RaceCrates.RarityWeight[addon.rarity] or 1) * luck ^ steps
 		total += weights[i]
 	end
 	local roll = math.random() * total
-	for i, addon in ipairs(FusionRecipes.Addons) do
+	for i, addon in ipairs(FusionRecipes.ShopAddons) do
 		roll -= weights[i]
 		if roll <= 0 then
 			return addon.name, addon.rarity
 		end
 	end
-	local last = FusionRecipes.Addons[#FusionRecipes.Addons]
+	local last = FusionRecipes.ShopAddons[#FusionRecipes.ShopAddons]
 	return last.name, last.rarity
 end
 

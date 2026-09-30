@@ -108,8 +108,9 @@ local function modelView(card, name)
 	table.insert(spinning, { model = model, base = model:GetPivot() })
 end
 
+-- Only what is for sale: the Day 7 Warp Drive is never in the Shop.
 local cards = {}
-for order, addon in ipairs(FusionRecipes.Addons) do
+for order, addon in ipairs(FusionRecipes.ShopAddons) do
 	local card = Garage.New("Frame", grid, addon.name, { LayoutOrder = order })
 	Garage.Inset(card)
 	modelView(card, addon.name)
@@ -133,11 +134,17 @@ for order, addon in ipairs(FusionRecipes.Addons) do
 		Position = UDim2.new(0, 9, 1, -58), Size = UDim2.new(1, -18, 0, 48), ZIndex = 5,
 	})
 	Garage.Button(buy, GOLD)
-	buy.Activated:Connect(function()
+	local function purchase()
 		if buy.Active then
 			buyAddonRemote:FireServer(addon.name)
 		end
-	end)
+	end
+	buy.Activated:Connect(purchase)
+	-- The whole card buys, not just its button: people tap the model.
+	local cardButton = Garage.New("TextButton", card, "CardButton", {
+		Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 4,
+	})
+	cardButton.Activated:Connect(purchase)
 	cards[addon.name] = { price = addon.price, button = buy, shown = 0 }
 end
 

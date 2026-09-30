@@ -64,6 +64,11 @@ local Social = {
 -- paid when they come back (a quick rejoin, under OFFLINE_MIN_SECONDS,
 -- pays nothing). Income.perSecond is further down.
 local Income = { OFFLINE_RATE = 0.5, OFFLINE_MAX_SECONDS = 2 * 60 * 60, OFFLINE_MIN_SECONDS = 120 }
+-- The first-join tutorial (Tutorial.client). Whether a player has finished
+-- or skipped it is saved (tutorialDone); Tutorial.remote is how the client
+-- says so ("done"), and how it asks for the coins for a first addon when a
+-- brand-new player has none yet ("coins").
+local Tutorial = { STARTER_ADDON = "Nitrous Tank" }
 
 -- The big screen-covering celebration popup on fuse. Its own dedicated
 -- remote (not a new field on the small `GameUpdate` toast) and its own
@@ -363,6 +368,15 @@ if not Income.welcomeBack then
 	Income.welcomeBack.Parent = ReplicatedStorage
 end
 
+-- Client -> server: the tutorial is finished or skipped ("done"), or a new
+-- player on the "buy an addon" step has too few coins for one ("coins").
+Tutorial.remote = ReplicatedStorage:FindFirstChild("Tutorial")
+if not Tutorial.remote then
+	Tutorial.remote = Instance.new("RemoteEvent")
+	Tutorial.remote.Name = "Tutorial"
+	Tutorial.remote.Parent = ReplicatedStorage
+end
+
 local moveToCarryRemote = ReplicatedStorage:FindFirstChild("MoveToCarry")
 if not moveToCarryRemote then
 	moveToCarryRemote = Instance.new("RemoteEvent")
@@ -429,7 +443,7 @@ local DAILY_REWARDS = {
 	{ kind = "item",  label = "RARE CRATE",   sub = "guaranteed rare" },
 	{ kind = "boost", stat = "value", mult = 2, minutes = 15, label = "2x INCOME", sub = "15 minutes" },
 	{ kind = "coins", amount = 3000, label = "3,000 Coins",      sub = "" },
-	{ kind = "jackpot", amount = 7500, label = "JACKPOT",        sub = "coins + luck + Jet Engine" },
+	{ kind = "jackpot", amount = 7500, label = "JACKPOT",        sub = "coins + luck + Warp Drive" },
 }
 local DAILY_MAX_STREAK = #DAILY_REWARDS
 
@@ -643,8 +657,10 @@ end
 ------------------------------------------------------------------
 
 -- How long a placed build takes to earn its own worth once (its worth
--- divided by this is what it earns a second).
-local PLACEMENT_PAYBACK_SECONDS = 90
+-- divided by this is what it earns a second). Was 90; doubled 2026-09-30
+-- (with the Shop's addon prices) because money came too easily. Offline
+-- earnings and quest rewards are measured in pad income, so they follow.
+local PLACEMENT_PAYBACK_SECONDS = 180
 local INCOME_TICK_SECONDS = 3
 
 -- Coins a second a player's placed builds earn right now, every
@@ -1110,6 +1126,8 @@ local function pushUI(player)
 		placed = placedInfo,
 		placedCapacity = PET_PAD_COUNT,
 		quests = Quests.info(player, s),
+		-- True until the first-join tutorial is finished or skipped.
+		tutorial = not s.tutorialDone,
 	})
 end
 
@@ -2338,6 +2356,27 @@ rebirthRemote.OnServerEvent:Connect(function(player)
 	pushUI(player)
 end)
 
+-- The first-join tutorial: finished or skipped, or a new player who needs
+-- the coins for their first addon (topped up once, to exactly its price).
+Tutorial.remote.OnServerEvent:Connect(function(player, action)
+	local s = state[player]
+	if not s or s.tutorialDone then return end
+	if action == "done" then
+		s.tutorialDone = true
+		pushUI(player)
+	elseif action == "coins" and not s.tutorialCoins then
+		local stats = player:FindFirstChild("leaderstats")
+		local coins = stats and stats:FindFirstChild("Coins")
+		local price = FusionRecipes.AddonPrice(Tutorial.STARTER_ADDON) or 0
+		if coins and coins.Value < price then
+			s.tutorialCoins = true
+			local gift = price - coins.Value
+			coins.Value = price
+			toast(player, string.format("Here's %d coins for your first addon!", gift), true)
+		end
+	end
+end)
+
 ------------------------------------------------------------------
 -- Race Wars, and the travel menu's teleports. RaceService runs the
 -- races; this is the part that touches player data: which cars you own,
@@ -3008,9 +3047,10 @@ local function grantReward(player, reward)
 	elseif reward.kind == "jackpot" then
 		addCoins(player, reward.amount)
 		giveBoost(player, "luck", 3, 20)
-		-- The best addon, straight into your hands. The claim handler's own
-		-- Day-7 toast says what you got, so no toast here.
-		giveItem(player, "Jet Engine")
+		-- The Warp Drive: the best addon in the game, and the only way to
+		-- get one (it is never sold and never in a crate). The claim
+		-- handler's own Day-7 toast says what you got, so no toast here.
+		giveItem(player, "Warp Drive")
 	end
 end
 
@@ -3038,7 +3078,7 @@ claimRemote.OnServerEvent:Connect(function(player)
 
 	if nextDay == DAILY_MAX_STREAK then
 		broadcast(string.format("%s completed a 7-day streak and hit the JACKPOT!", player.Name))
-		toast(player, string.format("DAY 7 JACKPOT\n%d coins + 3x Luck\n%s", displayReward.amount, instanceTag("Jet Engine")), true)
+		toast(player, string.format("DAY 7 JACKPOT\n%d coins + 3x Luck\n%s (Day 7 exclusive!)", displayReward.amount, instanceTag("Warp Drive")), true)
 	else
 		toast(player, string.format("DAY %d CLAIMED\n%s", nextDay, displayReward.label), true)
 	end
@@ -3160,6 +3200,10 @@ local function onPlayerAdded(player)
 		crates = data.crates or {},
 		starterPackGiven = data.starterPackGiven == true,
 		quests = data.quests,
+		-- A save from before the tutorial existed has no tutorialDone: anyone
+		-- who has already fused or rebirthed skips it.
+		tutorialDone = data.tutorialDone == true
+			or (data.tutorialDone == nil and (#data.discoveredList > 0 or (data.rebirths or 0) > 0)),
 		plotIndex = index,
 		mutationPity = 0,
 	}
@@ -3304,6 +3348,7 @@ local function snapshot(player)
 		crates = s.crates,
 		starterPackGiven = s.starterPackGiven,
 		quests = s.quests,
+		tutorialDone = s.tutorialDone,
 		raceBest = RaceBoard.Snapshot(player),
 		-- When they were last here, for offline earnings next time.
 		lastSeen = os.time(),

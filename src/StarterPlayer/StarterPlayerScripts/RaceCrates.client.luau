@@ -257,7 +257,7 @@ local function layout()
 	local compact = panel:GetAttribute("Compact")
 	local width = compact and 600 or 1200
 	local tabWidth = compact and 104 or 150
-	local y = compact and 136 or 90
+	local y = compact and 140 or 98
 	-- Right to left: CRATES, ADDONS, CARS.
 	for i, tab in ipairs({ cratesTab, addonsTab, carsTab }) do
 		tab.Size = UDim2.fromOffset(tabWidth, 34)

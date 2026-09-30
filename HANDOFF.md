@@ -1,4 +1,20 @@
-# Latest gameplay handoff — Offline earnings, daily quests, race personal bests + a Furthest Race board, friend/group bonus (2026-09-29)
+# Latest gameplay handoff — Slower economy, a Day 7 Warp Drive, rebirth progress bars, a crane countdown, a first-join tutorial (2026-09-30)
+
+**Economy slowed down (user's call: both levers).** Pads earn half as fast (`PLACEMENT_PAYBACK_SECONDS` 90 → 180 in PlotManager; offline earnings and quest rewards scale with pad income, so they halve too) and every Shop addon costs twice as much (FusionRecipes: Nitrous Tank 100 … Jet Engine 200,000, Fusion Core 280,000). A rough simulation put an efficient new player at ~35 min to Rebirth 1 before, ~87 min now.
+
+**Warp Drive: a Day 7 exclusive addon.** The 16th addon, Legendary, one step above the Fusion Core (`resultValue` 57,000; builds Warp Wreck, Wormhole Wheelie, Hole in Space, Lightspeed Legend, Warp Warden, Star Freighter, Starcrusher). `exclusive = true`: no price, so it is not in the Shop (`FusionRecipes.ShopAddons` is the for-sale list, which RaceCrates now rolls from too), not in the secret Legendary drop, and not counted when RaceConfig tunes the monsters. `FusionRecipes.IsExclusive(name)` covers the addon and its builds. The Day 7 JACKPOT now gives it instead of a Jet Engine. It uses the Fusion Core's model, and its builds use the Jet builds' models, until Codex makes real ones. The Index is 112 builds now.
+
+**Rebirth made clearer.** The Rebirth section of Upgrades says "REBIRTH 5 — COSTS 30,000,000 COINS", now-vs-next multipliers, and what it resets (coins, upgrades, inventory, earning pads) versus keeps (Index, crates, gamepasses, daily streak, race best). A progress bar there, and a slim one under the coin counter, fill live with your coins and turn green when you can afford it; the HUD one opens Upgrades. Built in a `do` block at the end of GameUI's Codex layout section: **GameUI's top level is at Luau's 200-local limit, so anything new there has to go in a `do` block.**
+
+**Crane Drop gets a 2-minute countdown.** ScrapSpawner calls it 2 minutes ahead (`CRANE_WARNING`), with a last call at 15 s, and sets `workspace.CraneDropAt` / `CraneDropSpot`. New `CraneTimer.client` hangs a big "CRANE DROP 1:59" sign 55 studs over the landing spot (studs-sized BillboardGui, AlwaysOnTop), red for the last 15 s, gone when the crate lands.
+
+**First-join tutorial** (`Tutorial.client` + PlotManager's `Tutorial` table/remote, `tutorialDone` in the save). Welcome → grab a car → take it home → buy an addon → load the fusion pad → fuse → place → done, each step worked out from GameUpdate state (so it follows the player, not a script), with a bouncing arrow by the right nav button or a marker over the right spot, and a SKIP button. Old saves that have fused or rebirthed skip it. A new player with too few coins for a Nitrous Tank is topped up once. The admin panel has "Play the tutorial" (your screen only).
+
+**Smaller things.** The boost / friend / group chips sit right of the coin counter on computers (under the coins and the rebirth bar on phones). Nav buttons go up to 1.3x on computers (were capped at 1.1x; `NavButton` fits both rails to the screen height). The Inventory has a bit more room: tabs clear the earning pads, wider gaps between pads and tiles. Shop cards are clickable as a whole, not just their buttons (the buttons already worked; people were tapping the pictures). The conveyor runs at 10 studs/s (was 8). Racing before Rebirth: the travel menu never blocked Race Wars; only lining up is locked, and the lobby says so.
+
+---
+
+# Previous gameplay handoff — Offline earnings, daily quests, race personal bests + a Furthest Race board, friend/group bonus (2026-09-29)
 
 **Offline earnings.** The save now keeps `lastSeen`. On join, if you were away 2+ minutes, your pads pay what they would have made at half rate, for at most 2 hours (`Income.OFFLINE_RATE / OFFLINE_MAX_SECONDS / OFFLINE_MIN_SECONDS` in PlotManager). A popup (WelcomeBack.client, fired by the `WelcomeBack` remote 5 s after join) says how long you were gone and what you got. The coins are already added when it shows. `Income.perSecond(player, s)` is now the one place pad income is worked out; the income loop uses it too.
 

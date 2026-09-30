@@ -181,7 +181,8 @@ boostLayout.Parent = boostBar
 
 -- On a phone on its side the bottom left is the thumbstick's, and the nav
 -- buttons fill the top corners, so the coins go top centre, a little
--- smaller, with the boost chips under them.
+-- smaller, with the boost chips under them (and under the rebirth bar the
+-- coin card carries). On a computer the chips sit just right of the coins.
 local coinScale = Instance.new("UIScale")
 coinScale.Parent = coinCard
 local function placeCoinCard()
@@ -192,7 +193,7 @@ local function placeCoinCard()
 	coinCard.AnchorPoint = phone and Vector2.new(0.5, 0) or Vector2.zero
 	coinCard.Position = phone and UDim2.new(0.5, 0, 0, 10) or UDim2.new(0, 20, 1, -136)
 	boostBar.AnchorPoint = phone and Vector2.new(0.5, 0) or Vector2.zero
-	boostBar.Position = phone and UDim2.new(0.5, 0, 0, 68) or UDim2.new(0, 20, 0, 182)
+	boostBar.Position = phone and UDim2.new(0.5, 0, 0, 94) or UDim2.new(0, 334, 1, -115)
 	boostLayout.HorizontalAlignment = phone and Enum.HorizontalAlignment.Center or Enum.HorizontalAlignment.Left
 end
 gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(placeCoinCard)
@@ -844,8 +845,11 @@ local function redrawRebirth(info)
 
 	rebirthTitle.Text = info.maxed
 		and string.format("REBIRTH — MAX (%d)", info.level)
-		or string.format("REBIRTH — Level %d / %d", info.level, info.maxLevel)
-	rebirthNow.Text = string.format("Current: x%.2f coins, x%.2f luck", info.multiplier, info.luckMultiplier)
+		or string.format("REBIRTH %d — COSTS %s COINS", info.level + 1, commas(info.nextCost))
+	rebirthNow.Text = info.maxed
+		and string.format("Now: x%.2f coins, x%.2f luck", info.multiplier, info.luckMultiplier)
+		or string.format("Now x%.2f coins, x%.2f luck  →  next x%.2f coins, x%.2f luck%s", info.multiplier,
+			info.luckMultiplier, info.nextMultiplier, info.nextLuckMultiplier, info.level == 0 and " + RACES" or "")
 
 	if info.maxed then
 		rebirthNext.Text = "You've hit the ceiling — nothing left to cash in for."
@@ -854,10 +858,10 @@ local function redrawRebirth(info)
 		rebirthBtn.TextColor3 = DIM
 		rebirthBtn.Active = false
 	else
-		-- The first Rebirth also unlocks Race Wars.
-		rebirthNext.Text = string.format(
-			"Next: x%.2f coins, x%.2f luck%s — %d coins (clears inventory/upgrades only)",
-			info.nextMultiplier, info.nextLuckMultiplier, info.level == 0 and " + unlocks RACES" or "", info.nextCost)
+		-- What a Rebirth takes, and what it leaves alone (PlotManager's
+		-- rebirth handler).
+		rebirthNext.Text = "Resets your coins, upgrades, inventory and earning pads. "
+			.. "Keeps your Index, crates, gamepasses, daily streak and race best." 
 		rebirthBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 		rebirthBtn.Active = true
 		setRebirthArmed(rebirthArmed)
@@ -1071,10 +1075,10 @@ inventoryScroll.Parent = gridBoard
 -- anything a tile draws outside its cell bounds (previously the stroke, now
 -- the shadow) falls outside the scroll area and is cut off.
 local inventoryPadding = Instance.new("UIPadding")
-inventoryPadding.PaddingTop = UDim.new(0, 10)
-inventoryPadding.PaddingLeft = UDim.new(0, 8)
-inventoryPadding.PaddingRight = UDim.new(0, 8)
-inventoryPadding.PaddingBottom = UDim.new(0, 10)
+inventoryPadding.PaddingTop = UDim.new(0, 16)
+inventoryPadding.PaddingLeft = UDim.new(0, 14)
+inventoryPadding.PaddingRight = UDim.new(0, 14)
+inventoryPadding.PaddingBottom = UDim.new(0, 16)
 inventoryPadding.Parent = inventoryScroll
 
 local inventoryLayout = Instance.new("UIGridLayout")
@@ -1181,32 +1185,32 @@ local function relayout()
  searchBox.Position=compact and UDim2.new(0,184,0,84) or UDim2.new(1,-420,0,18)
  searchBox.Size=compact and UDim2.new(1,-208,0,44) or UDim2.fromOffset(320,46)
  local short=inventoryFrame.Size.Y.Offset<650
- local bandY=compact and 142 or 96
+ local bandY=compact and 146 or 104
  placedLabel.Position=UDim2.fromOffset(24,bandY)
  placedLabel.Size=UDim2.new(1,-48,0,26) placedLabel.TextSize=19
  placedLabel.TextXAlignment=Enum.TextXAlignment.Left
  ruleLeft.Visible=false ruleRight.Visible=false divider.Visible=false
- local gap=compact and 6 or 12
+ local gap=compact and 8 or 18
  local slotSize=math.min(compact and 90 or (short and 70 or 122), math.max(24,math.floor((inventoryFrame.AbsoluteSize.X-48-gap*(currentPlacedCapacity-1))/currentPlacedCapacity)))
- placedRow.Position=UDim2.fromOffset(24,bandY+28)
+ placedRow.Position=UDim2.fromOffset(24,bandY+40)
  placedRow.Size=UDim2.new(1,-48,0,slotSize+4)
  placedLayout.Padding=UDim.new(0,gap)
  for _,slot in placedRow:GetChildren() do if slot:IsA("GuiObject") then slot.Size=UDim2.fromOffset(slotSize,slotSize) end end
- local gridTop=bandY+slotSize+44
+ local gridTop=bandY+slotSize+62
  if compact then
   gridBoard.Position=UDim2.fromOffset(16,gridTop) gridBoard.Size=UDim2.new(1,-32,1,-gridTop-16)
   statPanel.Position=gridBoard.Position statPanel.Size=gridBoard.Size statPanel.Visible=detailsOpen
  else
   gridBoard.Position=UDim2.fromOffset(18,gridTop) gridBoard.Size=UDim2.new(.69,-26,1,-gridTop-18)
-  statPanel.Position=UDim2.new(.69,2,0,gridTop) statPanel.Size=UDim2.new(.31,-20,1,-gridTop-18) statPanel.Visible=true
+  statPanel.Position=UDim2.new(.69,12,0,gridTop) statPanel.Size=UDim2.new(.31,-30,1,-gridTop-18) statPanel.Visible=true
  end
  -- Five smaller tiles a row on a phone on its side, where the grid is
  -- short and three big ones showed barely a row at a time.
  local phone=Garage.IsPhone(gui.AbsoluteSize)
  local columns=compact and 2 or phone and 5 or 3
  local width=compact and 516 or phone and 750 or 744
- local cell=math.floor((width-(columns-1)*16)/columns)
- inventoryLayout.CellPadding=UDim2.fromOffset(16,18)
+ local cell=math.floor((width-(columns-1)*22)/columns)
+ inventoryLayout.CellPadding=UDim2.fromOffset(22,24)
  inventoryLayout.CellSize=UDim2.fromOffset(cell,cell*1.08)
  local h=math.max(420,inventoryFrame.Size.Y.Offset-gridTop-18)
  detailContent.Size=UDim2.new(1,-6,0,h)
@@ -2310,7 +2314,7 @@ Garage.Button(claimBtn,Color3.fromRGB(255,163,19))
 
 Garage.Canvas(shopFrame,1200,820)
 shopLayout.CellSize=UDim2.fromOffset(548,250) shopLayout.FillDirectionMaxCells=2 shopLayout.CellPadding=UDim2.fromOffset(18,18)
-shopScroll.Position=UDim2.fromOffset(28,104) shopScroll.Size=UDim2.new(1,-56,0,526)
+shopScroll.Position=UDim2.fromOffset(28,104) shopScroll.Size=UDim2.new(1,-56,0,494)
 -- The list's canvas follows the cards. Roblox's automatic sizing counted
 -- something well below the last card and left a screenful of empty space.
 -- The layout's size is in on-screen pixels, so it is scaled back first.
@@ -2325,14 +2329,106 @@ shopScroll:GetPropertyChangedSignal("AbsoluteSize"):Connect(sizeShopCanvas)
 sizeShopCanvas()
 shopFrame.Illustration:Destroy() Garage.Art(shopFrame,"UPGRADES",UDim2.fromOffset(14,8),UDim2.fromOffset(78,78))
 shopTitle.Size=UDim2.fromOffset(480,64)
-rebirthRow.Position=UDim2.fromOffset(24,648) rebirthRow.Size=UDim2.new(1,-48,0,145)
+rebirthRow.Position=UDim2.fromOffset(24,614) rebirthRow.Size=UDim2.new(1,-48,0,180)
 Garage.Gloss(rebirthRow,Color3.fromRGB(161,63,236),20)
-Garage.Art(rebirthRow,"rebirth",UDim2.fromOffset(12,0),UDim2.fromOffset(155,142))
-rebirthTitle.Position=UDim2.fromOffset(176,16) rebirthTitle.Size=UDim2.new(1,-390,0,32) rebirthTitle.TextSize=28 UIStyle.Outline(rebirthTitle,28)
-rebirthNow.Position=UDim2.fromOffset(176,57) rebirthNow.Size=UDim2.new(1,-390,0,25) rebirthNow.TextSize=18
-rebirthNext.Position=UDim2.fromOffset(176,86) rebirthNext.Size=UDim2.new(1,-390,0,44) rebirthNext.TextSize=17
-for _,l in {rebirthNow,rebirthNext} do l:SetAttribute("Designed",true) l.TextColor3=Color3.new(1,1,1) end
+Garage.Art(rebirthRow,"rebirth",UDim2.fromOffset(12,14),UDim2.fromOffset(155,150))
+rebirthTitle.Position=UDim2.fromOffset(176,12) rebirthTitle.Size=UDim2.new(1,-390,0,32) rebirthTitle.TextSize=28 UIStyle.Outline(rebirthTitle,28)
+rebirthNow.Position=UDim2.fromOffset(176,50) rebirthNow.Size=UDim2.new(1,-390,0,24) rebirthNow.TextSize=18
+rebirthNext.Position=UDim2.fromOffset(176,78) rebirthNext.Size=UDim2.new(1,-390,0,44) rebirthNext.TextSize=16
+for _,l in {rebirthNow,rebirthNext} do l:SetAttribute("Designed",true) l.TextColor3=Color3.new(1,1,1) l.TextWrapped=true end
 rebirthBtn.Size=UDim2.fromOffset(186,66) rebirthBtn.Position=UDim2.new(1,-200,.5,-33) Garage.Button(rebirthBtn,Color3.fromRGB(179,54,243))
+
+-- Rebirth progress: a bar in the Rebirth section and a slim one under the
+-- coin counter, both filling as your coins climb toward the next Rebirth's
+-- cost and turning green once you can afford it. The HUD one opens
+-- Upgrades. In a do block because this script's top level is at Luau's
+-- 200-local limit.
+do
+	local READY = Color3.fromRGB(40, 200, 110)
+	local FILL = Color3.fromRGB(179, 54, 243)
+	local cost, level, maxed = nil, 0, false
+
+	local function bar(parent, name, position, size, textSize, button)
+		local back = Instance.new(button and "TextButton" or "Frame")
+		back.Name = name
+		back.Position = position
+		back.Size = size
+		back.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+		back.BackgroundTransparency = button and GLASS_HUD or 0.15
+		back.BorderSizePixel = 0
+		back:SetAttribute("Designed", true)
+		if button then
+			back.Text = ""
+			back.AutoButtonColor = false
+		end
+		back.Parent = parent
+		rounded(back, math.floor(size.Y.Offset / 2))
+		local fill = Instance.new("Frame")
+		fill.Name = "Fill"
+		fill.BackgroundColor3 = FILL
+		fill.BorderSizePixel = 0
+		fill.Size = UDim2.fromScale(0, 1)
+		fill:SetAttribute("Designed", true)
+		fill.Parent = back
+		rounded(fill, math.floor(size.Y.Offset / 2))
+		local text = label(back, "", UDim2.fromScale(1, 1), Color3.new(1, 1, 1), Enum.Font.FredokaOne, textSize)
+		text.TextXAlignment = Enum.TextXAlignment.Center
+		text.ZIndex = back.ZIndex + 2
+		text:SetAttribute("Designed", true)
+		UIStyle.Outline(text, textSize)
+		-- Outline's usual 3.5 swamps text this small.
+		text.TextOutline.Thickness = 2
+		return back, fill, text
+	end
+
+	local panelBar, panelFill, panelText = bar(rebirthRow, "RebirthProgress", UDim2.fromOffset(176, 132),
+		UDim2.new(1, -390, 0, 32), 18)
+	local hudBar, hudFill, hudText = bar(coinCard, "RebirthBar", UDim2.new(0, 0, 1, 6), UDim2.new(1, 0, 0, 26), 14, true)
+	hudBar.MouseButton1Click:Connect(function()
+		if not shopFrame.Visible then toggleShop() end
+	end)
+
+	-- 12,300,000 as "12.3M", for the slim HUD bar.
+	local function short(n)
+		if n >= 1e6 then return (string.format("%.1fM", n / 1e6):gsub("%.0M", "M")) end
+		if n >= 1e3 then return (string.format("%.1fK", n / 1e3):gsub("%.0K", "K")) end
+		return tostring(math.floor(n))
+	end
+
+	local function update()
+		hudBar.Visible = cost ~= nil and not maxed
+		panelBar.Visible = cost ~= nil and not maxed
+		if not cost or maxed then return end
+		local stats = player:FindFirstChild("leaderstats")
+		local coins = stats and stats:FindFirstChild("Coins")
+		local have = coins and coins.Value or 0
+		local progress = math.clamp(have / cost, 0, 1)
+		local ready = have >= cost
+		for _, fill in ipairs({ panelFill, hudFill }) do
+			fill.BackgroundColor3 = ready and READY or FILL
+			TweenService:Create(fill, TweenInfo.new(0.25), { Size = UDim2.fromScale(progress, 1) }):Play()
+		end
+		panelText.Text = ready and string.format("READY! %s / %s coins", commas(have), commas(cost))
+			or string.format("%s / %s coins  (%d%%)", commas(have), commas(cost), math.floor(progress * 100))
+		hudText.Text = ready and string.format("REBIRTH %d READY! OPEN UPGRADES", level + 1)
+			or string.format("REBIRTH %d: %s / %s", level + 1, short(have), short(cost))
+	end
+
+	remote.OnClientEvent:Connect(function(data)
+		if type(data) == "table" and type(data.rebirth) == "table" then
+			cost = data.rebirth.nextCost
+			level = data.rebirth.level or 0
+			maxed = data.rebirth.maxed == true
+			update()
+		end
+	end)
+	task.spawn(function()
+		local coins = player:WaitForChild("leaderstats"):WaitForChild("Coins")
+		coins.Changed:Connect(update)
+		update()
+	end)
+	update()
+end
 
 Garage.Canvas(travelFrame,1200,820)
 travelTitle.Position=UDim2.fromOffset(94,14) travelTitle.Size=UDim2.fromOffset(470,64) travelTitle.TextSize=46

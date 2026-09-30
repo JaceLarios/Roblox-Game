@@ -27,8 +27,9 @@ local Conveyor = {}
 Conveyor.RADIUS = 58
 Conveyor.WIDTH = 10
 -- Studs per second along the belt. Slower than walking (22), so anyone can
--- catch up with what they want; a lap takes about 43 seconds.
-Conveyor.SPEED = 8
+-- catch up with what they want; a lap takes about 35 seconds (it was 8 a
+-- second, a 43-second lap, until 2026-09-30).
+Conveyor.SPEED = 10
 
 local GROUND_Y = 1.2
 local BELT_THICKNESS = 0.5

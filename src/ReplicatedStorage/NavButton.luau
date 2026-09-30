@@ -37,10 +37,16 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 				or UDim2.new(0, x, 0, 4 + row * h)
 			return
 		end
+		-- On a computer both rails share one size, as big as fits: the
+		-- left rail between the top bar and the coin counter (bottom left),
+		-- the right one under the player list. Up to 1.3x (was 1.1x).
 		local size = workspace.CurrentCamera.ViewportSize
-		local top = right and 340 or 240
-		if size.Y < 650 then top = 90 end
-		local factor = math.min(1.1, math.max(.3,(size.Y-top-65)/624))
+		local leftTop, rightTop = 110, 260
+		if size.Y < 650 then leftTop, rightTop = 90, 90 end
+		local top = right and rightTop or leftTop
+		local fitLeft = (size.Y - 150 - leftTop) / 616
+		local fitRight = (size.Y - 20 - rightTop) / 616
+		local factor = math.clamp(math.min(fitLeft, fitRight), .3, 1.3)
 		scale.Scale = factor
 		holder.Position = UDim2.new(right and 1 or 0, right and (-16-140*factor) or 16, 0, top+slot*156*factor)
 	end

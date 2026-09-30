@@ -133,7 +133,7 @@ local function wirePurchase(key,buy)
 	refreshers[key] = refresh
 	player:GetAttributeChangedSignal("Pass_" .. key):Connect(refresh)
 	player:GetAttributeChangedSignal("PassStatus_" .. key):Connect(refresh)
-	buy.Activated:Connect(function()
+	local function purchase()
 		if not buy.Active then return end
 		pendingId = item.id
 		message.Text = ""
@@ -144,7 +144,18 @@ local function wirePurchase(key,buy)
 			message.Text = "Purchase prompt unavailable. Please try again."
 			for _, f in pairs(refreshers) do f() end
 		end
-	end)
+	end
+	buy.Activated:Connect(purchase)
+	-- The whole card buys, not just its button: people tap the picture.
+	local cardButton = Instance.new("TextButton")
+	cardButton.Name = "CardButton"
+	cardButton.Text = ""
+	cardButton.BackgroundTransparency = 1
+	cardButton.Size = UDim2.fromScale(1, 1)
+	cardButton.ZIndex = math.max(1, buy.ZIndex - 1)
+	cardButton:SetAttribute("Designed", true)
+	cardButton.Parent = buy.Parent
+	cardButton.Activated:Connect(purchase)
 	local function loadInfo()
 		if item.id <= 0 or loading then refresh() return end
 		loading = true

@@ -114,6 +114,12 @@ action("Start next race now", "race")
 action("Crane Drop now", "CraneDrop")
 action("Scrap Rush now", "ScrapRush")
 action("Mutation Frenzy now", "MutationFrenzy")
+-- Replays the first-join tutorial on your screen only (Tutorial.client);
+-- finishing it again changes nothing on the server.
+button("Play the tutorial", BLUE, function()
+	player:SetAttribute("TutorialReplay", true)
+	say("Tutorial started (your screen only).")
+end)
 
 remote.OnClientEvent:Connect(function(message)
 	if type(message) == "string" then

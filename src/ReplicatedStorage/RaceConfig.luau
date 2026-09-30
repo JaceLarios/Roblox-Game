@@ -98,7 +98,9 @@ function RaceConfig.CarStats(itemName)
 end
 
 -- The top speed of the fastest car in the game, unmutated: every car and
--- every fused result in the recipe book.
+-- every fused result in the recipe book, except the Day 7 exclusives, so
+-- the monsters stay tuned to what anyone can buy and a Warp Drive build
+-- keeps its small edge.
 local fastest = nil
 function RaceConfig.FastestCarSpeed()
 	if fastest then return fastest end
@@ -108,7 +110,9 @@ function RaceConfig.FastestCarSpeed()
 		if stats then fastest = math.max(fastest, stats.topSpeed) end
 	end
 	for _, car in ipairs(FusionRecipes.Items) do consider(car.name) end
-	for _, result in ipairs(FusionRecipes.GetAllResults()) do consider(result.name) end
+	for _, result in ipairs(FusionRecipes.GetAllResults()) do
+		if not FusionRecipes.IsExclusive(result.name) then consider(result.name) end
+	end
 	return fastest
 end
 

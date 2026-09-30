@@ -71,27 +71,35 @@ FusionRecipes.BaseItems = {
 	-- Prices: new players start with no coins, so the Nitrous Tank is cheap
 	-- enough for the first day's daily reward, and its first fusion pays
 	-- that back.
-	-- Each rarity's first addon costs roughly one and a half to two times
-	-- the cheapest build it makes, so a placed build of that tier earns its
-	-- next addon back in a few minutes; the two after it cost a bit more.
+	-- Each rarity's first addon costs roughly three to four times the
+	-- cheapest build it makes (doubled 2026-09-30, along with pads earning
+	-- half as fast, to slow the climb to Rebirth down), so a placed build of
+	-- that tier takes a while to earn its next addon; the two after it cost
+	-- a bit more.
 	--
 	-- `standIn` is the addon whose model is shown until this one has its
 	-- own in ItemModels (see FusionRecipes.StandIn).
-	{ name = "Nitrous Tank",   rarity = "uncommon",  value = 20,  price = 50,     isAddon = true, resultValue = 150 },
-	{ name = "Straight Pipes", rarity = "uncommon",  value = 24,  price = 80,     isAddon = true, resultValue = 158, standIn = "Nitrous Tank" },
-	{ name = "Scrap Turbo",    rarity = "uncommon",  value = 28,  price = 110,    isAddon = true, resultValue = 164, standIn = "Nitrous Tank" },
-	{ name = "Inline 4",       rarity = "rare",      value = 45,  price = 750,    isAddon = true, resultValue = 500 },
-	{ name = "Rotary Engine",  rarity = "rare",      value = 52,  price = 900,    isAddon = true, resultValue = 525, standIn = "Inline 4" },
-	{ name = "Twin Turbo",     rarity = "rare",      value = 60,  price = 1100,   isAddon = true, resultValue = 545, standIn = "Inline 4" },
-	{ name = "V6 Engine",      rarity = "epic",      value = 110, price = 4000,   isAddon = true, resultValue = 2000 },
-	{ name = "Supercharger",   rarity = "epic",      value = 125, price = 4800,   isAddon = true, resultValue = 2100, standIn = "V6 Engine" },
-	{ name = "Diesel Stack",   rarity = "epic",      value = 140, price = 5600,   isAddon = true, resultValue = 2180, standIn = "V6 Engine" },
-	{ name = "V8 Engine",      rarity = "mythic",    value = 210, price = 20000,  isAddon = true, resultValue = 10000 },
-	{ name = "V12 Engine",     rarity = "mythic",    value = 235, price = 24000,  isAddon = true, resultValue = 10500, standIn = "V8 Engine" },
-	{ name = "Hover Fans",     rarity = "mythic",    value = 260, price = 28000,  isAddon = true, resultValue = 10900, standIn = "V8 Engine" },
-	{ name = "Jet Engine",     rarity = "legendary", value = 300, price = 100000, isAddon = true, resultValue = 50000 },
-	{ name = "Rocket Booster", rarity = "legendary", value = 335, price = 120000, isAddon = true, resultValue = 52500, standIn = "Jet Engine" },
-	{ name = "Fusion Core",    rarity = "legendary", value = 360, price = 140000, isAddon = true, resultValue = 54500, standIn = "Jet Engine" },
+	--
+	-- `exclusive` addons are never sold and never come out of a crate: the
+	-- Warp Drive only comes from the Day 7 daily streak (PlotManager's
+	-- jackpot). It is the best addon in the game, one step above the Fusion
+	-- Core, so it sits at the top of the ladder.
+	{ name = "Nitrous Tank",   rarity = "uncommon",  value = 20,  price = 100,    isAddon = true, resultValue = 150 },
+	{ name = "Straight Pipes", rarity = "uncommon",  value = 24,  price = 160,    isAddon = true, resultValue = 158, standIn = "Nitrous Tank" },
+	{ name = "Scrap Turbo",    rarity = "uncommon",  value = 28,  price = 220,    isAddon = true, resultValue = 164, standIn = "Nitrous Tank" },
+	{ name = "Inline 4",       rarity = "rare",      value = 45,  price = 1500,   isAddon = true, resultValue = 500 },
+	{ name = "Rotary Engine",  rarity = "rare",      value = 52,  price = 1800,   isAddon = true, resultValue = 525, standIn = "Inline 4" },
+	{ name = "Twin Turbo",     rarity = "rare",      value = 60,  price = 2200,   isAddon = true, resultValue = 545, standIn = "Inline 4" },
+	{ name = "V6 Engine",      rarity = "epic",      value = 110, price = 8000,   isAddon = true, resultValue = 2000 },
+	{ name = "Supercharger",   rarity = "epic",      value = 125, price = 9600,   isAddon = true, resultValue = 2100, standIn = "V6 Engine" },
+	{ name = "Diesel Stack",   rarity = "epic",      value = 140, price = 11200,  isAddon = true, resultValue = 2180, standIn = "V6 Engine" },
+	{ name = "V8 Engine",      rarity = "mythic",    value = 210, price = 40000,  isAddon = true, resultValue = 10000 },
+	{ name = "V12 Engine",     rarity = "mythic",    value = 235, price = 48000,  isAddon = true, resultValue = 10500, standIn = "V8 Engine" },
+	{ name = "Hover Fans",     rarity = "mythic",    value = 260, price = 56000,  isAddon = true, resultValue = 10900, standIn = "V8 Engine" },
+	{ name = "Jet Engine",     rarity = "legendary", value = 300, price = 200000, isAddon = true, resultValue = 50000 },
+	{ name = "Rocket Booster", rarity = "legendary", value = 335, price = 240000, isAddon = true, resultValue = 52500, standIn = "Jet Engine" },
+	{ name = "Fusion Core",    rarity = "legendary", value = 360, price = 280000, isAddon = true, resultValue = 54500, standIn = "Jet Engine" },
+	{ name = "Warp Drive",     rarity = "legendary", value = 390, exclusive = true, isAddon = true, resultValue = 57000, standIn = "Fusion Core" },
 }
 
 -- The whole recipe book: one result per car per addon, in the addon order
@@ -101,6 +109,7 @@ FusionRecipes.BaseItems = {
 --   Epic      V6 Engine, Supercharger, Diesel Stack
 --   Mythic    V8 Engine, V12 Engine, Hover Fans
 --   Legendary Jet Engine, Rocket Booster, Fusion Core
+-- and then the Day 7 exclusive, the Warp Drive, last in every row.
 local BOOK = {
 	["Rusted Sedan"] = {
 		"Rusty Splice", "Loud Lemon", "Turbo Tin Can",
@@ -108,6 +117,7 @@ local BOOK = {
 		"Street Menace", "Whine Machine", "Smoke Screen Sedan",
 		"Redline Reaper", "Grand Tourer Ghost", "Hover Heap",
 		"Sonic Scrapheap", "Retro Rocket", "Reactor Rustbucket",
+		"Warp Wreck",
 	},
 	["Dirt Bike"] = {
 		"Bent Fusion", "Screamer Bike", "Dust Devil",
@@ -115,6 +125,7 @@ local BOOK = {
 		"Trail Blazer", "Blower Bike", "Mud Stomper",
 		"Chaos Hybrid", "Twelve Cylinder Chopper", "Hoverbike",
 		"Rocket Rider", "Moonshot Moto", "Atom Rider",
+		"Wormhole Wheelie",
 	},
 	["Golf Cart"] = {
 		"Cart Rocket", "Putter Popper", "Turbo Tee",
@@ -122,6 +133,7 @@ local BOOK = {
 		"Fairway Fighter", "Sand Trap Supreme", "Diesel Driver",
 		"Cartpocalypse", "Hole in Twelve", "Hover Caddy",
 		"THE LAWNLORD", "Eagle Launcher", "Atomic Albatross",
+		"Hole in Space",
 	},
 	["Muscle Car"] = {
 		"Junk Mashup", "Rumble Pony", "Boost Stallion",
@@ -129,6 +141,7 @@ local BOOK = {
 		"Twisted Wreck", "Blown Charger", "Coal Roller",
 		"Chrome Sentinel", "Grand Growler", "Street Levitator",
 		"Afterburner GT", "Rocket Stallion", "Fusion Fury",
+		"Lightspeed Legend",
 	},
 	["Cop Cruiser"] = {
 		"Cone Cruiser", "Siren Screamer", "Patrol Spooler",
@@ -136,6 +149,7 @@ local BOOK = {
 		"Turbo Interceptor", "Supercharged Sheriff", "Riot Rig",
 		"Highway Overlord", "Pursuit Prime", "Hover Patrol",
 		"Sky Marshal", "Orbital Enforcer", "Plasma Patrol",
+		"Warp Warden",
 	},
 	["Box Truck"] = {
 		"Scrap Hybrid", "Rattle Hauler", "Turbo Mover",
@@ -143,6 +157,7 @@ local BOOK = {
 		"Construction Cartel", "Blown Big Rig", "Diesel Dynamo",
 		"Yard Destroyer", "Titan Twelve", "Cargo Hoverer",
 		"Jet Hauler", "Rocket Freight", "Core Carrier",
+		"Star Freighter",
 	},
 	["Monster Truck"] = {
 		"Soccer Mom Monster", "Stomp Pipes", "Crusher Turbo",
@@ -150,6 +165,7 @@ local BOOK = {
 		"Suburban Assault", "Supercharged Smasher", "Black Smoke Beast",
 		"Mangled Overlord", "V12 Leviathan", "Hover Hulk",
 		"Scrapyard God", "Rocket Juggernaut", "Fusion Colossus",
+		"Starcrusher",
 	},
 }
 
@@ -161,6 +177,7 @@ local MAX_TIER = 4
 
 FusionRecipes.Items = {}    -- cars only
 FusionRecipes.Addons = {}   -- addons only, worst to best
+FusionRecipes.ShopAddons = {} -- the addons for sale (and in crates): not the exclusives
 
 local baseByName = {}
 local addonRank = {}        -- [addon name] = 1 (Nitrous) .. 15 (Fusion Core)
@@ -169,6 +186,9 @@ for _, item in ipairs(FusionRecipes.BaseItems) do
 	if item.isAddon then
 		table.insert(FusionRecipes.Addons, item)
 		addonRank[item.name] = #FusionRecipes.Addons
+		if not item.exclusive then
+			table.insert(FusionRecipes.ShopAddons, item)
+		end
 	else
 		table.insert(FusionRecipes.Items, item)
 	end
@@ -193,6 +213,7 @@ for _, car in ipairs(FusionRecipes.Items) do
 			rarity = addon.rarity,
 			tier = math.min(RARITY_INDEX[addon.rarity], MAX_TIER),
 			value = math.round(addon.resultValue * car.multiplier),
+			exclusive = addon.exclusive == true,
 		}
 		recipe[car.name][addon.name] = name
 	end
@@ -266,6 +287,16 @@ end
 
 function FusionRecipes.IsAddon(name)
 	return addonRank[name] ~= nil
+end
+
+-- True for an exclusive addon (the Warp Drive) and every build made with
+-- one: things that only come from the Day 7 streak, never from the Shop,
+-- a crate or the secret Legendary drop. Bare names.
+function FusionRecipes.IsExclusive(name)
+	local base = baseByName[name]
+	if base then return base.exclusive == true end
+	local entry = results[name]
+	return entry ~= nil and entry.exclusive
 end
 
 -- The name whose model stands in for this one until it has its own in
@@ -429,7 +460,7 @@ function FusionRecipes.RollBaseItem()
 	return weightedPick(FusionRecipes.Items)
 end
 
--- Every item in this line for the Index: the grabbables, then all 105
+-- Every item in this line for the Index: the grabbables, then all 112
 -- results by rarity and then by car. Each carries its `rarity` for the
 -- rarity filters, and a result carries the `car` and `addon` that make it,
 -- so the book can be laid out as cars by addons. An undiscovered result's

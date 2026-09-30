@@ -35,7 +35,7 @@ end
 local SPAWN_INTERVAL = 5      -- seconds between cars coming out of the box (was 3: too many at once)
 local DESPAWN_AFTER  = 40     -- seconds before an ignored crane prize disappears
 -- Most cars on the belt at once. One leaves the box every 5 s and a lap
--- takes about 43 s, so the belt normally carries about 9; this only
+-- takes about 35 s, so the belt normally carries about 7; this only
 -- catches a hiccup, it is not what normally limits the count.
 local MAX_ITEMS      = 12
 
@@ -89,6 +89,12 @@ local CRATE_MIN_RARITY = "rare"
 local CRATE_DESPAWN_AFTER = 60
 local CRANE_SWING_SECONDS = 6
 local CRATE_FALL_SECONDS = 1.1
+-- A Crane Drop is called two minutes ahead, with a big countdown in the
+-- sky over the yard (CraneTimer.client, from workspace's CraneDropAt and
+-- CraneDropSpot), so people across the map have time to get there.
+local CRANE_WARNING = 120
+-- The last call, this many seconds before it drops.
+local CRANE_LAST_CALL = 15
 
 -- Light pillar over anything worth racing for, in its rarity colour.
 local BEAM_HEIGHT = 70
@@ -420,11 +426,12 @@ local function spawnScrap()
 	ride(part, -math.max(part.Size.X, part.Size.Z) / 2)
 end
 
--- Every Legendary build in the recipe book.
+-- Every Legendary build in the recipe book, but not the Day 7 exclusives
+-- (the Warp Drive's builds only come from the streak).
 local legendaryBuilds = {}
 for _, entry in ipairs(FusionRecipes.GetAllResults()) do
 	local name = type(entry) == "table" and entry.name or entry
-	if FusionRecipes.GetRarity(name) == "legendary" then
+	if FusionRecipes.GetRarity(name) == "legendary" and not FusionRecipes.IsExclusive(name) then
 		table.insert(legendaryBuilds, name)
 	end
 end
@@ -578,14 +585,18 @@ function runEvent.CraneDrop()
 	local spot = Vector3.new(x, surfaceY(x, z) or YardFeatures.GROUND_Y, z)
 
 	local marker = dropMarker(spot)
-	announce(string.format("<font color=\"#FFCD28\">CRANE DROP</font> in %d seconds — get under the magnet!", EVENT_WARNING))
+	local dropAt = workspace:GetServerTimeNow() + CRANE_WARNING
+	workspace:SetAttribute("CraneDropSpot", spot)
+	workspace:SetAttribute("CraneDropAt", dropAt)
+	announce("<font color=\"#FFCD28\">CRANE DROP</font> in 2 minutes — look up at the timer and get under the magnet!")
 
-	local started = os.clock()
 	local arm = craneArm()
 	if arm then
 		swingArm(arm, angle, CRANE_SWING_SECONDS)
 	end
-	task.wait(math.max(0, EVENT_WARNING - (os.clock() - started)))
+	task.wait(math.max(0, dropAt - CRANE_LAST_CALL - workspace:GetServerTimeNow()))
+	announce(string.format("<font color=\"#FFCD28\">CRANE DROP</font> in %d seconds — get under the magnet!", CRANE_LAST_CALL))
+	task.wait(math.max(0, dropAt - workspace:GetServerTimeNow()))
 
 	-- Fall from wherever the magnet actually ended up, so the crate always
 	-- leaves the magnet even if the arm is a hair off the marker.
@@ -593,6 +604,8 @@ function runEvent.CraneDrop()
 	local origin = magnet and (magnet.Position - Vector3.new(0, magnet.Size.X / 2, 0)) or (spot + Vector3.new(0, 20, 0))
 	dropCrate(Vector3.new(spot.X, origin.Y, spot.Z), spot)
 	marker:Destroy()
+	workspace:SetAttribute("CraneDropAt", nil)
+	workspace:SetAttribute("CraneDropSpot", nil)
 
 	local itemName = rollCrateItem()
 	spawnItemAt(itemName, spot, { beam = true, silent = true, despawnAfter = CRATE_DESPAWN_AFTER })

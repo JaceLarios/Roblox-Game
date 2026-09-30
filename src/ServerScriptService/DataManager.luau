@@ -54,8 +54,10 @@ local function defaultData()
 		crates = {}, -- Race Wars crates waiting to be opened; see RaceCrates.luau for the shape of one.
 		starterPackGiven = false, -- the Starter Pack's Jet Engine and Muscle Car, given once (PlotManager).
 		raceBest = 0, -- furthest ever down the Race Wars track, in studs (RaceLeaderboardService).
-		-- quests (today's daily quests) and lastSeen (os.time() at the last
-		-- save, for offline earnings) start out absent.
+		-- quests (today's daily quests), lastSeen (os.time() at the last
+		-- save, for offline earnings) and tutorialDone (the first-join
+		-- tutorial finished or skipped) start out absent. PlotManager tells
+		-- a missing tutorialDone on an old save from a new player's.
 	}
 end
 
