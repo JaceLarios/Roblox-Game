@@ -8,17 +8,17 @@
 -- free just by listing icons here, no new animation code needed.
 return {
 	DoubleCoins = {
-		id = 0, name = "2x Coins", icon = "💰",
+		id = 2002892394, name = "2x Coins", icon = "💰",
 		description = "Double coins from your earning pads, objectives, daily rewards and playtime. Stacks with income boosts.",
 		bgIcons = { "💰", "✨", "💰", "✨" },
 	},
 	ExtraStorage = {
-		id = 0, name = "+50 Inventory Space", icon = "📦",
+		id = 1998273670, name = "+50 Inventory Space", icon = "📦",
 		description = "Fifty more inventory spaces on top of your Storage Space upgrades.",
 		bgIcons = { "📦", "🎒", "📦" },
 	},
 	StarterPack = {
-		id = 0, name = "Starter Pack", icon = "🎒",
+		id = 2003090357, name = "Starter Pack", icon = "🎒",
 		description = "A Jet Engine and a Muscle Car in your Inventory. Fuse them for a Legendary build on day one.",
 		bgIcons = { "🎒", "💨", "💰" },
 	},

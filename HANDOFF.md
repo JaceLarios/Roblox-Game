@@ -8,6 +8,8 @@
 
 **Friend + group bonus** (SocialConfig). +10% pad income per friend in the server (max 5), and +10% for members of the game's group. Shown as "+20% FRIENDS" / "+10% GROUP" chips in the boost bar (`FriendBonus` / `GroupBonus` player attributes). `SocialConfig.GROUP_ID` is the game's group, 137856466 (tested in Studio: the owner gets the +10% GROUP chip). Group membership is checked on join only.
 
+**Real gamepasses.** GamepassConfig now holds the three passes, all created under the RaceWerks group (137856466): 2x Coins 2002892394, +50 Inventory Space 1998273670, Starter Pack 2003090357. When they were wired in they were not yet on sale (no price), so other players would see UNAVAILABLE until each is put on sale in Creator Hub. The owner automatically owns all three (the Shop says OWNED). The Starter Pack grant ran once on the owner's save during a test with the earlier personal-account pass ids.
+
 PlotManager's top level is at 194 of Luau's 200 locals. The new code lives in the `Quests`, `Social`, `Income` and `RaceBoard` tables; keep adding to tables, not new top-level locals.
 
 ---

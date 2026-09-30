@@ -97,7 +97,7 @@ local function gridFit()
 end
 panel:GetAttributeChangedSignal("Compact"):Connect(gridFit) gridFit()
 local PASS_ACCENTS={DoubleCoins=Color3.fromRGB(243,162,101),ExtraStorage=Color3.fromRGB(95,185,174)}
-local BENEFITS={DoubleCoins="Double your sale and reward coins!",ExtraStorage="50 more inventory spaces, forever!"}
+local BENEFITS={DoubleCoins="Double your pad and reward coins!",ExtraStorage="50 more inventory spaces, forever!"}
 local refreshers={}
 local pendingId=nil
 -- Makes `buy` the purchase button for gamepass `key`: its text follows
