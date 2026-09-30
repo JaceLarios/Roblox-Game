@@ -12,6 +12,6 @@
 return table.freeze({
 	FRIEND_BONUS = 0.10,
 	MAX_FRIENDS = 5,
-	GROUP_ID = 0,
+	GROUP_ID = 137856466,
 	GROUP_BONUS = 0.10,
 })

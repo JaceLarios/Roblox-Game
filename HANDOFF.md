@@ -6,7 +6,7 @@
 
 **Race personal bests + FURTHEST RACE board.** `RaceService` calls a new `runOver(player, distance)` hook when a run ends. `RaceLeaderboardService` keeps each player's best (`raceBest` in the save, `RaceBest` attribute) and an OrderedDataStore `JunkyardFusion_RaceBest_v1`. A new best gives a "NEW PERSONAL BEST!" toast. The lobby panel's idle title reads "YOUR BEST: LEVEL 1 · 58 M" (`RaceConfig.DescribeDistance`). CentralLeaderboards builds a third board, FURTHEST RACE, in the Race Wars lobby (`RaceTrack.LeaderboardFrame()`).
 
-**Friend + group bonus** (SocialConfig). +10% pad income per friend in the server (max 5), and +10% for members of the game's group. Shown as "+20% FRIENDS" / "+10% GROUP" chips in the boost bar (`FriendBonus` / `GroupBonus` player attributes). **`SocialConfig.GROUP_ID` is 0, so the group bonus is off until the group id is filled in.** Group membership is checked on join only.
+**Friend + group bonus** (SocialConfig). +10% pad income per friend in the server (max 5), and +10% for members of the game's group. Shown as "+20% FRIENDS" / "+10% GROUP" chips in the boost bar (`FriendBonus` / `GroupBonus` player attributes). `SocialConfig.GROUP_ID` is the game's group, 137856466 (tested in Studio: the owner gets the +10% GROUP chip). Group membership is checked on join only.
 
 PlotManager's top level is at 194 of Luau's 200 locals. The new code lives in the `Quests`, `Social`, `Income` and `RaceBoard` tables; keep adding to tables, not new top-level locals.
 
