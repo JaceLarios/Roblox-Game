@@ -255,9 +255,15 @@ end
 -- shows the car, when its name differs. `credit` is the attribution its
 -- model's licence asks for, shown in game (its Index card and its
 -- Inventory details) as well as in the game's description.
+--
+-- An entry with `comingSoon = true` is a slot held open for a car whose
+-- model is not ready yet: the Index shows a "Coming soon" card for it and
+-- it never spawns. To fill it, give it the car's real name, its `model`
+-- and `credit`, and drop `comingSoon`.
 FusionRecipes.SecretCars = {
-	{ name = "Toro SVO", rarity = "secret", value = 400000, model = "SVO",
-		credit = "Model by SDC PERFORMANCE (Sketchfab), CC BY 4.0, modified" },
+	-- The Toro SVO's slot: it was taken out on 2026-09-30 to be renamed and
+	-- remodelled (its old model is in ServerStorage.RetiredModels).
+	{ name = "Secret Slot 1", rarity = "secret", value = 400000, comingSoon = true },
 }
 local secretByName = {}
 for _, car in ipairs(FusionRecipes.SecretCars) do
@@ -325,10 +331,14 @@ function FusionRecipes.Credit(name)
 	return car and car.credit
 end
 
--- A Secret car at random, for the rare roll out of the black box.
+-- A Secret car at random, for the rare roll out of the black box, or nil
+-- while every slot is still coming soon.
 function FusionRecipes.RollSecretCar()
-	local cars = FusionRecipes.SecretCars
-	return cars[math.random(1, #cars)].name
+	local ready = {}
+	for _, car in ipairs(FusionRecipes.SecretCars) do
+		if not car.comingSoon then table.insert(ready, car.name) end
+	end
+	return #ready > 0 and ready[math.random(1, #ready)] or nil
 end
 
 -- True for an exclusive addon (the Warp Drive) and every build made with
@@ -546,11 +556,12 @@ function FusionRecipes.GetIndex(discovered, secretFound)
 	end
 
 	for _, car in ipairs(FusionRecipes.SecretCars) do
-		local known = secretFound[car.name] == true
+		local known = not car.comingSoon and secretFound[car.name] == true
 		table.insert(items, {
 			name     = known and car.name or "???",
 			-- For the admin panel's "show whole Index" only.
-			hiddenName = car.name,
+			hiddenName = not car.comingSoon and car.name or nil,
+			comingSoon = car.comingSoon == true,
 			-- Shown on its card, found or not (the model's licence).
 			credit   = car.credit,
 			tier     = MAX_TIER,

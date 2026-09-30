@@ -297,7 +297,7 @@ function Gallery.Create(gui)
 					name.TextScaled=true
 					make("UITextSizeConstraint",name,"NameLimit",{MinTextSize=12,MaxTextSize=21})
 					-- A Secret car's card carries its model's credit instead.
-					local status=caption(card,"Status",entry.credit or (entry.known and "✓ Discovered" or "Keep exploring"),13)
+					local status=caption(card,"Status",entry.comingSoon and "Coming soon" or entry.credit or (entry.known and "✓ Discovered" or "Keep exploring"),13)
 					status.Size,status.Position=UDim2.new(1,-12,0,18),UDim2.new(0,6,1,-18)
 					status.TextColor3=entry.known and P.TealDeep or Color3.fromRGB(122,112,99)
 					if entry.credit then

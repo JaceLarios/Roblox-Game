@@ -440,7 +440,7 @@ local function spawnScrap()
 	-- Very rarely, a Secret car instead.
 	if math.random() < SECRET_CHANCE then
 		local secret = FusionRecipes.RollSecretCar()
-		if not atLimit(secret) then
+		if secret and not atLimit(secret) then
 			itemName = secret
 		end
 	end
@@ -559,7 +559,7 @@ end
 local function rollCrateItem()
 	if math.random() < CRATE_SECRET_CHANCE then
 		local secret = FusionRecipes.RollSecretCar()
-		if not atLimit(secret) then return secret end
+		if secret and not atLimit(secret) then return secret end
 	end
 	local floor = FusionRecipes.RarityIndex[CRATE_MIN_RARITY]
 	local pool = {}
@@ -666,7 +666,12 @@ end
 -- For the admin panel only (never in EVENT_ORDER): a Secret car rolls out
 -- of the black box right now.
 function runEvent.SecretCar()
-	local part = spawnItemAt(FusionRecipes.RollSecretCar(), (Conveyor.PointAt(0)), { onBelt = true })
+	local secret = FusionRecipes.RollSecretCar()
+	if not secret then
+		print("[ScrapSpawner] No Secret car is ready yet (every slot is coming soon).")
+		return
+	end
+	local part = spawnItemAt(secret, (Conveyor.PointAt(0)), { onBelt = true })
 	ride(part, -math.max(part.Size.X, part.Size.Z) / 2)
 end
 
