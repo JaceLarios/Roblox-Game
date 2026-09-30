@@ -1,0 +1,39 @@
+{
+  "transparency": 0,
+  "note": "Front badge removed by Codex; rear script covered by LogoCover (Claude, 2026-09-30). Keep both if the model is re-exported.",
+  "reflectance": 0,
+  "canCollide": false,
+  "color": [
+    0.01568627543747425,
+    0.019607843831181526,
+    0.027450980618596077
+  ],
+  "class": "Part",
+  "canTouch": false,
+  "massless": true,
+  "canQuery": false,
+  "relativeCFrame": [
+    0.004000000189989805,
+    0.47269344329833984,
+    -5.734857082366943,
+    1,
+    0,
+    0,
+    0,
+    0.6571351885795593,
+    0.7537727355957031,
+    0,
+    -0.7537727355957031,
+    0.6571351885795593
+  ],
+  "name": "LogoCover",
+  "anchored": true,
+  "modelScale": 1,
+  "material": "SmoothPlastic",
+  "shape": "Block",
+  "size": [
+    0.5699999928474426,
+    0.12999999523162842,
+    0.00800000037997961
+  ]
+}

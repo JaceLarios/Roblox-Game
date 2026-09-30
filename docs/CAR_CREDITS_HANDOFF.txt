@@ -1,3 +1,10 @@
+LogoCover preservation update:
+Confirmed the existing SVO.LogoCover in Studio and left it unchanged.
+assets/svo/logo-cover.json backs up its dimensions, appearance and model-relative transform.
+assets/svo/restore-logo-cover.edit.luau restores a missing cover and preserves an existing one.
+The earlier mesh-only manifest excludes this ordinary Part; always include this companion backup.
+Replacement models must preserve the pivot convention; visually verify after any geometry/scale change.
+
 Vehicle credits and SVO snapshot - 2026-09-30
 
 Studio place 94136201094216 was inspected in Edit mode.
