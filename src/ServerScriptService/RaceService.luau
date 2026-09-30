@@ -1,9 +1,11 @@
 --[[
 	RaceService (ModuleScript, ServerScriptService) — Junkyard Fusion
 
-	Runs Race Wars races. They run on a schedule, one every
-	RaceConfig.RACE_INTERVAL seconds: everyone standing in the line-up box
-	in front of the start when the timer runs out races together. Each
+	Runs Race Wars races, whenever someone wants one: stepping into the
+	line-up box in front of the start begins a RaceConfig.LINEUP_SECONDS
+	countdown, and everyone in the box when it runs out races together.
+	Only one race runs at a time: while one is on, the box still fills up,
+	but the countdown waits until every racer in it is done. Each
 	racer gets a drivable copy of the car they picked in the Race Garage
 	(RaceWarsUI; their fastest car if they never picked), set on the
 	starting grid from the middle out, and drives it themselves (RaceDrive,
@@ -93,10 +95,11 @@ local current = nil   -- the race being run (see startRace), or nil
 local monsters = {}   -- [race] = true while its monster is on screen
 
 -- When the next race starts, in workspace:GetServerTimeNow() time, which
--- the clients share, so their countdowns match the board's. The attribute
--- is the schedule itself: set it from the server (a test, an admin) and
--- the next race moves with it.
-workspace:SetAttribute("RaceNextAt", workspace:GetServerTimeNow() + RaceConfig.RACE_INTERVAL)
+-- the clients share, so their countdowns match the board's; nil while
+-- nobody is lined up (or a race is on). The attribute is the countdown
+-- itself: set it from the server (a test, the admin panel) while someone
+-- is lined up and the race moves with it.
+workspace:SetAttribute("RaceNextAt", nil)
 
 local COUNTDOWN = 3
 -- Race cars have no friction: the drive constraint alone decides how fast
@@ -621,35 +624,36 @@ local function clock(seconds)
 	return string.format("%d:%02d", seconds // 60, seconds % 60)
 end
 
+-- left: seconds until the next race starts, or nil with no countdown on.
 local function updateBoard(left, count)
 	local inLine = count == 1 and "1 RACER IN LINE" or string.format("%d RACERS IN LINE", count)
 	if current then
-		Track.SetBoard("RACE ON!", string.format("NEXT RACE %s · %s", clock(left), inLine))
+		Track.SetBoard("RACE ON!", count > 0 and ("NEXT RACE WHEN IT'S OVER · " .. inLine) or "WAIT FOR IT TO FINISH")
+	elseif left then
+		Track.SetBoard("RACE STARTS IN " .. clock(left), inLine)
 	else
-		Track.SetBoard("NEXT RACE " .. clock(left), count > 0 and inLine or "STAND IN THE YELLOW BOX TO JOIN")
+		Track.SetBoard("RACE WARS", "STAND IN THE YELLOW BOX TO START A RACE")
 	end
 end
 
+-- The countdown: it starts when someone is lined up and no race is on,
+-- is called off if the box empties, and starts the race when it runs out.
 task.spawn(function()
 	while true do
 		local count = refreshQueue()
 		local now = workspace:GetServerTimeNow()
-		local nextRaceAt = workspace:GetAttribute("RaceNextAt") or now
-		if now >= nextRaceAt then
-			if current then
-				-- The last race is somehow still going: start this one as
-				-- soon as it is over.
-				nextRaceAt = now + 5
-			else
-				nextRaceAt = now + RaceConfig.RACE_INTERVAL
-				if count > 0 then
-					startRace()
-				end
-			end
-			workspace:SetAttribute("RaceNextAt", nextRaceAt)
+		local startsAt = workspace:GetAttribute("RaceNextAt")
+		if current or count == 0 then
+			startsAt = nil
+		elseif not startsAt then
+			startsAt = now + RaceConfig.LINEUP_SECONDS
+		elseif now >= startsAt then
+			startsAt = nil
+			startRace()
 		end
+		setAttribute(workspace, "RaceNextAt", startsAt)
 		setAttribute(workspace, "RaceRunning", current ~= nil)
-		updateBoard(nextRaceAt - now, count)
+		updateBoard(startsAt and startsAt - now, count)
 		task.wait(0.25)
 	end
 end)

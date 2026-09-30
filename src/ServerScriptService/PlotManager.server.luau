@@ -503,7 +503,7 @@ local function updateWalkSpeed(player)
 	if not (s and humanoid) then return end
 
 	local placedBonus = math.min(#s.placed * PLACED_SPEED_PER_ITEM, PLACED_SPEED_CAP)
-	local speedMult = Gamepasses.SpeedMultiplier(player)
+	local speedMult = 1
 	-- The coil is a held tool, so its bonus applies only while it is
 	-- actually equipped, and never while carrying: the coil is one of the
 	-- two things you give up to haul loot.
@@ -1017,10 +1017,6 @@ local function pushUI(player)
 	})
 end
 
-Gamepasses.Changed:Connect(function(player)
-	if state[player] then pushUI(player) end
-end)
-
 local function toast(player, message, isBig)
 	remote:FireClient(player, { toast = message, big = isBig or false })
 end
@@ -1030,6 +1026,31 @@ end
 local function broadcast(message)
 	remote:FireAllClients({ announce = message })
 end
+
+-- The Starter Pack pass: a Jet Engine and a Muscle Car to fuse it on (a
+-- Legendary build, Afterburner GT, on day one). Given once per account,
+-- the first time the player is seen owning the pass: bought in game, or
+-- already owned when they join. starterPackGiven is saved, so it never
+-- comes twice (a Rebirth clears the Inventory like anything else).
+local STARTER_PACK_ITEMS = { "Jet Engine", "Muscle Car" }
+
+local function giveStarterPack(player)
+	local s = state[player]
+	if not s or s.starterPackGiven or not Gamepasses.Has(player, "StarterPack") then return end
+	s.starterPackGiven = true
+	for _, itemName in ipairs(STARTER_PACK_ITEMS) do
+		table.insert(s.inventory, itemName)
+	end
+	toast(player, "STARTER PACK\nA Jet Engine and a Muscle Car are in your Inventory. Fuse them for a Legendary!", true)
+	pushUI(player)
+end
+
+Gamepasses.Changed:Connect(function(player)
+	if state[player] then
+		giveStarterPack(player)
+		pushUI(player)
+	end
+end)
 
 -- Picks a rare car for the daily reward: a Cop Cruiser, Box Truck or
 -- Monster Truck.
@@ -2939,6 +2960,7 @@ local function onPlayerAdded(player)
 		playtimeMilestonesClaimed = {},
 		redeemedCodes = data.redeemedCodes or {},
 		crates = data.crates or {},
+		starterPackGiven = data.starterPackGiven == true,
 		plotIndex = index,
 		mutationPity = 0,
 	}
@@ -3013,6 +3035,10 @@ local function onPlayerAdded(player)
 	-- CharacterAutoLoads is off, so this is what actually spawns them —
 	-- right at plot.spawnPoint, since RespawnLocation is already set.
 	player:LoadCharacter()
+
+	-- The pass check may have finished before their save loaded, when
+	-- there was nothing to give the Starter Pack to yet.
+	giveStarterPack(player)
 end
 
 Players.PlayerAdded:Connect(onPlayerAdded)
@@ -3056,6 +3082,7 @@ local function snapshot(player)
 		totalPlaytimeMinutes = PlaytimeLeaderboard.Snapshot(player),
 		redeemedCodes = s.redeemedCodes,
 		crates = s.crates,
+		starterPackGiven = s.starterPackGiven,
 	}
 end
 

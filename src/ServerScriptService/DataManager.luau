@@ -52,6 +52,7 @@ local function defaultData()
 		totalPlaytimeMinutes = 0,
 		redeemedCodes = {},
 		crates = {}, -- Race Wars crates waiting to be opened; see RaceCrates.luau for the shape of one.
+		starterPackGiven = false, -- the Starter Pack's Jet Engine and Muscle Car, given once (PlotManager).
 	}
 end
 

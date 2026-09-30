@@ -19,7 +19,7 @@ return {
 	},
 	StarterPack = {
 		id = 0, name = "Starter Pack", icon = "🎒",
-		description = "A permanent coin and speed boost from day one.",
+		description = "A Jet Engine and a Muscle Car in your Inventory. Fuse them for a Legendary build on day one.",
 		bgIcons = { "🎒", "💨", "💰" },
 	},
 }

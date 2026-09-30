@@ -1282,13 +1282,6 @@ function redrawInventory(items, capacity)
 		if child:IsA("GuiObject") then child:Destroy() end
 	end
 
-	if #items == 0 then
-		local empty = label(inventoryScroll, "Nothing here yet — fuse something at your pad.",
-			UDim2.new(1, 0, 0, 60), Color3.fromRGB(150, 142, 128), Enum.Font.FredokaOne, 16)
-		empty.TextWrapped = true
-		empty.TextXAlignment = Enum.TextXAlignment.Center
-	end
-
 	-- Shown best first: rarest rarity at the top, and within a rarity the
 	-- better item first (by its hidden worth), then by name. Each entry
 	-- keeps its own `index` into the server's list, so sorting the display
@@ -1307,10 +1300,18 @@ function redrawInventory(items, capacity)
 		return a.index < b.index
 	end)
 
+	-- The CARS and ADDONS tabs (RaceCrates.client sets ItemFilter on the
+	-- panel to "cars" or "addons"): each shows only its own kind. Cars are
+	-- everything that is not an addon, fused builds included.
+	local filter = inventoryFrame:GetAttribute("ItemFilter")
+
 	local stillSelected = false
+	local shown = 0
 	for i, entry in ipairs(sorted) do
 		if searchBox.Text ~= "" and not string.find(string.lower(ItemNames.Display(entry.name)), string.lower(searchBox.Text), 1, true) then continue end
 		local baseName, mutationId = Mutations.Unwrap(entry.name)
+		if filter and (filter == "addons") ~= FusionRecipes.IsAddon(baseName) then continue end
+		shown += 1
 		local tintColor = Mutations.Color(mutationId)
 		local rarityKey = FusionRecipes.GetRarity(baseName)
 		local rarityColor = tintColor or ItemRarity.Color(entry.tier, entry.isSecret, rarityKey)
@@ -1399,6 +1400,21 @@ function redrawInventory(items, capacity)
 		end)
 
 		if isSelected then stillSelected = true end
+	end
+
+	if shown == 0 then
+		local text = "Nothing here yet — fuse something at your pad."
+		if searchBox.Text ~= "" then
+			text = "Nothing here matches your search."
+		elseif filter == "addons" then
+			text = "No addons yet — buy them in the Shop's Addons tab, or win them from race crates."
+		elseif filter == "cars" then
+			text = "No cars yet — grab one off the conveyor in the Junkyard."
+		end
+		local empty = label(inventoryScroll, text,
+			UDim2.new(1, 0, 0, 60), Color3.fromRGB(150, 142, 128), Enum.Font.FredokaOne, 16)
+		empty.TextWrapped = true
+		empty.TextXAlignment = Enum.TextXAlignment.Center
 	end
 
 	if not stillSelected then
@@ -1511,6 +1527,7 @@ local function toggleInventory()
 end
 
 searchBox:GetPropertyChangedSignal("Text"):Connect(function() redrawInventory(currentInventory, currentInventoryCapacity) end)
+inventoryFrame:GetAttributeChangedSignal("ItemFilter"):Connect(function() redrawInventory(currentInventory, currentInventoryCapacity) end)
 inventoryBtn.MouseButton1Click:Connect(toggleInventory)
 inventoryClose.MouseButton1Click:Connect(toggleInventory)
 

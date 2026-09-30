@@ -453,17 +453,24 @@ local function clock(seconds)
 	return string.format("%d:%02d", seconds // 60, seconds % 60)
 end
 
--- info: secondsLeft (to the next race), running (a race is on now),
--- inLine (how many are lined up), queued (whether you are), locked
--- (races not unlocked yet: no Rebirth), carName and carSpeed (what you
--- would race in, or nil with no car).
+-- info: secondsLeft (until the lined-up race starts, or nil with no
+-- countdown on), running (a race is on now), inLine (how many are lined
+-- up), queued (whether you are), locked (races not unlocked yet: no
+-- Rebirth), carName and carSpeed (what you would race in, or nil with no
+-- car).
 function View.UpdateLobby(info)
 	if overlay.Visible or UIStyle.ModalOpen() then
 		lobby.Visible = false
 		return
 	end
 	lobby.Visible = true
-	nextLabel.Text = (info.running and "RACE ON! · NEXT " or "NEXT RACE ") .. clock(info.secondsLeft)
+	if info.running then
+		nextLabel.Text = "RACE ON! · WAIT FOR IT TO FINISH"
+	elseif info.secondsLeft then
+		nextLabel.Text = "RACE STARTS IN " .. clock(info.secondsLeft)
+	else
+		nextLabel.Text = "RACE WARS"
+	end
 	local others = info.inLine == 1 and "1 in line" or string.format("%d in line", info.inLine)
 	if info.locked then
 		statusLabel.Text = "Races unlock after your first Rebirth"
@@ -474,8 +481,11 @@ function View.UpdateLobby(info)
 	elseif info.queued then
 		statusLabel.Text = "YOU'RE IN LINE! · " .. others
 		statusLabel.TextColor3 = GREEN
-	else
+	elseif info.inLine > 0 then
 		statusLabel.Text = "Stand in the yellow box to join · " .. others
+		statusLabel.TextColor3 = GOLD
+	else
+		statusLabel.Text = "Stand in the yellow box to start a race"
 		statusLabel.TextColor3 = GOLD
 	end
 	carLabel.Text = info.carName

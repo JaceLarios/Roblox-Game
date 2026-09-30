@@ -1,4 +1,16 @@
-# Latest gameplay handoff — No selling, luck for crates only, races after Rebirth, a secret Legendary, admin tools (2026-09-25)
+# Latest gameplay handoff — Races on demand, Cars/Addons tabs, an island border, a new Starter Pack (2026-09-29)
+
+**Races start when someone wants one.** Stepping into the yellow line-up box starts a 20-second countdown (`RaceConfig.LINEUP_SECONDS`); everyone in the box when it runs out races. Leaving the box empty calls it off. While a race is on, nobody can start another: the box still fills, and the countdown waits until every racer is done. The board and lobby panel say "RACE STARTS IN 0:18", "RACE ON! · WAIT FOR IT TO FINISH" or "STAND IN THE YELLOW BOX TO START A RACE".
+
+**Inventory tabs: CARS / ADDONS / CRATES** (was ITEMS / CRATES). RaceCrates.client owns the tabs and sets the panel's `ItemFilter`; GameUI's grid shows only that kind (cars = everything not an addon, builds included), with its own empty message per tab.
+
+**An invisible wall round the island** (`workspace.IslandBorder`, built by MapBootstrap): 96 segments, 40 studs tall, standing in the perimeter fence at radius 312 (`JunkyardLayout.IslandBorderRadius`), which was decoration you could walk through. Streams persistently so every client always has it.
+
+**Starter Pack = a Jet Engine and a Muscle Car** (fuse them: Afterburner GT, a Legendary), given once per account the first time the player owns the pass (`starterPackGiven` in the save). Its old +15% coins and +10% walk speed are gone. The Shop banner's chips say so. The pass id in GamepassConfig is still 0 (COMING SOON), so the grant has not been tested against a real pass.
+
+---
+
+# Previous gameplay handoff — No selling, luck for crates only, races after Rebirth, a secret Legendary, admin tools (2026-09-25)
 
 Built, synced and play-tested in Studio.
 

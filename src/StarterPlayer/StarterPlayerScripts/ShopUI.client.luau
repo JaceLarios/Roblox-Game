@@ -191,13 +191,13 @@ local starterPedestal=Garage.Pedestal(starter,GOLD,UDim2.fromOffset(28,158),UDim
 local starterTitle=Garage.Text(starter,"Title","STARTER PACK",UDim2.fromOffset(270,16),UDim2.new(1,-530,0,58),44,Color3.new(1,1,1))
 starterTitle.TextXAlignment=Enum.TextXAlignment.Left starterTitle.TextScaled=true
 local titleOutline=Instance.new("UIStroke") titleOutline.Color=Color3.fromRGB(40,16,80) titleOutline.Thickness=3 titleOutline.Parent=starterTitle
-local starterSub=Garage.Text(starter,"Subtitle","One purchase, yours forever. Best value for a new garage!",UDim2.fromOffset(270,74),UDim2.new(1,-530,0,32),20,Color3.fromRGB(240,226,255))
+local starterSub=Garage.Text(starter,"Subtitle","Fuse them for a Legendary build on day one!",UDim2.fromOffset(270,74),UDim2.new(1,-530,0,32),20,Color3.fromRGB(240,226,255))
 starterSub.TextXAlignment=Enum.TextXAlignment.Left starterSub.TextScaled=true
 -- What is in it, as chips.
 local perks=Instance.new("Frame") perks.Name="Perks" perks.BackgroundTransparency=1
 perks.Position=UDim2.fromOffset(270,118) perks.Size=UDim2.new(1,-530,0,96) perks.Parent=starter
 local perkList=Instance.new("UIListLayout") perkList.Padding=UDim.new(0,8) perkList.SortOrder=Enum.SortOrder.LayoutOrder perkList.Parent=perks
-for order,perk in ipairs({{"+15% COINS FOREVER",GOLD},{"+10% WALK SPEED",Color3.fromRGB(110,209,172)}}) do
+for order,perk in ipairs({{"JET ENGINE (LEGENDARY)",GOLD},{"MUSCLE CAR",Color3.fromRGB(110,209,172)}}) do
 	local chip=Garage.Text(perks,"Perk"..order,perk[1],UDim2.new(),UDim2.new(0,300,0,42),24,Style.Palette.Ink)
 	chip.LayoutOrder=order chip.TextScaled=true
 	Garage.Plate(chip,perk[2])

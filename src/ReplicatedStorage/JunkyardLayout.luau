@@ -11,4 +11,7 @@ return table.freeze({
  LaserStart=110,
  RouteHalfWidth=12.5,
  OuterRoadRadius=285,
+ -- The perimeter fence round the island (JunkyardRefresh.Perimeter): only
+ -- decoration, so an invisible wall stands in it (MapBootstrap).
+ IslandBorderRadius=312,
 })

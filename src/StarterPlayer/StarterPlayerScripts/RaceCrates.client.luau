@@ -6,11 +6,12 @@
 	What is inside stays hidden until then (the server only sends each
 	crate's level and time left; see RaceCrates.luau for how they roll).
 
-	Its own script, like ShopAddons is for the Shop: it adds an ITEMS /
-	CRATES tab pair to the existing Inventory panel and lays its board over
-	the item grid and details panel while the Crates tab is showing, so it
-	never touches how GameUI lays the Items tab out. Styled with
-	GarageTheme to match.
+	Its own script, like ShopAddons is for the Shop: it adds the CARS /
+	ADDONS / CRATES tabs to the existing Inventory panel. CARS and ADDONS
+	set the panel's ItemFilter attribute, which GameUI's item grid shows
+	only that kind for; CRATES lays its board over the item grid and
+	details panel, so it never touches how GameUI lays the grid out.
+	Styled with GarageTheme to match.
 --]]
 
 local Players = game:GetService("Players")
@@ -38,7 +39,7 @@ local WHITE = Color3.new(1, 1, 1)
 local crates = {}        -- as the server last sent them
 local receivedAt = 0     -- os.clock() when they arrived
 local capacity = 20
-local showing = "items"
+local showing = "cars"
 
 local function stroke(label, thickness)
 	local s = Instance.new("UIStroke")
@@ -67,7 +68,8 @@ local function tabButton(name, label)
 	Garage.Button(b, BLUE)
 	return b
 end
-local itemsTab = tabButton("ItemsTab", "ITEMS")
+local carsTab = tabButton("CarsTab", "CARS")
+local addonsTab = tabButton("AddonsTab", "ADDONS")
 local cratesTab = tabButton("CratesTab", "CRATES")
 
 ------------------------------------------------------------------
@@ -254,12 +256,13 @@ end)
 local function layout()
 	local compact = panel:GetAttribute("Compact")
 	local width = compact and 600 or 1200
-	local tabWidth = compact and 116 or 150
+	local tabWidth = compact and 104 or 150
 	local y = compact and 136 or 90
-	cratesTab.Size = UDim2.fromOffset(tabWidth, 34)
-	itemsTab.Size = UDim2.fromOffset(tabWidth, 34)
-	cratesTab.Position = UDim2.fromOffset(width - 24 - tabWidth, y)
-	itemsTab.Position = UDim2.fromOffset(width - 24 - tabWidth * 2 - 8, y)
+	-- Right to left: CRATES, ADDONS, CARS.
+	for i, tab in ipairs({ cratesTab, addonsTab, carsTab }) do
+		tab.Size = UDim2.fromOffset(tabWidth, 34)
+		tab.Position = UDim2.fromOffset(width - 24 - tabWidth * i - 8 * (i - 1), y)
+	end
 
 	-- Over the item grid and the details panel together.
 	local left = gridBoard.Position.X.Offset
@@ -272,15 +275,20 @@ end
 local function show(which)
 	showing = which
 	board.Visible = which == "crates"
-	itemsTab.BackgroundColor3 = which == "items" and GOLD or BLUE
+	if which ~= "crates" then
+		panel:SetAttribute("ItemFilter", which)
+	end
+	carsTab.BackgroundColor3 = which == "cars" and GOLD or BLUE
+	addonsTab.BackgroundColor3 = which == "addons" and GOLD or BLUE
 	cratesTab.BackgroundColor3 = which == "crates" and GOLD or BLUE
 end
 
-itemsTab.Activated:Connect(function() show("items") end)
+carsTab.Activated:Connect(function() show("cars") end)
+addonsTab.Activated:Connect(function() show("addons") end)
 cratesTab.Activated:Connect(function() show("crates") end)
 panel:GetAttributeChangedSignal("Compact"):Connect(layout)
 gridBoard:GetPropertyChangedSignal("Position"):Connect(layout)
 gridBoard:GetPropertyChangedSignal("Size"):Connect(layout)
 layout()
-show("items")
+show("cars")
 redraw()

@@ -6,8 +6,8 @@
 	already watches, so nothing else depends on this one:
 	  legendary   drop the secret Legendary now and restart its 20 minutes
 	              (ScrapSpawner watches workspace's LegendaryDropAt)
-	  race        start the next race now, for whoever is lined up
-	              (RaceService watches workspace's RaceNextAt)
+	  race        cut the line-up countdown short: the race starts now, for
+	              whoever is lined up (RaceService's RaceNextAt)
 	  CraneDrop, ScrapRush, MutationFrenzy
 	              run that yard event now (ScrapSpawner's TriggerYardEvent)
 	Showing the whole Index needs nothing from the server: it is only on
@@ -38,7 +38,7 @@ remote.OnServerEvent:Connect(function(player, action)
 		done = "Secret Legendary dropping now."
 	elseif action == "race" then
 		workspace:SetAttribute("RaceNextAt", now + 1)
-		done = "Next race starting now (for anyone in line)."
+		done = "Race starting now, if anyone is in the yellow box."
 	elseif YARD_EVENTS[action] then
 		workspace:SetAttribute("TriggerYardEvent", action)
 		done = action .. " starting now."

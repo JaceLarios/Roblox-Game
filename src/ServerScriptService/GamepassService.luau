@@ -57,12 +57,10 @@ function Service.Has(player, key)
 	return owned[player] ~= nil and owned[player][key] == true
 end
 
--- StarterPack's coin bonus is deliberately modest (+15%) and stacks with
--- DoubleCoins (+100%) rather than competing with it - it's a bundled
--- starter perk, not a replacement for the dedicated economy gamepass.
+-- The Starter Pack used to add +15% here and +10% walk speed; it gives a
+-- Jet Engine and a Muscle Car now instead (PlotManager, giveStarterPack).
 function Service.Coins(player, amount)
 	local mult = Service.Has(player, "DoubleCoins") and 2 or 1
-	if Service.Has(player, "StarterPack") then mult = mult * 1.15 end
 	return math.floor(amount * mult)
 end
 
@@ -74,13 +72,6 @@ end
 -- Storage Space upgrade.
 function Service.ExtraStorage(player)
 	return Service.Has(player, "ExtraStorage") and 50 or 0
-end
-
--- StarterPack's other half of "money/speed boost" - a flat permanent
--- multiplier PlotManager.server.luau's updateWalkSpeed applies on top of
--- the existing Speed-upgrade multiplier, same pattern as Coins() above.
-function Service.SpeedMultiplier(player)
-	return Service.Has(player, "StarterPack") and 1.1 or 1
 end
 
 function Service.Start()

@@ -191,7 +191,7 @@ local function updateLobby()
 	end
 	local car = nextCar()
 	View.UpdateLobby({
-		secondsLeft = (workspace:GetAttribute("RaceNextAt") or 0) - workspace:GetServerTimeNow(),
+		secondsLeft = workspace:GetAttribute("RaceNextAt") and workspace:GetAttribute("RaceNextAt") - workspace:GetServerTimeNow(),
 		running = workspace:GetAttribute("RaceRunning") == true,
 		inLine = workspace:GetAttribute("RaceQueueCount") or 0,
 		queued = player:GetAttribute("RaceQueued") == true,

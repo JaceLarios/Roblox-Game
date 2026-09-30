@@ -5,11 +5,12 @@
 	client (the car picker's speed readout, the race HUD). Tuning lives
 	here, not in the scripts that use it.
 
-	Races run on a schedule, every RACE_INTERVAL seconds: everyone standing
-	in the line-up in front of the start when the timer runs out races
-	together. A race is one straight run through the levels in order, with
-	one monster chasing the whole pack at the speed of whichever level it
-	is on; it catches the racer at the back first. Clear a level and you
+	Races start when someone wants one: stepping into the line-up box in
+	front of the start begins a LINEUP_SECONDS countdown, and everyone in
+	the box when it runs out races together. Only one race runs at a time.
+	A race is one straight run through the levels in order, with one
+	monster chasing the whole pack at the speed of whichever level it is
+	on; it catches the racer at the back first. Clear a level and you
 	win that level's crate; get caught and your run is over. Whether you
 	get caught comes down to your car's top speed against the monster's,
 	and how cleanly you drive round the obstacles. The monster gets a lot
@@ -45,8 +46,9 @@ RaceConfig.Levels = {
 RaceConfig.FIRST_MONSTER_SPEED = 72
 RaceConfig.LAST_LEVEL_EDGE = 1.15
 
--- A race starts every this many seconds, with whoever is lined up.
-RaceConfig.RACE_INTERVAL = 300
+-- A race starts this many seconds after someone steps into the line-up
+-- box (with everyone in the box by then), once no race is running.
+RaceConfig.LINEUP_SECONDS = 20
 
 -- The monster waits this long after GO before it starts running.
 RaceConfig.MONSTER_DELAY = 3
