@@ -43,6 +43,27 @@ local Leaderboard = require(script.Parent:WaitForChild("LeaderboardService"))
 local PlaytimeLeaderboard = require(script.Parent:WaitForChild("PlaytimeLeaderboardService"))
 local Trade = require(script.Parent:WaitForChild("TradeService"))
 local RaceWars = require(script.Parent:WaitForChild("RaceService"))
+local RaceBoard = require(script.Parent:WaitForChild("RaceLeaderboardService"))
+
+-- The daily quests, the friend and group bonus, and pad income (with the
+-- offline earnings measured in it) each keep their pieces in one table:
+-- this script's top level is close to Luau's limit of 200 locals.
+-- Daily quests (DailyQuests): Quests.progress counts what a player did.
+local Quests = { lib = require(script.Parent:WaitForChild("DailyQuests")), BONUS_CRATE_LEVEL = 3 }
+-- Friends and group (SocialConfig): pads earn more for every Roblox friend
+-- in the same server, and for being in the game's group. Friendships are
+-- looked up once per pair when someone joins (Social.join) and kept until
+-- one of them leaves.
+local Social = {
+	config = require(ReplicatedStorage:WaitForChild("SocialConfig")),
+	friendsWith = {}, -- [player] = { [friend in this server] = true }
+	inGroup = {},     -- [player] = true
+}
+-- Offline earnings: while a player is away their pads keep earning at
+-- OFFLINE_RATE of the usual rate, for no more than OFFLINE_MAX_SECONDS,
+-- paid when they come back (a quick rejoin, under OFFLINE_MIN_SECONDS,
+-- pays nothing). Income.perSecond is further down.
+local Income = { OFFLINE_RATE = 0.5, OFFLINE_MAX_SECONDS = 2 * 60 * 60, OFFLINE_MIN_SECONDS = 120 }
 
 -- The big screen-covering celebration popup on fuse. Its own dedicated
 -- remote (not a new field on the small `GameUpdate` toast) and its own
@@ -333,6 +354,15 @@ if not startTradeRemote then
 	startTradeRemote.Parent = ReplicatedStorage
 end
 
+-- Server -> client, once on joining: what their pads earned while they
+-- were away ({ coins, away, counted } in seconds; WelcomeBack.client).
+Income.welcomeBack = ReplicatedStorage:FindFirstChild("WelcomeBack")
+if not Income.welcomeBack then
+	Income.welcomeBack = Instance.new("RemoteEvent")
+	Income.welcomeBack.Name = "WelcomeBack"
+	Income.welcomeBack.Parent = ReplicatedStorage
+end
+
 local moveToCarryRemote = ReplicatedStorage:FindFirstChild("MoveToCarry")
 if not moveToCarryRemote then
 	moveToCarryRemote = Instance.new("RemoteEvent")
@@ -456,11 +486,27 @@ local function boostMult(s, stat)
 	return 1
 end
 
+-- How many of a player's Roblox friends are in the server (up to
+-- MAX_FRIENDS), and what they and the group add to pad income.
+function Social.count(player)
+	local count = 0
+	for other in pairs(Social.friendsWith[player] or {}) do
+		if other.Parent then count += 1 end
+	end
+	return math.min(count, Social.config.MAX_FRIENDS)
+end
+
+function Social.multiplier(player)
+	return 1 + Social.count(player) * Social.config.FRIEND_BONUS
+		+ (Social.inGroup[player] and Social.config.GROUP_BONUS or 0)
+end
+
 -- What a player's builds earn on the pads is multiplied by: any timed
--- income boost and their permanent Rebirth multiplier. (Selling, and the
--- Haggler upgrade that raised its price, are gone.)
+-- income boost, their permanent Rebirth multiplier, and their friend and
+-- group bonus. (Selling, and the Haggler upgrade that raised its price,
+-- are gone.)
 local function valueMultiplier(player, s)
-	return boostMult(s, "value") * Rebirth.Multiplier(player)
+	return boostMult(s, "value") * Rebirth.Multiplier(player) * Social.multiplier(player)
 end
 
 -- Best available colored tag for an item name that might carry a mutation
@@ -600,6 +646,18 @@ end
 -- divided by this is what it earns a second).
 local PLACEMENT_PAYBACK_SECONDS = 90
 local INCOME_TICK_SECONDS = 3
+
+-- Coins a second a player's placed builds earn right now, every
+-- multiplier included: what the pads pay (the income loop), and what
+-- offline earnings and quest rewards are measured in.
+function Income.perSecond(player, s)
+	local mult = valueMultiplier(player, s)
+	local perSecond = 0
+	for _, itemName in ipairs(s.placed) do
+		perSecond = perSecond + (itemTierInfo(itemName).value / PLACEMENT_PAYBACK_SECONDS) * mult
+	end
+	return perSecond
+end
 
 -- How many items a player's Inventory holds: their Storage Space upgrade
 -- (see storageSlots) plus the +50 Inventory Space pass. Still a real
@@ -855,7 +913,9 @@ end
 
 ------------------------------------------------------------------
 -- Two central boards backed by the existing all-time ranking services.
-require(game.ServerStorage:WaitForChild("CentralLeaderboards")).Start(Leaderboard, PlaytimeLeaderboard)
+-- And the "furthest race" board, in the Race Wars lobby.
+require(game.ServerStorage:WaitForChild("CentralLeaderboards")).Start(Leaderboard, PlaytimeLeaderboard,
+	RaceBoard, require(ServerStorage:WaitForChild("RaceTrack")).LeaderboardFrame())
 
 ------------------------------------------------------------------
 -- Per-player helpers
@@ -874,6 +934,41 @@ local function rewardInfo(player, reward)
 		if copy.kind == "coins" then copy.label = string.format("%d Coins", copy.amount) end
 	end
 	return copy
+end
+
+-- Daily quests: which of them this player can do at all (see
+-- DailyQuests.Ensure), what one pays (minutes of their pad income, never
+-- under MIN_REWARD), and today's three as the Quests panel shows them.
+function Quests.context(player, s)
+	return {
+		races = Rebirth.Get(player) >= 1,
+		fusedThree = s.count >= 3,
+		indexOpen = s.count < FusionRecipes.GetTotalDiscoveries(),
+	}
+end
+
+function Quests.reward(player, s, entry)
+	return math.max(Quests.lib.MIN_REWARD,
+		math.floor(Income.perSecond(player, s) * Quests.lib.Minutes(entry) * 60))
+end
+
+function Quests.info(player, s)
+	Quests.lib.Ensure(s, player.UserId, currentDay(), Quests.context(player, s))
+	local list = {}
+	for _, entry in ipairs(s.quests.list) do
+		table.insert(list, {
+			text = Quests.lib.Text(entry),
+			progress = entry.progress,
+			goal = entry.goal,
+			done = entry.done,
+			reward = Quests.reward(player, s, entry),
+		})
+	end
+	return {
+		list = list,
+		bonusCrate = s.quests.bonus,
+		resetsIn = (currentDay() + 1) * 86400 - os.time(),
+	}
 end
 
 local function pushUI(player)
@@ -1014,6 +1109,7 @@ local function pushUI(player)
 			and plots[s.carrying.fromPlot].centre or nil,
 		placed = placedInfo,
 		placedCapacity = PET_PAD_COUNT,
+		quests = Quests.info(player, s),
 	})
 end
 
@@ -1051,6 +1147,53 @@ Gamepasses.Changed:Connect(function(player)
 		pushUI(player)
 	end
 end)
+
+-- The friend and group bonuses, for the HUD, as whole percentages.
+function Social.show(player)
+	player:SetAttribute("FriendBonus", math.floor(Social.count(player) * Social.config.FRIEND_BONUS * 100 + 0.5))
+	player:SetAttribute("GroupBonus", Social.inGroup[player] and math.floor(Social.config.GROUP_BONUS * 100 + 0.5) or 0)
+end
+
+-- Looks up, once, which of the players already here a newcomer is friends
+-- with (a web call each), and whether they are in the game's group.
+function Social.join(player)
+	Social.friendsWith[player] = Social.friendsWith[player] or {}
+	local bonus = math.floor(Social.config.FRIEND_BONUS * 100 + 0.5)
+	for _, other in ipairs(Players:GetPlayers()) do
+		if other ~= player then
+			local ok, friends = pcall(player.IsFriendsWith, player, other.UserId)
+			if ok and friends and player.Parent and other.Parent then
+				Social.friendsWith[player][other] = true
+				Social.friendsWith[other] = Social.friendsWith[other] or {}
+				Social.friendsWith[other][player] = true
+				Social.show(other)
+				toast(other, string.format("Your friend %s joined — +%d%% income while you play together!", player.Name, bonus))
+			end
+		end
+	end
+	if Social.config.GROUP_ID > 0 then
+		local ok, member = pcall(player.IsInGroup, player, Social.config.GROUP_ID)
+		Social.inGroup[player] = (ok and member) or nil
+	end
+	if not player.Parent then return end
+	Social.show(player)
+	local friends = Social.count(player)
+	if friends > 0 then
+		toast(player, string.format("%d friend%s here — +%d%% income while you play together!",
+			friends, friends == 1 and "" or "s", friends * bonus))
+	end
+end
+
+function Social.leave(player)
+	for other in pairs(Social.friendsWith[player] or {}) do
+		if Social.friendsWith[other] then
+			Social.friendsWith[other][player] = nil
+			if other.Parent then Social.show(other) end
+		end
+	end
+	Social.friendsWith[player] = nil
+	Social.inGroup[player] = nil
+end
 
 -- Picks a rare car for the daily reward: a Cop Cruiser, Box Truck or
 -- Monster Truck.
@@ -1473,6 +1616,13 @@ local function attemptFusion(player)
 
 	local big = FusionRecipes.RarityIndex[info.rarity] >= FusionRecipes.RarityIndex.mythic
 	playSound(plot.pad, (mutationId or big) and "big" or "fuse")
+	Quests.progress(player, "fuse")
+	if FusionRecipes.RarityIndex[info.rarity] >= FusionRecipes.RarityIndex.rare then
+		Quests.progress(player, "fuseRare")
+	end
+	if isNewDiscovery then
+		Quests.progress(player, "discover")
+	end
 	checkGoals(player)
 	pushUI(player)
 end
@@ -1666,6 +1816,11 @@ local function grabItem(player, part)
 	-- Taken: the conveyor lets go of it (ScrapSpawner), so the pickup
 	-- flight is not dragged back onto the belt.
 	part:SetAttribute("Collected", true)
+	Quests.progress(player, "grab")
+	local grabbedRarity = FusionRecipes.GetRarity((Mutations.Unwrap(grabbed)))
+	if grabbedRarity and FusionRecipes.RarityIndex[grabbedRarity] >= FusionRecipes.RarityIndex.rare then
+		Quests.progress(player, "rareGrab")
+	end
 	local root = playerRoot(player)
 	PickupEffects.Play(part, root and root.Position or part.Position)
 
@@ -2136,6 +2291,7 @@ buyAddonRemote.OnServerEvent:Connect(function(player, addonName)
 	playSound(playerRoot(player), "big")
 	toast(player, string.format("Bought %s — it's in your Inventory.", instanceTag(addonName)), true)
 	buyAddonRemote:FireClient(player, addonName, "bought")
+	Quests.progress(player, "addon")
 	pushUI(player)
 end)
 
@@ -2227,6 +2383,39 @@ local function awardCrate(player, level)
 	return true
 end
 
+function Quests.commas(n)
+	local text = tostring(math.floor(n))
+	while true do
+		local next, count = text:gsub("^(-?%d+)(%d%d%d)", "%1,%2")
+		text = next
+		if count == 0 then break end
+	end
+	return text
+end
+
+-- What a player does counts toward today's three quests; each one finished
+-- pays its reward straight away, and finishing all three wins a bonus
+-- crate at BONUS_CRATE_LEVEL.
+function Quests.progress(player, event, amount)
+	local s = state[player]
+	if not s then return end
+	Quests.lib.Ensure(s, player.UserId, currentDay(), Quests.context(player, s))
+	local finished, changed = Quests.lib.Record(s, event, amount)
+	for _, entry in ipairs(finished) do
+		local paid = addCoins(player, Quests.reward(player, s, entry)) or 0
+		toast(player, string.format("QUEST COMPLETE\n%s\n+%s coins", Quests.lib.Text(entry), Quests.commas(paid)), true)
+	end
+	if #finished > 0 and not s.quests.bonus and Quests.lib.AllDone(s) then
+		s.quests.bonus = true
+		if awardCrate(player, Quests.BONUS_CRATE_LEVEL) then
+			toast(player, "ALL DAILY QUESTS DONE\nA bonus crate is in your Inventory's Crates tab!", true)
+		end
+	end
+	if changed then
+		pushUI(player)
+	end
+end
+
 local function ownsItem(s, itemName)
 	for _, name in ipairs(s.inventory) do
 		if name == itemName then return true end
@@ -2266,10 +2455,20 @@ RaceWars.Configure({
 	unlocked = function(player)
 		return Rebirth.Get(player) >= 1
 	end,
-	levelCleared = awardCrate,
+	levelCleared = function(player, level)
+		Quests.progress(player, "raceLevel")
+		return awardCrate(player, level)
+	end,
 	toast = toast,
 	broadcast = broadcast,
 	sendHome = sendHome,
+	-- A new personal best goes on the lobby's "furthest race" board.
+	runOver = function(player, distance)
+		if RaceBoard.Record(player, distance) then
+			player:SetAttribute("RaceBest", math.floor(distance))
+			toast(player, "NEW PERSONAL BEST!\n" .. RaceConfig.DescribeDistance(distance), true)
+		end
+	end,
 })
 
 local openCrateRemote = ReplicatedStorage:FindFirstChild("OpenCrate")
@@ -2307,6 +2506,7 @@ openCrateRemote.OnServerEvent:Connect(function(player, crateId)
 	playSound(playerRoot(player), "big")
 	toast(player, string.format("CRATE OPENED\n%s", instanceTag(crate.item)), true)
 	openCrateRemote:FireClient(player, crateId, true, crate.item)
+	Quests.progress(player, "crate")
 	pushUI(player)
 end)
 
@@ -2673,6 +2873,7 @@ placePetRemote.OnServerEvent:Connect(function(player, index)
 	refreshPlacedPets(player)
 
 	toast(player, string.format("%s is on the job — earning coins now.", instanceTag(itemName)))
+	Quests.progress(player, "place")
 	checkGoals(player)
 	pushUI(player)
 end)
@@ -2762,13 +2963,7 @@ task.spawn(function()
 		for _, player in ipairs(Players:GetPlayers()) do
 			local s = state[player]
 			if s then
-				local mult = valueMultiplier(player, s)
-				local perSecond = 0
-
-				for _, itemName in ipairs(s.placed) do
-					perSecond = perSecond + (itemTierInfo(itemName).value / PLACEMENT_PAYBACK_SECONDS) * mult
-				end
-
+				local perSecond = Income.perSecond(player, s)
 				if perSecond > 0 then
 					addCoins(player, math.floor(perSecond * INCOME_TICK_SECONDS))
 				end
@@ -2860,6 +3055,7 @@ task.spawn(function()
 			if s then
 				s.playMinutes = (s.playMinutes or 0) + 1
 				PlaytimeLeaderboard.Record(player, 1)
+				Quests.progress(player, "play")
 
 				for _, milestone in ipairs(PLAYTIME_MILESTONES) do
 					if s.playMinutes >= milestone.minutes and not s.playtimeMilestonesClaimed[milestone.minutes] then
@@ -2909,6 +3105,8 @@ local function onPlayerAdded(player)
 	Rebirth.Init(player, data.rebirths)
 	Leaderboard.Init(player, data.lifetimeCoins)
 	PlaytimeLeaderboard.Init(player, data.totalPlaytimeMinutes)
+	RaceBoard.Init(player, data.raceBest)
+	player:SetAttribute("RaceBest", math.floor(data.raceBest or 0))
 
 	local stats = Instance.new("Folder")
 	stats.Name = "leaderstats"
@@ -2961,6 +3159,7 @@ local function onPlayerAdded(player)
 		redeemedCodes = data.redeemedCodes or {},
 		crates = data.crates or {},
 		starterPackGiven = data.starterPackGiven == true,
+		quests = data.quests,
 		plotIndex = index,
 		mutationPity = 0,
 	}
@@ -2982,6 +3181,27 @@ local function onPlayerAdded(player)
 			end
 		end
 	end
+
+	-- Offline earnings (Income.OFFLINE_RATE): what their pads made while
+	-- they were away, paid now and shown in a welcome-back popup a moment
+	-- after they arrive. A save from before this existed has no lastSeen.
+	do
+		local s = state[player]
+		local away = type(data.lastSeen) == "number" and os.time() - data.lastSeen or 0
+		if away >= Income.OFFLINE_MIN_SECONDS then
+			local counted = math.min(away, Income.OFFLINE_MAX_SECONDS)
+			local earned = math.floor(Income.perSecond(player, s) * counted * Income.OFFLINE_RATE)
+			if earned > 0 then
+				local paid = addCoins(player, earned) or 0
+				task.delay(5, function()
+					if player.Parent then
+						Income.welcomeBack:FireClient(player, { coins = paid, away = away, counted = counted })
+					end
+				end)
+			end
+		end
+	end
+	task.spawn(Social.join, player)
 
 	refreshPad(player)
 	updateWalkSpeed(player)
@@ -3083,6 +3303,10 @@ local function snapshot(player)
 		redeemedCodes = s.redeemedCodes,
 		crates = s.crates,
 		starterPackGiven = s.starterPackGiven,
+		quests = s.quests,
+		raceBest = RaceBoard.Snapshot(player),
+		-- When they were last here, for offline earnings next time.
+		lastSeen = os.time(),
 	}
 end
 
@@ -3100,6 +3324,7 @@ task.spawn(function()
 			end
 			Leaderboard.PushToStore(player)
 			PlaytimeLeaderboard.PushToStore(player)
+			RaceBoard.PushToStore(player)
 		end
 	end
 end)
@@ -3133,6 +3358,7 @@ Players.PlayerRemoving:Connect(function(player)
 	end
 	Leaderboard.PushToStore(player)
 	PlaytimeLeaderboard.PushToStore(player)
+	RaceBoard.PushToStore(player)
 
 	local tradePartner = Trade.Partner(player)
 	Trade.Cleanup(player)
@@ -3162,6 +3388,8 @@ Players.PlayerRemoving:Connect(function(player)
 	Rebirth.Cleanup(player)
 	Leaderboard.Cleanup(player)
 	PlaytimeLeaderboard.Cleanup(player)
+	RaceBoard.Cleanup(player)
+	Social.leave(player)
 	DataManager.Forget(player)
 end)
 

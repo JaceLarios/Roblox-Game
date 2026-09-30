@@ -133,4 +133,22 @@ function RaceConfig.ReachableLevel(topSpeed)
 	return reached
 end
 
+-- How far down the track a run got (studs from the start line), the way
+-- the personal best and the Race Wars leaderboard show it:
+-- "Level 3 · 2,410 m", or "FINISHED" for a run that reached the end.
+function RaceConfig.DescribeDistance(distance)
+	distance = math.max(0, math.floor(distance or 0))
+	if distance >= #RaceConfig.Levels * RaceConfig.LEVEL_LENGTH then
+		return "FINISHED"
+	end
+	local level = distance // RaceConfig.LEVEL_LENGTH + 1
+	local shown = tostring(distance)
+	while true do
+		local next, count = shown:gsub("^(%d+)(%d%d%d)", "%1,%2")
+		shown = next
+		if count == 0 then break end
+	end
+	return string.format("Level %d · %s m", level, shown)
+end
+
 return RaceConfig

@@ -77,6 +77,15 @@ function Track.LobbySpawn()
 	return CFrame.lookAt(Track.PointAt(-110, 0, 4), Track.PointAt(0, 0, 4))
 end
 
+-- Where the "furthest race" leaderboard stands in the lobby (built by
+-- CentralLeaderboards): across from the Race Garage kiosk, on the floor,
+-- turned to face players arriving at the lobby spawn.
+function Track.LeaderboardFrame()
+	local position = Track.PointAt(-80, 70, 0)
+	local spawn = Track.PointAt(-110, 0, 0)
+	return CFrame.lookAt(position, position + (position - spawn) * Vector3.new(1, 0, 1))
+end
+
 -- The starting grid, filled from the middle of the track outward: the
 -- first racer starts dead centre, the next either side of them, and so on,
 -- PER_ROW to a row, with later rows lined up behind. Cars never collide

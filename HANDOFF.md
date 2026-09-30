@@ -1,4 +1,18 @@
-# Latest gameplay handoff — Races on demand, Cars/Addons tabs, an island border, a new Starter Pack (2026-09-29)
+# Latest gameplay handoff — Offline earnings, daily quests, race personal bests + a Furthest Race board, friend/group bonus (2026-09-29)
+
+**Offline earnings.** The save now keeps `lastSeen`. On join, if you were away 2+ minutes, your pads pay what they would have made at half rate, for at most 2 hours (`Income.OFFLINE_RATE / OFFLINE_MAX_SECONDS / OFFLINE_MIN_SECONDS` in PlotManager). A popup (WelcomeBack.client, fired by the `WelcomeBack` remote 5 s after join) says how long you were gone and what you got. The coins are already added when it shows. `Income.perSecond(player, s)` is now the one place pad income is worked out; the income loop uses it too.
+
+**Daily quests** (DailyQuests.luau + QuestsUI.client, a QUESTS button on the left rail under INDEX). Three a day, picked per player per UTC day. The pool is grab, rare grab, fuse, fuse a rare, discover a build, place, buy an addon, play minutes, clear a race level, open a crate. Quests needing things the player can't do yet (races before Rebirth, rare fusions before 3 fusions) are left out. Each pays on completion: its minutes × your pad income, at least 300 coins. All three done gives a bonus level-3 race crate. The quest icon is a drawn placeholder (`assets/ui/draw_quests_icon.py`) that Codex can restyle.
+
+**Race personal bests + FURTHEST RACE board.** `RaceService` calls a new `runOver(player, distance)` hook when a run ends. `RaceLeaderboardService` keeps each player's best (`raceBest` in the save, `RaceBest` attribute) and an OrderedDataStore `JunkyardFusion_RaceBest_v1`. A new best gives a "NEW PERSONAL BEST!" toast. The lobby panel's idle title reads "YOUR BEST: LEVEL 1 · 58 M" (`RaceConfig.DescribeDistance`). CentralLeaderboards builds a third board, FURTHEST RACE, in the Race Wars lobby (`RaceTrack.LeaderboardFrame()`).
+
+**Friend + group bonus** (SocialConfig). +10% pad income per friend in the server (max 5), and +10% for members of the game's group. Shown as "+20% FRIENDS" / "+10% GROUP" chips in the boost bar (`FriendBonus` / `GroupBonus` player attributes). **`SocialConfig.GROUP_ID` is 0, so the group bonus is off until the group id is filled in.** Group membership is checked on join only.
+
+PlotManager's top level is at 194 of Luau's 200 locals. The new code lives in the `Quests`, `Social`, `Income` and `RaceBoard` tables; keep adding to tables, not new top-level locals.
+
+---
+
+# Previous gameplay handoff — Races on demand, Cars/Addons tabs, an island border, a new Starter Pack (2026-09-29)
 
 **Races start when someone wants one.** Stepping into the yellow line-up box starts a 20-second countdown (`RaceConfig.LINEUP_SECONDS`); everyone in the box when it runs out races. Leaving the box empty calls it off. While a race is on, nobody can start another: the box still fills, and the countdown waits until every racer is done. The board and lobby panel say "RACE STARTS IN 0:18", "RACE ON! · WAIT FOR IT TO FINISH" or "STAND IN THE YELLOW BOX TO START A RACE".
 

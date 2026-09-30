@@ -1,4 +1,5 @@
--- Two readable central boards; reads existing ranking caches without writing player data.
+-- Two readable central boards, plus the "furthest race" board in the Race Wars lobby; reads existing ranking caches without writing player data.
+local RaceConfig=require(game:GetService("ReplicatedStorage"):WaitForChild("RaceConfig"))
 local Boards={}
 local RGB,V,CF=Color3.fromRGB,Vector3.new,CFrame.new
 local function part(f,name,size,cf,col)
@@ -12,7 +13,8 @@ end
 local function commas(n)
  local s=tostring(math.floor(n)) repeat local next,count=s:gsub("^(-?%d+)(%d%d%d)","%1,%2") s=next if count==0 then break end until false return s
 end
-function Boards.Start(coins,playtime)
+-- race and raceFrame are optional: the race ranking and where its board stands.
+function Boards.Start(coins,playtime,race,raceFrame)
  local old=workspace:FindFirstChild("CentralLeaderboards") if old then old:Destroy() end
  local root=Instance.new("Model",workspace) root.Name="CentralLeaderboards"
  local renders={}
@@ -20,11 +22,15 @@ function Boards.Start(coins,playtime)
   {name="AllTimeMoney",title="ALL-TIME MONEY",sub="Total coins earned • Global Top 100",color=RGB(255,204,65),side=1,service=coins,format=function(e) return commas(e.coins).." coins" end},
   {name="AllTimePlaytime",title="ALL-TIME PLAYTIME",sub="Total time played • Global Top 100",color=RGB(86,212,255),side=-1,service=playtime,format=function(e) local minutes=math.floor(e.minutes) return string.format("%dh %02dm",math.floor(minutes/60),minutes%60) end},
  }
+ if race and raceFrame then
+  table.insert(configs,{name="FurthestRace",title="FURTHEST RACE",sub="Furthest down the Race Wars track • Global Top 100",color=RGB(255,96,86),emblem="flag",cf=raceFrame,service=race,format=function(e) return RaceConfig.DescribeDistance(e.best) end})
+ end
  for _,cfg in ipairs(configs) do
   local model=Instance.new("Model",root) model.Name=cfg.name
-  -- Opposite sides of the crane, beyond its 20-stud sweep.
-  local center=V(cfg.side*32,1.2,0)
-  local cf=CFrame.lookAt(center,center+V(cfg.side,0,0))
+  -- Opposite sides of the crane, beyond its 20-stud sweep (the race
+  -- board brings its own place).
+  local center=V((cfg.side or 1)*32,1.2,0)
+  local cf=cfg.cf or CFrame.lookAt(center,center+V(cfg.side,0,0))
   local navy=RGB(23,43,59) local steel=RGB(108,131,145)
   part(model,"Footing",V(21,1.1,5),cf*CF(0,.55,0),navy).Material=Enum.Material.DiamondPlate
   for _,x in ipairs({-8,8}) do
@@ -46,7 +52,8 @@ function Boards.Start(coins,playtime)
   for _,sign in ipairs({-1,1}) do
    local emblem=part(model,"Emblem",V(.4,2.6,2.6),cf*CF(-7,24,sign*1.05)*CFrame.Angles(0,math.pi/2,0),navy) emblem.Shape=Enum.PartType.Cylinder
    local gui=Instance.new("SurfaceGui",emblem) gui.Face=sign==-1 and Enum.NormalId.Right or Enum.NormalId.Left gui.CanvasSize=Vector2.new(128,128) gui.LightInfluence=0
-   if cfg.side==1 then label(gui,"$",0,0,128,128,100,cfg.color)
+   if cfg.emblem=="flag" then label(gui,"🏁",0,0,128,128,90,cfg.color)
+   elseif cfg.side==1 then label(gui,"$",0,0,128,128,100,cfg.color)
    else
     local rim=Instance.new("Frame",gui) rim.Position=UDim2.fromOffset(18,18) rim.Size=UDim2.fromOffset(92,92) rim.BackgroundTransparency=1
     Instance.new("UICorner",rim).CornerRadius=UDim.new(1,0)
@@ -93,7 +100,7 @@ function Boards.Start(coins,playtime)
  end
  task.spawn(function()
   while root.Parent do
-   coins.RefreshIfStale() playtime.RefreshIfStale()
+   for _,cfg in ipairs(configs) do cfg.service.RefreshIfStale() end
    for _,item in ipairs(renders) do item.render(item.service.GetTopCached()) end
    task.wait(15)
   end

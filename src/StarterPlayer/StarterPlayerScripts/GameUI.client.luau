@@ -211,6 +211,34 @@ local function formatTime(seconds)
 	return string.format("%d:%02d", m, s)
 end
 
+-- The friend and group bonuses on pad income (PlotManager puts them on
+-- you as whole percentages): chips like the boosts', but with no timer,
+-- since they last for as long as they apply.
+local SOCIAL_CHIPS = {
+	{ attribute = "FriendBonus", text = "FRIENDS", color = Color3.fromRGB(255, 150, 210) },
+	{ attribute = "GroupBonus", text = "GROUP", color = Color3.fromRGB(255, 210, 90) },
+}
+
+local function boostChip(order, text, color)
+	local chip = Instance.new("Frame")
+	chip.Size = UDim2.new(0, 118, 0, 30)
+	chip.LayoutOrder = order
+	chip.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+	chip.BackgroundTransparency = GLASS_HUD
+	chip.BorderSizePixel = 0
+	chip.Parent = boostBar
+	rounded(chip, 15)
+
+	local chipStroke = Instance.new("UIStroke")
+	chipStroke.Color = color
+	chipStroke.Thickness = 1.5
+	chipStroke.Transparency = 0.25
+	chipStroke.Parent = chip
+
+	local chipText = label(chip, text, UDim2.new(1, 0, 1, 0), color, Enum.Font.FredokaOne, 12)
+	chipText.TextXAlignment = Enum.TextXAlignment.Center
+end
+
 local function redrawBoosts()
 	for _, child in ipairs(boostBar:GetChildren()) do
 		if not child:IsA("UIListLayout") then child:Destroy() end
@@ -218,26 +246,18 @@ local function redrawBoosts()
 
 	for i, b in ipairs(activeBoosts) do
 		local style = BOOST_STYLE[b.stat] or { text = string.upper(b.stat), color = GOLD }
-
-		local chip = Instance.new("Frame")
-		chip.Size = UDim2.new(0, 118, 0, 30)
-		chip.LayoutOrder = i
-		chip.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
-		chip.BackgroundTransparency = GLASS_HUD
-		chip.BorderSizePixel = 0
-		chip.Parent = boostBar
-		rounded(chip, 15)
-
-		local chipStroke = Instance.new("UIStroke")
-		chipStroke.Color = style.color
-		chipStroke.Thickness = 1.5
-		chipStroke.Transparency = 0.25
-		chipStroke.Parent = chip
-
-		local text = label(chip, string.format("%dx %s  %s", b.mult, style.text, formatTime(b.remaining)),
-			UDim2.new(1, 0, 1, 0), style.color, Enum.Font.FredokaOne, 12)
-		text.TextXAlignment = Enum.TextXAlignment.Center
+		boostChip(i, string.format("%dx %s  %s", b.mult, style.text, formatTime(b.remaining)), style.color)
 	end
+
+	for i, social in ipairs(SOCIAL_CHIPS) do
+		local percent = player:GetAttribute(social.attribute) or 0
+		if percent > 0 then
+			boostChip(#activeBoosts + i, string.format("+%d%% %s", percent, social.text), social.color)
+		end
+	end
+end
+for _, social in ipairs(SOCIAL_CHIPS) do
+	player:GetAttributeChangedSignal(social.attribute):Connect(redrawBoosts)
 end
 
 -- Ticks locally so the timer moves every second instead of only when

@@ -28,6 +28,7 @@ local UIStyle = require(ReplicatedStorage:WaitForChild("UIStyle"))
 local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local ItemNames = require(ReplicatedStorage:WaitForChild("ItemNames"))
 local Mutations = require(ReplicatedStorage:WaitForChild("Mutations"))
+local RaceConfig = require(ReplicatedStorage:WaitForChild("RaceConfig"))
 
 local View = {}
 
@@ -457,7 +458,7 @@ end
 -- countdown on), running (a race is on now), inLine (how many are lined
 -- up), queued (whether you are), locked (races not unlocked yet: no
 -- Rebirth), carName and carSpeed (what you would race in, or nil with no
--- car).
+-- car), best (your furthest run, studs, or 0).
 function View.UpdateLobby(info)
 	if overlay.Visible or UIStyle.ModalOpen() then
 		lobby.Visible = false
@@ -468,6 +469,8 @@ function View.UpdateLobby(info)
 		nextLabel.Text = "RACE ON! · WAIT FOR IT TO FINISH"
 	elseif info.secondsLeft then
 		nextLabel.Text = "RACE STARTS IN " .. clock(info.secondsLeft)
+	elseif (info.best or 0) > 0 then
+		nextLabel.Text = "YOUR BEST: " .. string.upper(RaceConfig.DescribeDistance(info.best))
 	else
 		nextLabel.Text = "RACE WARS"
 	end

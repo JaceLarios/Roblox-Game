@@ -72,6 +72,8 @@ local hooks = {
 	toast = function() end,
 	broadcast = function() end,
 	sendHome = function() end,
+	-- A run is over: how far down the track it got (studs), for bests.
+	runOver = function() end,
 }
 function Race.Configure(given)
 	for key, fn in pairs(given) do
@@ -313,6 +315,9 @@ local function endRun(racer, outcome)
 	if racer.seat.Parent then
 		racer.seat:SetAttribute("Go", false)
 	end
+	-- A finish counts as the whole track, whatever the last check read.
+	local reached = outcome == "finished" and #RaceConfig.Levels * RaceConfig.LEVEL_LENGTH or racer.distance
+	task.spawn(hooks.runOver, player, reached)
 	if outcome ~= "left" then
 		fire(player, { kind = outcome, cleared = racer.cleared, crates = racer.crates, place = racer.place, of = race.count })
 	else
