@@ -1,0 +1,20 @@
+Vehicle credits and SVO snapshot - 2026-09-30
+
+Studio place 94136201094216 was inspected in Edit mode.
+ReplicatedStorage.ItemModels.SVO exists with 79 MeshParts, all with nonempty MeshIds.
+assets/svo/studio-manifest.json records their current mesh references, transforms and appearance.
+This is an asset-reference snapshot, not an offline copy of the mesh geometry or a driving implementation.
+
+StarterGui.VehicleModelCredits was added in Studio, with a bottom-right button and two source/license entries.
+assets/vehicle-credits/install.edit.luau recreates that panel in Studio (refuses to overwrite).
+src/StarterPlayer/StarterPlayerScripts/VehicleModelCredits.client.luau creates the same panel through Rojo at runtime; skips if the StarterGui copy already exists.
+No existing gameplay scripts, player data, recipes or Claude's working files were changed.
+
+SVO: source by SDC PERFORMANCE, listed CC BY 4.0. Credits contain original source URL, license URL and changes.
+Toro: source by Ddiaz Design, listed CC BY-NC-SA 4.0, originating from CSR2 per listing.
+Toro has NOT been imported into Studio or uploaded to this repository. Commercial permission is pending.
+Credit is not commercial authorization or proof of third-party rights clearance.
+Toro's edited Blender source remains local under outputs/temerario-working/Toro-v3.blend in the Codex project.
+
+Validation: checked Studio entries and mesh reference presence; no driving, runtime UI or published-server tests performed.
+No Roblox publication performed. Ask Claude to review the credits panel placement and SVO integration.

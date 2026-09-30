@@ -1,0 +1,2938 @@
+{
+  "attributes": {
+    "NoseAxis": "+Z",
+    "SourceCreator": "SDC PERFORMANCE (@Lambo_SC04)",
+    "SourceURL": "https://sketchfab.com/3d-models/lamborghini-aventador-svj-sdc-free-784e4656aca649cca55d6b18740a19b2",
+    "DriveReady": false,
+    "License": "CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
+    "Changes": "Tiffany paint; carbon hood/scoop/skirts; SVO decals; chrome rims; red calipers; front badge removed; reduced export",
+    "LogosRemoved": "Front badge removed by Codex; rear script covered by LogoCover (Claude, 2026-09-30). Keep both if the model is re-exported."
+  },
+  "placeId": 94136201094216,
+  "name": "SVO",
+  "parts": [
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://74852326504852",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Detailed woven carbon clearcoat_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.00036406517028808594,
+        1.5153045654296875,
+        0.0017881393432617188,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        5.150857925415039,
+        2.574615001678467,
+        12.134843826293945
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://77645132574013",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Detailed woven carbon clearcoat_1",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.012123942375183105,
+        1.7352755069732666,
+        -5.145526885986328,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.43117618560791,
+        2.1346731185913086,
+        1.792625904083252
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://137307139100297",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Detailed woven carbon clearcoat_2",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.06489050388336182,
+        1.2812864780426025,
+        -3.7873353958129883,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.997222900390625,
+        1.6468690633773804,
+        4.556596755981445
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://140458630459655",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Detailed woven carbon clearcoat_3",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.03534400463104248,
+        1.2149524688720703,
+        -1.8600928783416748,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        5.054858207702637,
+        1.2470970153808594,
+        0.7013939619064331
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://108113895914935",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Detailed woven carbon clearcoat_4",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.03731346130371094,
+        1.409035563468933,
+        1.9346470832824707,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.908094882965088,
+        2.34759521484375,
+        8.269125938415527
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://139062372167621",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Detailed woven carbon clearcoat_5",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.2612069845199585,
+        1.4312139749526978,
+        1.2445685863494873,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.627716064453125,
+        2.4065439701080322,
+        8.274667739868164
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://84062406702624",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Detailed woven carbon clearcoat_6",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.09834849834442139,
+        1.4312130212783813,
+        1.4149094820022583,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.954889297485352,
+        2.4065020084381104,
+        8.613325119018555
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.23137255012989044,
+        0.2705882489681244
+      ],
+      "meshId": "rbxassetid://104846428252129",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "Body_GLASS_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.0003399848937988281,
+        2.1573591232299805,
+        -1.5375574827194214,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        4.2410759925842285,
+        0.8414560556411743,
+        8.235636711120605
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://108806944389393",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Undercarriage_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0003066062927246094,
+        1.6942740678787231,
+        -1.072447657585144,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.992012977600098,
+        1.8952100276947021,
+        9.268776893615723
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.8235294222831726,
+        0.7960784435272217
+      ],
+      "meshId": "rbxassetid://105434567569030",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Tiffany Blue Paint_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.0020275115966796875,
+        1.5319840908050537,
+        0.02483844757080078,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        5.125091075897217,
+        2.541677951812744,
+        11.892108917236328
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.8235294222831726,
+        0.7960784435272217
+      ],
+      "meshId": "rbxassetid://81762049254638",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Tiffany Blue Paint_1",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.06509590148925781,
+        1.532038927078247,
+        0.03284287452697754,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        5.002974033355713,
+        2.541788101196289,
+        11.876100540161133
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.8235294222831726,
+        0.7960784435272217
+      ],
+      "meshId": "rbxassetid://140538465944321",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Tiffany Blue Paint_2",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -1.2518495321273804,
+        1.6776504516601562,
+        1.297602891921997,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        2.6314690113067627,
+        1.9960449934005737,
+        8.861692428588867
+      ]
+    },
+    {
+      "reflectance": 0.3499999940395355,
+      "canCollide": false,
+      "color": [
+        0.7333333492279053,
+        0.7647058963775635,
+        0.7960784435272217
+      ],
+      "meshId": "rbxassetid://79940257807430",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Chrome_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.001756429672241211,
+        1.4019889831542969,
+        -0.2023754119873047,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Metal",
+      "size": [
+        4.956614971160889,
+        0.7599200010299683,
+        8.890477180480957
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.23137255012989044,
+        0.2705882489681244
+      ],
+      "meshId": "rbxassetid://119889925483230",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "Body_GlassLights_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0008749961853027344,
+        1.4011950492858887,
+        -0.2035360336303711,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        5.003856182098389,
+        0.7564119100570679,
+        8.890190124511719
+      ]
+    },
+    {
+      "reflectance": 0.3499999940395355,
+      "canCollide": false,
+      "color": [
+        0.7333333492279053,
+        0.7647058963775635,
+        0.7960784435272217
+      ],
+      "meshId": "rbxassetid://138138731010020",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Aluminum_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0009905099868774414,
+        1.935199499130249,
+        -5.3708720207214355,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Metal",
+      "size": [
+        4.4451093673706055,
+        1.2513231039047241,
+        0.9235219955444336
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://77485822786325",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_MetalDark_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0003834962844848633,
+        1.6490280628204346,
+        -0.15875601768493652,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        5.129538536071777,
+        2.091916084289551,
+        10.974340438842773
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.7333333492279053,
+        0.10980392247438431,
+        0.08235294371843338
+      ],
+      "meshId": "rbxassetid://112117726686739",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_MetalExhaustTextured_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0005334615707397461,
+        1.913680076599121,
+        -0.2619595527648926,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.254563331604004,
+        1.420240044593811,
+        11.167166709899902
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://103522539243462",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_ExteriorDetailTex_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0009660720825195312,
+        1.542261004447937,
+        -4.850027084350586,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.3288960456848145,
+        0.5191900730133057,
+        0.0022220611572265625
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://135677316847119",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_intTexButtonsGlossy_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.0000029802322387695312,
+        0.7447465062141418,
+        0.24380850791931152,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.347324371337891,
+        0.028733015060424805,
+        0.4601309895515442
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://114419699949799",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Material.002_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.00009942054748535156,
+        1.5469779968261719,
+        -2.4089298248291016,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        5.082140922546387,
+        0.08170604705810547,
+        0.2700960636138916
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://94712473390983",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Material.001_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.004406094551086426,
+        1.5565180778503418,
+        -2.4832065105438232,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        5.055135726928711,
+        0.06262600421905518,
+        0.19831514358520508
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.23137255012989044,
+        0.2705882489681244
+      ],
+      "meshId": "rbxassetid://80083433487473",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "Body_GLASS_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.0005835294723510742,
+        2.213637590408325,
+        2.251561164855957,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        4.035467147827148,
+        0.8616429567337036,
+        2.6153581142425537
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://105607010266648",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_intPlasticDkPlain_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.000885009765625,
+        1.4539575576782227,
+        4.5020036697387695,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        2.779387950897217,
+        0.4680870771408081,
+        1.1848530769348145
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://140393080107522",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_intAlcantara_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.0009264945983886719,
+        1.2480664253234863,
+        4.530313968658447,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        2.8753130435943604,
+        0.7007290124893188,
+        1.2395102977752686
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://116634683022317",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body_Material.003_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0004400014877319336,
+        1.535938024520874,
+        -2.259571075439453,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        5.090029716491699,
+        0.06664204597473145,
+        0.11169195175170898
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.23137255012989044,
+        0.2705882489681244
+      ],
+      "meshId": "rbxassetid://136249836642275",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "DoorFrLeft_GLASS_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        2.167973518371582,
+        0.4680824875831604,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        4.245028018951416,
+        0.8443509340286255,
+        2.3645668029785156
+      ]
+    },
+    {
+      "reflectance": 0.3499999940395355,
+      "canCollide": false,
+      "color": [
+        0.7333333492279053,
+        0.7647058963775635,
+        0.7960784435272217
+      ],
+      "meshId": "rbxassetid://83082198780842",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "DoorFrLeft_Chrome_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        5.960464477539062e-7,
+        1.873509407043457,
+        0.4075454771518707,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Metal",
+      "size": [
+        4.561507225036621,
+        0.4074209928512573,
+        2.5471110343933105
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://95113171233800",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "DoorFrLeft_Detailed woven carbon clearcoat_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        4.76837158203125e-7,
+        1.38279390335083,
+        0.6497670412063599,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        5.585289001464844,
+        1.6360039710998535,
+        2.6973400115966797
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.8235294222831726,
+        0.7960784435272217
+      ],
+      "meshId": "rbxassetid://128652508470323",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "DoorFrLeft_Tiffany Blue Paint_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        1.3868104219436646,
+        0.4912465214729309,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.793906211853027,
+        1.4679629802703857,
+        3.288729190826416
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://126817168194523",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "EngineHood_MetalDark_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0006009936332702637,
+        2.4324920177459717,
+        -3.443284034729004,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        3.4280080795288086,
+        0.3574800491333008,
+        2.6285762786865234
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://120660570033400",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "EngineHood_Undercarriage_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0005639940500259399,
+        2.2795095443725586,
+        -4.459625244140625,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        0.6592639684677124,
+        0.1184549331665039,
+        0.3384737968444824
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://139510042554127",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "EngineHood_Detailed woven carbon clearcoat_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.000523000955581665,
+        2.3014280796051025,
+        -4.262592315673828,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        0.6601639986038208,
+        0.16062402725219727,
+        0.3782038688659668
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.8235294222831726,
+        0.7960784435272217
+      ],
+      "meshId": "rbxassetid://125709837924219",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "EngineHood_Tiffany Blue Paint_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0006060004234313965,
+        2.4927220344543457,
+        -3.3349456787109375,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        3.6647281646728516,
+        0.5395040512084961,
+        3.420743227005005
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.23137255012989044,
+        0.2705882489681244
+      ],
+      "meshId": "rbxassetid://108428893771152",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "EngineHood_GLASS_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0005135089159011841,
+        2.442039966583252,
+        -3.1546292304992676,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        0.6587749719619751,
+        0.34367799758911133,
+        2.05375599861145
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://74132342142610",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "EngineHood_Detailed woven carbon clearcoat_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.000711977481842041,
+        2.403998851776123,
+        -3.578523635864258,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        2.697361946105957,
+        0.4450418949127197,
+        2.9271509647369385
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.8235294222831726,
+        0.929411768913269,
+        1
+      ],
+      "meshId": "rbxassetid://92663373335868",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Headlights_LightEmissiveWhite_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0008699893951416016,
+        1.3400425910949707,
+        4.725464820861816,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.010615825653076,
+        0.34593498706817627,
+        0.7936820983886719
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://83776958072791",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Headlights_Detailed woven carbon clearcoat_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0008490085601806641,
+        1.3647350072860718,
+        4.685166358947754,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.127625942230225,
+        0.4305078983306885,
+        0.987483024597168
+      ]
+    },
+    {
+      "reflectance": 0.3499999940395355,
+      "canCollide": false,
+      "color": [
+        0.7333333492279053,
+        0.7647058963775635,
+        0.7960784435272217
+      ],
+      "meshId": "rbxassetid://115217578827279",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Headlights_Chrome_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0009135007858276367,
+        1.3278189897537231,
+        4.506105422973633,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Metal",
+      "size": [
+        3.7804269790649414,
+        0.26258397102355957,
+        0.5161519050598145
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.23137255012989044,
+        0.2705882489681244
+      ],
+      "meshId": "rbxassetid://74963392233959",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "Headlights_GlassLights_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0008335113525390625,
+        1.3707959651947021,
+        4.712657928466797,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        4.113070964813232,
+        0.4233059883117676,
+        0.9285359382629395
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.7333333492279053,
+        0.10980392247438431,
+        0.08235294371843338
+      ],
+      "meshId": "rbxassetid://108792965738708",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Headlights_MetalExhaustTextured_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0007489919662475586,
+        1.349461555480957,
+        4.813790321350098,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        3.066807985305786,
+        0.08075106143951416,
+        0.15314292907714844
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.23137255012989044,
+        0.2705882489681244
+      ],
+      "meshId": "rbxassetid://127128594761435",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "Headlights_HdLightsLens_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0007655024528503418,
+        1.3039644956588745,
+        4.893466472625732,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        3.161174774169922,
+        0.1709589958190918,
+        0.1841106414794922
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://103995430157588",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Trunk_Detailed woven carbon clearcoat_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.000012993812561035156,
+        1.5262680053710938,
+        4.361847877502441,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        3.930634021759033,
+        0.7150459289550781,
+        2.0882010459899902
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://112656258956247",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Trunk_Detailed woven carbon clearcoat_1",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.3482465147972107,
+        1.5225269794464111,
+        4.360201835632324,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        3.2341670989990234,
+        0.6918900012969971,
+        2.083343029022217
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://138987077734445",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Undercarriage_Undercarriage_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0001513957977294922,
+        1.0517449378967285,
+        0.5431880950927734,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.998754978179932,
+        1.6517919301986694,
+        10.263212203979492
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.10980392247438431,
+        0.12156862765550613,
+        0.13333334028720856
+      ],
+      "meshId": "rbxassetid://76828274349000",
+      "materialVariant": "AddonDetail_Rubber_v2",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelFrLeft_WheelTireBump_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        2.0725109577178955,
+        0.8064884543418884,
+        3.0280723571777344,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        1.1404880285263062,
+        1.6186769008636475,
+        1.7168371677398682
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://117605028797796",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelFrLeft_Material.006_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        2.318539619445801,
+        0.8098595142364502,
+        3.0952060222625732,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        0.04148077964782715,
+        0.15015101432800293,
+        0.14431381225585938
+      ]
+    },
+    {
+      "reflectance": 0.3499999940395355,
+      "canCollide": false,
+      "color": [
+        0.8509804010391235,
+        0.8823529481887817,
+        0.9137254953384399
+      ],
+      "meshId": "rbxassetid://106223544185924",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelFrLeft_Polished Chrome Wheels_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        2.0793089866638184,
+        0.8102465271949768,
+        3.0303640365600586,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Metal",
+      "size": [
+        1.0936899185180664,
+        1.352281093597412,
+        1.5005440711975098
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://139739352022199",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelFrLeft_Material.005_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        2.1342415809631348,
+        0.808382511138916,
+        3.04069185256958,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        0.3286769390106201,
+        1.009476900100708,
+        0.9827158451080322
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.8235294222831726,
+        0.08235294371843338,
+        0.10980392247438431
+      ],
+      "meshId": "rbxassetid://93317170493921",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "BrakeFrLeft_Red Caliper Enamel_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        2.3068785667419434,
+        0.7236800193786621,
+        2.7182154655456543,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        0.26366305351257324,
+        0.8459460735321045,
+        0.39121103286743164
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.8235294222831726,
+        0.08235294371843338,
+        0.10980392247438431
+      ],
+      "meshId": "rbxassetid://134868640725689",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "BrakeFrRight_Red Caliper Enamel_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -2.162975549697876,
+        0.7241524457931519,
+        2.6971869468688965,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        0.2039189338684082,
+        0.8459469676017761,
+        0.39655399322509766
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.10980392247438431,
+        0.12156862765550613,
+        0.13333334028720856
+      ],
+      "meshId": "rbxassetid://71657084068462",
+      "materialVariant": "AddonDetail_Rubber_v2",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelRearLeft_WheelTireBump_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        0.889290988445282,
+        -3.6261188983917236,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        5.066887855529785,
+        1.79094398021698,
+        1.7879137992858887
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://84555854442259",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelRearLeft_Material.006_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        0.893020510673523,
+        -3.629925012588501,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.752756118774414,
+        0.16613101959228516,
+        0.1661381721496582
+      ]
+    },
+    {
+      "reflectance": 0.3499999940395355,
+      "canCollide": false,
+      "color": [
+        0.8509804010391235,
+        0.8823529481887817,
+        0.9137254953384399
+      ],
+      "meshId": "rbxassetid://82197514452775",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelRearLeft_Polished Chrome Wheels_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        0.8934489488601685,
+        -3.6299428939819336,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Metal",
+      "size": [
+        5.037990093231201,
+        1.4961960315704346,
+        1.4984261989593506
+      ]
+    },
+    {
+      "reflectance": 0.3499999940395355,
+      "canCollide": false,
+      "color": [
+        0.8509804010391235,
+        0.8823529481887817,
+        0.9137254953384399
+      ],
+      "meshId": "rbxassetid://74369692489647",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelRearLeft_Polished Chrome Wheels_1",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.00042998790740966797,
+        0.8934484720230103,
+        -3.629943609237671,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Metal",
+      "size": [
+        5.037130355834961,
+        1.4961950778961182,
+        1.498425006866455
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.3490196168422699,
+        0.3490196168422699,
+        0.3490196168422699
+      ],
+      "meshId": "rbxassetid://137725912897952",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelRearLeft_Default_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        0.89501953125,
+        -3.630530834197998,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.5680317878723145,
+        0.6518610119819641,
+        0.6515219211578369
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://98644588621229",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelRearLeft_Material.005_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.000007033348083496094,
+        0.8962255120277405,
+        -3.625833034515381,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.365774154663086,
+        1.0876851081848145,
+        1.0853421688079834
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.8235294222831726,
+        0.08235294371843338,
+        0.10980392247438431
+      ],
+      "meshId": "rbxassetid://73825140606213",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "BrakeRearLeft_Red Caliper Enamel_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        2.182971954345703,
+        1.0286375284194946,
+        -3.1788344383239746,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        0.20949602127075195,
+        0.8036230206489563,
+        0.41236305236816406
+      ]
+    },
+    {
+      "reflectance": 0.3499999940395355,
+      "canCollide": false,
+      "color": [
+        0.7333333492279053,
+        0.7647058963775635,
+        0.7960784435272217
+      ],
+      "meshId": "rbxassetid://126345182634449",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Taillights_Chrome_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.00006389617919921875,
+        1.9670286178588867,
+        -5.322732925415039,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Metal",
+      "size": [
+        4.2498040199279785,
+        0.25474703311920166,
+        0.5029120445251465
+      ]
+    },
+    {
+      "reflectance": 0.3499999940395355,
+      "canCollide": false,
+      "color": [
+        0.7333333492279053,
+        0.7647058963775635,
+        0.7960784435272217
+      ],
+      "meshId": "rbxassetid://140568367536988",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Taillights_Chrome_1",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.0000635385513305664,
+        1.9688270092010498,
+        -5.323274612426758,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Metal",
+      "size": [
+        4.249807357788086,
+        0.25834405422210693,
+        0.5056290626525879
+      ]
+    },
+    {
+      "reflectance": 0.3499999940395355,
+      "canCollide": false,
+      "color": [
+        0.7333333492279053,
+        0.7647058963775635,
+        0.7960784435272217
+      ],
+      "meshId": "rbxassetid://89833508932942",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Taillights_Aluminum_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        4.76837158203125e-7,
+        1.9807339906692505,
+        -5.474012851715088,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Metal",
+      "size": [
+        2.7043049335479736,
+        0.22478795051574707,
+        0.05397605895996094
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://133133686256297",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Taillights_Detailed woven carbon clearcoat_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.000003933906555175781,
+        1.9642839431762695,
+        -5.24611759185791,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.31706428527832,
+        0.3109879493713379,
+        0.9172120094299316
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://76641472908169",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Taillights_MetalDark_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        1.9704020023345947,
+        -5.3241729736328125,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.248179912567139,
+        0.2597399950027466,
+        0.5174617767333984
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.9058823585510254,
+        0.09803921729326248,
+        0.08235294371843338
+      ],
+      "meshId": "rbxassetid://100080793038027",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "Taillights_GlassRedLights_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0.007224440574645996,
+        1.968050479888916,
+        -5.317235946655273,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        4.263355255126953,
+        0.26216113567352295,
+        0.5262241363525391
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.9058823585510254,
+        0.09803921729326248,
+        0.08235294371843338
+      ],
+      "meshId": "rbxassetid://86043931030827",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "Taillights_GlassRedLights_1",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.11704301834106445,
+        1.9680569171905518,
+        -5.317143440246582,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        4.043715953826904,
+        0.26217401027679443,
+        0.5260410308837891
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.9058823585510254,
+        0.09803921729326248,
+        0.08235294371843338
+      ],
+      "meshId": "rbxassetid://91753543766159",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "Taillights_GlassRedLights_2",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -1.699742078781128,
+        1.9689490795135498,
+        -5.350856781005859,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        0.84113609790802,
+        0.2603640556335449,
+        0.458981990814209
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.23137255012989044,
+        0.2705882489681244
+      ],
+      "meshId": "rbxassetid://87674511807389",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "Taillights_GlassLights_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        1.9700515270233154,
+        -5.394287586212158,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        4.298398017883301,
+        0.3004390001296997,
+        0.6199111938476562
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.23137255012989044,
+        0.2705882489681244
+      ],
+      "meshId": "rbxassetid://82921183215232",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "Taillights_GlassOrangeLights_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        2.014693021774292,
+        -5.305251121520996,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        4.232560157775879,
+        0.15258991718292236,
+        0.46710777282714844
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.23137255012989044,
+        0.2705882489681244
+      ],
+      "meshId": "rbxassetid://123125221169193",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "Taillights_GlassWhite_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.0000010728836059570312,
+        1.9625680446624756,
+        -5.339059352874756,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        4.228061676025391,
+        0.23169004917144775,
+        0.4604969024658203
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.23137255012989044,
+        0.2705882489681244
+      ],
+      "meshId": "rbxassetid://137795710802721",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0.20000000298023224,
+      "name": "Taillights_GlassWhite_1",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -0.3736889958381653,
+        1.9625680446624756,
+        -5.339059352874756,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Glass",
+      "size": [
+        3.4806861877441406,
+        0.23169004917144775,
+        0.4604969024658203
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://108606816687847",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Taillights_GLS MR_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        1.885424017906189,
+        -5.225423812866211,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.277803897857666,
+        0.09661006927490234,
+        0.4569392204284668
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.10980392247438431,
+        0.12156862765550613,
+        0.13333334028720856
+      ],
+      "meshId": "rbxassetid://100678934349040",
+      "materialVariant": "AddonDetail_Rubber_v2",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelFrLeft.001_WheelTireBump_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -2.093327045440674,
+        0.8064529895782471,
+        3.0771188735961914,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        1.1572060585021973,
+        1.6187479496002197,
+        1.719437837600708
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://74666384333996",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelFrLeft.001_Material.006_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -2.338369369506836,
+        0.8098595142364502,
+        3.0064704418182373,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        0.043543100357055664,
+        0.15015101432800293,
+        0.14370489120483398
+      ]
+    },
+    {
+      "reflectance": 0.3499999940395355,
+      "canCollide": false,
+      "color": [
+        0.8509804010391235,
+        0.8823529481887817,
+        0.9137254953384399
+      ],
+      "meshId": "rbxassetid://139805016814153",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelFrLeft.001_Polished Chrome Wheels_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -2.1002144813537598,
+        0.8102465271949768,
+        3.07476544380188,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "Metal",
+      "size": [
+        1.109117031097412,
+        1.352281093597412,
+        1.5054049491882324
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.16862745583057404,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://120247614535654",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "WheelFrLeft.001_Material.005_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -2.154871940612793,
+        0.808382511138916,
+        3.063614845275879,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        0.3422940969467163,
+        1.009476900100708,
+        0.9793579578399658
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://92398477252925",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Body.001_Detailed woven carbon clearcoat_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        1.5426559448242188,
+        -4.91291618347168,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        4.323627948760986,
+        0.4440680742263794,
+        0.06476068496704102
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.8509804010391235,
+        0.06666667014360428,
+        0.09019608050584793
+      ],
+      "meshId": "rbxassetid://94823868562888",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Red SVO Left_Red SVO Decal_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        -2.37577486038208,
+        2.102874994277954,
+        -3.6107335090637207,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        0.2584421634674072,
+        0.26249992847442627,
+        0.6951169967651367
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.8509804010391235,
+        0.06666667014360428,
+        0.09019608050584793
+      ],
+      "meshId": "rbxassetid://117083258540522",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Red SVO Right_Red SVO Decal_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        2.3710031509399414,
+        2.102874994277954,
+        -3.639266014099121,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        0.26370787620544434,
+        0.26249992847442627,
+        0.6951179504394531
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.1568627506494522,
+        0.1882352977991104,
+        0.21960784494876862
+      ],
+      "meshId": "rbxassetid://140384329340171",
+      "materialVariant": "AddonCarbonTwill",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Carbon Roof Scoop_Detailed woven carbon clearcoat_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        2.7094287872314453,
+        -2.3897266387939453,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        1.0118739604949951,
+        0.6738359928131104,
+        2.8791630268096924
+      ]
+    },
+    {
+      "reflectance": 0,
+      "canCollide": false,
+      "color": [
+        0.0470588244497776,
+        0.06666667014360428,
+        0.09019608050584793
+      ],
+      "meshId": "rbxassetid://105878077973048",
+      "materialVariant": "",
+      "textureId": "",
+      "massless": true,
+      "transparency": 0,
+      "name": "Recessed scoop throat_Intake darkness_0",
+      "anchored": true,
+      "doubleSided": true,
+      "cframe": [
+        0,
+        2.898801326751709,
+        -1.0125000476837158,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "material": "SmoothPlastic",
+      "size": [
+        0.9100000262260437,
+        0.17747092247009277,
+        0.0010000000474974513
+      ]
+    }
+  ]
+}
