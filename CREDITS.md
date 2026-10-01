@@ -64,17 +64,17 @@ Full credit:
 > Junkyard Fusion: repainted, new decals and wheels, badges and brand
 > lettering removed, detail reduced and renamed.
 
-### 2. Toro (from the Temerario model; next up, not in the game yet)
+### 2. Toro (from the Temerario model; in the game since 2026-09-30)
 
 | | |
 |---|---|
 | In-game name | Toro (Secret car) |
-| Studio model | *not imported yet* |
+| Studio model | `ReplicatedStorage.ItemModels.Toro` (Codex, VisualRevision Replacement-Carbon-v13) |
 | Original title | Lamborghini Temerario (2025) |
 | Creator | Harsh Palan (@harshpalan), <https://sketchfab.com/harshpalan> |
 | Original | <https://sketchfab.com/3d-models/lamborghini-temerario-2025-83bcf28aade742a3b726c28812fd9672> |
 | Licence | CC BY 4.0 (commercial use allowed) |
-| What we changed | *fill in as Codex works on it*: e.g. badges and brand lettering removed, renamed, repainted, detail reduced, resized for Roblox |
+| What we changed | Metallic lime paint, chrome rims, widebody arches with carbon lips, carbon skirts, splitter, wing and diffuser, front fender louvres, badge and logo meshes removed, lower-detail export resized for Roblox, renamed. (Codex's record: assets/toro-replacement/source-record.json) |
 
 Short credit (in game): `Model by Harsh Palan (Sketchfab), CC BY 4.0, modified`
 
@@ -83,7 +83,9 @@ Full credit:
 > "Lamborghini Temerario (2025)" by Harsh Palan
 > (https://sketchfab.com/harshpalan), licensed under CC BY 4.0
 > (https://creativecommons.org/licenses/by/4.0/). Modified by RaceWerks for
-> Junkyard Fusion: [list the changes].
+> Junkyard Fusion: lime paint, widebody kit, carbon accents, custom wheels,
+> wing and diffuser; badges and branding removed; detail reduced, resized and
+> renamed.
 
 Notes:
 

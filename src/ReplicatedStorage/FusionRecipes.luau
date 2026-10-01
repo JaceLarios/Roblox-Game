@@ -254,23 +254,21 @@ end
 -- takes games down for using them. `model` is the ItemModels entry that
 -- shows the car, when its name differs. `credit` is the attribution its
 -- model's licence asks for, shown on its Index card as well as in the
--- game's description.
+-- game's description. `weight` is how often it comes up when a Secret car
+-- drops, relative to the others (1 if left out).
 --
 -- An entry with `comingSoon = true` is a slot held open for a car whose
 -- model is not ready yet: the Index shows a "Coming soon" card for it and
 -- it never spawns. To fill it, give it the car's real name, its `model`
 -- and `credit`, and drop `comingSoon`.
 FusionRecipes.SecretCars = {
-	{ name = "Toro SVO", rarity = "secret", value = 400000, model = "SVO",
+	{ name = "Toro SVO", rarity = "secret", value = 400000, model = "SVO", weight = 1,
 		credit = "Model by SDC PERFORMANCE (Sketchfab), CC BY 4.0, modified" },
+	-- A step below the Toro SVO: worth less (so it earns less on a pad and
+	-- is a little slower in Race Wars) and comes up twice as often.
+	{ name = "Toro", rarity = "secret", value = 300000, weight = 2,
+		credit = "Model by Harsh Palan (Sketchfab), CC BY 4.0, modified" },
 }
--- Replacement Toro is available for Studio testing while original source rights are checked.
-if game:GetService("RunService"):IsStudio() then
- table.insert(FusionRecipes.SecretCars, {
-  name = "Toro", rarity = "secret", value = 400000, model = "Toro",
-  credit = "Model by Harsh Palan (Sketchfab), CC BY 4.0, modified. Original source rights pending.",
- })
-end
 local secretByName = {}
 for _, car in ipairs(FusionRecipes.SecretCars) do
 	assert(not baseByName[car.name] and not results[car.name], "FusionRecipes: " .. car.name .. " is used twice")
@@ -337,14 +335,23 @@ function FusionRecipes.Credit(name)
 	return car and car.credit
 end
 
--- A Secret car at random, for the rare roll out of the black box, or nil
--- while every slot is still coming soon.
+-- A Secret car at random, at its `weight`, for the rare roll out of the
+-- black box, or nil while every slot is still coming soon.
 function FusionRecipes.RollSecretCar()
-	local ready = {}
+	local ready, total = {}, 0
 	for _, car in ipairs(FusionRecipes.SecretCars) do
-		if not car.comingSoon then table.insert(ready, car.name) end
+		if not car.comingSoon then
+			table.insert(ready, car)
+			total += car.weight or 1
+		end
 	end
-	return #ready > 0 and ready[math.random(1, #ready)] or nil
+	if total == 0 then return nil end
+	local roll = math.random() * total
+	for _, car in ipairs(ready) do
+		roll -= car.weight or 1
+		if roll <= 0 then return car.name end
+	end
+	return ready[#ready].name
 end
 
 -- True for an exclusive addon (the Warp Drive) and every build made with
