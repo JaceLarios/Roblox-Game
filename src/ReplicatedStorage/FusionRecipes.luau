@@ -261,9 +261,8 @@ end
 -- it never spawns. To fill it, give it the car's real name, its `model`
 -- and `credit`, and drop `comingSoon`.
 FusionRecipes.SecretCars = {
-	-- The Toro SVO's slot: it was taken out on 2026-09-30 to be renamed and
-	-- remodelled (its old model is in ServerStorage.RetiredModels).
-	{ name = "Secret Slot 1", rarity = "secret", value = 400000, comingSoon = true },
+	{ name = "Toro SVO", rarity = "secret", value = 400000, model = "SVO",
+		credit = "Model by SDC PERFORMANCE (Sketchfab), CC BY 4.0, modified" },
 }
 local secretByName = {}
 for _, car in ipairs(FusionRecipes.SecretCars) do
