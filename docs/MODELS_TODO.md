@@ -8,7 +8,7 @@ have their own model. What is left:
 | Addon with no model | 1 (Warp Drive) |
 | Builds with no model | 57 |
 | Builds with an old pre-Blender model (single mesh, wheels don't roll) | 25 |
-| Fixes to an existing model | 1 (Toro SVO) |
+| Fixes to an existing model | 1 (Toro SVO: lighter, rolling wheels) |
 
 A build with no model shows a stand-in in game: the same car's build with
 the first addon of that rarity (Rumble Pony shows Loud Lemon). The Scrap
@@ -27,7 +27,8 @@ Follow the Scrap Kart and Dirt Bike builds (e.g. `ItemModels.Loud Lemon`):
 - **Hover Fans builds have no wheels**: a `FusionBase` model with no
   `WheelPivot` parts hovers automatically (like Hover Heap and Hoverbike).
 - Roughly the size of that car's base model (about 5 studs long; the Box
-  Truck about 7.5) and under about 90k triangles.
+  Truck about 7.5) and under about 90k triangles. (The Secret cars are
+  deliberately bigger: both are about 12 studs long, the user's call.)
 - No real car brands, badges or logos.
 
 ## Priority order
@@ -146,7 +147,9 @@ Follow the Scrap Kart and Dirt Bike builds (e.g. `ItemModels.Loud Lemon`):
 - [ ] NEW Starcrusher (Warp Drive)
 
 ### Toro SVO fixes
-- [ ] Scale `ItemModels.SVO` to about 5.5 studs long (it is 12.1; the Toro is 5.4)
+Both Secret cars stay about 12 studs long on purpose (the Toro was scaled up
+to match the SVO). The SVO's side decals were enlarged on 2026-09-30.
 - [ ] A lighter export (it is about 217k triangles)
 - [ ] Split the merged rear wheels and tag all wheels `WheelPivot` / `WheelRadius` so they roll
+- [ ] Test both big Secret cars on the conveyor and in a race (size and performance)
 - [ ] Keep the `LogoCover` part (hides the rear "Lamborghini" lettering) and the model name `SVO`
