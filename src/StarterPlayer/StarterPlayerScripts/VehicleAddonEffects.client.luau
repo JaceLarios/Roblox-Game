@@ -12,11 +12,25 @@ workspace.DescendantRemoving:Connect(function(object)
 	if candidates[object] then candidates[object]=nil end
 	if states[object] then Effects.Destroy(states[object]);states[object]=nil end
 end)
-local elapsed=0
+local player=game:GetService("Players").LocalPlayer
+local elapsed,wasPotato=0,false
 RunService.Heartbeat:Connect(function(dt)
 	elapsed+=dt
 	if elapsed<.25 then return end
 	elapsed=0
+	-- Potato mode (SettingsUI) keeps every addon effect off. Its switch only catches
+	-- effects that are already on, and these turn on later, so they are held off here.
+	if player:GetAttribute("PotatoMode")==true then
+		for _,state in states do Effects.SetActive(state,false) end
+		wasPotato=true
+		return
+	end
+	if wasPotato then
+		-- Leaving potato mode turns back on whatever it had switched off; start every
+		-- car from off so only the nearby ones below come back.
+		for _,state in states do state.active=true;Effects.SetActive(state,false) end
+		wasPotato=false
+	end
 	local camera=workspace.CurrentCamera
 	if not camera then return end
 	local nearby={}

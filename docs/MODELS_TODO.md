@@ -26,8 +26,11 @@ Follow the Scrap Kart and Dirt Bike builds (e.g. `ItemModels.Loud Lemon`):
   roll on the conveyor and in races.
 - **Hover Fans builds have no wheels**: a `FusionBase` model with no
   `WheelPivot` parts hovers automatically (like Hover Heap and Hoverbike).
-- Roughly the size of that car's base model (about 5 studs long; the Box
-  Truck about 7.5) and under about 90k triangles. (The Secret cars are
+- Roughly the size of that car's base model (about 5 studs long; the Golf
+  Cart and Cop Cruiser about 6, the Box Truck about 7.5) and under about 90k
+  triangles. Compare it next to the base car before installing: the first 15
+  Golf Cart builds came in 20% small and were scaled up 1.2x in Studio
+  (see HANDOFF.md). (The Secret cars are
   deliberately bigger: both are about 12 studs long, the user's call.)
 - No real car brands, badges or logos.
 

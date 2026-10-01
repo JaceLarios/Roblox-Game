@@ -1,3 +1,11 @@
+# Fit check of the new models — Claude (2026-10-01)
+
+Checked all 31 new builds and the Warp Drive addon in Studio and in a Play test, next to their base cars. Every family matches its base car's size except the 15 golf-cart fusions from assets/golf-cart-fusions: they came in about 20% smaller than the base Golf Cart (and than Hole in Space), so a fused cart shrank. **All 15 were scaled up 1.2× in Studio** (`Model:ScaleTo`, with every `WheelPivot`/`WheelRadius` and Atomic Albatross's `ReactorLocalCenter` scaled to match; each carries `FitScaleToBase = 1.2`). Backup of the originals: ServerStorage.BeforeGolfFitScale_1790873859. **Codex: if you re-export or re-import any of these 15, export them 1.2× bigger** (or reapply the scale), or they'll shrink back. Hole in Space was already the right size and was not touched.
+
+Wheels, hovering (Hover Caddy, Atomic Albatross), nose direction and the Warp Drive addon's size all checked out. One fix to `VehicleAddonEffects.client`: potato mode now keeps the addon effects off (SettingsUI only switches off effects that are already on, and these turn on later). Wheel-less builds show no addon aura, because AtomHover hides the original model and shows its own hover effects instead. That's left as is.
+
+---
+
 # Current approval — 2026-10-01
 
 User approved the installed models and requested a complete GitHub backup. The latest asset files, effects code, uploaded mesh IDs, recovery scripts and model checklist are included together. Studio changes still require live publication; full racing/conveyor playtests remain outstanding.
