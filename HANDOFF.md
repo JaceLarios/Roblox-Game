@@ -1,4 +1,14 @@
-# Latest gameplay handoff — Secret cars: the Toro SVO (2026-09-30)
+# Latest gameplay handoff — Settings panel (volume, SFX, potato mode, credits), cars face the aisle (2026-09-30)
+
+**Settings** (`SettingsUI.client` + `PlayerSettings.server`): a gear button top right (just left of it on a phone, beside the nav grid; the ADMIN button moved left to make room). Panel tabs: SETTINGS (music volume slider, sound effects ON/OFF, potato mode ON/OFF) and CREDITS (every outside model from the new `ReplicatedStorage.ModelCredits`, scrolling). Sound works through two client-side SoundGroups the script makes, `SettingsMusic` (the tracks in `SoundService.Music`) and `SettingsSFX` (every other Sound in workspace, SoundService and PlayerGui), so no other script changed. Potato mode, client only: GlobalShadows off, and particles, beams, trails, fire/smoke/sparkles, point/spot/surface lights, Highlights, clouds and bloom/blur/sun rays/depth of field switched off, including anything added later; all put back as they were when it goes off. Settings save in their own DataStore `JunkyardFusion_Settings_v1` (never the main save), loaded onto the player as attributes `MusicVolume` (0-1), `SFXOn`, `PotatoMode`, `SettingsLoaded`. **Codex's bottom-right "Model Credits" button is gone** (StarterGui.VehicleModelCredits, VehicleModelCredits.client.luau, assets/vehicle-credits/install.edit.luau): the same entries are the CREDITS tab now; add new models to `ModelCredits`.
+
+**Cars on earning pads face the garage's middle aisle**, along their bays, on every base (`redrawPetPad` in PlotManager turns each car by its base's frame; they all used to face world +Z, so on some bases one row pointed into the wall and on others they sat sideways across the bays).
+
+**HUD:** the rebirth progress bar under the coins is gone (it is only in the Upgrades panel now), and the boost/friend/group chips sit at the bottom right of the coin counter.
+
+---
+
+# Previous gameplay handoff — Secret cars: the Toro SVO (2026-09-30)
 
 **A new SECRET rarity for real-car-inspired supercars** (user's calls: super-rare drop, finished cars, made-up names). `FusionRecipes.SecretCars` holds them; the first is the **Toro SVO** (worth 400,000, the best earner on a pad; top speed 129.6 in Race Wars vs 123.4 for the fastest normal car, and it is left out of monster tuning). They are finished cars: fusing one with an addon is refused ("Secret cars are already finished"). About 1 in 500 conveyor drops is a Secret car (`SECRET_CHANCE` in ScrapSpawner), and 4% of Crane Drop crates (`CRATE_SECRET_CHANCE`); never two of the same out at once. Each gets a pink light beam and a server-wide "SECRET CAR!" alert, and getting one home is broadcast too. Rarity colour is hot pink (`ItemRarity` "secret"). The Index's (previously empty) Secret tab lists them as "???" until found; found ones are saved as `secretCars` and count whether you carried one home, traded for it or placed it. Admin panel: "Drop a Secret car now". The rare beam is now welded to its item, so it rides the belt with it (it used to stay at the black box, for the secret Legendary too).
 

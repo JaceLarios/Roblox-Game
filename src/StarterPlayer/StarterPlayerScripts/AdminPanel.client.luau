@@ -1,7 +1,8 @@
 --[[
 	AdminPanel (LocalScript, StarterPlayerScripts) — Junkyard Fusion
 
-	An ADMIN button at the top right of the screen, for admins only
+	An ADMIN button at the top right of the screen (just left of the
+	Settings button, SettingsUI.client), for admins only
 	(AdminConfig), opening a small panel of test tools:
 	  • Show the whole Index: every entry shows as found, so every model
 	    can be checked. On this screen only (GameUI reads the
@@ -38,7 +39,7 @@ gui.Parent = player:WaitForChild("PlayerGui")
 
 local toggle = Garage.New("TextButton", gui, "AdminButton", {
 	AnchorPoint = Vector2.new(1, 0),
-	Position = UDim2.new(1, -14, 0, 10),
+	Position = UDim2.new(1, -72, 0, 10),
 	Size = UDim2.fromOffset(130, 46),
 	Text = "ADMIN",
 	TextSize = 26,
@@ -49,7 +50,7 @@ Garage.Button(toggle, RED)
 local PANEL_WIDTH, MARGIN = 320, 12
 local panel = Garage.New("Frame", gui, "Panel", {
 	AnchorPoint = Vector2.new(1, 0),
-	Position = UDim2.new(1, -14, 0, 64),
+	Position = UDim2.new(1, -72, 0, 64),
 	Size = UDim2.fromOffset(PANEL_WIDTH, 100),
 	Visible = false,
 })

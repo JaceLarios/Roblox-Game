@@ -16,10 +16,11 @@ Where the credits go:
 
 - **The game's description on Roblox.** Paste the block below and keep it
   up to date as cars are added.
-- **In game.** The "Model Credits" button (bottom right; Codex's
-  `StarterGui.VehicleModelCredits`, also `VehicleModelCredits.client.luau`
-  and `assets/vehicle-credits/install.edit.luau`) lists every model in
-  full. Each Secret car also has a `credit` line in
+- **In game.** The Settings panel's CREDITS tab (the gear, top right;
+  SettingsUI.client) lists every model in full, from
+  `src/ReplicatedStorage/ModelCredits.luau`: add each new model there.
+  (It replaced Codex's separate "Model Credits" button on 2026-09-30.)
+  Each Secret car also has a `credit` line in
   `FusionRecipes.SecretCars` (src/ReplicatedStorage/FusionRecipes.luau),
   shown on its Index card. Add a car's short
   credit there when it goes into the game.

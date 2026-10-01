@@ -1341,6 +1341,11 @@ local function redrawPetPad(plot, slot, itemName)
 	local mutationColor = Mutations.Color(mutationId)
 	if mutationColor then ItemVisuals.Tint(part, mutationColor) end
 	part.Parent = plot.model
+	-- Parked along its bay, nose (+Z on every car model) toward the
+	-- garage's middle aisle, whichever way round this base faces. Pads 1-4
+	-- are on the base's -X side (see the pads' layout above).
+	local facing = plot.frame.RightVector * (slot <= 4 and 1 or -1)
+	part.CFrame = CFrame.lookAt(part.Position, part.Position - facing)
 	pad.itemPart = part
 
 	local info = itemTierInfo(itemName)

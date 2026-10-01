@@ -181,8 +181,8 @@ boostLayout.Parent = boostBar
 
 -- On a phone on its side the bottom left is the thumbstick's, and the nav
 -- buttons fill the top corners, so the coins go top centre, a little
--- smaller, with the boost chips under them (and under the rebirth bar the
--- coin card carries). On a computer the chips sit just right of the coins.
+-- smaller, with the boost chips under them. On a computer the chips sit
+-- at the bottom right of the coins, level with the card's lower edge.
 local coinScale = Instance.new("UIScale")
 coinScale.Parent = coinCard
 local function placeCoinCard()
@@ -193,7 +193,7 @@ local function placeCoinCard()
 	coinCard.AnchorPoint = phone and Vector2.new(0.5, 0) or Vector2.zero
 	coinCard.Position = phone and UDim2.new(0.5, 0, 0, 10) or UDim2.new(0, 20, 1, -136)
 	boostBar.AnchorPoint = phone and Vector2.new(0.5, 0) or Vector2.zero
-	boostBar.Position = phone and UDim2.new(0.5, 0, 0, 94) or UDim2.new(0, 334, 1, -115)
+	boostBar.Position = phone and UDim2.new(0.5, 0, 0, 68) or UDim2.new(0, 334, 1, -94)
 	boostLayout.HorizontalAlignment = phone and Enum.HorizontalAlignment.Center or Enum.HorizontalAlignment.Left
 end
 gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(placeCoinCard)
@@ -2342,29 +2342,25 @@ rebirthNext.Position=UDim2.fromOffset(176,78) rebirthNext.Size=UDim2.new(1,-390,
 for _,l in {rebirthNow,rebirthNext} do l:SetAttribute("Designed",true) l.TextColor3=Color3.new(1,1,1) l.TextWrapped=true end
 rebirthBtn.Size=UDim2.fromOffset(186,66) rebirthBtn.Position=UDim2.new(1,-200,.5,-33) Garage.Button(rebirthBtn,Color3.fromRGB(179,54,243))
 
--- Rebirth progress: a bar in the Rebirth section and a slim one under the
--- coin counter, both filling as your coins climb toward the next Rebirth's
--- cost and turning green once you can afford it. The HUD one opens
--- Upgrades. In a do block because this script's top level is at Luau's
--- 200-local limit.
+-- Rebirth progress: a bar in the Rebirth section of Upgrades, filling as
+-- your coins climb toward the next Rebirth's cost and turning green once
+-- you can afford it. (There was a slim copy under the coin counter too,
+-- until the user asked for it to live in Upgrades only.) In a do block
+-- because this script's top level is at Luau's 200-local limit.
 do
 	local READY = Color3.fromRGB(40, 200, 110)
 	local FILL = Color3.fromRGB(179, 54, 243)
-	local cost, level, maxed = nil, 0, false
+	local cost, maxed = nil, false
 
-	local function bar(parent, name, position, size, textSize, button)
-		local back = Instance.new(button and "TextButton" or "Frame")
+	local function bar(parent, name, position, size, textSize)
+		local back = Instance.new("Frame")
 		back.Name = name
 		back.Position = position
 		back.Size = size
 		back.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
-		back.BackgroundTransparency = button and GLASS_HUD or 0.15
+		back.BackgroundTransparency = 0.15
 		back.BorderSizePixel = 0
 		back:SetAttribute("Designed", true)
-		if button then
-			back.Text = ""
-			back.AutoButtonColor = false
-		end
 		back.Parent = parent
 		rounded(back, math.floor(size.Y.Offset / 2))
 		local fill = Instance.new("Frame")
@@ -2387,20 +2383,8 @@ do
 
 	local panelBar, panelFill, panelText = bar(rebirthRow, "RebirthProgress", UDim2.fromOffset(176, 132),
 		UDim2.new(1, -390, 0, 32), 18)
-	local hudBar, hudFill, hudText = bar(coinCard, "RebirthBar", UDim2.new(0, 0, 1, 6), UDim2.new(1, 0, 0, 26), 14, true)
-	hudBar.MouseButton1Click:Connect(function()
-		if not shopFrame.Visible then toggleShop() end
-	end)
-
-	-- 12,300,000 as "12.3M", for the slim HUD bar.
-	local function short(n)
-		if n >= 1e6 then return (string.format("%.1fM", n / 1e6):gsub("%.0M", "M")) end
-		if n >= 1e3 then return (string.format("%.1fK", n / 1e3):gsub("%.0K", "K")) end
-		return tostring(math.floor(n))
-	end
 
 	local function update()
-		hudBar.Visible = cost ~= nil and not maxed
 		panelBar.Visible = cost ~= nil and not maxed
 		if not cost or maxed then return end
 		local stats = player:FindFirstChild("leaderstats")
@@ -2408,20 +2392,15 @@ do
 		local have = coins and coins.Value or 0
 		local progress = math.clamp(have / cost, 0, 1)
 		local ready = have >= cost
-		for _, fill in ipairs({ panelFill, hudFill }) do
-			fill.BackgroundColor3 = ready and READY or FILL
-			TweenService:Create(fill, TweenInfo.new(0.25), { Size = UDim2.fromScale(progress, 1) }):Play()
-		end
+		panelFill.BackgroundColor3 = ready and READY or FILL
+		TweenService:Create(panelFill, TweenInfo.new(0.25), { Size = UDim2.fromScale(progress, 1) }):Play()
 		panelText.Text = ready and string.format("READY! %s / %s coins", commas(have), commas(cost))
 			or string.format("%s / %s coins  (%d%%)", commas(have), commas(cost), math.floor(progress * 100))
-		hudText.Text = ready and string.format("REBIRTH %d READY! OPEN UPGRADES", level + 1)
-			or string.format("REBIRTH %d: %s / %s", level + 1, short(have), short(cost))
 	end
 
 	remote.OnClientEvent:Connect(function(data)
 		if type(data) == "table" and type(data.rebirth) == "table" then
 			cost = data.rebirth.nextCost
-			level = data.rebirth.level or 0
 			maxed = data.rebirth.maxed == true
 			update()
 		end
