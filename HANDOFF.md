@@ -1045,3 +1045,5 @@ Official references:
 - https://create.roblox.com/docs/production/monetization/passes
 - https://create.roblox.com/docs/reference/engine/classes/MarketplaceService
 
+
+Toro replacement backup (2026-09-30): see assets/toro-replacement/ROBLOX-IMPORT-HANDOFF.txt. Includes v13 Blender source, carbon maps, 94-part Studio mesh snapshot and non-overwriting restore script. Toro catalogue entry is Studio-only. Existing SVO and LogoCover preserved. Full driving/visual review remains pending; no experience publication.

@@ -1,0 +1,15 @@
+Replacement Toro imported 2026-09-30 into place 94136201094216.
+Template: ReplicatedStorage.ItemModels.Toro. Edit preview: Workspace.Toro_TestPreview.
+94 persistent uploaded MeshParts, 174854 triangles. 24 wheel sections with WheelPivot/WheelRadius.
+Carbon atlas color/normal/roughness/metalness applied across 9 carbon mesh sections.
+Source: Toro-Game-Carbon-v13.blend. Rear-left wheel invalid export geometry repaired by mirroring the valid rear-right rim/barrel. Corrected roblox-test JSON is authoritative; exporter rerun requires same repair.
+FusionRecipes: added Studio-only SecretCars entry Toro, value 400000, Harsh Palan attribution. Not live-spawn enabled. License/source links on model attributes. Original-source rights unresolved.
+Verified: ItemVisuals viewport clone, assembly creation, all 24 wheel sections rotate, resizing to race length 13 studs. Runtime client received all 94 meshes and 9 SurfaceAppearances; RaceConfig supplies speed 129.6. No Toro asset-load errors observed in Output.
+Visual inspection NOT completed: Studio screenshots showed a blank 3D viewport even when game UI rendered. Full conveyor/pickup/pad/race driving playtest remains untested for this replacement.
+Non-carbon source image textures are not exported; those surfaces use material colors. Full 1:1 Blender appearance is not verified. Model still needs performance review before broad release.
+Known unrelated Output error: animation 122110574377010 permission denied.
+Persistent player saves disabled during brief test; guard removed after stopping. Test runtime clone discarded. Studio returned to Edit. SVO.LogoCover preserved.
+roblox-imported-manifest.json records uploaded mesh IDs, transforms, surface maps and wheel attributes for restoration.
+No experience publication performed. This snapshot is included in the GitHub backup.
+
+Restoration: run restore.edit.luau in Studio Edit mode. It refuses to overwrite an existing Toro. The JSON snapshot includes persistent Roblox mesh references, not offline mesh geometry. The Blender source and carbon maps are also included. Corrected rear-left wheel is in the Roblox snapshot; the Blender source predates that export repair.

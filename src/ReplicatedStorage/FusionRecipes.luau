@@ -264,6 +264,13 @@ FusionRecipes.SecretCars = {
 	{ name = "Toro SVO", rarity = "secret", value = 400000, model = "SVO",
 		credit = "Model by SDC PERFORMANCE (Sketchfab), CC BY 4.0, modified" },
 }
+-- Replacement Toro is available for Studio testing while original source rights are checked.
+if game:GetService("RunService"):IsStudio() then
+ table.insert(FusionRecipes.SecretCars, {
+  name = "Toro", rarity = "secret", value = 400000, model = "Toro",
+  credit = "Model by Harsh Palan (Sketchfab), CC BY 4.0, modified. Original source rights pending.",
+ })
+end
 local secretByName = {}
 for _, car in ipairs(FusionRecipes.SecretCars) do
 	assert(not baseByName[car.name] and not results[car.name], "FusionRecipes: " .. car.name .. " is used twice")
