@@ -12,7 +12,7 @@ Where the credits go:
   up to date as cars are added.
 - **In game.** Each Secret car has a `credit` line in
   `FusionRecipes.SecretCars` (src/ReplicatedStorage/FusionRecipes.luau),
-  shown on its Index card and in its Inventory details. Add a car's short
+  shown on its Index card. Add a car's short
   credit there when it goes into the game.
 
 Every car is renamed, and badges and brand lettering are removed, because

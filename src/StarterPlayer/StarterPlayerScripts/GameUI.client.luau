@@ -1224,8 +1224,7 @@ local function relayout()
  statViewportHolder.BackgroundTransparency=1
  statName.Position=UDim2.fromOffset(14,previewHeight+22) statName.Size=UDim2.new(1,-28,0,36)
  statPerSecond.Position=UDim2.fromOffset(14,previewHeight+64)
- -- Two lines tall: a Secret car adds its model's credit under the rate.
- statPerSecond.Size=UDim2.new(1,-28,0,56) statPerSecond.TextWrapped=true statPerSecond.TextYAlignment=Enum.TextYAlignment.Top
+ statPerSecond.Size=UDim2.new(1,-28,0,30)
  emptyHint.Position=UDim2.fromOffset(14,previewHeight+62)
  for _,btn in {placeBtn,moveToCarryBtn} do btn.Size=UDim2.new(1,-28,0,42) btn.TextSize=20 end
 end
@@ -1273,10 +1272,6 @@ local function showStatsFor(entry)
 	statName.Text = ItemNames.Display(entry.name)
 	statName.RichText=false
 	statPerSecond.Text = string.format("If placed:  %.1f / sec", entry.perSecond)
-	local credit = FusionRecipes.Credit(baseName)
-	if credit then
-		statPerSecond.Text ..= "\n" .. credit
-	end
 	emptyHint.Visible = false
 	moveToCarryBtn.Visible = true
 	placeBtn.Visible = true

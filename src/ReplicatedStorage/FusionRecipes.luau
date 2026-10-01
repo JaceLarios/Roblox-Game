@@ -253,8 +253,8 @@ end
 -- Their names are made up: real car brands are trademarks, and Roblox
 -- takes games down for using them. `model` is the ItemModels entry that
 -- shows the car, when its name differs. `credit` is the attribution its
--- model's licence asks for, shown in game (its Index card and its
--- Inventory details) as well as in the game's description.
+-- model's licence asks for, shown on its Index card as well as in the
+-- game's description.
 --
 -- An entry with `comingSoon = true` is a slot held open for a car whose
 -- model is not ready yet: the Index shows a "Coming soon" card for it and
