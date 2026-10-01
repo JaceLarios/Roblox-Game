@@ -1435,7 +1435,7 @@ function redrawInventory(items, capacity)
 		if searchBox.Text ~= "" then
 			text = "Nothing here matches your search."
 		elseif filter == "addons" then
-			text = "No addons yet — buy them in the Shop's Addons tab, or win them from race crates."
+			text = "No addons yet — visit your base mechanic to buy them, or win them from race crates."
 		elseif filter == "cars" then
 			text = "No cars yet — grab one off the conveyor in the Junkyard."
 		end

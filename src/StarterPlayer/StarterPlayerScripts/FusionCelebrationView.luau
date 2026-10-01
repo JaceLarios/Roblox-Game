@@ -9,6 +9,15 @@ local RunService = game:GetService("RunService")
 local SoundService = game:GetService("SoundService")
 local Mutations = require(RS:WaitForChild("Mutations"))
 local Models = RS:WaitForChild("ItemModels")
+-- Warm meshes/textures while the player is playing, not on a frozen fusion frame.
+task.spawn(function()
+ local loader=game:GetService("ContentProvider")
+ for _,model in Models:GetChildren() do
+  pcall(function() loader:PreloadAsync({model}) end)
+  RunService.Heartbeat:Wait()
+ end
+end)
+
 local View = {}
 local INK = Color3.fromRGB(28,39,58)
 local CREAM = Color3.fromRGB(255,251,234)
@@ -227,7 +236,7 @@ local function run(data,area)
 	if not ok then warn("[FusionCelebrationView] "..tostring(err)) end
 end
 local Variants={
-	junkyard=function(data) run(data,"junkyard") end,
+	junkyard=function(data) require(script.Parent:WaitForChild("MagneticFusionView")).Play(data) end,
 	brainrot=function(data) run(data,"brainrot") end,
 }
 function View.Play(data)

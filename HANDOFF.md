@@ -1,3 +1,34 @@
+# Approved fusion installed — Codex (2026-09-30)
+
+User approved the larger vortex animation and requested game integration. Confirmed the approved .99 x .65 viewport layout is in the Edit-mode MagneticFusionView, FusionCelebrationView delegates Junkyard to it, and the enabled FusionCelebration client controller uses the normal server event. Preview replay button was Play-session-only and is not in StarterGui. Studio remains in Edit. This is installed in the working place, not published to Roblox or pushed to GitHub. Gameplay rewards and Brainrot presentation unchanged.
+
+---
+# Magnetic vortex revision — Codex (2026-09-30)
+
+User requested punchier, continuous motion and a vortex around the full car. Replaced low rings with three accelerating 3D helical ribbons enclosing wheels through roof; added stronger reveal kick/streaks and continuous car rotation/float. Overlapped lift, teardown and addon approach; duration now 4.6–6.4 seconds. Removed the frozen PREPARING BUILD barrier; FusionCelebrationView now warms ItemModels asynchronously at startup and per-scene preload is nonblocking. Cold network assets can still arrive late; no universal lag-free claim.
+
+Removed full-screen CanvasGroup compositing, reduced ribbon segments from 120 to 72, skipped transforms on hidden rigs, and only updates phase labels on phase transitions. Tested loaded Scrap Kart/Fusion Core preview and complete playback with zero orphan sounds/UI and no new fusion errors. 240-frame Studio sample: median frame 19.69ms, p95 frame 33.59ms; p95 animation update 0.682ms. This is a single desktop sample, not a device benchmark. Startup background preload installed afterward; cold-cache/mobile playback still needs testing. Prior unrelated permission error 122110574377010 persists. Studio back in Edit; no publishing/push. Backup: ServerStorage.MagneticFusion_BeforeVortex.
+
+---
+# Magnetic Assembly fusion — Codex (2026-09-30)
+
+Installed the approved Junkyard teardown/rebuild in Studio and source. MagneticFusionView.luau animates client-only model clones: lift, exploded assemblies, addon approach, transition into the real recipe result, staggered rebuild and reveal. FusionCelebrationView delegates only Junkyard; Brainrot and server rewards are unchanged. Rare results run longer (5.6–8.4 seconds). Existing built-in sound cues respect SettingsSFX/SFXOn; PotatoMode reduces effects. This is not the synthesized audio from the Blender concept videos.
+
+Verified in Studio: Scrap Kart + Fusion Core -> Reactor Rustbucket phase previews and full playback; actual FusionCelebration remote/controller queue; Skip advances to the next queued result; no orphan UI/sounds; muted/reduced effects; portrait 390x844 layout harness with no text overflow. No inventory fusion transaction was performed. Real device testing remains outstanding. Existing unrelated animation permission error for 122110574377010 remains; no MagneticFusionView errors observed.
+
+Current meshes are often merged by material, so coherent wheel/body/cabin/powertrain groups move together, not independently authored doors. Optional FusionGroup part attributes support future finer separation. Original live view backed up in ServerStorage.FusionCelebrationView_BeforeMagneticAssembly. Studio returned to Edit. Not published or pushed to GitHub.
+
+---
+# Latest visual/mechanic handoff — Codex (2026-09-30)
+
+Integrated the own-base mechanic addon shop after Claude finished. See `docs/MECHANIC_MIGRATION.txt` for tested behavior and remaining UI coverage. All eight bases get a wrench-holding mechanic, and addon purchases now require being near your own counter. Existing pricing, gamepasses, recipes, Settings and credits remain intact. Changes are in Studio and this branch, not published or pushed.
+
+Vehicle asset changes live in Studio: Toro widebody closure mesh, restored detail textures, Toro scaled to the SVO's 12.13484-stud length per the user's request for equally large cars. SVO side decals enlarged 45% and moved higher; **LogoCover preserved**. These are still larger than the conveyor's normal cars; belt fit and race performance remain to test. SVO wheel metadata remains missing. Preview models are stored in ServerStorage, not left in the live yard. Backups: ServerStorage.VehiclePolishBackup_20260930. Local asset manifest and Blender sources: outputs/game-polish-20260930 in the parent Codex workspace.
+
+Three new eight-second Blender fusion previews use the detailed Toro and actual addons, with original synthesized sound: Pit Forge, Redline Overload, Magnetic Assembly. They are concept videos, not installed live effects. Toro is a Secret car that cannot fuse in current gameplay; its use in these videos is only a visual demonstration. Final effect must display the recipe's real input/output models. User requested a more explosive/exaggerated revision after seeing Pit Forge. Final local files: explosive-1/2/3.blend and .mp4 in the same output directory; they add a camera/car kick, pressure rings, flying bolts/streaks, exhaust pulses and a stronger synchronized sound mix.
+
+---
+
 # Latest gameplay handoff — Settings panel (volume, SFX, potato mode, credits), cars face the aisle (2026-09-30)
 
 **Settings** (`SettingsUI.client` + `PlayerSettings.server`): a gear button top right (just left of it on a phone, beside the nav grid; the ADMIN button moved left to make room). Panel tabs: SETTINGS (music volume slider, sound effects ON/OFF, potato mode ON/OFF) and CREDITS (every outside model from the new `ReplicatedStorage.ModelCredits`, scrolling). Sound works through two client-side SoundGroups the script makes, `SettingsMusic` (the tracks in `SoundService.Music`) and `SettingsSFX` (every other Sound in workspace, SoundService and PlayerGui), so no other script changed. Potato mode, client only: GlobalShadows off, and particles, beams, trails, fire/smoke/sparkles, point/spot/surface lights, Highlights, clouds and bloom/blur/sun rays/depth of field switched off, including anything added later; all put back as they were when it goes off. Settings save in their own DataStore `JunkyardFusion_Settings_v1` (never the main save), loaded onto the player as attributes `MusicVolume` (0-1), `SFXOn`, `PotatoMode`, `SettingsLoaded`. **Codex's bottom-right "Model Credits" button is gone** (StarterGui.VehicleModelCredits, VehicleModelCredits.client.luau, assets/vehicle-credits/install.edit.luau): the same entries are the CREDITS tab now; add new models to `ModelCredits`.

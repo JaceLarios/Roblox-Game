@@ -58,8 +58,8 @@ local STEPS = {
 	},
 	buy = {
 		title = "BUY AN ADDON",
-		body = "Cars need an addon to fuse. Open the SHOP, go to the ADDONS tab and buy a Nitrous Tank.",
-		nav = { "ShopUI", "SHOPNavigation" },
+		body = "Visit the mechanic at the front of your base. Press E (or tap Addons) and buy a Nitrous Tank.",
+		marker = "base", markerText = "YOUR MECHANIC",
 	},
 	stage = {
 		title = "LOAD THE FUSION PAD",

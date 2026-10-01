@@ -2304,6 +2304,10 @@ end)
 buyAddonRemote.OnServerEvent:Connect(function(player, addonName)
 	local s = state[player]
 	if not s or type(addonName) ~= "string" then return end
+	if not require(script.Parent:WaitForChild("MechanicService")).CanPurchase(player) then
+		buyAddonRemote:FireClient(player, addonName, "away")
+		return
+	end
 	local price = FusionRecipes.AddonPrice(addonName)
 	if not price then return end
 

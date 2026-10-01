@@ -1,0 +1,31 @@
+2026-09-30 mechanic migration: INSTALLED in Studio place 94136201094216.
+Based on origin/main fa1ba3d; Claude Settings/credits and recipes preserved.
+
+Sources:
+- MechanicService + MechanicBootstrap: wrench-holding mechanic/counter in all eight bases.
+- MechanicAddons: existing addon catalog in a separate GarageTheme menu.
+- PlotManager: validates player/item then enforces own-counter distance before existing price/capacity checks.
+- ShopAddons: migration stub removes old Shop addon tab.
+- Tutorial/GameUI: directions now point to the base mechanic.
+
+Verified in Studio playtest:
+- All eight NPCs spawn; own-base E prompt opens the menu.
+- Successful purchase returned bought.
+- Other base does not open menu; direct remote from other base returned away.
+- Walking away closes menu.
+- Zero coins returned coins; full temporary inventory returned full.
+- Menu layering corrected to Sibling; shortened prompt to Addons.
+- Final row scrolls completely into view; meshes finish loading correctly.
+- Saving/leaderboard writes disabled during test; temporary guard removed afterward.
+
+Desktop UI checks at 1860 x 1153:
+Inventory, Upgrades, Index (cars/addons), Shop, Rewards, Quests, Travel,
+Trade player list, Settings/Credits and rebirth confirmation opened.
+No visible text-fit failures reported by the audit for those states.
+Not a claim that every gameplay state was exercised. Multiplayer trade,
+race HUD and phone/tablet layouts still need testing. Studio desktop-control
+approval timed out, so device emulation was unavailable in this pass.
+Output: existing animation access failure for asset 122110574377010.
+No new mechanic script error seen.
+
+No publish or GitHub push performed. Studio is back in Edit mode.
