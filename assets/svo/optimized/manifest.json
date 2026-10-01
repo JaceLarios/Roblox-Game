@@ -1,0 +1,13 @@
+{
+  "name": "SVO",
+  "parts": 70,
+  "triangles": 89769,
+  "wheels": [
+    "FrontL",
+    "FrontR",
+    "RearL",
+    "RearR"
+  ],
+  "length": 12.13484,
+  "preserveLogoCover": true
+}

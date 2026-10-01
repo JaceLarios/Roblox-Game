@@ -1,19 +1,8 @@
-# Models still to make (checked in Studio 2026-09-30)
+# Model production — updated 2026-10-01
 
-Every base car, every addon except the Warp Drive, and both Secret cars
-have their own model. What is left:
+All 83 model entries in this checklist are now installed in Studio, including the 52 remaining fusion variants. The SVO is 89,769 triangles with four rolling wheel groups; its 12-stud length, decals, materials and LogoCover are retained. Golf-cart source exports and recovery files preserve Claude's approved 1.2x fit.
 
-| | Count |
-|---|---|
-| Addon with no model | 1 (Warp Drive) |
-| Builds with no model | 57 |
-| Builds with an old pre-Blender model (single mesh, wheels don't roll) | 25 |
-| Fixes to an existing model | 1 (Toro SVO: lighter, rolling wheels) |
-
-A build with no model shows a stand-in in game: the same car's build with
-the first addon of that rarity (Rumble Pony shows Loud Lemon). The Scrap
-Kart (Rusted Sedan) and Dirt Bike families are finished apart from their
-Warp Drive builds; the other five cars still need most of theirs.
+The checks below track implementation, not final player art approval. Full multiplayer/mobile performance testing and live publication remain separate. See assets/remaining-fusions for source, front/rear previews, recovery files and test evidence.
 
 ## How a finished build is set up
 
@@ -78,73 +67,73 @@ Follow the Scrap Kart and Dirt Bike builds (e.g. `ItemModels.Loud Lemon`):
 - [x] NEW Hole in Space (Warp Drive)
 
 ### Muscle Car: 16
-- [ ] REBUILD Junk Mashup (Nitrous Tank)
-- [ ] NEW Rumble Pony (Straight Pipes)
-- [ ] NEW Boost Stallion (Scrap Turbo)
-- [ ] REBUILD Undercover Muscle (Inline 4)
-- [ ] NEW Rotor Rebel (Rotary Engine)
-- [ ] NEW Twin Turbo Thunder (Twin Turbo)
-- [ ] REBUILD Twisted Wreck (V6 Engine)
-- [ ] NEW Blown Charger (Supercharger)
-- [ ] NEW Coal Roller (Diesel Stack)
-- [ ] REBUILD Chrome Sentinel (V8 Engine)
-- [ ] NEW Grand Growler (V12 Engine)
-- [ ] NEW Street Levitator (Hover Fans, hovers)
-- [ ] REBUILD Afterburner GT (Jet Engine; has a body, but no rolling wheels)
+- [x] REBUILD Junk Mashup (Nitrous Tank)
+- [x] NEW Rumble Pony (Straight Pipes)
+- [x] NEW Boost Stallion (Scrap Turbo)
+- [x] REBUILD Undercover Muscle (Inline 4)
+- [x] NEW Rotor Rebel (Rotary Engine)
+- [x] NEW Twin Turbo Thunder (Twin Turbo)
+- [x] REBUILD Twisted Wreck (V6 Engine)
+- [x] NEW Blown Charger (Supercharger)
+- [x] NEW Coal Roller (Diesel Stack)
+- [x] REBUILD Chrome Sentinel (V8 Engine)
+- [x] NEW Grand Growler (V12 Engine)
+- [x] NEW Street Levitator (Hover Fans, hovers)
+- [x] REBUILD Afterburner GT (Jet Engine; has a body, but no rolling wheels)
 - [x] NEW Rocket Stallion (Rocket Booster)
 - [x] NEW Fusion Fury (Fusion Core)
 - [x] NEW Lightspeed Legend (Warp Drive)
 
 ### Cop Cruiser: 16
-- [ ] REBUILD Cone Cruiser (Nitrous Tank)
-- [ ] NEW Siren Screamer (Straight Pipes)
-- [ ] NEW Patrol Spooler (Scrap Turbo)
-- [ ] REBUILD Undercover Van (Inline 4)
-- [ ] NEW Rotary Ranger (Rotary Engine)
-- [ ] NEW Twin Chase (Twin Turbo)
-- [ ] REBUILD Turbo Interceptor (V6 Engine)
-- [ ] NEW Supercharged Sheriff (Supercharger)
-- [ ] NEW Riot Rig (Diesel Stack)
-- [ ] REBUILD Highway Overlord (V8 Engine)
-- [ ] NEW Pursuit Prime (V12 Engine)
-- [ ] NEW Hover Patrol (Hover Fans, hovers)
-- [ ] REBUILD Sky Marshal (Jet Engine; has a body, but no rolling wheels)
+- [x] REBUILD Cone Cruiser (Nitrous Tank)
+- [x] NEW Siren Screamer (Straight Pipes)
+- [x] NEW Patrol Spooler (Scrap Turbo)
+- [x] REBUILD Undercover Van (Inline 4)
+- [x] NEW Rotary Ranger (Rotary Engine)
+- [x] NEW Twin Chase (Twin Turbo)
+- [x] REBUILD Turbo Interceptor (V6 Engine)
+- [x] NEW Supercharged Sheriff (Supercharger)
+- [x] NEW Riot Rig (Diesel Stack)
+- [x] REBUILD Highway Overlord (V8 Engine)
+- [x] NEW Pursuit Prime (V12 Engine)
+- [x] NEW Hover Patrol (Hover Fans, hovers)
+- [x] REBUILD Sky Marshal (Jet Engine; has a body, but no rolling wheels)
 - [x] NEW Orbital Enforcer (Rocket Booster)
 - [x] NEW Plasma Patrol (Fusion Core)
 - [x] NEW Warp Warden (Warp Drive)
 
 ### Box Truck: 16
-- [ ] REBUILD Scrap Hybrid (Nitrous Tank)
-- [ ] NEW Rattle Hauler (Straight Pipes)
-- [ ] NEW Turbo Mover (Scrap Turbo)
-- [ ] REBUILD Hauler Hemi (Inline 4)
-- [ ] NEW Rotary Rig (Rotary Engine)
-- [ ] NEW Twin Turbo Freight (Twin Turbo)
-- [ ] REBUILD Construction Cartel (V6 Engine)
-- [ ] NEW Blown Big Rig (Supercharger)
-- [ ] NEW Diesel Dynamo (Diesel Stack)
-- [ ] REBUILD Yard Destroyer (V8 Engine)
-- [ ] NEW Titan Twelve (V12 Engine)
-- [ ] NEW Cargo Hoverer (Hover Fans, hovers)
-- [ ] REBUILD Jet Hauler (Jet Engine)
+- [x] REBUILD Scrap Hybrid (Nitrous Tank)
+- [x] NEW Rattle Hauler (Straight Pipes)
+- [x] NEW Turbo Mover (Scrap Turbo)
+- [x] REBUILD Hauler Hemi (Inline 4)
+- [x] NEW Rotary Rig (Rotary Engine)
+- [x] NEW Twin Turbo Freight (Twin Turbo)
+- [x] REBUILD Construction Cartel (V6 Engine)
+- [x] NEW Blown Big Rig (Supercharger)
+- [x] NEW Diesel Dynamo (Diesel Stack)
+- [x] REBUILD Yard Destroyer (V8 Engine)
+- [x] NEW Titan Twelve (V12 Engine)
+- [x] NEW Cargo Hoverer (Hover Fans, hovers)
+- [x] REBUILD Jet Hauler (Jet Engine)
 - [x] NEW Rocket Freight (Rocket Booster)
 - [x] NEW Core Carrier (Fusion Core)
 - [x] NEW Star Freighter (Warp Drive)
 
 ### Monster Truck: 16
-- [ ] REBUILD Soccer Mom Monster (Nitrous Tank)
-- [ ] NEW Stomp Pipes (Straight Pipes)
-- [ ] NEW Crusher Turbo (Scrap Turbo)
-- [ ] REBUILD Junkyard Brute (Inline 4)
-- [ ] NEW Rotary Wrecker (Rotary Engine)
-- [ ] NEW Twin Turbo Titan (Twin Turbo)
-- [ ] REBUILD Suburban Assault (V6 Engine)
-- [ ] NEW Supercharged Smasher (Supercharger)
-- [ ] NEW Black Smoke Beast (Diesel Stack)
-- [ ] REBUILD Mangled Overlord (V8 Engine)
-- [ ] NEW V12 Leviathan (V12 Engine)
-- [ ] NEW Hover Hulk (Hover Fans, hovers)
-- [ ] REBUILD Scrapyard God (Jet Engine)
+- [x] REBUILD Soccer Mom Monster (Nitrous Tank)
+- [x] NEW Stomp Pipes (Straight Pipes)
+- [x] NEW Crusher Turbo (Scrap Turbo)
+- [x] REBUILD Junkyard Brute (Inline 4)
+- [x] NEW Rotary Wrecker (Rotary Engine)
+- [x] NEW Twin Turbo Titan (Twin Turbo)
+- [x] REBUILD Suburban Assault (V6 Engine)
+- [x] NEW Supercharged Smasher (Supercharger)
+- [x] NEW Black Smoke Beast (Diesel Stack)
+- [x] REBUILD Mangled Overlord (V8 Engine)
+- [x] NEW V12 Leviathan (V12 Engine)
+- [x] NEW Hover Hulk (Hover Fans, hovers)
+- [x] REBUILD Scrapyard God (Jet Engine)
 - [x] NEW Rocket Juggernaut (Rocket Booster)
 - [x] NEW Fusion Colossus (Fusion Core)
 - [x] NEW Starcrusher (Warp Drive)
@@ -152,7 +141,7 @@ Follow the Scrap Kart and Dirt Bike builds (e.g. `ItemModels.Loud Lemon`):
 ### Toro SVO fixes
 Both Secret cars stay about 12 studs long on purpose (the Toro was scaled up
 to match the SVO). The SVO's side decals were enlarged on 2026-09-30.
-- [ ] A lighter export (it is about 217k triangles)
-- [ ] Split the merged rear wheels and tag all wheels `WheelPivot` / `WheelRadius` so they roll
-- [ ] Test both big Secret cars on the conveyor and in a race (size and performance)
-- [ ] Keep the `LogoCover` part (hides the rear "Lamborghini" lettering) and the model name `SVO`
+- [x] A lighter export (reduced from about 217k to 89,769 triangles)
+- [x] Split the merged rear wheels and tag all wheels `WheelPivot` / `WheelRadius` so they roll
+- [x] Test both big Secret cars on the conveyor and in a race (size, wheel motion and short keyboard driving verified; sustained multiplayer/mobile performance remains untested)
+- [x] Keep the `LogoCover` part (hides the rear "Lamborghini" lettering) and the model name `SVO`

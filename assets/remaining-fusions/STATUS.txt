@@ -1,0 +1,3 @@
+52 remaining fusion variants installed in Studio. Recipe, rarity, mesh-budget, viewport, resize and wheel/hover checks passed. Sources preserve base body identity; textures use the existing MaterialVariants. Original templates backed up in ServerStorage.
+Backup: BeforeRemainingModels_1790876427
+Not published live or pushed to GitHub in this turn.

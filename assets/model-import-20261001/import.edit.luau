@@ -37,6 +37,8 @@ local function build(spec,worker)
  local d=H:JSONDecode(H:GetAsync('http://127.0.0.1:18769/model-import-20261001/data/'..spec.file))
  local m=Instance.new('Model');m.Name=d.name;m.Parent=stage
  for k,v in {DisplayName=d.name,NoseAxis='+Z',VisualRevision=d.revision,FusionBase=d.base,FusionAddon=d.addon,Rarity=d.rarity,ExpectedWheels=d.expectedWheels,AuthoredComponents=d.authoredComponents}do m:SetAttribute(k,v)end
+ if d.fitScaleToBase then m:SetAttribute('FitScaleToBase',d.fitScaleToBase)end
+ if d.reactorEffectCenter then m:SetAttribute('ReactorLocalCenter',Vector3.new(unpack(d.reactorEffectCenter)))end
  for index,g in d.parts do
   state.workers[worker]={name=d.name,part=index,total=#d.parts}
   local lo=Vector3.new(math.huge,math.huge,math.huge);local hi=-lo

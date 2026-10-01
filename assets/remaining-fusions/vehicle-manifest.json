@@ -1,0 +1,834 @@
+[
+  {
+    "name": "Afterburner GT",
+    "base": "Muscle Car",
+    "file": "Afterburner_GT.json",
+    "triangles": 77565,
+    "size": [
+      3.224,
+      1.72934,
+      5.175
+    ],
+    "parts": 111,
+    "design": "Twin quarter-panel turbines, vented carbon rocker blades, low deck aero",
+    "addon": "Jet Engine",
+    "rarity": "legendary",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Sky Marshal",
+    "base": "Cop Cruiser",
+    "file": "Sky_Marshal.json",
+    "triangles": 76182,
+    "size": [
+      3.2686,
+      2.96964,
+      5.98
+    ],
+    "parts": 114,
+    "design": "Armored rear pursuit nacelles, police roof silhouette and pushbar retained",
+    "addon": "Jet Engine",
+    "rarity": "legendary",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Jet Hauler",
+    "base": "Box Truck",
+    "file": "Jet_Hauler.json",
+    "triangles": 87466,
+    "size": [
+      4.9,
+      4.6785,
+      7.47364
+    ],
+    "parts": 125,
+    "design": "Low cargo-side jet pods on structural yokes, full box and cab remain readable",
+    "addon": "Jet Engine",
+    "rarity": "legendary",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Scrapyard God",
+    "base": "Monster Truck",
+    "file": "Scrapyard_God.json",
+    "triangles": 86660,
+    "size": [
+      3.55,
+      3.17108,
+      4.67158
+    ],
+    "parts": 83,
+    "design": "Exposed heavy bed turbine with swept fins and suspension-clear support cage",
+    "addon": "Jet Engine",
+    "rarity": "legendary",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Grand Growler",
+    "base": "Muscle Car",
+    "file": "Grand_Growler.json",
+    "triangles": 77777,
+    "size": [
+      2.666,
+      1.72934,
+      5.175
+    ],
+    "parts": 92,
+    "design": "12-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "V12 Engine",
+    "rarity": "mythic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Pursuit Prime",
+    "base": "Cop Cruiser",
+    "file": "Pursuit_Prime.json",
+    "triangles": 77162,
+    "size": [
+      3.157,
+      2.96964,
+      5.98
+    ],
+    "parts": 95,
+    "design": "12-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "V12 Engine",
+    "rarity": "mythic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Titan Twelve",
+    "base": "Box Truck",
+    "file": "Titan_Twelve.json",
+    "triangles": 87468,
+    "size": [
+      3.6,
+      4.6785,
+      7.47364
+    ],
+    "parts": 103,
+    "design": "12-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "V12 Engine",
+    "rarity": "mythic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "V12 Leviathan",
+    "base": "Monster Truck",
+    "file": "V12_Leviathan.json",
+    "triangles": 87458,
+    "size": [
+      3.55,
+      3.10626,
+      4.485
+    ],
+    "parts": 98,
+    "design": "12-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "V12 Engine",
+    "rarity": "mythic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Street Levitator",
+    "base": "Muscle Car",
+    "file": "Street_Levitator.json",
+    "triangles": 27259,
+    "size": [
+      3.118,
+      1.5021,
+      5.175
+    ],
+    "parts": 90,
+    "design": "Wheel-less four-corner ducted lift fans integrated into the chassis",
+    "addon": "Hover Fans",
+    "rarity": "mythic",
+    "expectedWheels": 0
+  },
+  {
+    "name": "Hover Patrol",
+    "base": "Cop Cruiser",
+    "file": "Hover_Patrol.json",
+    "triangles": 26126,
+    "size": [
+      3.533,
+      2.72316,
+      5.98
+    ],
+    "parts": 93,
+    "design": "Wheel-less four-corner ducted lift fans integrated into the chassis",
+    "addon": "Hover Fans",
+    "rarity": "mythic",
+    "expectedWheels": 0
+  },
+  {
+    "name": "Cargo Hoverer",
+    "base": "Box Truck",
+    "file": "Cargo_Hoverer.json",
+    "triangles": 46582,
+    "size": [
+      4.128,
+      4.34264,
+      7.475
+    ],
+    "parts": 100,
+    "design": "Wheel-less four-corner ducted lift fans integrated into the chassis",
+    "addon": "Hover Fans",
+    "rarity": "mythic",
+    "expectedWheels": 0
+  },
+  {
+    "name": "Hover Hulk",
+    "base": "Monster Truck",
+    "file": "Hover_Hulk.json",
+    "triangles": 43890,
+    "size": [
+      3.9065,
+      2.63306,
+      4.47074
+    ],
+    "parts": 92,
+    "design": "Wheel-less four-corner ducted lift fans integrated into the chassis",
+    "addon": "Hover Fans",
+    "rarity": "mythic",
+    "expectedWheels": 0
+  },
+  {
+    "name": "Chrome Sentinel",
+    "base": "Muscle Car",
+    "file": "Chrome_Sentinel.json",
+    "triangles": 76289,
+    "size": [
+      2.666,
+      1.72934,
+      5.175
+    ],
+    "parts": 80,
+    "design": "8-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "V8 Engine",
+    "rarity": "mythic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Highway Overlord",
+    "base": "Cop Cruiser",
+    "file": "Highway_Overlord.json",
+    "triangles": 75674,
+    "size": [
+      3.157,
+      2.96964,
+      5.98
+    ],
+    "parts": 83,
+    "design": "8-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "V8 Engine",
+    "rarity": "mythic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Yard Destroyer",
+    "base": "Box Truck",
+    "file": "Yard_Destroyer.json",
+    "triangles": 87466,
+    "size": [
+      3.6,
+      4.6785,
+      7.47364
+    ],
+    "parts": 91,
+    "design": "8-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "V8 Engine",
+    "rarity": "mythic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Mangled Overlord",
+    "base": "Monster Truck",
+    "file": "Mangled_Overlord.json",
+    "triangles": 87456,
+    "size": [
+      3.55,
+      3.10626,
+      4.485
+    ],
+    "parts": 86,
+    "design": "8-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "V8 Engine",
+    "rarity": "mythic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Blown Charger",
+    "base": "Muscle Car",
+    "file": "Blown_Charger.json",
+    "triangles": 79969,
+    "size": [
+      2.666,
+      2.17242,
+      5.175
+    ],
+    "parts": 82,
+    "design": "Hood-through roots blower, scoop, visible belt drive and sculpted hood cheeks",
+    "addon": "Supercharger",
+    "rarity": "epic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Supercharged Sheriff",
+    "base": "Cop Cruiser",
+    "file": "Supercharged_Sheriff.json",
+    "triangles": 79354,
+    "size": [
+      3.157,
+      2.96964,
+      5.98
+    ],
+    "parts": 85,
+    "design": "Hood-through roots blower, scoop, visible belt drive and sculpted hood cheeks",
+    "addon": "Supercharger",
+    "rarity": "epic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Blown Big Rig",
+    "base": "Box Truck",
+    "file": "Blown_Big_Rig.json",
+    "triangles": 87464,
+    "size": [
+      3.6,
+      5.20258,
+      7.47364
+    ],
+    "parts": 93,
+    "design": "Hood-through roots blower, scoop, visible belt drive and sculpted hood cheeks",
+    "addon": "Supercharger",
+    "rarity": "epic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Supercharged Smasher",
+    "base": "Monster Truck",
+    "file": "Supercharged_Smasher.json",
+    "triangles": 87458,
+    "size": [
+      3.55,
+      3.34374,
+      4.485
+    ],
+    "parts": 88,
+    "design": "Hood-through roots blower, scoop, visible belt drive and sculpted hood cheeks",
+    "addon": "Supercharger",
+    "rarity": "epic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Coal Roller",
+    "base": "Muscle Car",
+    "file": "Coal_Roller.json",
+    "triangles": 79089,
+    "size": [
+      2.666,
+      1.8048,
+      5.175
+    ],
+    "parts": 86,
+    "design": "Cab-connected twin vertical sooty stacks with manifold and heat shields",
+    "addon": "Diesel Stack",
+    "rarity": "epic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Riot Rig",
+    "base": "Cop Cruiser",
+    "file": "Riot_Rig.json",
+    "triangles": 78474,
+    "size": [
+      3.157,
+      3.08852,
+      5.98
+    ],
+    "parts": 89,
+    "design": "Cab-connected twin vertical sooty stacks with manifold and heat shields",
+    "addon": "Diesel Stack",
+    "rarity": "epic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Diesel Dynamo",
+    "base": "Box Truck",
+    "file": "Diesel_Dynamo.json",
+    "triangles": 87472,
+    "size": [
+      4.35,
+      4.85718,
+      7.47364
+    ],
+    "parts": 97,
+    "design": "Cab-connected twin vertical sooty stacks with manifold and heat shields",
+    "addon": "Diesel Stack",
+    "rarity": "epic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Black Smoke Beast",
+    "base": "Monster Truck",
+    "file": "Black_Smoke_Beast.json",
+    "triangles": 87458,
+    "size": [
+      3.55,
+      3.14072,
+      4.485
+    ],
+    "parts": 92,
+    "design": "Cab-connected twin vertical sooty stacks with manifold and heat shields",
+    "addon": "Diesel Stack",
+    "rarity": "epic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Twisted Wreck",
+    "base": "Muscle Car",
+    "file": "Twisted_Wreck.json",
+    "triangles": 74793,
+    "size": [
+      2.666,
+      1.72934,
+      5.175
+    ],
+    "parts": 70,
+    "design": "6-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "V6 Engine",
+    "rarity": "epic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Turbo Interceptor",
+    "base": "Cop Cruiser",
+    "file": "Turbo_Interceptor.json",
+    "triangles": 74178,
+    "size": [
+      3.157,
+      2.96964,
+      5.98
+    ],
+    "parts": 73,
+    "design": "6-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "V6 Engine",
+    "rarity": "epic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Construction Cartel",
+    "base": "Box Truck",
+    "file": "Construction_Cartel.json",
+    "triangles": 87464,
+    "size": [
+      3.6,
+      4.6785,
+      7.475
+    ],
+    "parts": 81,
+    "design": "6-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "V6 Engine",
+    "rarity": "epic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Suburban Assault",
+    "base": "Monster Truck",
+    "file": "Suburban_Assault.json",
+    "triangles": 87626,
+    "size": [
+      3.55,
+      3.10626,
+      4.485
+    ],
+    "parts": 76,
+    "design": "6-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "V6 Engine",
+    "rarity": "epic",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Rotor Rebel",
+    "base": "Muscle Car",
+    "file": "Rotor_Rebel.json",
+    "triangles": 82033,
+    "size": [
+      2.666,
+      1.89628,
+      5.175
+    ],
+    "parts": 46,
+    "design": "Compact exposed rotary with rotor inspection window and blue exhaust headers",
+    "addon": "Rotary Engine",
+    "rarity": "rare",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Rotary Ranger",
+    "base": "Cop Cruiser",
+    "file": "Rotary_Ranger.json",
+    "triangles": 81418,
+    "size": [
+      3.157,
+      2.96964,
+      5.98
+    ],
+    "parts": 49,
+    "design": "Compact exposed rotary with rotor inspection window and blue exhaust headers",
+    "addon": "Rotary Engine",
+    "rarity": "rare",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Rotary Rig",
+    "base": "Box Truck",
+    "file": "Rotary_Rig.json",
+    "triangles": 87462,
+    "size": [
+      3.6,
+      4.92642,
+      7.47364
+    ],
+    "parts": 57,
+    "design": "Compact exposed rotary with rotor inspection window and blue exhaust headers",
+    "addon": "Rotary Engine",
+    "rarity": "rare",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Rotary Wrecker",
+    "base": "Monster Truck",
+    "file": "Rotary_Wrecker.json",
+    "triangles": 87454,
+    "size": [
+      3.55,
+      3.10626,
+      4.485
+    ],
+    "parts": 52,
+    "design": "Compact exposed rotary with rotor inspection window and blue exhaust headers",
+    "addon": "Rotary Engine",
+    "rarity": "rare",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Twin Turbo Thunder",
+    "base": "Muscle Car",
+    "file": "Twin_Turbo_Thunder.json",
+    "triangles": 77479,
+    "size": [
+      2.666,
+      1.73234,
+      5.175
+    ],
+    "parts": 109,
+    "design": "Paired exposed hood turbos and crossover cooling circuit",
+    "addon": "Twin Turbo",
+    "rarity": "rare",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Twin Chase",
+    "base": "Cop Cruiser",
+    "file": "Twin_Chase.json",
+    "triangles": 76864,
+    "size": [
+      3.157,
+      2.96964,
+      5.98
+    ],
+    "parts": 112,
+    "design": "Paired exposed hood turbos and crossover cooling circuit",
+    "addon": "Twin Turbo",
+    "rarity": "rare",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Twin Turbo Freight",
+    "base": "Box Truck",
+    "file": "Twin_Turbo_Freight.json",
+    "triangles": 87466,
+    "size": [
+      3.6,
+      4.76248,
+      7.47364
+    ],
+    "parts": 120,
+    "design": "Paired exposed hood turbos and crossover cooling circuit",
+    "addon": "Twin Turbo",
+    "rarity": "rare",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Twin Turbo Titan",
+    "base": "Monster Truck",
+    "file": "Twin_Turbo_Titan.json",
+    "triangles": 87456,
+    "size": [
+      3.55,
+      3.10626,
+      4.485
+    ],
+    "parts": 115,
+    "design": "Paired exposed hood turbos and crossover cooling circuit",
+    "addon": "Twin Turbo",
+    "rarity": "rare",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Undercover Muscle",
+    "base": "Muscle Car",
+    "file": "Undercover_Muscle.json",
+    "triangles": 73861,
+    "size": [
+      2.666,
+      1.72934,
+      5.175
+    ],
+    "parts": 63,
+    "design": "4-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "Inline 4",
+    "rarity": "rare",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Undercover Van",
+    "base": "Cop Cruiser",
+    "file": "Undercover_Van.json",
+    "triangles": 73246,
+    "size": [
+      3.157,
+      2.96964,
+      5.98
+    ],
+    "parts": 66,
+    "design": "4-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "Inline 4",
+    "rarity": "rare",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Hauler Hemi",
+    "base": "Box Truck",
+    "file": "Hauler_Hemi.json",
+    "triangles": 87464,
+    "size": [
+      3.6,
+      4.6785,
+      7.475
+    ],
+    "parts": 74,
+    "design": "4-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "Inline 4",
+    "rarity": "rare",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Junkyard Brute",
+    "base": "Monster Truck",
+    "file": "Junkyard_Brute.json",
+    "triangles": 86694,
+    "size": [
+      3.55,
+      3.10626,
+      4.485
+    ],
+    "parts": 69,
+    "design": "4-cylinder exposed mechanical conversion, individual trumpets and engine surround",
+    "addon": "Inline 4",
+    "rarity": "rare",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Rumble Pony",
+    "base": "Muscle Car",
+    "file": "Rumble_Pony.json",
+    "triangles": 73445,
+    "size": [
+      2.89532,
+      1.72934,
+      5.175
+    ],
+    "parts": 49,
+    "design": "Full-length exposed side exhaust with titanium blued open tips and brackets",
+    "addon": "Straight Pipes",
+    "rarity": "uncommon",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Siren Screamer",
+    "base": "Cop Cruiser",
+    "file": "Siren_Screamer.json",
+    "triangles": 72830,
+    "size": [
+      3.41572,
+      2.96964,
+      5.98
+    ],
+    "parts": 52,
+    "design": "Full-length exposed side exhaust with titanium blued open tips and brackets",
+    "addon": "Straight Pipes",
+    "rarity": "uncommon",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Rattle Hauler",
+    "base": "Box Truck",
+    "file": "Rattle_Hauler.json",
+    "triangles": 87464,
+    "size": [
+      3.94482,
+      4.6785,
+      7.475
+    ],
+    "parts": 59,
+    "design": "Full-length exposed side exhaust with titanium blued open tips and brackets",
+    "addon": "Straight Pipes",
+    "rarity": "uncommon",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Stomp Pipes",
+    "base": "Monster Truck",
+    "file": "Stomp_Pipes.json",
+    "triangles": 86278,
+    "size": [
+      3.84524,
+      3.10626,
+      4.485
+    ],
+    "parts": 55,
+    "design": "Full-length exposed side exhaust with titanium blued open tips and brackets",
+    "addon": "Straight Pipes",
+    "rarity": "uncommon",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Boost Stallion",
+    "base": "Muscle Car",
+    "file": "Boost_Stallion.json",
+    "triangles": 76858,
+    "size": [
+      2.67718,
+      1.76994,
+      5.175
+    ],
+    "parts": 91,
+    "design": "Oversized exposed single hood turbo with repaired charge hose",
+    "addon": "Scrap Turbo",
+    "rarity": "uncommon",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Patrol Spooler",
+    "base": "Cop Cruiser",
+    "file": "Patrol_Spooler.json",
+    "triangles": 76243,
+    "size": [
+      3.157,
+      2.96964,
+      5.98
+    ],
+    "parts": 94,
+    "design": "Oversized exposed single hood turbo with repaired charge hose",
+    "addon": "Scrap Turbo",
+    "rarity": "uncommon",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Turbo Mover",
+    "base": "Box Truck",
+    "file": "Turbo_Mover.json",
+    "triangles": 87465,
+    "size": [
+      3.6,
+      4.80008,
+      7.47364
+    ],
+    "parts": 102,
+    "design": "Oversized exposed single hood turbo with repaired charge hose",
+    "addon": "Scrap Turbo",
+    "rarity": "uncommon",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Crusher Turbo",
+    "base": "Monster Truck",
+    "file": "Crusher_Turbo.json",
+    "triangles": 87459,
+    "size": [
+      3.55,
+      3.10626,
+      4.485
+    ],
+    "parts": 97,
+    "design": "Oversized exposed single hood turbo with repaired charge hose",
+    "addon": "Scrap Turbo",
+    "rarity": "uncommon",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Junk Mashup",
+    "base": "Muscle Car",
+    "file": "Junk_Mashup.json",
+    "triangles": 72021,
+    "size": [
+      2.666,
+      1.72934,
+      5.175
+    ],
+    "parts": 47,
+    "design": "Twin strapped nitrous bottles in rear deck recesses with routed braided feeds",
+    "addon": "Nitrous Tank",
+    "rarity": "uncommon",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Cone Cruiser",
+    "base": "Cop Cruiser",
+    "file": "Cone_Cruiser.json",
+    "triangles": 71406,
+    "size": [
+      3.157,
+      2.96964,
+      5.98
+    ],
+    "parts": 50,
+    "design": "Twin strapped nitrous bottles in rear deck recesses with routed braided feeds",
+    "addon": "Nitrous Tank",
+    "rarity": "uncommon",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Scrap Hybrid",
+    "base": "Box Truck",
+    "file": "Scrap_Hybrid.json",
+    "triangles": 87460,
+    "size": [
+      4.32,
+      4.6785,
+      7.475
+    ],
+    "parts": 57,
+    "design": "Twin strapped nitrous bottles in rear deck recesses with routed braided feeds",
+    "addon": "Nitrous Tank",
+    "rarity": "uncommon",
+    "expectedWheels": 4
+  },
+  {
+    "name": "Soccer Mom Monster",
+    "base": "Monster Truck",
+    "file": "Soccer_Mom_Monster.json",
+    "triangles": 84854,
+    "size": [
+      3.55,
+      3.10626,
+      4.485
+    ],
+    "parts": 53,
+    "design": "Twin strapped nitrous bottles in rear deck recesses with routed braided feeds",
+    "addon": "Nitrous Tank",
+    "rarity": "uncommon",
+    "expectedWheels": 4
+  }
+]

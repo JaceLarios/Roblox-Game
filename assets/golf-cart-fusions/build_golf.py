@@ -125,7 +125,7 @@ manifest=[]
 for index,spec in enumerate(designs):
  name=spec['name'];objects=MODELS[name];points=[v.co for o in objects for v in o.data.vertices]
  lo=Vector([min(v[i]for v in points)for i in range(3)]);hi=Vector([max(v[i]for v in points)for i in range(3)]);center=(lo+hi)/2
- scale=1.18;size=(hi-lo)*scale
+ scale=1.18*1.2;size=(hi-lo)*scale
  groups={};counters=defaultdict(int)
  for o in objects:
   for v in o.data.vertices:v.co=(v.co-center)*scale
@@ -135,6 +135,7 @@ for index,spec in enumerate(designs):
   g=groups[key];g['components'].append(o.name)
   if 'WheelPivot' in o:
    wp=(Vector(o['WheelPivot'])-center)*scale;g['wheel']={'id':o['WheelId'],'pivot':[wp.x,wp.z,-wp.y],'radius':o['WheelRadius']*scale}
+   o['WheelPivot']=list(wp);o['WheelRadius']*=scale
   lookup={}
   for tri in me.loop_triangles:
    vv=[me.vertices[i].co for i in tri.vertices];normal=(vv[1]-vv[0]).cross(vv[2]-vv[0])
@@ -152,10 +153,12 @@ for index,spec in enumerate(designs):
   centered=[[round(v[i]-mid[i],4)for i in range(3)]for v in g['vertices']]
   g['geometryHash']=hashlib.sha256(json.dumps([[[round(x,3)+0 for x in v]for v in centered],[[round(x,3)+0 for x in v]for v in g['normals']],g['triangles']],separators=(',',':')).encode()).hexdigest()
  data={'name':name,'displayName':name,'rarity':spec['rarity'],'addon':spec['addon'],'targetSize':[size.x,size.z,size.y],'parts':list(groups.values()),'authoredComponents':len(objects),'noseAxis':'+Z','layout':spec.get('layout','')}
+ data['fitScaleToBase']=1.2
  if name=='Atomic Albatross':
   ec=(Vector((0,-1.05,1.16))-center)*scale;data['reactorEffectCenter']=[ec.x,ec.z,-ec.y]
  file=name.replace(' ','_')+'.json';(OUT/file).write_text(json.dumps(data,separators=(',',':')))
  manifest.append({'name':name,'file':file,'rarity':spec['rarity'],'size':data['targetSize'],'parts':len(groups),'triangles':sum(len(g['triangles'])for g in groups.values())})
+ bpy.data.collections[name]['FitScaleToBase']=1.2
  for o in objects:o.location=Vector((index%3*9,index//3*10,0))
 (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2))
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'Golf-Cart-Recognizable-15.blend'))

@@ -1,0 +1,116 @@
+[
+  {
+    "name": "Body",
+    "triangles": 197926,
+    "modifiers": []
+  },
+  {
+    "name": "DoorFrLeft",
+    "triangles": 8079,
+    "modifiers": [
+      [
+        "Mirror",
+        "MIRROR"
+      ]
+    ]
+  },
+  {
+    "name": "EngineHood",
+    "triangles": 12584,
+    "modifiers": []
+  },
+  {
+    "name": "Headlights",
+    "triangles": 13510,
+    "modifiers": []
+  },
+  {
+    "name": "Trunk",
+    "triangles": 9370,
+    "modifiers": []
+  },
+  {
+    "name": "Undercarriage",
+    "triangles": 2452,
+    "modifiers": []
+  },
+  {
+    "name": "WheelFrLeft",
+    "triangles": 26351,
+    "modifiers": []
+  },
+  {
+    "name": "BrakeFrLeft",
+    "triangles": 2306,
+    "modifiers": []
+  },
+  {
+    "name": "BrakeFrRight",
+    "triangles": 2306,
+    "modifiers": []
+  },
+  {
+    "name": "WheelRearLeft",
+    "triangles": 26351,
+    "modifiers": [
+      [
+        "Mirror",
+        "MIRROR"
+      ]
+    ]
+  },
+  {
+    "name": "BrakeRearLeft",
+    "triangles": 1966,
+    "modifiers": []
+  },
+  {
+    "name": "Taillights",
+    "triangles": 136564,
+    "modifiers": []
+  },
+  {
+    "name": "WheelFrLeft.001",
+    "triangles": 26351,
+    "modifiers": []
+  },
+  {
+    "name": "Body.001",
+    "triangles": 140,
+    "modifiers": [
+      [
+        "Mirror",
+        "MIRROR"
+      ]
+    ]
+  },
+  {
+    "name": "Red SVO Left",
+    "triangles": 5364,
+    "modifiers": []
+  },
+  {
+    "name": "Red SVO Right",
+    "triangles": 5364,
+    "modifiers": []
+  },
+  {
+    "name": "Carbon Roof Scoop",
+    "triangles": 224,
+    "modifiers": [
+      [
+        "Carbon shell thickness",
+        "SOLIDIFY"
+      ],
+      [
+        "Rounded intake edge",
+        "BEVEL"
+      ]
+    ]
+  },
+  {
+    "name": "Recessed scoop throat",
+    "triangles": 23,
+    "modifiers": []
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-01",
+  "bothSecretCarsPassed": true,
+  "conveyor": [
+    {
+      "wheelPartsChanged": 24,
+      "name": "Toro",
+      "moved": 111.95374298095703
+    },
+    {
+      "wheelPartsChanged": 18,
+      "name": "Toro SVO",
+      "moved": 111.9537353515625
+    }
+  ],
+  "races": {
+    "Toro": {
+      "speed": 0.003392739687114954,
+      "distance": 265.83563232421875,
+      "wheelPartsChanged": 24,
+      "seated": true
+    },
+    "Toro SVO": {
+      "wheelPartsChanged": 18,
+      "distance": 266.134521484375,
+      "seated": true,
+      "lateral": 0.543701171875
+    }
+  },
+  "scope": "Live conveyor movement and client wheel rotation; short real-keyboard race driving. Not full race completion, multiplayer/mobile performance, or end-to-end inventory/fusion transactions.",
+  "knownOutputIssue": "Existing animation 122110574377010 lacks experience permission; no new model errors observed.",
+  "dataSafety": "Disposable Play-only car-selection and reward hooks; no ownership grants or player data reset. Normal game passive systems ran during Play."
+}

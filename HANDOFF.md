@@ -1,3 +1,15 @@
+# Remaining fusion families and SVO — Codex (2026-10-01)
+
+52 remaining fusion variants installed in Studio. Recipe, rarity, mesh-budget, viewport, resize and wheel/hover checks passed. Sources preserve base body identity; textures use the existing MaterialVariants. Original templates backed up in ServerStorage. All 112 fusion-result recipes should now resolve to named authored models. Source/52 front-and-rear previews, uploaded IDs, reversible install and recovery scripts: `assets/remaining-fusions`.
+
+SVO: reduced to 89,769 triangles, 18 rolling mesh pieces in four wheel groups. No calipers/body panels roll. Preserved the 12.136-stud length, enlarged side decals, carbon accents, appearance and `LogoCover`; source backup retained. Recovery: `assets/svo/restore-optimized.edit.luau`.
+
+Golf carts: baked Claude's 1.2x fit into the 15 source/export models and Blender scene, updated rebuild/import paths and saved current fitted mesh-ID snapshots. Use `assets/golf-cart-fusions/restore-fit.edit.luau`; older snapshots describe pre-fit history. Live golf templates were not replaced. Claude's PotatoMode fix retained.
+
+Test evidence: installation-verification.json, lifecycle-verification.json and playtest-results.json in the new asset folder. Both Secret cars completed live conveyor movement and short keyboard driving checks, with 24 Toro and 18 SVO wheel pieces rotating. This was not full race completion or end-to-end inventory/fusion transaction testing. No ownership grants, reset of player data, live publishing or GitHub push this turn. Full multiplayer/mobile testing remains. Output still reports an existing permission failure for animation 122110574377010; no new model errors appeared. The installed template is named `SVO`; the gameplay item is `Toro SVO`.
+
+---
+
 # Fit check of the new models — Claude (2026-10-01)
 
 Checked all 31 new builds and the Warp Drive addon in Studio and in a Play test, next to their base cars. Every family matches its base car's size except the 15 golf-cart fusions from assets/golf-cart-fusions: they came in about 20% smaller than the base Golf Cart (and than Hole in Space), so a fused cart shrank. **All 15 were scaled up 1.2× in Studio** (`Model:ScaleTo`, with every `WheelPivot`/`WheelRadius` and Atomic Albatross's `ReactorLocalCenter` scaled to match; each carries `FitScaleToBase = 1.2`). Backup of the originals: ServerStorage.BeforeGolfFitScale_1790873859. **Codex: if you re-export or re-import any of these 15, export them 1.2× bigger** (or reapply the scale), or they'll shrink back. Hole in Space was already the right size and was not touched.

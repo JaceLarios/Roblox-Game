@@ -7,7 +7,7 @@ local hover=require(game.ReplicatedStorage.HoverVisuals)
 local templates=game.ReplicatedStorage.ItemModels
 local models=stage:GetChildren();assert(#models==25,'Expected 25 models')
 -- Authored core position, retained for the existing wheel-less reactor hover controller.
-stage:WaitForChild('Atomic Albatross'):SetAttribute('ReactorLocalCenter',Vector3.new(0,-.410050094127655,1.11804974079132))
+stage:WaitForChild('Atomic Albatross'):SetAttribute('ReactorLocalCenter',Vector3.new(0,-.410050094127655,1.11804974079132)*1.2)
 for _,m in models do
  assert(m:GetAttribute('StagingComplete'),m.Name)
  assert(recipes.Fuse(m:GetAttribute('FusionBase'),m:GetAttribute('FusionAddon'))==m.Name,'Recipe mismatch '..m.Name)
