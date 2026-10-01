@@ -1,0 +1,28 @@
+[
+  {
+    "name": "Hole in Space",
+    "base": "Golf Cart",
+    "file": "Hole_in_Space.json",
+    "triangles": 82422,
+    "size": [
+      3.4929,
+      4.33577,
+      5.865
+    ],
+    "parts": 136,
+    "design": "Pearl canopy, violet sports cowl and twin rear warp battery towers"
+  },
+  {
+    "name": "Star Freighter",
+    "base": "Box Truck",
+    "file": "Star_Freighter.json",
+    "triangles": 82448,
+    "size": [
+      3.97768,
+      4.61981,
+      7.475
+    ],
+    "parts": 212,
+    "design": "Orange tractor cab with an open armored reactor cargo chamber"
+  }
+]

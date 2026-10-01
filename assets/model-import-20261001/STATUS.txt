@@ -1,0 +1,2 @@
+25 models installed. Recipe, rarity, geometry budget, viewport, resize and wheel/hover tests passed in Edit mode. Full playtest remains. Not published or pushed.
+Backup: BeforeAllModels_1790868092

@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Warp Drive",
+    "file": "Warp_Drive.json",
+    "parts": 8,
+    "triangles": 22084,
+    "wheels": 0
+  },
+  {
+    "name": "Warp Wreck",
+    "file": "Warp_Wreck.json",
+    "parts": 37,
+    "triangles": 80036,
+    "wheels": 4
+  },
+  {
+    "name": "Wormhole Wheelie",
+    "file": "Wormhole_Wheelie.json",
+    "parts": 21,
+    "triangles": 54110,
+    "wheels": 2
+  },
+  {
+    "name": "Hole in Space",
+    "file": "Hole_in_Space.json",
+    "parts": 31,
+    "triangles": 85630,
+    "wheels": 4
+  },
+  {
+    "name": "Lightspeed Legend",
+    "file": "Lightspeed_Legend.json",
+    "parts": 29,
+    "triangles": 85477,
+    "wheels": 4
+  },
+  {
+    "name": "Warp Warden",
+    "file": "Warp_Warden.json",
+    "parts": 29,
+    "triangles": 77110,
+    "wheels": 4
+  },
+  {
+    "name": "Star Freighter",
+    "file": "Star_Freighter.json",
+    "parts": 31,
+    "triangles": 87470,
+    "wheels": 4
+  },
+  {
+    "name": "Starcrusher",
+    "file": "Starcrusher.json",
+    "parts": 34,
+    "triangles": 87454,
+    "wheels": 4
+  }
+]

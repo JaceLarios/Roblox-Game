@@ -1,0 +1,5 @@
+INSTALLED 2026-10-01: Warp Drive plus seven Warp vehicles.
+Exact recipes, geometry budget (<90k each), wheel tags, viewport cloning, resizing and wheel movement checked in Edit mode.
+No inventory changes. Full pickup/race playtest remains. HTTP restored to false.
+installed-models.json and restore.edit.luau preserve uploaded meshes/material references.
+No publication or GitHub push.

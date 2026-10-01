@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Rocket Stallion",
+    "base": "Muscle Car",
+    "file": "Rocket_Stallion.json",
+    "triangles": 87109,
+    "size": [
+      3.41456,
+      1.72934,
+      5.175
+    ],
+    "parts": 63,
+    "design": "Rear-quarter rocket tubes, carbon sill ducts, swept stabilizer"
+  },
+  {
+    "name": "Fusion Fury",
+    "base": "Muscle Car",
+    "file": "Fusion_Fury.json",
+    "triangles": 87434,
+    "size": [
+      3.06526,
+      2.3306,
+      5.175
+    ],
+    "parts": 53,
+    "design": "Hood-integrated reactor and paired rocker power channels"
+  },
+  {
+    "name": "Orbital Enforcer",
+    "base": "Cop Cruiser",
+    "file": "Orbital_Enforcer.json",
+    "triangles": 86098,
+    "size": [
+      3.36042,
+      2.96964,
+      5.98
+    ],
+    "parts": 64,
+    "design": "Twin rear pursuit boosters, dorsal patrol stabilizer"
+  },
+  {
+    "name": "Plasma Patrol",
+    "base": "Cop Cruiser",
+    "file": "Plasma_Patrol.json",
+    "triangles": 87450,
+    "size": [
+      3.36042,
+      3.02544,
+      5.98
+    ],
+    "parts": 54,
+    "design": "Recessed hood reactor, armored flank power rails"
+  },
+  {
+    "name": "Rocket Freight",
+    "base": "Box Truck",
+    "file": "Rocket_Freight.json",
+    "triangles": 87460,
+    "size": [
+      5.83482,
+      4.8411,
+      7.475
+    ],
+    "parts": 72,
+    "design": "Twin cargo-mounted launch pods with structural yokes"
+  },
+  {
+    "name": "Core Carrier",
+    "base": "Box Truck",
+    "file": "Core_Carrier.json",
+    "triangles": 87462,
+    "size": [
+      4.6358,
+      6.0671,
+      7.475
+    ],
+    "parts": 60,
+    "design": "Exposed rooftop power plant with side cooling racks"
+  },
+  {
+    "name": "Rocket Juggernaut",
+    "base": "Monster Truck",
+    "file": "Rocket_Juggernaut.json",
+    "triangles": 87450,
+    "size": [
+      3.50506,
+      3.6069,
+      4.485
+    ],
+    "parts": 56,
+    "design": "Bed-mounted heavy rocket with rear outrigger rails"
+  },
+  {
+    "name": "Fusion Colossus",
+    "base": "Monster Truck",
+    "file": "Fusion_Colossus.json",
+    "triangles": 87458,
+    "size": [
+      3.55,
+      3.65314,
+      4.485
+    ],
+    "parts": 57,
+    "design": "Bed reactor, external roll cage and fender capacitor banks"
+  }
+]

@@ -1,0 +1,11 @@
+[
+  {
+    "name": "Warp Drive",
+    "file": "Warp_Drive.json",
+    "rarity": "legendary",
+    "maxDimension": 4.5,
+    "parts": 8,
+    "components": 137,
+    "triangles": 22084
+  }
+]

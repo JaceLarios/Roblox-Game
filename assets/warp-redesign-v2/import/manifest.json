@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Warp Wreck",
+    "base": "Rusted Sedan",
+    "file": "Warp_Wreck.json",
+    "triangles": 82844,
+    "size": [
+      3.3,
+      2.3,
+      4.945
+    ],
+    "parts": 37,
+    "design": "Slingshot drag kart with nose reactor, swept accelerator rails and rear stabilizers",
+    "wheels": 4
+  },
+  {
+    "name": "Wormhole Wheelie",
+    "base": "Dirt Bike",
+    "file": "Wormhole_Wheelie.json",
+    "triangles": 48382,
+    "size": [
+      2.0,
+      2.56428,
+      4.485
+    ],
+    "parts": 21,
+    "design": "Landspeed bike with under-saddle warp tunnel, sculpted fairings and tail nozzle",
+    "wheels": 2
+  },
+  {
+    "name": "Hole in Space",
+    "base": "Golf Cart",
+    "file": "Hole_in_Space.json",
+    "triangles": 82458,
+    "size": [
+      3.1472,
+      4.73904,
+      5.865
+    ],
+    "parts": 31,
+    "design": "Twin canopy accelerator pods, front-cowl generator and illuminated running boards",
+    "wheels": 4
+  },
+  {
+    "name": "Warp Warden",
+    "base": "Cop Cruiser",
+    "file": "Warp_Warden.json",
+    "triangles": 86254,
+    "size": [
+      3.1,
+      2.96964,
+      5.98
+    ],
+    "parts": 29,
+    "design": "Armored pursuit interceptor with twin hood accelerators and swept rear wing",
+    "wheels": 4
+  },
+  {
+    "name": "Star Freighter",
+    "base": "Box Truck",
+    "file": "Star_Freighter.json",
+    "triangles": 84346,
+    "size": [
+      4.36054,
+      4.43088,
+      7.475
+    ],
+    "parts": 31,
+    "design": "Rear cargo portal, four-rib cargo exoskeleton and long side engine rails",
+    "wheels": 4
+  },
+  {
+    "name": "Starcrusher",
+    "base": "Monster Truck",
+    "file": "Starcrusher.json",
+    "triangles": 82458,
+    "size": [
+      3.55,
+      3.10216,
+      4.485
+    ],
+    "parts": 34,
+    "design": "Hydraulic cyclone cage gripping a horizontal bed reactor and flared armored shoulders",
+    "wheels": 4
+  }
+]

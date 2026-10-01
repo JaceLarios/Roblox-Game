@@ -1,0 +1,93 @@
+[
+  {
+    "name": "Warp Wreck",
+    "base": "Rusted Sedan",
+    "file": "Warp_Wreck.json",
+    "triangles": 80036,
+    "size": [
+      3.3,
+      3.051,
+      4.945
+    ],
+    "parts": 92,
+    "design": "Rear portal roll cage with shoulder pods"
+  },
+  {
+    "name": "Wormhole Wheelie",
+    "base": "Dirt Bike",
+    "file": "Wormhole_Wheelie.json",
+    "triangles": 54110,
+    "size": [
+      2.0,
+      2.56428,
+      4.485
+    ],
+    "parts": 119,
+    "design": "Twin side field discs with a fork-linked flux spine"
+  },
+  {
+    "name": "Hole in Space",
+    "base": "Golf Cart",
+    "file": "Hole_in_Space.json",
+    "triangles": 85630,
+    "size": [
+      3.1,
+      4.80624,
+      5.865
+    ],
+    "parts": 128,
+    "design": "Canopy field hoops and under-seat capacitor rails"
+  },
+  {
+    "name": "Lightspeed Legend",
+    "base": "Muscle Car",
+    "file": "Lightspeed_Legend.json",
+    "triangles": 85477,
+    "size": [
+      3.562,
+      1.89566,
+      5.175
+    ],
+    "parts": 129,
+    "design": "Twin rear-quarter induction pods and low aero"
+  },
+  {
+    "name": "Warp Warden",
+    "base": "Cop Cruiser",
+    "file": "Warp_Warden.json",
+    "triangles": 77110,
+    "size": [
+      3.0691,
+      3.88156,
+      5.98
+    ],
+    "parts": 85,
+    "design": "Patrol roof portal and reinforced pursuit bumpers"
+  },
+  {
+    "name": "Star Freighter",
+    "base": "Box Truck",
+    "file": "Star_Freighter.json",
+    "triangles": 87470,
+    "size": [
+      4.3408,
+      4.67834,
+      7.475
+    ],
+    "parts": 137,
+    "design": "Cargo-side transit gates and cab power conduits"
+  },
+  {
+    "name": "Starcrusher",
+    "base": "Monster Truck",
+    "file": "Starcrusher.json",
+    "triangles": 87454,
+    "size": [
+      3.55,
+      3.66104,
+      4.485
+    ],
+    "parts": 89,
+    "design": "Bed-mounted split gate with armored fender feeds"
+  }
+]

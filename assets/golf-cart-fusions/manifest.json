@@ -1,0 +1,182 @@
+[
+  {
+    "name": "Cart Rocket",
+    "file": "Cart_Rocket.json",
+    "rarity": "uncommon",
+    "size": [
+      3.258687973022461,
+      3.1686007976531982,
+      4.6786274909973145
+    ],
+    "parts": 35,
+    "triangles": 75518
+  },
+  {
+    "name": "Putter Popper",
+    "file": "Putter_Popper.json",
+    "rarity": "uncommon",
+    "size": [
+      3.2114880084991455,
+      3.3338301181793213,
+      4.8379225730896
+    ],
+    "parts": 34,
+    "triangles": 79997
+  },
+  {
+    "name": "Turbo Tee",
+    "file": "Turbo_Tee.json",
+    "rarity": "uncommon",
+    "size": [
+      3.4453635215759277,
+      3.332674026489258,
+      4.886886119842529
+    ],
+    "parts": 31,
+    "triangles": 77418
+  },
+  {
+    "name": "Lifted Cart",
+    "file": "Lifted_Cart.json",
+    "rarity": "rare",
+    "size": [
+      3.4670989513397217,
+      3.628912925720215,
+      5.014595985412598
+    ],
+    "parts": 31,
+    "triangles": 93718
+  },
+  {
+    "name": "Rotary Roller",
+    "file": "Rotary_Roller.json",
+    "rarity": "rare",
+    "size": [
+      3.4288437366485596,
+      3.074188709259033,
+      4.816099643707275
+    ],
+    "parts": 31,
+    "triangles": 76282
+  },
+  {
+    "name": "Double Bogey",
+    "file": "Double_Bogey.json",
+    "rarity": "rare",
+    "size": [
+      3.589087724685669,
+      3.251218557357788,
+      5.052093982696533
+    ],
+    "parts": 31,
+    "triangles": 85420
+  },
+  {
+    "name": "Fairway Fighter",
+    "file": "Fairway_Fighter.json",
+    "rarity": "epic",
+    "size": [
+      3.5418877601623535,
+      3.0742006301879883,
+      5.046199321746826
+    ],
+    "parts": 30,
+    "triangles": 81278
+  },
+  {
+    "name": "Sand Trap Supreme",
+    "file": "Sand_Trap_Supreme.json",
+    "rarity": "epic",
+    "size": [
+      3.620694398880005,
+      3.050760269165039,
+      5.64039945602417
+    ],
+    "parts": 34,
+    "triangles": 87258
+  },
+  {
+    "name": "Diesel Driver",
+    "file": "Diesel_Driver.json",
+    "rarity": "epic",
+    "size": [
+      3.633927583694458,
+      3.7436091899871826,
+      5.269343852996826
+    ],
+    "parts": 27,
+    "triangles": 90445
+  },
+  {
+    "name": "Cartpocalypse",
+    "file": "Cartpocalypse.json",
+    "rarity": "mythic",
+    "size": [
+      3.8855037689208984,
+      3.1688191890716553,
+      5.3098907470703125
+    ],
+    "parts": 30,
+    "triangles": 86284
+  },
+  {
+    "name": "Hole in Twelve",
+    "file": "Hole_in_Twelve.json",
+    "rarity": "mythic",
+    "size": [
+      3.4238877296447754,
+      3.2748124599456787,
+      5.587224960327148
+    ],
+    "parts": 31,
+    "triangles": 95026
+  },
+  {
+    "name": "Hover Caddy",
+    "file": "Hover_Caddy.json",
+    "rarity": "mythic",
+    "size": [
+      4.066279888153076,
+      2.991299867630005,
+      4.5542097091674805
+    ],
+    "parts": 14,
+    "triangles": 22273
+  },
+  {
+    "name": "THE LAWNLORD",
+    "file": "THE_LAWNLORD.json",
+    "rarity": "legendary",
+    "size": [
+      3.47108793258667,
+      3.900224208831787,
+      5.156524181365967
+    ],
+    "parts": 39,
+    "triangles": 79199
+  },
+  {
+    "name": "Eagle Launcher",
+    "file": "Eagle_Launcher.json",
+    "rarity": "legendary",
+    "size": [
+      3.8425519466400146,
+      3.2040538787841797,
+      5.252687931060791
+    ],
+    "parts": 38,
+    "triangles": 91001
+  },
+  {
+    "name": "Atomic Albatross",
+    "file": "Atomic_Albatross.json",
+    "rarity": "legendary",
+    "size": [
+      3.5281999111175537,
+      3.1564998626708984,
+      4.4899001121521
+    ],
+    "parts": 14,
+    "triangles": 18442
+  }
+]

@@ -48,31 +48,31 @@ Follow the Scrap Kart and Dirt Bike builds (e.g. `ItemModels.Loud Lemon`):
 "NEW" = no model yet. "REBUILD" = has an old single-mesh model.
 
 ### Addon
-- [ ] **Warp Drive** (Legendary, Day 7 exclusive; currently shows the Fusion Core)
+- [x] **Warp Drive** (Legendary, Day 7 exclusive; currently shows the Fusion Core)
 
 ### Scrap Kart (Rusted Sedan): 1
-- [ ] NEW Warp Wreck (Warp Drive)
+- [x] NEW Warp Wreck (Warp Drive)
 
 ### Dirt Bike: 1
-- [ ] NEW Wormhole Wheelie (Warp Drive)
+- [x] NEW Wormhole Wheelie (Warp Drive)
 
 ### Golf Cart: 16
-- [ ] REBUILD Cart Rocket (Nitrous Tank)
-- [ ] NEW Putter Popper (Straight Pipes)
-- [ ] NEW Turbo Tee (Scrap Turbo)
-- [ ] REBUILD Lifted Cart (Inline 4)
-- [ ] NEW Rotary Roller (Rotary Engine)
-- [ ] NEW Double Bogey (Twin Turbo)
-- [ ] REBUILD Fairway Fighter (V6 Engine)
-- [ ] NEW Sand Trap Supreme (Supercharger)
-- [ ] NEW Diesel Driver (Diesel Stack)
-- [ ] REBUILD Cartpocalypse (V8 Engine)
-- [ ] NEW Hole in Twelve (V12 Engine)
-- [ ] NEW Hover Caddy (Hover Fans, hovers)
-- [ ] REBUILD THE LAWNLORD (Jet Engine)
-- [ ] NEW Eagle Launcher (Rocket Booster)
-- [ ] NEW Atomic Albatross (Fusion Core)
-- [ ] NEW Hole in Space (Warp Drive)
+- [x] REBUILD Cart Rocket (Nitrous Tank)
+- [x] NEW Putter Popper (Straight Pipes)
+- [x] NEW Turbo Tee (Scrap Turbo)
+- [x] REBUILD Lifted Cart (Inline 4)
+- [x] NEW Rotary Roller (Rotary Engine)
+- [x] NEW Double Bogey (Twin Turbo)
+- [x] REBUILD Fairway Fighter (V6 Engine)
+- [x] NEW Sand Trap Supreme (Supercharger)
+- [x] NEW Diesel Driver (Diesel Stack)
+- [x] REBUILD Cartpocalypse (V8 Engine)
+- [x] NEW Hole in Twelve (V12 Engine)
+- [x] NEW Hover Caddy (Hover Fans, hovers)
+- [x] REBUILD THE LAWNLORD (Jet Engine)
+- [x] NEW Eagle Launcher (Rocket Booster)
+- [x] NEW Atomic Albatross (Fusion Core)
+- [x] NEW Hole in Space (Warp Drive)
 
 ### Muscle Car: 16
 - [ ] REBUILD Junk Mashup (Nitrous Tank)
@@ -88,9 +88,9 @@ Follow the Scrap Kart and Dirt Bike builds (e.g. `ItemModels.Loud Lemon`):
 - [ ] NEW Grand Growler (V12 Engine)
 - [ ] NEW Street Levitator (Hover Fans, hovers)
 - [ ] REBUILD Afterburner GT (Jet Engine; has a body, but no rolling wheels)
-- [ ] NEW Rocket Stallion (Rocket Booster)
-- [ ] NEW Fusion Fury (Fusion Core)
-- [ ] NEW Lightspeed Legend (Warp Drive)
+- [x] NEW Rocket Stallion (Rocket Booster)
+- [x] NEW Fusion Fury (Fusion Core)
+- [x] NEW Lightspeed Legend (Warp Drive)
 
 ### Cop Cruiser: 16
 - [ ] REBUILD Cone Cruiser (Nitrous Tank)
@@ -106,9 +106,9 @@ Follow the Scrap Kart and Dirt Bike builds (e.g. `ItemModels.Loud Lemon`):
 - [ ] NEW Pursuit Prime (V12 Engine)
 - [ ] NEW Hover Patrol (Hover Fans, hovers)
 - [ ] REBUILD Sky Marshal (Jet Engine; has a body, but no rolling wheels)
-- [ ] NEW Orbital Enforcer (Rocket Booster)
-- [ ] NEW Plasma Patrol (Fusion Core)
-- [ ] NEW Warp Warden (Warp Drive)
+- [x] NEW Orbital Enforcer (Rocket Booster)
+- [x] NEW Plasma Patrol (Fusion Core)
+- [x] NEW Warp Warden (Warp Drive)
 
 ### Box Truck: 16
 - [ ] REBUILD Scrap Hybrid (Nitrous Tank)
@@ -124,9 +124,9 @@ Follow the Scrap Kart and Dirt Bike builds (e.g. `ItemModels.Loud Lemon`):
 - [ ] NEW Titan Twelve (V12 Engine)
 - [ ] NEW Cargo Hoverer (Hover Fans, hovers)
 - [ ] REBUILD Jet Hauler (Jet Engine)
-- [ ] NEW Rocket Freight (Rocket Booster)
-- [ ] NEW Core Carrier (Fusion Core)
-- [ ] NEW Star Freighter (Warp Drive)
+- [x] NEW Rocket Freight (Rocket Booster)
+- [x] NEW Core Carrier (Fusion Core)
+- [x] NEW Star Freighter (Warp Drive)
 
 ### Monster Truck: 16
 - [ ] REBUILD Soccer Mom Monster (Nitrous Tank)
@@ -142,9 +142,9 @@ Follow the Scrap Kart and Dirt Bike builds (e.g. `ItemModels.Loud Lemon`):
 - [ ] NEW V12 Leviathan (V12 Engine)
 - [ ] NEW Hover Hulk (Hover Fans, hovers)
 - [ ] REBUILD Scrapyard God (Jet Engine)
-- [ ] NEW Rocket Juggernaut (Rocket Booster)
-- [ ] NEW Fusion Colossus (Fusion Core)
-- [ ] NEW Starcrusher (Warp Drive)
+- [x] NEW Rocket Juggernaut (Rocket Booster)
+- [x] NEW Fusion Colossus (Fusion Core)
+- [x] NEW Starcrusher (Warp Drive)
 
 ### Toro SVO fixes
 Both Secret cars stay about 12 studs long on purpose (the Toro was scaled up

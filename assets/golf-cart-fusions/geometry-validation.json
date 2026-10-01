@@ -1,0 +1,171 @@
+{
+  "models": [
+    {
+      "name": "Cart Rocket",
+      "bounds": [
+        3.25868,
+        3.1686,
+        4.67862
+      ],
+      "wheels": 4,
+      "triangles": 75518,
+      "valid": true
+    },
+    {
+      "name": "Putter Popper",
+      "bounds": [
+        3.21148,
+        3.33384,
+        4.83792
+      ],
+      "wheels": 4,
+      "triangles": 79997,
+      "valid": true
+    },
+    {
+      "name": "Turbo Tee",
+      "bounds": [
+        3.44536,
+        3.33268,
+        4.88688
+      ],
+      "wheels": 4,
+      "triangles": 77418,
+      "valid": true
+    },
+    {
+      "name": "Lifted Cart",
+      "bounds": [
+        3.4671,
+        3.62892,
+        5.0146
+      ],
+      "wheels": 4,
+      "triangles": 93718,
+      "valid": true
+    },
+    {
+      "name": "Rotary Roller",
+      "bounds": [
+        3.42884,
+        3.07418,
+        4.8161
+      ],
+      "wheels": 4,
+      "triangles": 76282,
+      "valid": true
+    },
+    {
+      "name": "Double Bogey",
+      "bounds": [
+        3.58908,
+        3.25122,
+        5.0521
+      ],
+      "wheels": 4,
+      "triangles": 85420,
+      "valid": true
+    },
+    {
+      "name": "Fairway Fighter",
+      "bounds": [
+        3.54188,
+        3.0742,
+        5.0462
+      ],
+      "wheels": 4,
+      "triangles": 81278,
+      "valid": true
+    },
+    {
+      "name": "Sand Trap Supreme",
+      "bounds": [
+        3.6207,
+        3.05076,
+        5.6404
+      ],
+      "wheels": 4,
+      "triangles": 87258,
+      "valid": true
+    },
+    {
+      "name": "Diesel Driver",
+      "bounds": [
+        3.63392,
+        3.7436,
+        5.26934
+      ],
+      "wheels": 4,
+      "triangles": 90445,
+      "valid": true
+    },
+    {
+      "name": "Cartpocalypse",
+      "bounds": [
+        3.8855,
+        3.16882,
+        5.3099
+      ],
+      "wheels": 4,
+      "triangles": 86284,
+      "valid": true
+    },
+    {
+      "name": "Hole in Twelve",
+      "bounds": [
+        3.42388,
+        3.27482,
+        5.58722
+      ],
+      "wheels": 4,
+      "triangles": 95026,
+      "valid": true
+    },
+    {
+      "name": "Hover Caddy",
+      "bounds": [
+        4.06628,
+        2.9913,
+        4.5542
+      ],
+      "wheels": 0,
+      "triangles": 22273,
+      "valid": true
+    },
+    {
+      "name": "THE LAWNLORD",
+      "bounds": [
+        3.47108,
+        3.90022,
+        5.15652
+      ],
+      "wheels": 4,
+      "triangles": 79199,
+      "valid": true
+    },
+    {
+      "name": "Eagle Launcher",
+      "bounds": [
+        3.84256,
+        3.20406,
+        5.25268
+      ],
+      "wheels": 4,
+      "triangles": 91001,
+      "valid": true
+    },
+    {
+      "name": "Atomic Albatross",
+      "bounds": [
+        3.5282,
+        3.1565,
+        4.4899
+      ],
+      "wheels": 0,
+      "triangles": 18442,
+      "valid": true
+    }
+  ],
+  "uniqueMeshes": 387,
+  "totalParts": 450
+}

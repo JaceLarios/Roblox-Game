@@ -1,0 +1,529 @@
+{
+  "source": "docs/MODELS_TODO.md at 1e42465",
+  "checklistEntries": 87,
+  "updated": "2026-10-01",
+  "items": [
+    {
+      "section": "Addon",
+      "name": "Warp Drive",
+      "task": "**Warp Drive** (Legendary, Day 7 exclusive; currently shows the Fusion Core)",
+      "status": "installed_recipe_viewport_resize_wheels_verified_race_pending"
+    },
+    {
+      "section": "Scrap Kart (Rusted Sedan): 1",
+      "name": "Warp Wreck",
+      "task": "NEW Warp Wreck (Warp Drive)",
+      "status": "installed_recipe_viewport_resize_wheels_verified_race_pending"
+    },
+    {
+      "section": "Dirt Bike: 1",
+      "name": "Wormhole Wheelie",
+      "task": "NEW Wormhole Wheelie (Warp Drive)",
+      "status": "installed_recipe_viewport_resize_wheels_verified_race_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Cart Rocket",
+      "task": "REBUILD Cart Rocket (Nitrous Tank)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Putter Popper",
+      "task": "NEW Putter Popper (Straight Pipes)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Turbo Tee",
+      "task": "NEW Turbo Tee (Scrap Turbo)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Lifted Cart",
+      "task": "REBUILD Lifted Cart (Inline 4)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Rotary Roller",
+      "task": "NEW Rotary Roller (Rotary Engine)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Double Bogey",
+      "task": "NEW Double Bogey (Twin Turbo)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Fairway Fighter",
+      "task": "REBUILD Fairway Fighter (V6 Engine)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Sand Trap Supreme",
+      "task": "NEW Sand Trap Supreme (Supercharger)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Diesel Driver",
+      "task": "NEW Diesel Driver (Diesel Stack)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Cartpocalypse",
+      "task": "REBUILD Cartpocalypse (V8 Engine)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Hole in Twelve",
+      "task": "NEW Hole in Twelve (V12 Engine)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Hover Caddy",
+      "task": "NEW Hover Caddy (Hover Fans, hovers)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "THE LAWNLORD",
+      "task": "REBUILD THE LAWNLORD (Jet Engine)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Eagle Launcher",
+      "task": "NEW Eagle Launcher (Rocket Booster)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Atomic Albatross",
+      "task": "NEW Atomic Albatross (Fusion Core)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Golf Cart: 16",
+      "name": "Hole in Space",
+      "task": "NEW Hole in Space (Warp Drive)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Junk Mashup",
+      "task": "REBUILD Junk Mashup (Nitrous Tank)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Rumble Pony",
+      "task": "NEW Rumble Pony (Straight Pipes)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Boost Stallion",
+      "task": "NEW Boost Stallion (Scrap Turbo)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Undercover Muscle",
+      "task": "REBUILD Undercover Muscle (Inline 4)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Rotor Rebel",
+      "task": "NEW Rotor Rebel (Rotary Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Twin Turbo Thunder",
+      "task": "NEW Twin Turbo Thunder (Twin Turbo)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Twisted Wreck",
+      "task": "REBUILD Twisted Wreck (V6 Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Blown Charger",
+      "task": "NEW Blown Charger (Supercharger)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Coal Roller",
+      "task": "NEW Coal Roller (Diesel Stack)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Chrome Sentinel",
+      "task": "REBUILD Chrome Sentinel (V8 Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Grand Growler",
+      "task": "NEW Grand Growler (V12 Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Street Levitator",
+      "task": "NEW Street Levitator (Hover Fans, hovers)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Afterburner GT",
+      "task": "REBUILD Afterburner GT (Jet Engine; has a body, but no rolling wheels)",
+      "status": "not_started"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Rocket Stallion",
+      "task": "NEW Rocket Stallion (Rocket Booster)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Fusion Fury",
+      "task": "NEW Fusion Fury (Fusion Core)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Muscle Car: 16",
+      "name": "Lightspeed Legend",
+      "task": "NEW Lightspeed Legend (Warp Drive)",
+      "status": "installed_recipe_viewport_resize_wheels_verified_race_pending"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Cone Cruiser",
+      "task": "REBUILD Cone Cruiser (Nitrous Tank)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Siren Screamer",
+      "task": "NEW Siren Screamer (Straight Pipes)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Patrol Spooler",
+      "task": "NEW Patrol Spooler (Scrap Turbo)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Undercover Van",
+      "task": "REBUILD Undercover Van (Inline 4)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Rotary Ranger",
+      "task": "NEW Rotary Ranger (Rotary Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Twin Chase",
+      "task": "NEW Twin Chase (Twin Turbo)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Turbo Interceptor",
+      "task": "REBUILD Turbo Interceptor (V6 Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Supercharged Sheriff",
+      "task": "NEW Supercharged Sheriff (Supercharger)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Riot Rig",
+      "task": "NEW Riot Rig (Diesel Stack)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Highway Overlord",
+      "task": "REBUILD Highway Overlord (V8 Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Pursuit Prime",
+      "task": "NEW Pursuit Prime (V12 Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Hover Patrol",
+      "task": "NEW Hover Patrol (Hover Fans, hovers)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Sky Marshal",
+      "task": "REBUILD Sky Marshal (Jet Engine; has a body, but no rolling wheels)",
+      "status": "not_started"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Orbital Enforcer",
+      "task": "NEW Orbital Enforcer (Rocket Booster)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Plasma Patrol",
+      "task": "NEW Plasma Patrol (Fusion Core)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Cop Cruiser: 16",
+      "name": "Warp Warden",
+      "task": "NEW Warp Warden (Warp Drive)",
+      "status": "installed_recipe_viewport_resize_wheels_verified_race_pending"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Scrap Hybrid",
+      "task": "REBUILD Scrap Hybrid (Nitrous Tank)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Rattle Hauler",
+      "task": "NEW Rattle Hauler (Straight Pipes)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Turbo Mover",
+      "task": "NEW Turbo Mover (Scrap Turbo)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Hauler Hemi",
+      "task": "REBUILD Hauler Hemi (Inline 4)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Rotary Rig",
+      "task": "NEW Rotary Rig (Rotary Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Twin Turbo Freight",
+      "task": "NEW Twin Turbo Freight (Twin Turbo)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Construction Cartel",
+      "task": "REBUILD Construction Cartel (V6 Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Blown Big Rig",
+      "task": "NEW Blown Big Rig (Supercharger)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Diesel Dynamo",
+      "task": "NEW Diesel Dynamo (Diesel Stack)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Yard Destroyer",
+      "task": "REBUILD Yard Destroyer (V8 Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Titan Twelve",
+      "task": "NEW Titan Twelve (V12 Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Cargo Hoverer",
+      "task": "NEW Cargo Hoverer (Hover Fans, hovers)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Jet Hauler",
+      "task": "REBUILD Jet Hauler (Jet Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Rocket Freight",
+      "task": "NEW Rocket Freight (Rocket Booster)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Core Carrier",
+      "task": "NEW Core Carrier (Fusion Core)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Box Truck: 16",
+      "name": "Star Freighter",
+      "task": "NEW Star Freighter (Warp Drive)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Soccer Mom Monster",
+      "task": "REBUILD Soccer Mom Monster (Nitrous Tank)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Stomp Pipes",
+      "task": "NEW Stomp Pipes (Straight Pipes)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Crusher Turbo",
+      "task": "NEW Crusher Turbo (Scrap Turbo)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Junkyard Brute",
+      "task": "REBUILD Junkyard Brute (Inline 4)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Rotary Wrecker",
+      "task": "NEW Rotary Wrecker (Rotary Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Twin Turbo Titan",
+      "task": "NEW Twin Turbo Titan (Twin Turbo)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Suburban Assault",
+      "task": "REBUILD Suburban Assault (V6 Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Supercharged Smasher",
+      "task": "NEW Supercharged Smasher (Supercharger)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Black Smoke Beast",
+      "task": "NEW Black Smoke Beast (Diesel Stack)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Mangled Overlord",
+      "task": "REBUILD Mangled Overlord (V8 Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "V12 Leviathan",
+      "task": "NEW V12 Leviathan (V12 Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Hover Hulk",
+      "task": "NEW Hover Hulk (Hover Fans, hovers)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Scrapyard God",
+      "task": "REBUILD Scrapyard God (Jet Engine)",
+      "status": "not_started"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Rocket Juggernaut",
+      "task": "NEW Rocket Juggernaut (Rocket Booster)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Fusion Colossus",
+      "task": "NEW Fusion Colossus (Fusion Core)",
+      "status": "installed_recipe_viewport_resize_wheel_or_hover_verified_full_playtest_pending"
+    },
+    {
+      "section": "Monster Truck: 16",
+      "name": "Starcrusher",
+      "task": "NEW Starcrusher (Warp Drive)",
+      "status": "installed_recipe_viewport_resize_wheels_verified_race_pending"
+    },
+    {
+      "section": "Toro SVO fixes",
+      "name": "A lighter export",
+      "task": "A lighter export (it is about 217k triangles)",
+      "status": "not_started"
+    },
+    {
+      "section": "Toro SVO fixes",
+      "name": "Split the merged rear wheels and tag all wheels `WheelPivot` / `WheelRadius` so they roll",
+      "task": "Split the merged rear wheels and tag all wheels `WheelPivot` / `WheelRadius` so they roll",
+      "status": "not_started"
+    },
+    {
+      "section": "Toro SVO fixes",
+      "name": "Test both big Secret cars on the conveyor and in a race",
+      "task": "Test both big Secret cars on the conveyor and in a race (size and performance)",
+      "status": "not_started"
+    },
+    {
+      "section": "Toro SVO fixes",
+      "name": "Keep the `LogoCover` part",
+      "task": "Keep the `LogoCover` part (hides the rear \"Lamborghini\" lettering) and the model name `SVO`",
+      "status": "not_started"
+    }
+  ]
+}

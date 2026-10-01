@@ -1,0 +1,107 @@
+[
+  {
+    "name": "Cart Rocket",
+    "addon": "Nitrous Tank",
+    "rarity": "uncommon",
+    "color": "Turquoise",
+    "accent": "Orange"
+  },
+  {
+    "name": "Putter Popper",
+    "addon": "Straight Pipes",
+    "rarity": "uncommon",
+    "color": "Lemon",
+    "accent": "Red"
+  },
+  {
+    "name": "Turbo Tee",
+    "addon": "Scrap Turbo",
+    "rarity": "uncommon",
+    "color": "Green",
+    "accent": "Cream"
+  },
+  {
+    "name": "Lifted Cart",
+    "addon": "Inline 4",
+    "rarity": "rare",
+    "color": "Orange",
+    "accent": "Blue"
+  },
+  {
+    "name": "Rotary Roller",
+    "addon": "Rotary Engine",
+    "rarity": "rare",
+    "color": "Purple",
+    "accent": "Lemon"
+  },
+  {
+    "name": "Double Bogey",
+    "addon": "Twin Turbo",
+    "rarity": "rare",
+    "color": "Blue",
+    "accent": "Orange"
+  },
+  {
+    "name": "Fairway Fighter",
+    "addon": "V6 Engine",
+    "rarity": "epic",
+    "color": "Red",
+    "accent": "White"
+  },
+  {
+    "name": "Sand Trap Supreme",
+    "addon": "Supercharger",
+    "rarity": "epic",
+    "color": "Pink",
+    "accent": "Lemon"
+  },
+  {
+    "name": "Diesel Driver",
+    "addon": "Diesel Stack",
+    "rarity": "epic",
+    "color": "Copper",
+    "accent": "Cream"
+  },
+  {
+    "name": "Cartpocalypse",
+    "addon": "V8 Engine",
+    "rarity": "mythic",
+    "color": "Green",
+    "accent": "Purple"
+  },
+  {
+    "name": "Hole in Twelve",
+    "addon": "V12 Engine",
+    "rarity": "mythic",
+    "color": "White",
+    "accent": "Gold"
+  },
+  {
+    "name": "Hover Caddy",
+    "addon": "Hover Fans",
+    "rarity": "mythic",
+    "color": "Turquoise",
+    "accent": "White"
+  },
+  {
+    "name": "THE LAWNLORD",
+    "addon": "Jet Engine",
+    "rarity": "legendary",
+    "color": "Lemon",
+    "accent": "Black"
+  },
+  {
+    "name": "Eagle Launcher",
+    "addon": "Rocket Booster",
+    "rarity": "legendary",
+    "color": "Orange",
+    "accent": "Blue"
+  },
+  {
+    "name": "Atomic Albatross",
+    "addon": "Fusion Core",
+    "rarity": "legendary",
+    "color": "Purple",
+    "accent": "Turquoise"
+  }
+]

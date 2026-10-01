@@ -1,0 +1,18 @@
+2026-10-01: Replacement designs following user rejection of six v1 Warp vehicles.
+Lightspeed Legend is approved and intentionally excluded from replacement.
+Source Blender models retain the base vehicle silhouettes and original wheel assemblies.
+Geometry validation: six names, two/four wheel IDs, finite vertices, valid indices/normals,
+and less than 90k triangles per model. Packed exports preserve separate wheels.
+
+New VehicleAddonEffects module + client controller cover all 112 existing fusion recipes.
+Effect identity follows addon; intensity follows rarity. Engine spark, exhaust, diesel smoke,
+hover downwash, plasma and Warp orbit profiles. 12 closest vehicles within 130 studs maximum.
+Smooth curved orbit ribbons animate per frame; selection updates four times per second.
+No effects in inventory viewports. No gameplay, economy, player-data or wheel-code changes.
+
+Edit-mode tests passed for all 112 profiles: creation, step, resizing, enable/disable, cleanup.
+Controller test with 16 nearby vehicle fixtures passed the 12-car cap, frame animation,
+distance disable and cleanup. This test used injected frame events in Edit mode;
+it is not a full client race/conveyor playtest.
+
+Installed all six replacements. Recipe/viewport/resize/wheel checks passed. Muscle car v1 preserved. HTTP restored false. QA previews removed. No publication or push. User appearance review pending.

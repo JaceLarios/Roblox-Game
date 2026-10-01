@@ -1,0 +1,1 @@
+Installed in Studio 2026-10-01. See ../model-import-20261001 for asset IDs, backup and tests. This supersedes previous NOT INSTALLED notes. Full live race/conveyor test and live publication remain.

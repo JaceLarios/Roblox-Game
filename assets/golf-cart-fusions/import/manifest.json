@@ -1,0 +1,107 @@
+[
+  {
+    "name": "Cart Rocket",
+    "file": "Cart_Rocket.json",
+    "before": 75518,
+    "triangles": 75518,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Putter Popper",
+    "file": "Putter_Popper.json",
+    "before": 79997,
+    "triangles": 79997,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Turbo Tee",
+    "file": "Turbo_Tee.json",
+    "before": 77418,
+    "triangles": 77418,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Lifted Cart",
+    "file": "Lifted_Cart.json",
+    "before": 93718,
+    "triangles": 87494,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Rotary Roller",
+    "file": "Rotary_Roller.json",
+    "before": 76282,
+    "triangles": 76282,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Double Bogey",
+    "file": "Double_Bogey.json",
+    "before": 85420,
+    "triangles": 85420,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Fairway Fighter",
+    "file": "Fairway_Fighter.json",
+    "before": 81278,
+    "triangles": 81278,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Sand Trap Supreme",
+    "file": "Sand_Trap_Supreme.json",
+    "before": 87258,
+    "triangles": 87258,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Diesel Driver",
+    "file": "Diesel_Driver.json",
+    "before": 90445,
+    "triangles": 87492,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Cartpocalypse",
+    "file": "Cartpocalypse.json",
+    "before": 86284,
+    "triangles": 86284,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Hole in Twelve",
+    "file": "Hole_in_Twelve.json",
+    "before": 95026,
+    "triangles": 87495,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Hover Caddy",
+    "file": "Hover_Caddy.json",
+    "before": 22273,
+    "triangles": 22273,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "THE LAWNLORD",
+    "file": "THE_LAWNLORD.json",
+    "before": 79199,
+    "triangles": 79199,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Eagle Launcher",
+    "file": "Eagle_Launcher.json",
+    "before": 91001,
+    "triangles": 87491,
+    "wheelsUnmodified": true
+  },
+  {
+    "name": "Atomic Albatross",
+    "file": "Atomic_Albatross.json",
+    "before": 18442,
+    "triangles": 18442,
+    "wheelsUnmodified": true
+  }
+]

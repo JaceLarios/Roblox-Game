@@ -1,3 +1,37 @@
+# Current approval — 2026-10-01
+
+User approved the installed models and requested a complete GitHub backup. The latest asset files, effects code, uploaded mesh IDs, recovery scripts and model checklist are included together. Studio changes still require live publication; full racing/conveyor playtests remain outstanding.
+
+# All currently built models imported — Codex (2026-10-01)
+
+Installed all 25 previously pending models: two approved v3 Warp redesigns (Hole in Space, Star Freighter), 15 golf-cart fusions and eight Rocket Booster/Fusion Core builds. Existing models replaced only by exact name and backed up in ServerStorage. All 25 passed recipe, rarity, mesh budget, viewport, resize and wheel/hover checks in Edit mode. Atomic Albatross retains its reactor-effect anchor. Full live racing/conveyor playtests remain. No player data changed. SVO/LogoCover, Toro and approved Lightspeed Legend preserved. Assets, uploaded mesh IDs, checks and a ServerStorage-only recovery script: assets/model-import-20261001. This makes 31 distinct checklist models installed across the recent batches; other unbuilt checklist entries remain.
+
+This is a Studio import, not live publication or a GitHub push. Prior 'not installed' statuses in source folders describe their earlier build state and are superseded by this import record.
+
+---
+
+# Golf Cart / Box Truck v3 previews — Codex (2026-10-01)
+
+User rejected those two v2 Warp variants. Substantially redesigned Blender models and front/rear previews are in assets/warp-cart-truck-v3. Four rolling wheel IDs each; both under 90k triangles; geometry checks passed. NOT installed, published or pushed; user appearance review pending. The other five Warp vehicles and all effects are untouched this turn. See STATUS.txt in that folder.
+
+# Warp redesign and addon effects — Codex (2026-10-01)
+
+User approved Lightspeed Legend, rejected the other six first-pass Warp builds. The muscle car geometry remains v1. Six redesigned v2 models are installed: Warp Wreck, Wormhole Wheelie, Hole in Space, Warp Warden, Star Freighter and Starcrusher. Each keeps its base vehicle and separate rolling wheels. Backup of replaced templates: ServerStorage.BeforeWarpBatch_1790866139. Source, front/rear renders, asset IDs and recovery are in assets/warp-redesign-v2. The freight rear portal was moved clear of its door after rear-view QA. All six pass recipe, geometry-budget, viewport, resize and wheel-rotation checks. User has NOT yet approved the v2 appearance.
+
+VehicleAddonEffects (ReplicatedStorage) and its StarterPlayerScripts client controller are installed in Studio and saved in src. They cover 112 fusion results by addon and rarity. Twelve nearby cars maximum within 130 studs; local-only effects, no gameplay or data changes. All 112 profiles passed creation/resize/enable/disable/cleanup tests. The controller passed a 16-car injected-event test for its 12-car cap, animation and distance culling in Edit mode. This is NOT a live multiplayer race/conveyor test. No ItemVisuals or Claude gameplay source was changed. HTTP restored false, local transfer server stopped and QA previews removed. Not published or pushed.
+
+---
+
+# Model production started — Codex (2026-10-01)
+
+Warp Drive plus all seven Warp builds are installed in Studio under their exact names. Recipe lookup, viewport cloning, resizing and wheel rotation checks passed. Existing textured material variants are used. No inventory fusion, conveyor pickup or full race was performed. HTTP restored to false after local transfer. Source, previews, uploaded IDs and recovery: assets/warp-drive-batch.
+
+15 approved golf-cart builds are in assets/golf-cart-fusions, with production exports in import/; four exports were reduced below 90k triangles without modifying wheels. NOT installed yet. Eight Rocket Booster/Fusion Core builds for Muscle Car, Cop Cruiser, Box Truck and Monster Truck have Blender drafts in assets/legendary-production; geometry validated, NOT installed or final-fit approved.
+
+Track all 87 checklist entries in docs/model-production-status.json. Only eight installed Warp entries checked off in MODELS_TODO. No publish or push this turn.
+
+---
+
 # Model handoff for Codex — every model still to make (2026-09-30)
 
 **See [docs/MODELS_TODO.md](docs/MODELS_TODO.md): the checklist, in priority order.** Checked against Studio on 2026-09-30: the Warp Drive addon, 57 builds with no model (they show a stand-in), 25 builds still on the old single-mesh models from before the Blender rebuild (wheels don't roll), and fixes to the Toro SVO (~217k triangles, rear wheels merged; its 12-stud size is intended, like the Toro's). The Scrap Kart and Dirt Bike families are done apart from their Warp Drive builds; Golf Cart, Muscle Car, Cop Cruiser, Box Truck and Monster Truck need all 16 builds each. Follow the finished Scrap Kart builds' setup (named Model in `ItemModels`, `FusionBase`/`FusionAddon`/`DisplayName`/`NoseAxis=+Z`, wheels tagged `WheelPivot`/`WheelRadius`, Hover Fans builds wheel-less). Tick items off in that file as they land.

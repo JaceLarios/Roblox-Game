@@ -1,0 +1,9 @@
+{
+  "name": "Warp Drive",
+  "triangles": 22084,
+  "materialGroups": 8,
+  "validIndices": true,
+  "finiteVertices": true,
+  "normalCountMatches": true,
+  "studioInstalled": false
+}

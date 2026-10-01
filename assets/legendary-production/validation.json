@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Rocket Stallion",
+    "triangles": 87109,
+    "wheelAssemblies": 4,
+    "geometryValid": true,
+    "installed": false
+  },
+  {
+    "name": "Fusion Fury",
+    "triangles": 87434,
+    "wheelAssemblies": 4,
+    "geometryValid": true,
+    "installed": false
+  },
+  {
+    "name": "Orbital Enforcer",
+    "triangles": 86098,
+    "wheelAssemblies": 4,
+    "geometryValid": true,
+    "installed": false
+  },
+  {
+    "name": "Plasma Patrol",
+    "triangles": 87450,
+    "wheelAssemblies": 4,
+    "geometryValid": true,
+    "installed": false
+  },
+  {
+    "name": "Rocket Freight",
+    "triangles": 87460,
+    "wheelAssemblies": 4,
+    "geometryValid": true,
+    "installed": false
+  },
+  {
+    "name": "Core Carrier",
+    "triangles": 87462,
+    "wheelAssemblies": 4,
+    "geometryValid": true,
+    "installed": false
+  },
+  {
+    "name": "Rocket Juggernaut",
+    "triangles": 87450,
+    "wheelAssemblies": 4,
+    "geometryValid": true,
+    "installed": false
+  },
+  {
+    "name": "Fusion Colossus",
+    "triangles": 87458,
+    "wheelAssemblies": 4,
+    "geometryValid": true,
+    "installed": false
+  }
+]
