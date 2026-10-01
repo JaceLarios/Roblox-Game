@@ -6,11 +6,20 @@ them in a game that makes money and change them, on one condition: we
 credit the creator, link the original, name the licence, and **say that we
 changed it**.
 
+The list of every model and where it came from is the user's Google Doc,
+"Roblox Models page":
+<https://docs.google.com/document/d/11qrkoSve66ZyDTXzAfZ7g3aJp8jnf6QlqscydShYf2g/edit>
+(the in-game name above each link). Both entries below were checked
+against it and against Sketchfab on 2026-09-30.
+
 Where the credits go:
 
 - **The game's description on Roblox.** Paste the block below and keep it
   up to date as cars are added.
-- **In game.** Each Secret car has a `credit` line in
+- **In game.** The "Model Credits" button (bottom right; Codex's
+  `StarterGui.VehicleModelCredits`, also `VehicleModelCredits.client.luau`
+  and `assets/vehicle-credits/install.edit.luau`) lists every model in
+  full. Each Secret car also has a `credit` line in
   `FusionRecipes.SecretCars` (src/ReplicatedStorage/FusionRecipes.luau),
   shown on its Index card. Add a car's short
   credit there when it goes into the game.
@@ -80,6 +89,11 @@ Notes:
 
 - About 479,000 triangles, twice the SVO before its reduction and around
   seven times a normal car. It needs a much lighter version for Roblox.
+- **Build it from this model.** Codex's first Toro (Toro-v3.blend) was
+  made from a different Temerario: Ddiaz Design's, licensed CC BY-NC-SA
+  (no commercial use, and taken from the game CSR2). That one cannot go in
+  this game. The credit here is only right if the Toro is built from Harsh
+  Palan's model above.
 - Its Sketchfab description says "(From Lamborghini's Website)". A CC
   licence only counts if the uploader had the right to give it, so there is
   some risk this one was not theirs to share. Removing the badges and
