@@ -1,3 +1,7 @@
+# Model handoff for Codex — every model still to make (2026-09-30)
+
+**See [docs/MODELS_TODO.md](docs/MODELS_TODO.md): the checklist, in priority order.** Checked against Studio on 2026-09-30: the Warp Drive addon, 57 builds with no model (they show a stand-in), 25 builds still on the old single-mesh models from before the Blender rebuild (wheels don't roll), and fixes to the Toro SVO (12 studs long, ~217k triangles, rear wheels merged). The Scrap Kart and Dirt Bike families are done apart from their Warp Drive builds; Golf Cart, Muscle Car, Cop Cruiser, Box Truck and Monster Truck need all 16 builds each. Follow the finished Scrap Kart builds' setup (named Model in `ItemModels`, `FusionBase`/`FusionAddon`/`DisplayName`/`NoseAxis=+Z`, wheels tagged `WheelPivot`/`WheelRadius`, Hover Fans builds wheel-less). Tick items off in that file as they land.
+
 # Approved fusion installed — Codex (2026-09-30)
 
 User approved the larger vortex animation and requested game integration. Confirmed the approved .99 x .65 viewport layout is in the Edit-mode MagneticFusionView, FusionCelebrationView delegates Junkyard to it, and the enabled FusionCelebration client controller uses the normal server event. Preview replay button was Play-session-only and is not in StarterGui. Studio remains in Edit. This is installed in the working place, not published to Roblox or pushed to GitHub. Gameplay rewards and Brainrot presentation unchanged.
