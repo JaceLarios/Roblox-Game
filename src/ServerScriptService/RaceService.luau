@@ -118,10 +118,97 @@ end
 -- The car
 ------------------------------------------------------------------
 
+-- A seated driver, measured from the seat: how far the top of their head
+-- is above it (hips to the top of the head, or of a hat, up to 0.75 above
+-- the head; plus the few tenths a seated character sits above the seat:
+-- 0.32 for a standard R15 body), and how far their feet hang below it in
+-- the sitting pose (0.41 of their hip height: 0.9 for a standard body).
+local function seatedSpan(character)
+	local head = character and character:FindFirstChild("Head")
+	local hips = character and (character:FindFirstChild("LowerTorso") or character:FindFirstChild("Torso"))
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if not (head and hips and humanoid) then
+		return 3.4, 0.9
+	end
+	local hipY = hips.Position.Y - hips.Size.Y / 2
+	local headTop = head.Position.Y + head.Size.Y / 2
+	local top = headTop
+	for _, accessory in ipairs(character:GetChildren()) do
+		local handle = accessory:IsA("Accessory") and accessory:FindFirstChild("Handle")
+		if handle and handle:IsA("BasePart") then
+			top = math.max(top, math.min(handle.Position.Y + handle.Size.Y / 2, headTop + 0.75 * character:GetScale()))
+		end
+	end
+	local above = top - hipY + 0.32 * character:GetScale()
+	local below = humanoid.HipHeight > 0 and humanoid.HipHeight * 0.41 or 0.9 * character:GetScale()
+	return above, below
+end
+
+-- Where the driver sits in a car, and how big they are while they race.
+-- A model's windows are its Glass parts, so they mark the cabin: the
+-- driver sits between the front and back of the glass with the top of
+-- their head just under the top of the windows (the roof). A low car (a
+-- supercar, a muscle car) is too shallow for a whole seated driver, head
+-- under the roof and feet above the bottom of the body, so the driver is
+-- shrunk until they fit; seatRacer does that and puts them back to size
+-- when they get out. A windscreen alone (the golf carts) is an open car:
+-- the driver sits just behind it. No glass at all (karts, bikes) is an
+-- open ride, sat on top as before.
+-- `body` is the car's model, just made (unturned, at the origin).
+-- Returns the seat's offset from the chassis centre and the driver's
+-- scale (1 = their own size).
+local DRIVER_HEADROOM = 0.15   -- studs from the top of the head to the roof
+local MIN_DRIVER_SCALE = 0.55
+local function driverSeat(body, size, chassisHeight, character)
+	local glassLo, glassHi
+	local bodyBottom = math.huge
+	for _, p in ipairs(body:GetDescendants()) do
+		if p:IsA("BasePart") and not p:GetAttribute("WheelPivot") then
+			local glass = p.Material == Enum.Material.Glass or p.Name:lower():find("glass") ~= nil
+			local inBody = body.CFrame:ToObjectSpace(p.CFrame)
+			local half = p.Size / 2
+			for _, sx in ipairs({ -1, 1 }) do
+				for _, sy in ipairs({ -1, 1 }) do
+					for _, sz in ipairs({ -1, 1 }) do
+						local corner = inBody * Vector3.new(sx * half.X, sy * half.Y, sz * half.Z)
+						if glass then
+							glassLo = glassLo and glassLo:Min(corner) or corner
+							glassHi = glassHi and glassHi:Max(corner) or corner
+						else
+							bodyBottom = math.min(bodyBottom, corner.Y)
+						end
+					end
+				end
+			end
+		end
+	end
+	if not glassLo then
+		return CFrame.new(0, -chassisHeight / 2 + size.Y * 0.45, size.Z * 0.06), 1
+	end
+
+	-- In the model's own space: centred on the origin, nose along +Z.
+	local cabinZ = (glassLo.Z + glassHi.Z) / 2
+	if glassHi.Z - glassLo.Z < size.Z * 0.1 then
+		cabinZ -= size.Z * 0.15
+	end
+	cabinZ = math.clamp(cabinZ, -size.Z * 0.3, size.Z * 0.3)
+	local headTop = glassHi.Y - DRIVER_HEADROOM
+	local feetLowest = math.max(bodyBottom, -size.Y / 2) + 0.05
+	local above, below = seatedSpan(character)
+	local scale = math.clamp((headTop - feetLowest) / (above + below), MIN_DRIVER_SCALE, 1)
+	local seatTop = headTop - above * scale
+
+	-- The model is turned round on the chassis (see buildCar), so its +Z
+	-- is the chassis's -Z, and its centre sits size.Y / 2 above the
+	-- chassis's bottom. The seat part is 0.6 thick.
+	return CFrame.new(0, seatTop - 0.3 + size.Y / 2 - chassisHeight / 2, -cabinZ), scale
+end
+
 -- A drivable copy of an item: an invisible box as the physics body (its
 -- LookVector is the car's front), the item's own model welded on it, and
 -- a seat. The item models are built nose-first along +Z, so the model is
--- turned round to face the body's front.
+-- turned round to face the body's front. Also returns the scale the driver
+-- races at (see driverSeat).
 local function buildCar(player, itemName, stats, frame)
 	local baseName, mutationId = Mutations.Unwrap(itemName)
 	local probe = ItemVisuals.Create(baseName, Vector3.zero, 1)
@@ -137,6 +224,8 @@ local function buildCar(player, itemName, stats, frame)
 	car.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 
 	local chassisHeight = math.clamp(size.Y * 0.55, 2.5, 6)
+	-- Worked out now, while the model is still unturned at the origin.
+	local seatOffset, driverScale = driverSeat(body, size, chassisHeight, player.Character)
 	local chassis = Instance.new("Part")
 	chassis.Name = "Chassis"
 	chassis.Size = Vector3.new(math.max(size.X, 5), chassisHeight, math.max(size.Z, 9))
@@ -187,7 +276,7 @@ local function buildCar(player, itemName, stats, frame)
 	seat.Torque = 0
 	seat.TurnSpeed = 0
 	seat.HeadsUpDisplay = false
-	seat.CFrame = chassis.CFrame * CFrame.new(0, -chassisHeight / 2 + size.Y * 0.45, size.Z * 0.06)
+	seat.CFrame = chassis.CFrame * seatOffset
 	seat.CollisionGroup = Track.CAR_GROUP
 	seat:SetAttribute("RaceSeat", true)
 	seat:SetAttribute("TopSpeed", stats.topSpeed)
@@ -225,7 +314,7 @@ local function buildCar(player, itemName, stats, frame)
 	align.Parent = chassis
 
 	car.Parent = liveFolder
-	return car, chassis, seat
+	return car, chassis, seat, driverScale
 end
 
 ------------------------------------------------------------------
@@ -338,6 +427,11 @@ local function endRun(racer, outcome)
 			racer.humanoid.Sit = false
 		end
 		racer.car:Destroy()
+		-- Back to their own size, if they were shrunk to fit the car.
+		local character = racer.humanoid.Parent
+		if racer.ownScale and character and character == player.Character then
+			character:ScaleTo(racer.ownScale)
+		end
 	end
 	if outcome == "left" then
 		tidy()
@@ -364,7 +458,7 @@ local function seatRacer(race, player, itemName, place)
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	local stats = RaceConfig.CarStats(itemName)
 	local frame = Track.GridFrame(place)
-	local car, chassis, seat = buildCar(player, itemName, stats, frame)
+	local car, chassis, seat, driverScale = buildCar(player, itemName, stats, frame)
 	local distance, offset = Track.DistanceOf(chassis.Position)
 
 	local racer = {
@@ -390,6 +484,11 @@ local function seatRacer(race, player, itemName, place)
 	table.insert(race.racers, racer)
 
 	humanoid.Sit = false
+	-- Shrunk to fit a low car (see driverSeat); tidy puts them back.
+	if driverScale < 1 then
+		racer.ownScale = character:GetScale()
+		character:ScaleTo(racer.ownScale * driverScale)
+	end
 	character:PivotTo(seat.CFrame * CFrame.new(0, 3, 0))
 	seat:Sit(humanoid)
 	setRacingGroup(racer, true)

@@ -1,7 +1,8 @@
 --[[
 	SettingsUI (LocalScript, StarterPlayerScripts) — Junkyard Fusion
 
-	The Settings button (a gear, top right) and its panel, in two tabs:
+	The Settings button (a gear, top left in Roblox's own top bar, just
+	after the menu and chat buttons) and its panel, in two tabs:
 	  SETTINGS  music volume (a slider), sound effects on or off, and potato
 	            mode, which turns down the graphics so the game runs smoothly
 	            on a slow device.
@@ -136,27 +137,24 @@ gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui:SetAttribute("Designed", true)
 gui.Parent = player:WaitForChild("PlayerGui")
 
-local open = Garage.New("TextButton", gui, "SettingsButton", {
-	AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -14, 0, 10), Size = UDim2.fromOffset(50, 46),
+-- In the top bar, next to Roblox's menu and chat buttons, on every device:
+-- a ScreenGui with TopbarSafeInsets covers exactly the free part of the top
+-- bar, starting just after those buttons, so the gear lines up with them
+-- (44 high, centred in the bar) wherever the bar is.
+local topbar = Instance.new("ScreenGui")
+topbar.Name = "SettingsButton"
+topbar.ResetOnSpawn = false
+topbar.DisplayOrder = 21
+topbar.ScreenInsets = Enum.ScreenInsets.TopbarSafeInsets
+topbar:SetAttribute("Designed", true)
+topbar.Parent = player.PlayerGui
+
+local open = Garage.New("TextButton", topbar, "SettingsButton", {
+	AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 0, 0.5, 0), Size = UDim2.fromOffset(44, 44),
 	Text = "", AutoButtonColor = false,
 })
-Garage.Gloss(open, Color3.fromRGB(0, 150, 235), 14)
-Garage.Art(open, "UPGRADES", UDim2.fromOffset(5, 3), UDim2.new(1, -10, 1, -6))
-
--- Top right; on a phone on its side the nav buttons fill that corner as a
--- two-by-two grid (NavButton), so it sits just left of them.
-local function placeButton()
-	local size = gui.AbsoluteSize
-	if size.Y < 100 then return end
-	if size.Y < 480 then
-		local factor = math.clamp(size.Y / 610, 0.48, 0.62)
-		open.Position = UDim2.new(1, -(8 + 2 * (140 * factor + 2) + 8), 0, 4)
-	else
-		open.Position = UDim2.new(1, -14, 0, 10)
-	end
-end
-gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(placeButton)
-placeButton()
+Garage.Gloss(open, Color3.fromRGB(0, 150, 235), 12)
+Garage.Art(open, "UPGRADES", UDim2.fromOffset(4, 3), UDim2.new(1, -8, 1, -6))
 
 ------------------------------------------------------------------
 -- The panel

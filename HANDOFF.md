@@ -1,3 +1,13 @@
+# Race seats, mechanic, settings button, group bonus — Claude (2026-10-01)
+
+Changes that touch Codex's work, so nothing gets overwritten:
+- **Race drivers sit inside their cars** (`RaceService.driverSeat`). The seat goes in the cabin, found from the model's **Glass parts** (named `Glass…` or Glass material), with the driver's head just under the top of the windows. In low cars the driver is shrunk for the race (`Model:ScaleTo`, down to 0.55) and put back to size afterwards. Models with no glass (karts, bikes) keep the old seat on top. **Codex: keep every new car's windows as Glass parts**, or its driver will sit on the roof.
+- **The mechanic is at the back wall, and is the base owner's own avatar** (`MechanicService`). The counter is at frame (9, .55, 40), facing the door between the Lock Base button and the rear bench. The owner's avatar is built from their HumanoidDescription, plays Roblox's R15 idle and holds a wrench. It is rebuilt when `OwnerUserId` changes. Unowned bases show the stock mechanic, now in a `StockMechanic` sub-model. If you edit MechanicService, start from this version.
+- **The Settings gear is in Roblox's top bar**, after the menu and chat buttons: its own ScreenGui with `ScreenInsets = TopbarSafeInsets`, 44×44. The ADMIN button moved into the top-right corner it left.
+- **The friend/group bonus is one small line of text under LUCK** in the coin card (`SocialBonuses` label), no longer a chip in the boost bar. On a phone the boost bar moved down 12 px to make room for it.
+
+---
+
 # Toro source: decided — keep it (2026-10-01)
 
 The user has decided to keep the Toro in the game as it is, knowing its Sketchfab listing says "From Lamborghini's Website". Don't flag its source rights again, and don't change its model, credit, value or spawn settings for this reason. Keep the existing credit to Harsh Palan (CC BY 4.0, modified) in `ModelCredits`, `CREDITS.md` and the model's attributes. Only raise it again if a takedown or new evidence comes up.

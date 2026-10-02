@@ -181,8 +181,9 @@ boostLayout.Parent = boostBar
 
 -- On a phone on its side the bottom left is the thumbstick's, and the nav
 -- buttons fill the top corners, so the coins go top centre, a little
--- smaller, with the boost chips under them. On a computer the chips sit
--- at the bottom right of the coins, level with the card's lower edge.
+-- smaller, with the boost chips under them (below the friend and group
+-- bonus line, which hangs just under the card). On a computer the chips
+-- sit at the bottom right of the coins, level with the card's lower edge.
 local coinScale = Instance.new("UIScale")
 coinScale.Parent = coinCard
 local function placeCoinCard()
@@ -193,7 +194,7 @@ local function placeCoinCard()
 	coinCard.AnchorPoint = phone and Vector2.new(0.5, 0) or Vector2.zero
 	coinCard.Position = phone and UDim2.new(0.5, 0, 0, 10) or UDim2.new(0, 20, 1, -136)
 	boostBar.AnchorPoint = phone and Vector2.new(0.5, 0) or Vector2.zero
-	boostBar.Position = phone and UDim2.new(0.5, 0, 0, 68) or UDim2.new(0, 334, 1, -94)
+	boostBar.Position = phone and UDim2.new(0.5, 0, 0, 80) or UDim2.new(0, 334, 1, -94)
 	boostLayout.HorizontalAlignment = phone and Enum.HorizontalAlignment.Center or Enum.HorizontalAlignment.Left
 end
 gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(placeCoinCard)
@@ -213,8 +214,8 @@ local function formatTime(seconds)
 end
 
 -- The friend and group bonuses on pad income (PlotManager puts them on
--- you as whole percentages): chips like the boosts', but with no timer,
--- since they last for as long as they apply.
+-- you as whole percentages): shown as one small line under the coins
+-- (below), since they last for as long as they apply.
 local SOCIAL_CHIPS = {
 	{ attribute = "FriendBonus", text = "FRIENDS", color = Color3.fromRGB(255, 150, 210) },
 	{ attribute = "GroupBonus", text = "GROUP", color = Color3.fromRGB(255, 210, 90) },
@@ -249,16 +250,35 @@ local function redrawBoosts()
 		local style = BOOST_STYLE[b.stat] or { text = string.upper(b.stat), color = GOLD }
 		boostChip(i, string.format("%dx %s  %s", b.mult, style.text, formatTime(b.remaining)), style.color)
 	end
-
-	for i, social in ipairs(SOCIAL_CHIPS) do
-		local percent = player:GetAttribute(social.attribute) or 0
-		if percent > 0 then
-			boostChip(#activeBoosts + i, string.format("+%d%% %s", percent, social.text), social.color)
-		end
-	end
 end
-for _, social in ipairs(SOCIAL_CHIPS) do
-	player:GetAttributeChangedSignal(social.attribute):Connect(redrawBoosts)
+
+-- The friend and group bonuses: one quiet line of small text right under
+-- the coins, lined up with LUCK, in the coin card so it moves and shrinks
+-- with it on a phone.
+do
+	local bonusLine = label(coinCard, "", UDim2.new(0, 220, 0, 14), DIM, Enum.Font.FredokaOne, 11)
+	bonusLine.Name = "SocialBonuses"
+	bonusLine.AnchorPoint = Vector2.new(1, 0)
+	bonusLine.Position = UDim2.new(0, 178, 1, 2)
+	bonusLine.TextXAlignment = Enum.TextXAlignment.Right
+	bonusLine.RichText = true
+	UIStyle.Outline(bonusLine, 11)
+	bonusLine.TextOutline.Thickness = 1.5
+	bonusLine.TextTransparency = 0.2
+	local function redraw()
+		local parts = {}
+		for _, social in ipairs(SOCIAL_CHIPS) do
+			local percent = player:GetAttribute(social.attribute) or 0
+			if percent > 0 then
+				table.insert(parts, string.format('<font color="#%s">+%d%% %s</font>', social.color:ToHex(), percent, social.text))
+			end
+		end
+		bonusLine.Text = table.concat(parts, "   ")
+	end
+	for _, social in ipairs(SOCIAL_CHIPS) do
+		player:GetAttributeChangedSignal(social.attribute):Connect(redraw)
+	end
+	redraw()
 end
 
 -- Ticks locally so the timer moves every second instead of only when
