@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Jet Hauler",
+    "file": "Jet_Hauler.json",
+    "parts": 29
+  },
+  {
+    "name": "Rocket Freight",
+    "file": "Rocket_Freight.json",
+    "parts": 40
+  }
+]

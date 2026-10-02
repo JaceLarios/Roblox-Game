@@ -1,0 +1,182 @@
+[
+  {
+    "name": "Jet Hauler",
+    "signTriangles": {
+      "Cream": 300,
+      "Blue": 6014,
+      "Orange": 1122
+    },
+    "movedOrRecolored": [
+      "Jet intake cowl evaluated.002",
+      "Jet intake cowl rolled edge evaluated.002",
+      "Carbon turbine nacelle evaluated.002",
+      "Carbon turbine nacelle rolled edge evaluated.002",
+      "Intake spinner evaluated.002",
+      "Swept compressor fan evaluated.002",
+      "Swept compressor fan.001 evaluated.002",
+      "Swept compressor fan.002 evaluated.002",
+      "Swept compressor fan.003 evaluated.002",
+      "Swept compressor fan.004 evaluated.002",
+      "Swept compressor fan.005 evaluated.002",
+      "Swept compressor fan.006 evaluated.002",
+      "Swept compressor fan.007 evaluated.002",
+      "Swept compressor fan.008 evaluated.002",
+      "Swept compressor fan.009 evaluated.002",
+      "Swept compressor fan.010 evaluated.002",
+      "Swept compressor fan.011 evaluated.002",
+      "Afterburner throat evaluated.002",
+      "Afterburner throat rolled edge evaluated.002",
+      "Overlapping nozzle petal evaluated.002",
+      "Overlapping nozzle petal.001 evaluated.002",
+      "Overlapping nozzle petal.002 evaluated.002",
+      "Overlapping nozzle petal.003 evaluated.002",
+      "Overlapping nozzle petal.004 evaluated.002",
+      "Overlapping nozzle petal.005 evaluated.002",
+      "Overlapping nozzle petal.006 evaluated.002",
+      "Overlapping nozzle petal.007 evaluated.002",
+      "Overlapping nozzle petal.008 evaluated.002",
+      "Overlapping nozzle petal.009 evaluated.002",
+      "Blue afterburner throat evaluated.002",
+      "Nacelle clamp evaluated.002",
+      "Hex fastener evaluated.002",
+      "Hex fastener.001 evaluated.002",
+      "Nacelle clamp.001 evaluated.002",
+      "Hex fastener.002 evaluated.002",
+      "Hex fastener.003 evaluated.002",
+      "Cargo structural jet yoke evaluated",
+      "Cargo structural jet yoke.001 evaluated",
+      "Cargo jet heat shield evaluated",
+      "Jet intake cowl.001 evaluated.002",
+      "Jet intake cowl rolled edge.001 evaluated.002",
+      "Carbon turbine nacelle.001 evaluated.002",
+      "Carbon turbine nacelle rolled edge.001 evaluated.002",
+      "Intake spinner.001 evaluated.002",
+      "Swept compressor fan.012 evaluated.002",
+      "Swept compressor fan.013 evaluated.002",
+      "Swept compressor fan.014 evaluated.002",
+      "Swept compressor fan.015 evaluated.002",
+      "Swept compressor fan.016 evaluated.002",
+      "Swept compressor fan.017 evaluated.002",
+      "Swept compressor fan.018 evaluated.002",
+      "Swept compressor fan.019 evaluated.002",
+      "Swept compressor fan.020 evaluated.002",
+      "Swept compressor fan.021 evaluated.002",
+      "Swept compressor fan.022 evaluated.002",
+      "Swept compressor fan.023 evaluated.002",
+      "Afterburner throat.001 evaluated.002",
+      "Afterburner throat rolled edge.001 evaluated.002",
+      "Overlapping nozzle petal.010 evaluated.002",
+      "Overlapping nozzle petal.011 evaluated.002",
+      "Overlapping nozzle petal.012 evaluated.002",
+      "Overlapping nozzle petal.013 evaluated.002",
+      "Overlapping nozzle petal.014 evaluated.002",
+      "Overlapping nozzle petal.015 evaluated.002",
+      "Overlapping nozzle petal.016 evaluated.002",
+      "Overlapping nozzle petal.017 evaluated.002",
+      "Overlapping nozzle petal.018 evaluated.002",
+      "Overlapping nozzle petal.019 evaluated.002",
+      "Blue afterburner throat.001 evaluated.002",
+      "Nacelle clamp.002 evaluated.002",
+      "Hex fastener.004 evaluated.002",
+      "Hex fastener.005 evaluated.002",
+      "Nacelle clamp.003 evaluated.002",
+      "Hex fastener.006 evaluated.002",
+      "Hex fastener.007 evaluated.002",
+      "Cargo structural jet yoke.002 evaluated",
+      "Cargo structural jet yoke.003 evaluated",
+      "Cargo jet heat shield.001 evaluated"
+    ],
+    "boundsBefore": [
+      [
+        -2.45,
+        -2.33925,
+        -3.73682
+      ],
+      [
+        2.45,
+        2.33925,
+        3.73682
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -2.45,
+        -2.33925,
+        -3.73682
+      ],
+      [
+        2.45,
+        2.33925,
+        3.73682
+      ]
+    ]
+  },
+  {
+    "name": "Rocket Freight",
+    "signTriangles": {},
+    "movedOrRecolored": [
+      "Braided flux supply evaluated.004",
+      "Luminous flux tracer evaluated.004",
+      "Cargo cooling radiator evaluated",
+      "Cargo cooling radiator.001 evaluated",
+      "Cargo cooling radiator.002 evaluated",
+      "Cargo cooling radiator.003 evaluated",
+      "Cargo cooling radiator.004 evaluated",
+      "Braided flux supply.001 evaluated.004",
+      "Luminous flux tracer.001 evaluated.004",
+      "Cargo cooling radiator.005 evaluated",
+      "Cargo cooling radiator.006 evaluated",
+      "Cargo cooling radiator.007 evaluated",
+      "Cargo cooling radiator.008 evaluated",
+      "Cargo cooling radiator.009 evaluated",
+      "Cargo launch pod Iron evaluated",
+      "Cargo launch pod Steel evaluated",
+      "Cargo launch pod Chrome evaluated",
+      "Cargo launch pod ElectricBlue evaluated",
+      "Cargo launch pod Copper evaluated",
+      "Cargo launch pod BlueHeat evaluated",
+      "Cargo launch pod Cyan evaluated",
+      "Cargo launch pod Orange evaluated",
+      "Cargo launch pod Rubber evaluated",
+      "Cargo launch pod Gold evaluated",
+      "Cargo launch pod Red evaluated",
+      "Heavy launch yoke evaluated",
+      "Cargo launch pod Iron.001 evaluated",
+      "Cargo launch pod Steel.001 evaluated",
+      "Cargo launch pod Chrome.001 evaluated",
+      "Cargo launch pod ElectricBlue.001 evaluated",
+      "Cargo launch pod Copper.001 evaluated",
+      "Cargo launch pod BlueHeat.001 evaluated",
+      "Cargo launch pod Cyan.001 evaluated",
+      "Cargo launch pod Orange.001 evaluated",
+      "Cargo launch pod Rubber.001 evaluated",
+      "Cargo launch pod Gold.001 evaluated",
+      "Cargo launch pod Red.001 evaluated",
+      "Heavy launch yoke.001 evaluated"
+    ],
+    "boundsBefore": [
+      [
+        -2.91741,
+        -2.42055,
+        -3.7375
+      ],
+      [
+        2.91741,
+        2.42055,
+        3.7375
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -2.91741,
+        -2.42055,
+        -3.7375
+      ],
+      [
+        2.91741,
+        2.42055,
+        3.7375
+      ]
+    ]
+  }
+]
