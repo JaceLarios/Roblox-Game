@@ -61,6 +61,12 @@ function ScrapLabel.Attach(part, itemName)
 	stroke.Thickness = OUTLINE_THICKNESS
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
 	stroke.Parent = label
+	-- Godly reads as a rainbow and Secret as near-black with a light
+	-- outline (ItemRarity.Paint); a mutation keeps its own colour.
+	local baseName, mutationId = Mutations.Unwrap(itemName)
+	if not Mutations.Color(mutationId) then
+		ItemRarity.Paint(label, FusionRecipes.GetTier(baseName), false, FusionRecipes.GetRarity(baseName))
+	end
 
 	return billboard
 end

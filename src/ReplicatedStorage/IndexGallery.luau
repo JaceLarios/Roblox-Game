@@ -7,13 +7,20 @@ local Models = script.Parent:WaitForChild("ItemModels")
 local FusionRecipes = require(script.Parent:WaitForChild("FusionRecipes"))
 local P = Style.Palette
 local Gallery = {}
-local ORDER = {1, 2, 3, 4, "secret"}
--- These filter by fusion TIER, which is not the same ladder as an item's
--- rarity. Calling tier 1 "Common" was survivable while nothing else on the
--- card showed rarity; now that the disc behind each item is its rarity
--- colour, it filed an epic-purple Box Truck under a tab marked Common.
--- Named for what they actually filter instead.
-local NAMES = {"Base", "Tier 2", "Tier 3", "Tier 4"}
+-- The Junkyard's filters: the cars you grab ("Base"), then the builds by
+-- rarity, best last, then the Secret cars. A build's rarity is its
+-- addon's moved by its car (FusionRecipes), so these are what each tab
+-- holds. Godly's tab and plates are a rainbow, Secret's are near-black
+-- (ItemRarity).
+local ORDER = {"base", "uncommon", "rare", "epic", "mythic", "legendary", "godly", "secret"}
+local NAMES = {
+	base = "Base", uncommon = "Uncommon", rare = "Rare", epic = "Epic",
+	mythic = "Mythic", legendary = "Legendary", godly = "Godly", secret = "Secret",
+}
+-- An entry's filter: Secret cars, then the cars you grab, then builds by rarity.
+local function filterKey(entry)
+	return entry.isSecret and "secret" or entry.isBase and "base" or entry.rarity
+end
 
 -- Addons are junkyard items, but they are parts you bolt ONTO something
 -- rather than things in their own right, so they get their own tab
@@ -82,7 +89,7 @@ end
 
 function Gallery.Create(gui)
 	local api = {}
-	local activeArea, activeRarity = "junkyard", 1
+	local activeArea, activeRarity = "junkyard", "base"
 	local data = {junkyard = {}, addons = {}}
 	local dimmer = make("Frame", gui, "IndexBackdrop", {
 		Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(),
@@ -116,10 +123,9 @@ function Gallery.Create(gui)
 	end
 	local filter = make("Frame", panel, "RarityFilters", {BackgroundTransparency = 1})
 	local filters = {}
-	for i, key in ipairs(ORDER) do
-		local b = make("TextButton", filter, key == "secret" and "Secret" or NAMES[key], {
-			Size = UDim2.new(.2, -8, 1, 0), Position = UDim2.new((i-1)*.2, 0, 0, 0),
-			Text = key == "secret" and "Secret" or NAMES[key],
+	for _, key in ipairs(ORDER) do
+		local b = make("TextButton", filter, NAMES[key], {
+			Text = NAMES[key],
 			Font = Enum.Font.FredokaOne, TextSize = 19, AutoButtonColor = false,
 		})
 		corner(b, 14)
@@ -186,6 +192,14 @@ function Gallery.Create(gui)
 		local row = phone and 100 or 118
 		filter.Position = UDim2.fromOffset(28, portrait and 205 or row)
 		filter.Size = UDim2.new(1, portrait and -48 or -350, 0, portrait and 74 or 44)
+		-- Eight tabs: one row across, or two rows of four in portrait.
+		local perRow = portrait and 4 or #ORDER
+		local rows = math.ceil(#ORDER / perRow)
+		for i, key in ipairs(ORDER) do
+			local column, line = (i - 1) % perRow, math.floor((i - 1) / perRow)
+			filters[key].Size = UDim2.new(1 / perRow, -6, 1 / rows, rows > 1 and -3 or 0)
+			filters[key].Position = UDim2.new(column / perRow, 0, line / rows, line > 0 and 3 or 0)
+		end
 		search.Position = portrait and UDim2.fromOffset(28, flatArea and 205 or 292)
 			or UDim2.new(1, -312, 0, row)
 		search.Size = portrait and UDim2.new(1, -56, 0, 74) or UDim2.fromOffset(284,44)
@@ -234,22 +248,27 @@ function Gallery.Create(gui)
 			end
 		end
 		for key, btn in pairs(filters) do
-			local rc = Rarity.Color(type(key)=="number" and key or 1, key=="secret")
+			local rc = Rarity.RarityColor(key == "base" and "common" or key)
 			-- Was 90% cream, which washed every pill to the same near-white
 			-- and made the rarity filters indistinguishable from each other.
-			Style.Surface(btn, key==activeRarity and P.Teal or rc:Lerp(P.Cream,.58), key==activeRarity and 3 or 2.5)
+			-- Godly's pill is cream under its rainbow caption; Secret's is
+			-- near-black, as its rarity.
+			local fill = key == "godly" and P.Cream or key == "secret" and Color3.fromRGB(44, 44, 52)
+				or rc:Lerp(P.Cream,.58)
+			Style.Surface(btn, key==activeRarity and P.Teal or fill, key==activeRarity and 3 or 2.5)
 			-- Ink on the bright fill, not cream: the selected teal is a
 			-- button colour now and cream on it is unreadable.
 			btn.TextColor3 = P.Ink
             Garage.Button(btn)
+			local caption = btn:FindFirstChild("GarageButtonCaption")
+			if key == "godly" and caption then Rarity.Rainbow(caption) end
 		end
 		local flatArea = activeArea == "addons"
 		local total, known, shown = 0, 0, 0
 		local query = string.lower(search.Text):match("^%s*(.-)%s*$")
 		local UNKNOWN_HALO = Color3.fromRGB(226,222,214)
 		for i, entry in ipairs(data[activeArea]) do
-			local key = entry.isSecret and "secret" or entry.tier
-			if flatArea or key == activeRarity then
+			if flatArea or filterKey(entry) == activeRarity then
 				total += 1
 				if entry.known then known += 1 end
 				if query == "" or (entry.known and string.find(string.lower(ItemNames.Display(entry.name)), query, 1, true)) then
@@ -293,6 +312,7 @@ function Gallery.Create(gui)
 					end
 					local name = caption(card,"ItemName",entry.known and ItemNames.Display(entry.name) or "Undiscovered",21)
                     Garage.Plate(name)
+					if entry.known then Rarity.Plate(name, entry.isSecret and "secret" or entry.rarity) end
 					name.Size,name.Position=UDim2.new(1,-12,0,46),UDim2.new(0,6,1,-62)
 					name.TextScaled=true
 					make("UITextSizeConstraint",name,"NameLimit",{MinTextSize=12,MaxTextSize=21})
@@ -308,7 +328,7 @@ function Gallery.Create(gui)
 			end
 		end
 		count.Text=string.format("%s  •  %d / %d discovered",
-			flatArea and "Addons" or activeRarity=="secret" and "Secret" or NAMES[activeRarity],known,total)
+			flatArea and "Addons" or NAMES[activeRarity],known,total)
 		empty.Text=query~="" and "No discovered items match your search."
 			or flatArea and "No addons found yet." or "No items in this rarity yet."
 		empty.Visible=shown==0

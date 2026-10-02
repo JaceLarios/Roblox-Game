@@ -278,10 +278,10 @@ local GOALS = {
 	{ text = "Discover 3 different builds",       reward = 250,   check = function(s) return s.count >= 3 end },
 	{ text = "Place a build on an earning pad",   reward = 250,   check = function(s) return #s.placed >= 1 end },
 	{ text = "Discover 6 different builds",       reward = 600,   check = function(s) return s.count >= 6 end },
-	{ text = "Fuse an Epic build (V6 Engine)",    reward = 1500,  check = function(s) return hasDiscoveredRarity(s, "epic") end },
+	{ text = "Fuse an Epic build (V6 Engine on a Golf Cart or better)", reward = 1500, check = function(s) return hasDiscoveredRarity(s, "epic") end },
 	{ text = "Discover 12 different builds",      reward = 3000,  check = function(s) return s.count >= 12 end },
-	{ text = "Fuse a Mythic build (V8 Engine)",   reward = 8000,  check = function(s) return hasDiscoveredRarity(s, "mythic") end },
-	{ text = "Fuse a Legendary build (Jet Engine)", reward = 15000, check = function(s) return hasDiscoveredRarity(s, "legendary") end },
+	{ text = "Fuse a Mythic build (V8 Engine on a Golf Cart or better)", reward = 8000, check = function(s) return hasDiscoveredRarity(s, "mythic") end },
+	{ text = "Fuse a Legendary build (Jet Engine on a Golf Cart or better)", reward = 15000, check = function(s) return hasDiscoveredRarity(s, "legendary") end },
 	{ text = string.format("Complete the index: all %d builds", FusionRecipes.GetTotalDiscoveries()),
 	  reward = 50000, check = function(s) return s.count >= FusionRecipes.GetTotalDiscoveries() end },
 }
@@ -1291,7 +1291,11 @@ local function refreshPad(player)
 			if mutationColor then ItemVisuals.Tint(slotPart, mutationColor) end
 			local itemColor = mutationColor or ItemRarity.Color(FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
 				FusionRecipes.GetRarity(baseName))
-			makeLabel(slotPart, itemName, 1.8, 140, itemColor, 45)
+			local slotLabel = makeLabel(slotPart, itemName, 1.8, 140, itemColor, 45)
+			if not mutationColor then
+				ItemRarity.Paint(slotLabel, FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
+					FusionRecipes.GetRarity(baseName))
+			end
 
 			-- Take it back off the pad: click or tap the button, or press E.
 			-- BaseRaid hides it from everyone but the owner, and the owner
@@ -1352,7 +1356,9 @@ local function redrawPetPad(plot, slot, itemName)
 	local itemColor = mutationColor or ItemRarity.Color(info.tier, info.isSecret, info.rarity)
 	FusionEffects.AttachPlacedGlow(part, itemColor)
 	pad.label.Text = string.format("%s\n+%.1f coins/sec", instanceTag(itemName), info.value / PLACEMENT_PAYBACK_SECONDS)
-	pad.label.TextColor3 = itemColor
+	-- The name carries its own colours (instanceTag); this is the earning
+	-- line under it, which has to stay readable for Godly and Secret.
+	pad.label.TextColor3 = mutationColor or ItemRarity.TextColor(info.tier, info.isSecret, info.rarity)
 	pad.prompt.Enabled = true
 	pad.stealPrompt.ObjectText = itemName
 	pad.stealPrompt.Enabled = not isLocked(plot)

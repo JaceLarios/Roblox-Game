@@ -2,12 +2,17 @@
 	FusionRecipes (ModuleScript, ReplicatedStorage) — Junkyard Fusion v1
 	Recipe data + lookup. The server reads this to decide what a fusion makes.
 
-	Every Junkyard fusion is one item plus one addon:
-	  - the addon sets the result's rarity (the Uncommon addons, Nitrous
-	    Tank and its two neighbours, make Uncommon results, up to the
-	    Legendary ones, Jet Engine and up, which make Legendary);
-	  - the car sets which result it is, and where in that rarity's value
-	    range it lands (rarer cars land higher);
+	Every Junkyard fusion is one item plus one addon, and the better the
+	car and the addon, the better the build:
+	  - the addon sets the result's rarity to start with (an Uncommon addon,
+	    Nitrous Tank and its two neighbours, makes an Uncommon build, up to
+	    the Legendary addons, Jet Engine and up);
+	  - the car moves it a rarity (its `shift`): the Scrap Kart and the Dirt
+	    Bike drop it one, the Golf Cart, Muscle Car and Cop Cruiser leave it,
+	    and the Box Truck and Monster Truck raise it one. A Legendary addon
+	    on one of those two makes the top rarity, Godly. Nothing drops below
+	    Uncommon;
+	  - inside its rarity, a better car and a better addon are worth more;
 	  - a fused result can take a better addon later and becomes that
 	    addon's version of the same car. A same-or-worse addon is refused.
 	Item + item and addon + addon make nothing.
@@ -19,8 +24,10 @@ local FusionRecipes = {}
 -- "better than" means the same thing everywhere.
 local RARITY_INDEX = {
 	common = 1, uncommon = 2, rare = 3, epic = 4, mythic = 5, legendary = 6,
+	-- Only builds: a Legendary addon on a Box Truck or Monster Truck.
+	godly = 7,
 	-- Only the Secret cars (see FusionRecipes.SecretCars below).
-	secret = 7,
+	secret = 8,
 }
 FusionRecipes.RarityIndex = RARITY_INDEX
 
@@ -35,6 +42,7 @@ FusionRecipes.RarityWeight = {
 	epic      = 16,
 	mythic    = 7,
 	legendary = 3,
+	godly     = 2,
 	secret    = 1,
 }
 
@@ -44,23 +52,26 @@ FusionRecipes.RarityWeight = {
 --
 -- Cars ride the yard's conveyor. `weight` is how often each comes out of
 -- the black box, relative to the other cars (they add up to 88, so a
--- Rusted Sedan is 24/88, about 27%). Cars carry a `multiplier`: a fused
--- result is worth its addon's `resultValue` times the car's multiplier,
--- so the rarer the car the higher its result sits in that addon's range.
+-- Rusted Sedan is 24/88, about 27%). Each car's `shift` is how many
+-- rarities it moves a build from its addon's (see the top), and its
+-- `multiplier` is how much more its builds are worth inside their rarity.
+-- On the cars that leave the rarity alone a build is worth its addon's
+-- `resultValue` times the car's multiplier (see "The whole recipe book"
+-- below for the rest).
 --
 -- Addons never spawn: they are bought in the Shop's Addons tab for their
 -- `price` in coins.
 FusionRecipes.BaseItems = {
-	{ name = "Rusted Sedan",  rarity = "common",   value = 5,  weight = 24,  multiplier = 1.0 },
-	{ name = "Dirt Bike",     rarity = "common",   value = 10, weight = 24,  multiplier = 1.1 },
-	{ name = "Golf Cart",     rarity = "uncommon", value = 15, weight = 14,  multiplier = 1.3 },
-	{ name = "Muscle Car",    rarity = "uncommon", value = 25, weight = 14,  multiplier = 1.45 },
-	{ name = "Cop Cruiser",   rarity = "rare",     value = 35, weight = 7,   multiplier = 1.7 },
-	{ name = "Box Truck",     rarity = "epic",     value = 55, weight = 3.5, multiplier = 2.2 },
-	{ name = "Monster Truck", rarity = "mythic",   value = 90, weight = 1.5, multiplier = 3.0 },
+	{ name = "Rusted Sedan",  rarity = "common",   value = 5,  weight = 24,  multiplier = 1.0,  shift = -1 },
+	{ name = "Dirt Bike",     rarity = "common",   value = 10, weight = 24,  multiplier = 1.1,  shift = -1 },
+	{ name = "Golf Cart",     rarity = "uncommon", value = 15, weight = 14,  multiplier = 1.3,  shift = 0 },
+	{ name = "Muscle Car",    rarity = "uncommon", value = 25, weight = 14,  multiplier = 1.45, shift = 0 },
+	{ name = "Cop Cruiser",   rarity = "rare",     value = 35, weight = 7,   multiplier = 1.7,  shift = 0 },
+	{ name = "Box Truck",     rarity = "epic",     value = 55, weight = 3.5, multiplier = 2.2,  shift = 1 },
+	{ name = "Monster Truck", rarity = "mythic",   value = 90, weight = 1.5, multiplier = 3.0,  shift = 1 },
 
 	-- ADDONS, worst to best: the order is the upgrade ladder, so keep it.
-	-- An addon's own rarity is also the rarity of everything it makes.
+	-- An addon's own rarity is where its builds start (the car moves them).
 	-- Three to a rarity: the original part first, then two a little
 	-- stronger (their builds are worth 5% and 9% more), so every rarity has
 	-- one addon better than the rest. A better rarity always beats every
@@ -75,7 +86,7 @@ FusionRecipes.BaseItems = {
 	-- enough for the first day's daily reward, and its first fusion pays
 	-- that back.
 	-- Each rarity's first addon costs roughly three to four times the
-	-- cheapest build it makes (doubled 2026-09-30, along with pads earning
+	-- build it makes on a Golf Cart (doubled 2026-09-30, along with pads earning
 	-- half as fast, to slow the climb to Rebirth down), so a placed build of
 	-- that tier takes a while to earn its next addon; the two after it cost
 	-- a bit more.
@@ -113,6 +124,18 @@ FusionRecipes.BaseItems = {
 --   Mythic    V8 Engine, V12 Engine, Hover Fans
 --   Legendary Jet Engine, Rocket Booster, Fusion Core
 -- and then the Day 7 exclusive, the Warp Drive, last in every row.
+--
+-- A build's rarity is its addon's, moved by its car's `shift`. What it is
+-- worth: the worth of its rarity's first build (that rarity's first
+-- addon's `resultValue`, or GODLY_BASE), times its addon's step inside the
+-- addon's own rarity (1, 1.05, 1.09, and 1.14 for the Warp Drive), times
+-- its car's multiplier. A car that drops a build a rarity puts it near
+-- the top of the rarity below (x1.25): the Scrap Kart's Uncommon builds
+-- take both the Uncommon addons and the Rare ones, and the Rare ones must
+-- be worth more. A car that raises a build puts it in the lower part of
+-- the rarity above (x0.81: x0.8 tied two builds at 927). On the cars that leave the rarity alone, a
+-- build is worth exactly its addon's resultValue times the multiplier.
+-- Nothing ties and no rarity overlaps the next (both checked below).
 local BOOK = {
 	["Rusted Sedan"] = {
 		"Rusty Splice", "Loud Lemon", "Turbo Tin Can",
@@ -198,46 +221,65 @@ for _, item in ipairs(FusionRecipes.BaseItems) do
 end
 
 local results = {}      -- [result name] = info about it (see below)
-local resultList = {}   -- in Index order: by rarity, then by car
+local resultList = {}   -- in Index order: by rarity, then by car, then by addon
 local recipe = {}       -- [car][addon] = result name
 
-for _, car in ipairs(FusionRecipes.Items) do
+local GODLY_BASE = 100000
+local SHIFTED_DOWN, SHIFTED_UP = 1.25, 0.81
+local rarityName = {}
+for name, index in pairs(RARITY_INDEX) do rarityName[index] = name end
+local rarityBase = { godly = GODLY_BASE }
+for _, addon in ipairs(FusionRecipes.Addons) do
+	rarityBase[addon.rarity] = rarityBase[addon.rarity] or addon.resultValue
+end
+
+for carRank, car in ipairs(FusionRecipes.Items) do
 	local row = BOOK[car.name]
 	assert(row and #row == #FusionRecipes.Addons, "FusionRecipes: " .. car.name .. " needs one result per addon")
 	recipe[car.name] = {}
 	for rank, addon in ipairs(FusionRecipes.Addons) do
 		local name = row[rank]
 		assert(not results[name] and not baseByName[name], "FusionRecipes: " .. name .. " is used twice")
+		local addonIndex = RARITY_INDEX[addon.rarity]
+		local index = math.clamp(addonIndex + car.shift, RARITY_INDEX.uncommon, RARITY_INDEX.godly)
+		local rarity = rarityName[index]
+		local step = addon.resultValue / rarityBase[addon.rarity]
+		local lean = index < addonIndex and SHIFTED_DOWN or index > addonIndex and SHIFTED_UP or 1
 		results[name] = {
 			name = name,
 			car = car.name,
+			carRank = carRank,
 			addon = addon.name,
 			addonRank = rank,
-			rarity = addon.rarity,
-			tier = math.min(RARITY_INDEX[addon.rarity], MAX_TIER),
-			value = math.round(addon.resultValue * car.multiplier),
+			addonRarity = addon.rarity,
+			rarity = rarity,
+			tier = math.min(index, MAX_TIER),
+			value = math.round(rarityBase[rarity] * step * car.multiplier * lean),
 			exclusive = addon.exclusive == true,
 		}
 		recipe[car.name][addon.name] = name
 	end
 end
 
-for _, addon in ipairs(FusionRecipes.Addons) do
-	for _, car in ipairs(FusionRecipes.Items) do
-		table.insert(resultList, results[recipe[car.name][addon.name]])
-	end
+for _, entry in pairs(results) do
+	table.insert(resultList, entry)
 end
+table.sort(resultList, function(a, b)
+	if a.rarity ~= b.rarity then return RARITY_INDEX[a.rarity] < RARITY_INDEX[b.rarity] end
+	if a.carRank ~= b.carRank then return a.carRank < b.carRank end
+	return a.addonRank < b.addonRank
+end)
 
 -- Until a result has its own model it borrows the model of the same car's
--- build with the first addon of its rarity (Hover Heap shows as Redline
--- Reaper), which does have one.
+-- build with the first addon of its addon's rarity (Hover Heap shows as
+-- Redline Reaper), which does have one.
 do
 	local firstOfRarity = {}
 	for _, addon in ipairs(FusionRecipes.Addons) do
 		firstOfRarity[addon.rarity] = firstOfRarity[addon.rarity] or addon.name
 	end
 	for _, entry in pairs(results) do
-		local base = firstOfRarity[entry.rarity]
+		local base = firstOfRarity[entry.addonRarity]
 		if base ~= entry.addon then
 			entry.standIn = recipe[entry.car][base]
 		end
@@ -277,31 +319,32 @@ for _, car in ipairs(FusionRecipes.SecretCars) do
 end
 
 -- Better rarities always win: the cheapest build of each rarity has to be
--- worth more than the best build of the rarity below it, and within a
--- rarity each addon's builds are worth more than the same car's build
--- with the addon before it. Checked here so a later tweak to a value or
--- multiplier cannot quietly break either.
+-- worth more than the best build of the rarity below it. And every addon
+-- is a step up: each car's build with an addon is worth more than its
+-- build with the addon before it. Checked here so a later tweak to a
+-- value, multiplier or shift cannot quietly break either.
 do
-	local bestBelow, rarityLow, rarityHigh, rarity = 0, math.huge, 0, nil
-	for rank, addon in ipairs(FusionRecipes.Addons) do
-		if addon.rarity ~= rarity then
-			assert(rarityLow > bestBelow or rarity == nil,
-				"FusionRecipes: " .. tostring(rarity) .. " builds overlap the rarity below them")
-			if rarity then bestBelow = rarityHigh end
-			rarity, rarityLow, rarityHigh = addon.rarity, math.huge, 0
-		end
-		for _, car in ipairs(FusionRecipes.Items) do
-			local value = results[recipe[car.name][addon.name]].value
-			rarityLow = math.min(rarityLow, value)
-			rarityHigh = math.max(rarityHigh, value)
-			local previous = FusionRecipes.Addons[rank - 1]
-			if previous and previous.rarity == addon.rarity then
-				assert(value > results[recipe[car.name][previous.name]].value,
-					"FusionRecipes: " .. addon.name .. " is not a step up from " .. previous.name)
-			end
+	local low, high = {}, {}
+	for _, entry in pairs(results) do
+		low[entry.rarity] = math.min(low[entry.rarity] or math.huge, entry.value)
+		high[entry.rarity] = math.max(high[entry.rarity] or 0, entry.value)
+	end
+	local below = nil
+	for index = RARITY_INDEX.uncommon, RARITY_INDEX.godly do
+		local rarity = rarityName[index]
+		if low[rarity] then
+			assert(not below or low[rarity] > high[below],
+				"FusionRecipes: " .. rarity .. " builds overlap the rarity below them")
+			below = rarity
 		end
 	end
-	assert(rarityLow > bestBelow, "FusionRecipes: " .. tostring(rarity) .. " builds overlap the rarity below them")
+	for _, car in ipairs(FusionRecipes.Items) do
+		for rank = 2, #FusionRecipes.Addons do
+			local addon, previous = FusionRecipes.Addons[rank], FusionRecipes.Addons[rank - 1]
+			assert(results[recipe[car.name][addon.name]].value > results[recipe[car.name][previous.name]].value,
+				"FusionRecipes: " .. car.name .. " with " .. addon.name .. " is not a step up from " .. previous.name)
+		end
+	end
 end
 
 -- Every car, addon and build is worth something different, so nothing
@@ -442,9 +485,9 @@ function FusionRecipes.Fuse(itemA, itemB)
 	}
 end
 
--- Rarity of any Junkyard name: a grabbable's own, or a result's (which is
--- its addon's). Nil for a name from outside this line, so callers fall
--- back to the tier colour for those.
+-- Rarity of any Junkyard name: a grabbable's own, or a result's (its
+-- addon's, moved by its car). Nil for a name from outside this line, so
+-- callers fall back to the tier colour for those.
 function FusionRecipes.GetRarity(name)
 	local base = baseByName[name]
 	if base then return base.rarity end

@@ -9,6 +9,7 @@ local Visuals = require(RS:WaitForChild("ItemVisuals"))
 local Recipes = require(RS:WaitForChild("FusionRecipes"))
 local Mutations = require(RS:WaitForChild("Mutations"))
 local Names = require(RS:WaitForChild("ItemNames"))
+local Rarity = require(RS:WaitForChild("ItemRarity"))
 local View = {}
 local CYAN, GOLD = Color3.fromRGB(66,231,255), Color3.fromRGB(255,183,52)
 local function new(kind,parent,name,props)
@@ -90,7 +91,7 @@ end
 local function build(data)
  local player=Players.LocalPlayer
  local rarity=clean(data.rarityName):upper()
- local rank=({COMMON=1,UNCOMMON=1,RARE=2,EPIC=3,MYTHIC=4,LEGENDARY=5,SECRET=5})[rarity] or 1
+ local rank=({COMMON=1,UNCOMMON=1,RARE=2,EPIC=3,MYTHIC=4,LEGENDARY=5,GODLY=5,SECRET=5})[rarity] or 1
  local duration=4.6+(rank-1)*.45
  local gui=new("ScreenGui",player:WaitForChild("PlayerGui"),"FusionCelebrationGui",{
   IgnoreGuiInset=true,ResetOnSpawn=false,DisplayOrder=100,ZIndexBehavior=Enum.ZIndexBehavior.Sibling})
@@ -112,6 +113,7 @@ local function build(data)
  local result=clone(world,data.resultTag,6)
  local output=text(overlay,"Result",Names.Display(clean(data.resultTag)),UDim2.fromScale(.12,.795),UDim2.fromScale(.76,.055),36)
  Garage.Plate(output)
+ Rarity.Plate(output,rarity:lower())
  local rate=text(overlay,"Rate",clean(data.rateLine),UDim2.fromScale(.12,.85),UDim2.fromScale(.76,.045),23)
  local ingredients=text(overlay,"Ingredients",Names.Display(a).."  +  "..Names.Display(b),UDim2.fromScale(.05,.90),UDim2.fromScale(.90,.035),20)
  local skip=new("TextButton",overlay,"Skip",{Text="Skip",Font=Enum.Font.FredokaOne,TextScaled=true,

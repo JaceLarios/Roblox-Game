@@ -1,3 +1,15 @@
+# Build tiers from car + addon, the Godly tier, rarity tabs — Claude (2026-10-02)
+
+- **A build's rarity now comes from its addon and its car** (`FusionRecipes`). The addon sets the start, then the car moves it: Scrap Kart and Dirt Bike -1, Golf Cart, Muscle Car and Cop Cruiser 0, Box Truck and Monster Truck +1. The result is clamped to Uncommon..Godly. **New top rarity, GODLY**: a Legendary addon on a Box Truck or Monster Truck (8 builds). Worth follows rarity, and FusionRecipes asserts that no rarity overlaps the next, every addon is a step up and nothing ties. Counts: Uncommon 21, Rare 21, Epic 21, Mythic 23, Legendary 18, Godly 8.
+- **Godly is a rainbow, Secret is near-black** (`ItemRarity`):
+  - `Tag` gives Godly names a colour per letter, and gives Secret names dark letters with a light outline.
+  - `Rainbow`, `Paint` and `Plate` put a flowing rainbow UIGradient (tag `GodlyRainbow`, animated on clients) on Godly labels, plate rims and the Godly tab.
+  - `Color()` still returns one colour for each (aqua for Godly, near-black for Secret) for glows and podiums.
+  - Codex: restyle freely, but keep text white under a rainbow gradient (gradients multiply).
+- **Index tabs are rarities now**: Base, Uncommon, Rare, Epic, Mythic, Legendary, Godly, Secret (one row, or two rows of four in portrait).
+
+---
+
 # Race seats, mechanic, settings button, group bonus — Claude (2026-10-01)
 
 Changes that touch Codex's work, so nothing gets overwritten:
