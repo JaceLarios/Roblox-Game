@@ -1,3 +1,15 @@
+# Mobile navigation columns — Codex (2026-10-02)
+
+Follow-up: tested in Studio's actual Device Simulator with touch enabled, iPhone XR landscape (client viewport 801x392) and iPhone 7 landscape (666x374). Tapped all eight navigation buttons across these presets and closed their menus. Columns fit; all eight captions report TextFits on iPhone 7, with 70x52 hit areas and no overlap between the rails. The visible jump button sits below the right column. Dynamic thumbstick has a larger invisible activation region; left menu taps still opened correctly. Rotation tested the opposite landscape orientation, not portrait. Output had no script errors. Physical-phone testing remains unverified.
+
+Found and fixed the admin-only button covering Travel and menu headers: AdminPanel now uses a compact 72x40 shortcut in TopbarSafeInsets on phone-sized screens, preserving its desktop placement. Synced to Studio; backup ServerStorage.AdminPanelBeforeMobileEmulator. Still observed existing joystick/jump and backpack hotbar overlays over some open menus, plus dense/small menu contents; this was a navigation test, not a complete menu-content/scrolling audit. No purchases, claims, trades, or data resets were performed. Returned to Edit. Not published or pushed.
+
+Replaced NavButton's landscape-phone 2x2 corner groups with one compact column of four buttons on each side. Button hit areas are 70px wide, 44–58px tall at the checked phone sizes, with 4px gaps and 11px labels independent of icon scaling. Bottom space is reserved for movement controls. Narrow portrait screens use the same columns below the header. Desktop rail dimensions and all existing menu callbacks remain unchanged; Settings stays in the top bar.
+
+Pulled main 6b66bba first and verified Studio NavButton matched before editing. Backup: ServerStorage.BeforeMobileSideRails_1790960474. Updated src/ReplicatedStorage/NavButton.luau is synced to Studio. Play-mode checks used the actual NavButton module in 568x280, 780x320, 852x350 and 390x760 safe-area frames: all eight buttons stayed inside, no button overlaps, all captions TextFits; desktop-to-phone resizing also passed. Visually reviewed the 780x320 render. Output clean. This is a component preview, not a physical-device or touch-controls emulator test; real-phone joystick/jump overlap still needs device confirmation. Studio returned to Edit; temporary preview removed by stopping Play. Not published or pushed.
+
+---
+
 # Build tiers from car + addon, the Godly tier, rarity tabs — Claude (2026-10-02)
 
 - **A build's rarity now comes from its addon and its car** (`FusionRecipes`). The addon sets the start, then the car moves it: Scrap Kart and Dirt Bike -1, Golf Cart, Muscle Car and Cop Cruiser 0, Box Truck and Monster Truck +1. The result is clamped to Uncommon..Godly. **New top rarity, GODLY**: a Legendary addon on a Box Truck or Monster Truck (8 builds). Worth follows rarity, and FusionRecipes asserts that no rarity overlaps the next, every addon is a step up and nothing ties. Counts: Uncommon 21, Rare 21, Epic 21, Mythic 23, Legendary 18, Godly 8.

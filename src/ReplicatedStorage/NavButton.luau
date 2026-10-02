@@ -20,22 +20,36 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 	scale.Parent = holder
 	local slot = math.round((position.Y.Offset+270)/140)
 	local right = position.X.Scale == 1
+	local art, label
 	local function fit()
-		-- On a phone on its side each rail becomes a two-by-two grid in its
-		-- top corner: twice the size a single column could be on a screen
-		-- that short, and clear of the thumbstick (bottom left) and the jump
-		-- button (bottom right).
-		local sg = holder:FindFirstAncestorOfClass("ScreenGui")
-		local gui = sg and sg.AbsoluteSize
-		if gui and gui.Y > 100 and gui.Y < 480 then
-			local factor = math.clamp(gui.Y / 610, 0.48, 0.62)
-			local w, h = 140 * factor, 156 * factor
-			local col, row = slot % 2, slot // 2
-			local x = 8 + col * (w + 2)
-			scale.Scale = factor
-			holder.Position = right and UDim2.new(1, -8 - (1 - col) * (w + 2) - w, 0, 4 + row * h)
-				or UDim2.new(0, x, 0, 4 + row * h)
+		local bounds = gui.AbsoluteSize
+		local mobile = bounds.Y > 100 and (bounds.Y < 480 or bounds.X < 600)
+		if mobile then
+			-- Four separate buttons per side, above the movement controls.
+			-- Use pixel-sized labels rather than shrinking their text with the art.
+			local top = bounds.Y < 480 and 4 or 110
+			local bottom = math.clamp(bounds.Y * .28, 88, 190)
+			local height = math.clamp(math.floor((bounds.Y - top - bottom - 12) / 4), 32, 58)
+			scale.Scale = 1
+			holder.Size = UDim2.fromOffset(70, height)
+			holder.Position = UDim2.new(right and 1 or 0, right and -76 or 6, 0, top + slot * (height + 4))
+			if art then
+				local edge = height - 13
+				art.Position = UDim2.fromOffset((70 - edge) / 2, 0)
+				art.Size = UDim2.fromOffset(edge, edge)
+				label.Size = UDim2.new(1, -2, 0, 14)
+				label.Position = UDim2.new(0, 1, 1, -14)
+				label.TextSize = 11
+			end
 			return
+		end
+		holder.Size = UDim2.fromOffset(140, 148)
+		if art then
+			art.Position = UDim2.fromOffset(2, 0)
+			art.Size = UDim2.new(1, -4, 0, 118)
+			label.Size = UDim2.new(1, -8, 0, 28)
+			label.Position = UDim2.new(0, 4, 1, -34)
+			label.TextSize = 22
 		end
 		-- On a computer both rails share one size, as big as fits: the
 		-- left rail between the top bar and the coin counter (bottom left),
@@ -79,12 +93,12 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 	local gradient = Instance.new("UIGradient")
 	gradient.Enabled = false
 	gradient.Parent = btn
-	local art = Style.Art(btn,caption,UDim2.fromOffset(2,0),UDim2.new(1,-4,0,118))
+	art = Style.Art(btn,caption,UDim2.fromOffset(2,0),UDim2.new(1,-4,0,118))
 	local iconLabel = Instance.new("TextLabel")
 	iconLabel.Text = icon
 	iconLabel.Visible = false
 	iconLabel.Parent = btn
-	local label = Instance.new("TextLabel")
+	label = Instance.new("TextLabel")
 	label.Name = "Caption"
 	label.BackgroundTransparency = 1
 	label.Size = UDim2.new(1,-8,0,28)
@@ -96,6 +110,7 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 	label.ZIndex = 3
 	label.Parent = btn
 	Style.Outline(label,22)
+	fit()
 	btn.MouseEnter:Connect(function()
 		TweenService:Create(art,TweenInfo.new(.15),{Rotation=-5}):Play()
 		stroke.Thickness=0

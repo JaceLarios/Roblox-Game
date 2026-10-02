@@ -46,6 +46,26 @@ local toggle = Garage.New("TextButton", gui, "AdminButton", {
 })
 Garage.Button(toggle, RED)
 
+-- Phone rails start just below the top bar. Keep the admin-only shortcut
+-- inside the safe top bar so it cannot cover Travel or a menu's close button.
+local mobileTopbar = Instance.new("ScreenGui")
+mobileTopbar.Name = "AdminTopbar"
+mobileTopbar.ResetOnSpawn = false
+mobileTopbar.DisplayOrder = 20
+mobileTopbar.ScreenInsets = Enum.ScreenInsets.TopbarSafeInsets
+mobileTopbar.Parent = player.PlayerGui
+local function fitToggle()
+	local bounds = gui.AbsoluteSize
+	local phone = bounds.Y > 100 and (bounds.Y < 480 or bounds.X < 600)
+	toggle.Parent = phone and mobileTopbar or gui
+	toggle.AnchorPoint = Vector2.new(1, phone and .5 or 0)
+	toggle.Position = phone and UDim2.new(1, -4, .5, 0) or UDim2.new(1, -14, 0, 10)
+	toggle.Size = phone and UDim2.fromOffset(72, 40) or UDim2.fromOffset(130, 46)
+	toggle.TextSize = phone and 16 or 26
+end
+gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitToggle)
+fitToggle()
+
 local PANEL_WIDTH, MARGIN = 320, 12
 local panel = Garage.New("Frame", gui, "Panel", {
 	AnchorPoint = Vector2.new(1, 0),
