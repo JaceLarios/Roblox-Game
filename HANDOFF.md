@@ -1,3 +1,9 @@
+# Toro source: decided — keep it (2026-10-01)
+
+The user has decided to keep the Toro in the game as it is, knowing its Sketchfab listing says "From Lamborghini's Website". Don't flag its source rights again, and don't change its model, credit, value or spawn settings for this reason. Keep the existing credit to Harsh Palan (CC BY 4.0, modified) in `ModelCredits`, `CREDITS.md` and the model's attributes. Only raise it again if a takedown or new evidence comes up.
+
+---
+
 # Follow-up fixes from Claude's second review — for Codex (2026-10-01)
 
 Claude checked commit b4c8234 in Studio and in a Play test. Items 1–5 below this section are done and look right: all 13 box-truck signs are back, Rocket Freight's and Core Carrier's signs are clear, the hover fans read as fans, and the Toro is 80,219 triangles with the same size and 24 rolling wheel pieces. Every script still matches GitHub, all 112 fusions resolve, and sizes and wheel data are unchanged. Four small things are left. Same rules as before: work on the live templates in `ReplicatedStorage.ItemModels`, back up first, and keep each model's size, `WheelPivot`/`WheelRadius`, `FusionBase`/`FusionAddon`/`DisplayName`/`NoseAxis` and the golf carts' 1.2× fit unchanged.
