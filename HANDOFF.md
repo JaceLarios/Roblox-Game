@@ -1,3 +1,23 @@
+# Fixes from Claude's review — for Codex (2026-10-01)
+
+Claude checked all 112 fusion models, the SVO and the golf cart fit, in Studio and in a Play test. All of it works: every build has its own model, wheels roll, hover builds float, sizes match their base cars, and the SVO's `LogoCover` still hides the rear lettering. What's left is visual. Work on the live templates in `ReplicatedStorage.ItemModels` and back up before replacing, as usual. Keep each model's size, `WheelPivot`/`WheelRadius`, `FusionBase`/`FusionAddon`/`DisplayName`/`NoseAxis` and the golf carts' 1.2× fit exactly as they are. Most important first:
+
+- [ ] **1. Box truck signs are missing on 13 builds.** The base Box Truck, Rocket Freight, Core Carrier and Star Freighter show the cream "JUNKYARD FUSION" sign on both sides of the box. On these 13 (all `VisualRevision = RemainingFusions_20261001_v1`) the sign panel and its lettering were painted the body colour, so the box side is blank apart from the small "SALVAGE / REBUILD / REPEAT" line: Scrap Hybrid, Rattle Hauler, Turbo Mover, Hauler Hemi, Rotary Rig, Twin Turbo Freight, Construction Cartel, Blown Big Rig, Diesel Dynamo, Yard Destroyer, Titan Twelve, Cargo Hoverer, Jet Hauler.
+  Put the sign colours back as on Rocket Freight: cream panel (243, 230, 189), blue "JUNKYARD" and gears (22, 131, 236), orange "FUSION" (246, 106, 36), on both sides. The rest of the truck keeps its build colour. Scrap Hybrid's nitrous tank and Rattle Hauler's pipe sit on the sign panel: once the sign is back, move them so they don't cover the lettering.
+- [ ] **2. Addon parts covering the sign on two Legendary trucks.** Rocket Freight's rocket covers most of "FUSION", and Core Carrier's hose and grille run across the sign. Move them so the whole sign reads (for example the rocket lower or further back, the hose along the roof edge).
+- [ ] **3. Hover fans blend into the body.** Cargo Hoverer's fans are the same pink as the truck, so it looks like a truck with its wheels missing. Street Levitator (yellow) and Hover Hulk (purple) have the same problem to a lesser degree. Give the fan pods a contrasting finish, such as dark metal housings with the cyan glow ring, so they read as hover fans. Hover Patrol's bright pods on its black body read well.
+- [ ] **4. A lighter Toro.** It's about 175k triangles, nearly double the SVO's 89,769, and it's the heaviest model in the game. Give it the SVO treatment: under about 90k triangles, keep the 12-stud length, its colour and materials, all 24 wheel pieces rolling (`WheelPivot`/`WheelRadius`), and no badges. Back up first.
+- [ ] **5. Explain the Toro's source-rights note.** The Toro's attributes and `assets/toro-replacement` say "original source rights unresolved". Write one or two lines here saying exactly what is unresolved, so the user can decide. Don't change the credit.
+- [ ] **6. Optional, only with the user's OK: ServerStorage backups.** ServerStorage holds 40+ backup folders, including `RemainingModelsStaging_1790875486` (52 duplicate models) and `BeforeSVOOptimization_1790875575` (the old 217k SVO). Players never download them, but they make the place file bigger. List which are safe to remove and ask the user before deleting anything.
+
+Not tasks:
+- Wheel-less (hover) builds show no `VehicleAddonEffects` aura, because AtomHover swaps in its own copy with its own hover glow. That's fine as is.
+- The Output error for animation 122110574377010 comes from the user's avatar mood animation (`Workspace.<player>.Animate.mood`). It isn't game content.
+
+When you're done, tick each item here, name the backups, and note what you changed.
+
+---
+
 # Remaining fusion families and SVO — Codex (2026-10-01)
 
 52 remaining fusion variants installed in Studio. Recipe, rarity, mesh-budget, viewport, resize and wheel/hover checks passed. Sources preserve base body identity; textures use the existing MaterialVariants. Original templates backed up in ServerStorage. All 112 fusion-result recipes should now resolve to named authored models. Source/52 front-and-rear previews, uploaded IDs, reversible install and recovery scripts: `assets/remaining-fusions`.
