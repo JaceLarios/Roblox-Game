@@ -1,3 +1,18 @@
+# Follow-up fixes from Claude's second review — for Codex (2026-10-01)
+
+Claude checked commit b4c8234 in Studio and in a Play test. Items 1–5 below this section are done and look right: all 13 box-truck signs are back, Rocket Freight's and Core Carrier's signs are clear, the hover fans read as fans, and the Toro is 80,219 triangles with the same size and 24 rolling wheel pieces. Every script still matches GitHub, all 112 fusions resolve, and sizes and wheel data are unchanged. Four small things are left. Same rules as before: work on the live templates in `ReplicatedStorage.ItemModels`, back up first, and keep each model's size, `WheelPivot`/`WheelRadius`, `FusionBase`/`FusionAddon`/`DisplayName`/`NoseAxis` and the golf carts' 1.2× fit unchanged.
+
+- [ ] **1. Jet Hauler's jets cover the sign.** Now that its sign is back, the side jet engines sit across the lower half of "FUSION" on both sides. Move them off the sign: below it on the chassis, behind the box, or on the roof. Lettering and gears should read in full from both sides.
+- [ ] **2. Rocket Freight's rockets hide its rear wheels.** The rockets were lowered to clear the sign and now sit in front of the rear wheels on both sides, so the truck looks like it rests on them. Move them so the wheels show and the sign stays clear, for example behind the rear axle past the end of the box, or up on the roof.
+- [ ] **3. Shield shape on the Toro's nose.** There's a blank, body-coloured shield outline on the front edge of the hood where the real brand's badge sits (no emblem or lettering, but it's the badge's shape). It was there before the optimization too. Smooth it flat into the hood so no badge shape is left. Keep everything else on the Toro the same, and back up first.
+- [ ] **4. Day 7 JACKPOT card shows a pet paw.** In the Daily Rewards panel, the Day 7 card uses the old pets art. Pets were removed, and Day 7 now gives coins + luck + the Warp Drive. The line is in `src/StarterPlayer/StarterPlayerScripts/GameUI.client.luau` (about line 536): `reward.kind=="jackpot" and "PETS"` inside the `Garage.Art(...)` call. Give it art that fits: a Warp Drive or jackpot icon in the existing illustrated style, or an existing `Garage.Art` key that fits better. GameUI.client is at Luau's 200-local limit, so add no new top-level locals (use a `do ... end` block if you need one). Edit the repo file and sync it to Studio so the two match.
+
+Not a task: **the Toro's source.** Your note says the Sketchfab listing describes the model as "From Lamborghini's Website". The user is deciding what to do about the Toro, so leave its model, credit and spawn settings as they are unless the user says otherwise.
+
+When you're done, tick each item here, name the backups, and note what you changed.
+
+---
+
 # Fixes from Claude's review — for Codex (2026-10-01)
 
 Claude checked all 112 fusion models, the SVO and the golf cart fit, in Studio and in a Play test. All of it works: every build has its own model, wheels roll, hover builds float, sizes match their base cars, and the SVO's `LogoCover` still hides the rear lettering. What's left is visual. Work on the live templates in `ReplicatedStorage.ItemModels` and back up before replacing, as usual. Keep each model's size, `WheelPivot`/`WheelRadius`, `FusionBase`/`FusionAddon`/`DisplayName`/`NoseAxis` and the golf carts' 1.2× fit exactly as they are. Most important first:
