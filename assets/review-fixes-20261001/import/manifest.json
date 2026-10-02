@@ -1,0 +1,87 @@
+[
+  {
+    "name": "Jet Hauler",
+    "file": "Jet_Hauler.json",
+    "parts": 29
+  },
+  {
+    "name": "Titan Twelve",
+    "file": "Titan_Twelve.json",
+    "parts": 29
+  },
+  {
+    "name": "Street Levitator",
+    "file": "Street_Levitator.json",
+    "parts": 12
+  },
+  {
+    "name": "Cargo Hoverer",
+    "file": "Cargo_Hoverer.json",
+    "parts": 16
+  },
+  {
+    "name": "Hover Hulk",
+    "file": "Hover_Hulk.json",
+    "parts": 14
+  },
+  {
+    "name": "Yard Destroyer",
+    "file": "Yard_Destroyer.json",
+    "parts": 27
+  },
+  {
+    "name": "Blown Big Rig",
+    "file": "Blown_Big_Rig.json",
+    "parts": 35
+  },
+  {
+    "name": "Diesel Dynamo",
+    "file": "Diesel_Dynamo.json",
+    "parts": 27
+  },
+  {
+    "name": "Construction Cartel",
+    "file": "Construction_Cartel.json",
+    "parts": 27
+  },
+  {
+    "name": "Rotary Rig",
+    "file": "Rotary_Rig.json",
+    "parts": 36
+  },
+  {
+    "name": "Twin Turbo Freight",
+    "file": "Twin_Turbo_Freight.json",
+    "parts": 27
+  },
+  {
+    "name": "Hauler Hemi",
+    "file": "Hauler_Hemi.json",
+    "parts": 27
+  },
+  {
+    "name": "Rattle Hauler",
+    "file": "Rattle_Hauler.json",
+    "parts": 29
+  },
+  {
+    "name": "Turbo Mover",
+    "file": "Turbo_Mover.json",
+    "parts": 27
+  },
+  {
+    "name": "Scrap Hybrid",
+    "file": "Scrap_Hybrid.json",
+    "parts": 29
+  },
+  {
+    "name": "Rocket Freight",
+    "file": "Rocket_Freight.json",
+    "parts": 40
+  },
+  {
+    "name": "Core Carrier",
+    "file": "Core_Carrier.json",
+    "parts": 41
+  }
+]

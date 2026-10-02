@@ -1,0 +1,660 @@
+[
+  {
+    "name": "Jet Hauler",
+    "signTriangles": {
+      "Cream": 300,
+      "Blue": 6014,
+      "Orange": 1122
+    },
+    "movedOrRecolored": [],
+    "boundsBefore": [
+      [
+        -2.45,
+        -2.33925,
+        -3.73682
+      ],
+      [
+        2.45,
+        2.33925,
+        3.73682
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -2.45,
+        -2.33925,
+        -3.73682
+      ],
+      [
+        2.45,
+        2.33925,
+        3.73682
+      ]
+    ]
+  },
+  {
+    "name": "Titan Twelve",
+    "signTriangles": {
+      "Cream": 270,
+      "Blue": 5812,
+      "Orange": 1080
+    },
+    "movedOrRecolored": [],
+    "boundsBefore": [
+      [
+        -1.8,
+        -2.33925,
+        -3.73682
+      ],
+      [
+        1.8,
+        2.33925,
+        3.73682
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -1.8,
+        -2.33925,
+        -3.73682
+      ],
+      [
+        1.8,
+        2.33925,
+        3.73682
+      ]
+    ]
+  },
+  {
+    "name": "Street Levitator",
+    "signTriangles": {},
+    "movedOrRecolored": [
+      "Ducted lift fan shroud evaluated",
+      "Ducted lift fan shroud rolled edge evaluated",
+      "Ducted lift fan shroud.001 evaluated",
+      "Ducted lift fan shroud rolled edge.001 evaluated",
+      "Ducted lift fan shroud.002 evaluated",
+      "Ducted lift fan shroud rolled edge.002 evaluated",
+      "Ducted lift fan shroud.003 evaluated",
+      "Ducted lift fan shroud rolled edge.003 evaluated"
+    ],
+    "boundsBefore": [
+      [
+        -1.559,
+        -0.75105,
+        -2.5875
+      ],
+      [
+        1.559,
+        0.75105,
+        2.5875
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -1.559,
+        -0.75105,
+        -2.5875
+      ],
+      [
+        1.559,
+        0.75105,
+        2.5875
+      ]
+    ]
+  },
+  {
+    "name": "Cargo Hoverer",
+    "signTriangles": {
+      "Cream": 312,
+      "Blue": 9384,
+      "Orange": 1656
+    },
+    "movedOrRecolored": [
+      "Ducted lift fan shroud evaluated.002",
+      "Ducted lift fan shroud rolled edge evaluated.002",
+      "Ducted lift fan shroud.001 evaluated.002",
+      "Ducted lift fan shroud rolled edge.001 evaluated.002",
+      "Ducted lift fan shroud.002 evaluated.002",
+      "Ducted lift fan shroud rolled edge.002 evaluated.002",
+      "Ducted lift fan shroud.003 evaluated.002",
+      "Ducted lift fan shroud rolled edge.003 evaluated.002"
+    ],
+    "boundsBefore": [
+      [
+        -2.064,
+        -2.17132,
+        -3.7375
+      ],
+      [
+        2.064,
+        2.17132,
+        3.7375
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -2.064,
+        -2.17132,
+        -3.7375
+      ],
+      [
+        2.064,
+        2.17132,
+        3.7375
+      ]
+    ]
+  },
+  {
+    "name": "Hover Hulk",
+    "signTriangles": {},
+    "movedOrRecolored": [
+      "Ducted lift fan shroud evaluated.003",
+      "Ducted lift fan shroud rolled edge evaluated.003",
+      "Ducted lift fan shroud.001 evaluated.003",
+      "Ducted lift fan shroud rolled edge.001 evaluated.003",
+      "Ducted lift fan shroud.002 evaluated.003",
+      "Ducted lift fan shroud rolled edge.002 evaluated.003",
+      "Ducted lift fan shroud.003 evaluated.003",
+      "Ducted lift fan shroud rolled edge.003 evaluated.003"
+    ],
+    "boundsBefore": [
+      [
+        -1.95325,
+        -1.31653,
+        -2.23537
+      ],
+      [
+        1.95325,
+        1.31653,
+        2.23537
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -1.95325,
+        -1.31653,
+        -2.23537
+      ],
+      [
+        1.95325,
+        1.31653,
+        2.23537
+      ]
+    ]
+  },
+  {
+    "name": "Yard Destroyer",
+    "signTriangles": {
+      "Cream": 312,
+      "Blue": 6330,
+      "Orange": 1160
+    },
+    "movedOrRecolored": [],
+    "boundsBefore": [
+      [
+        -1.8,
+        -2.33925,
+        -3.73682
+      ],
+      [
+        1.8,
+        2.33925,
+        3.73682
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -1.8,
+        -2.33925,
+        -3.73682
+      ],
+      [
+        1.8,
+        2.33925,
+        3.73682
+      ]
+    ]
+  },
+  {
+    "name": "Blown Big Rig",
+    "signTriangles": {
+      "Cream": 218,
+      "Blue": 5584,
+      "Orange": 1024
+    },
+    "movedOrRecolored": [],
+    "boundsBefore": [
+      [
+        -1.8,
+        -2.60129,
+        -3.73682
+      ],
+      [
+        1.8,
+        2.60129,
+        3.73682
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -1.8,
+        -2.60129,
+        -3.73682
+      ],
+      [
+        1.8,
+        2.60129,
+        3.73682
+      ]
+    ]
+  },
+  {
+    "name": "Diesel Dynamo",
+    "signTriangles": {
+      "Cream": 204,
+      "Blue": 5482,
+      "Orange": 1004
+    },
+    "movedOrRecolored": [],
+    "boundsBefore": [
+      [
+        -2.175,
+        -2.42859,
+        -3.73682
+      ],
+      [
+        2.175,
+        2.42859,
+        3.73682
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -2.175,
+        -2.42859,
+        -3.73682
+      ],
+      [
+        2.175,
+        2.42859,
+        3.73682
+      ]
+    ]
+  },
+  {
+    "name": "Construction Cartel",
+    "signTriangles": {
+      "Cream": 312,
+      "Blue": 6852,
+      "Orange": 1174
+    },
+    "movedOrRecolored": [],
+    "boundsBefore": [
+      [
+        -1.8,
+        -2.33925,
+        -3.7375
+      ],
+      [
+        1.8,
+        2.33925,
+        3.7375
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -1.8,
+        -2.33925,
+        -3.7375
+      ],
+      [
+        1.8,
+        2.33925,
+        3.7375
+      ]
+    ]
+  },
+  {
+    "name": "Rotary Rig",
+    "signTriangles": {
+      "Cream": 224,
+      "Blue": 5628,
+      "Orange": 1034
+    },
+    "movedOrRecolored": [],
+    "boundsBefore": [
+      [
+        -1.8,
+        -2.46321,
+        -3.73682
+      ],
+      [
+        1.8,
+        2.46321,
+        3.73682
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -1.8,
+        -2.46321,
+        -3.73682
+      ],
+      [
+        1.8,
+        2.46321,
+        3.73682
+      ]
+    ]
+  },
+  {
+    "name": "Twin Turbo Freight",
+    "signTriangles": {
+      "Cream": 286,
+      "Blue": 5916,
+      "Orange": 1102
+    },
+    "movedOrRecolored": [],
+    "boundsBefore": [
+      [
+        -1.8,
+        -2.38124,
+        -3.73682
+      ],
+      [
+        1.8,
+        2.38124,
+        3.73682
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -1.8,
+        -2.38124,
+        -3.73682
+      ],
+      [
+        1.8,
+        2.38124,
+        3.73682
+      ]
+    ]
+  },
+  {
+    "name": "Hauler Hemi",
+    "signTriangles": {
+      "Cream": 312,
+      "Blue": 7176,
+      "Orange": 1210
+    },
+    "movedOrRecolored": [],
+    "boundsBefore": [
+      [
+        -1.8,
+        -2.33925,
+        -3.7375
+      ],
+      [
+        1.8,
+        2.33925,
+        3.7375
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -1.8,
+        -2.33925,
+        -3.7375
+      ],
+      [
+        1.8,
+        2.33925,
+        3.7375
+      ]
+    ]
+  },
+  {
+    "name": "Rattle Hauler",
+    "signTriangles": {
+      "Cream": 312,
+      "Blue": 7388,
+      "Orange": 1254
+    },
+    "movedOrRecolored": [
+      "Side exhaust collector evaluated.002",
+      "Heat-blued side-exit tip evaluated.002",
+      "Heat-blued side-exit tip rolled edge evaluated.002",
+      "Titanium tip heat band evaluated.002",
+      "Titanium tip heat band.001 evaluated.002",
+      "Titanium tip heat band.002 evaluated.002",
+      "Bolted exhaust hanger evaluated.002",
+      "Bolted exhaust hanger.001 evaluated.002",
+      "Side exhaust collector.001 evaluated.002",
+      "Heat-blued side-exit tip.001 evaluated.002",
+      "Heat-blued side-exit tip rolled edge.001 evaluated.002",
+      "Titanium tip heat band.003 evaluated.002",
+      "Titanium tip heat band.004 evaluated.002",
+      "Titanium tip heat band.005 evaluated.002",
+      "Bolted exhaust hanger.002 evaluated.002",
+      "Bolted exhaust hanger.003 evaluated.002"
+    ],
+    "boundsBefore": [
+      [
+        -1.97241,
+        -2.33925,
+        -3.7375
+      ],
+      [
+        1.97241,
+        2.33925,
+        3.7375
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -1.97241,
+        -2.33925,
+        -3.7375
+      ],
+      [
+        1.97241,
+        2.33925,
+        3.7375
+      ]
+    ]
+  },
+  {
+    "name": "Turbo Mover",
+    "signTriangles": {
+      "Cream": 312,
+      "Blue": 6132,
+      "Orange": 1144
+    },
+    "movedOrRecolored": [],
+    "boundsBefore": [
+      [
+        -1.8,
+        -2.40004,
+        -3.73682
+      ],
+      [
+        1.8,
+        2.40004,
+        3.73682
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -1.8,
+        -2.40004,
+        -3.73682
+      ],
+      [
+        1.8,
+        2.40004,
+        3.73682
+      ]
+    ]
+  },
+  {
+    "name": "Scrap Hybrid",
+    "signTriangles": {
+      "Cream": 312,
+      "Blue": 7884,
+      "Orange": 1354
+    },
+    "movedOrRecolored": [
+      "Nitrous bottle evaluated.002",
+      "Bottle shoulder evaluated.002",
+      "Bottle valve evaluated.002",
+      "Bottle retaining strap evaluated.002",
+      "Bottle retaining strap.001 evaluated.002",
+      "Braided nitrous feed evaluated.002",
+      "Bottle mounting tray evaluated.002",
+      "Nitrous bottle.001 evaluated.002",
+      "Bottle shoulder.001 evaluated.002",
+      "Bottle valve.001 evaluated.002",
+      "Bottle retaining strap.002 evaluated.002",
+      "Bottle retaining strap.003 evaluated.002",
+      "Braided nitrous feed.001 evaluated.002",
+      "Bottle mounting tray.001 evaluated.002"
+    ],
+    "boundsBefore": [
+      [
+        -2.16,
+        -2.33925,
+        -3.7375
+      ],
+      [
+        2.16,
+        2.33925,
+        3.7375
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -2.16,
+        -2.33925,
+        -3.7375
+      ],
+      [
+        2.16,
+        2.33925,
+        3.7375
+      ]
+    ]
+  },
+  {
+    "name": "Rocket Freight",
+    "signTriangles": {},
+    "movedOrRecolored": [
+      "Cargo launch pod Iron evaluated",
+      "Cargo launch pod Steel evaluated",
+      "Cargo launch pod Chrome evaluated",
+      "Cargo launch pod ElectricBlue evaluated",
+      "Cargo launch pod Copper evaluated",
+      "Cargo launch pod BlueHeat evaluated",
+      "Cargo launch pod Cyan evaluated",
+      "Cargo launch pod Orange evaluated",
+      "Cargo launch pod Rubber evaluated",
+      "Cargo launch pod Gold evaluated",
+      "Cargo launch pod Red evaluated",
+      "Heavy launch yoke evaluated",
+      "Cargo launch pod Iron.001 evaluated",
+      "Cargo launch pod Steel.001 evaluated",
+      "Cargo launch pod Chrome.001 evaluated",
+      "Cargo launch pod ElectricBlue.001 evaluated",
+      "Cargo launch pod Copper.001 evaluated",
+      "Cargo launch pod BlueHeat.001 evaluated",
+      "Cargo launch pod Cyan.001 evaluated",
+      "Cargo launch pod Orange.001 evaluated",
+      "Cargo launch pod Rubber.001 evaluated",
+      "Cargo launch pod Gold.001 evaluated",
+      "Cargo launch pod Red.001 evaluated",
+      "Heavy launch yoke.001 evaluated",
+      "Braided flux supply evaluated.004",
+      "Luminous flux tracer evaluated.004",
+      "Cargo cooling radiator evaluated",
+      "Cargo cooling radiator.001 evaluated",
+      "Cargo cooling radiator.002 evaluated",
+      "Cargo cooling radiator.003 evaluated",
+      "Cargo cooling radiator.004 evaluated",
+      "Braided flux supply.001 evaluated.004",
+      "Luminous flux tracer.001 evaluated.004",
+      "Cargo cooling radiator.005 evaluated",
+      "Cargo cooling radiator.006 evaluated",
+      "Cargo cooling radiator.007 evaluated",
+      "Cargo cooling radiator.008 evaluated",
+      "Cargo cooling radiator.009 evaluated"
+    ],
+    "boundsBefore": [
+      [
+        -2.91741,
+        -2.42055,
+        -3.7375
+      ],
+      [
+        2.91741,
+        2.42055,
+        3.7375
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -2.91741,
+        -2.42536,
+        -3.7375
+      ],
+      [
+        2.91741,
+        2.42055,
+        3.7375
+      ]
+    ]
+  },
+  {
+    "name": "Core Carrier",
+    "signTriangles": {},
+    "movedOrRecolored": [
+      "Braided flux supply evaluated.005",
+      "Luminous flux tracer evaluated.005",
+      "Cargo cooling radiator evaluated.001",
+      "Cargo cooling radiator.001 evaluated.001",
+      "Cargo cooling radiator.002 evaluated.001",
+      "Cargo cooling radiator.003 evaluated.001",
+      "Cargo cooling radiator.004 evaluated.001",
+      "Braided flux supply.001 evaluated.005",
+      "Luminous flux tracer.001 evaluated.005",
+      "Cargo cooling radiator.005 evaluated.001",
+      "Cargo cooling radiator.006 evaluated.001",
+      "Cargo cooling radiator.007 evaluated.001",
+      "Cargo cooling radiator.008 evaluated.001",
+      "Cargo cooling radiator.009 evaluated.001"
+    ],
+    "boundsBefore": [
+      [
+        -2.3179,
+        -3.03355,
+        -3.7375
+      ],
+      [
+        2.3179,
+        3.03355,
+        3.7375
+      ]
+    ],
+    "boundsAfter": [
+      [
+        -2.3179,
+        -3.03355,
+        -3.7375
+      ],
+      [
+        2.3179,
+        3.03355,
+        3.7375
+      ]
+    ]
+  }
+]

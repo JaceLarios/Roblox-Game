@@ -1,0 +1,170 @@
+{
+  "scope": "Isolated current race constructor, conveyor path and resize. Not a player-driven race.",
+  "playSession": true,
+  "passed": 18,
+  "results": [
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Blown Big Rig",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Cargo Hoverer",
+      "wheelParts": 0,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Construction Cartel",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Core Carrier",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Diesel Dynamo",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Hauler Hemi",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Hover Hulk",
+      "wheelParts": 0,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Jet Hauler",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Rattle Hauler",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Rocket Freight",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Rotary Rig",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Scrap Hybrid",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Street Levitator",
+      "wheelParts": 0,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Titan Twelve",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Turbo Mover",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Twin Turbo Freight",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Yard Destroyer",
+      "wheelParts": 12,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    },
+    {
+      "conveyorPath": true,
+      "raceConstructor": true,
+      "name": "Toro",
+      "wheelParts": 0,
+      "raceLength": 13,
+      "conveyorOverhang": 0,
+      "pickupResize": true
+    }
+  ],
+  "note": "wheelParts counts WheelId tags only; legacy Toro uses WheelPivot tags and its 24 moving parts are verified separately in driving-results.json."
+}
