@@ -286,9 +286,11 @@ local function setCarrying(nextCarrying, nextFrom)
 
 	-- Hiding the hotbar is the whole point of the carry state: no bat, no
 	-- speed coil, nothing to do but run. pcall because SetCoreGuiEnabled
-	-- throws if the CoreGui is not ready yet on a fresh join.
+	-- throws if the CoreGui is not ready yet on a fresh join. A menu open on
+	-- a phone hides it too (UIStyle, MenuOpen), so it stays hidden for that.
+	player:SetAttribute("CarryHidesHotbar", carrying ~= nil)
 	pcall(function()
-		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, carrying == nil)
+		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, carrying == nil and not player:GetAttribute("MenuOpen"))
 	end)
 end
 

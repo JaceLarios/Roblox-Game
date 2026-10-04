@@ -13,6 +13,8 @@ local buyAddonRemote = ReplicatedStorage:WaitForChild("BuyAddon")
 local player = Players.LocalPlayer
 local playerGui=player:WaitForChild("PlayerGui")
 local shopGui=Instance.new("ScreenGui");shopGui.Name="MechanicShop";shopGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling;shopGui.ResetOnSpawn=false;shopGui.DisplayOrder=30;shopGui.Enabled=false;shopGui.Parent=playerGui
+-- Counts as an open menu, so the HUD buttons and phone controls step aside.
+require(ReplicatedStorage:WaitForChild("UIStyle")).ModalGui(shopGui)
 local panel=Garage.New("Frame",shopGui,"MechanicPanel",{})
 Garage.Shell(panel);Garage.Fit(panel)
 local title=Garage.Text(panel,"Title","MECHANIC - ADDONS",UDim2.fromOffset(18,14),UDim2.new(1,-94,0,54),28)
@@ -94,7 +96,9 @@ for order, addon in ipairs(FusionRecipes.ShopAddons) do
 	title.TextScaled = true
 
 	local rarityName = ItemRarity.RarityName(addon.rarity) or string.upper(addon.rarity)
-	local makes = Garage.Text(card, "Makes", "Makes " .. rarityName .. " builds",
+	-- The addon's own rarity: a build starts there and its car can move it
+	-- a rarity up or down (FusionRecipes), so not "Makes X builds".
+	local makes = Garage.Text(card, "Makes", rarityName .. " addon",
 		UDim2.new(0, 8, 0, 230), UDim2.new(1, -16, 0, 26), 19, ItemRarity.RarityColor(addon.rarity))
 	local makesStroke = Instance.new("UIStroke")
 	makesStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual

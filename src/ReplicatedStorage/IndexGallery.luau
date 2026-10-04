@@ -190,10 +190,13 @@ function Gallery.Create(gui)
 		local flatArea = activeArea == "addons"
 		filter.Visible = not flatArea
 		local row = phone and 100 or 118
+		-- Eight tabs: one row across, or two rows of four in portrait and on
+		-- a phone on its side, where one row squeezed "Uncommon" and
+		-- "Legendary" past their tabs.
+		local twoRows = portrait or phone
 		filter.Position = UDim2.fromOffset(28, portrait and 205 or row)
-		filter.Size = UDim2.new(1, portrait and -48 or -350, 0, portrait and 74 or 44)
-		-- Eight tabs: one row across, or two rows of four in portrait.
-		local perRow = portrait and 4 or #ORDER
+		filter.Size = UDim2.new(1, portrait and -48 or -350, 0, portrait and 74 or phone and 88 or 44)
+		local perRow = twoRows and 4 or #ORDER
 		local rows = math.ceil(#ORDER / perRow)
 		for i, key in ipairs(ORDER) do
 			local column, line = (i - 1) % perRow, math.floor((i - 1) / perRow)
@@ -203,10 +206,11 @@ function Gallery.Create(gui)
 		search.Position = portrait and UDim2.fromOffset(28, flatArea and 205 or 292)
 			or UDim2.new(1, -312, 0, row)
 		search.Size = portrait and UDim2.new(1, -56, 0, 74) or UDim2.fromOffset(284,44)
-		count.Position = UDim2.fromOffset(28, portrait and (flatArea and 291 or 378) or row + 52)
+		local below = (phone and not flatArea) and 44 or 0   -- the filter's second row
+		count.Position = UDim2.fromOffset(28, portrait and (flatArea and 291 or 378) or row + 52 + below)
 		count.Size = UDim2.new(1, -56, 0, 36)
 		count.TextSize = portrait and 22 or 23
-		local top = portrait and (flatArea and 337 or 424) or row + 94
+		local top = portrait and (flatArea and 337 or 424) or row + 94 + below
 		scroll.Position = UDim2.fromOffset(28, top)
 		scroll.Size = UDim2.new(1, -56, 1, -top-(phone and 12 or 20))
 		local cols = portrait and 2 or phone and 5 or 4
@@ -319,6 +323,9 @@ function Gallery.Create(gui)
 					-- A Secret car's card carries its model's credit instead.
 					local status=caption(card,"Status",entry.comingSoon and "Coming soon" or entry.credit or (entry.known and "✓ Discovered" or "Keep exploring"),13)
 					status.Size,status.Position=UDim2.new(1,-12,0,18),UDim2.new(0,6,1,-18)
+					-- Drawn about 6 pixels tall on a phone, too small to read: only a
+					-- Secret car's credit (which its model's licence asks for) stays.
+					status.Visible=not Garage.IsPhone(gui.AbsoluteSize) or entry.credit~=nil
 					status.TextColor3=entry.known and P.TealDeep or Color3.fromRGB(122,112,99)
 					if entry.credit then
 						status.TextScaled=true

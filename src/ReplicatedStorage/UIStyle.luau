@@ -67,12 +67,43 @@ local function enamel(object, color)
 end
 local modals = {}
 local navigation = {}
+-- A menu is a panel (open while Visible) or a whole ScreenGui (open while
+-- Enabled, as the mechanic's shop is).
+local function isOpen(modal)
+	if not modal.Parent then return false end
+	if modal:IsA("ScreenGui") then return modal.Enabled end
+	return modal.Visible
+end
+-- On a touch screen the thumbstick, the jump button and the tool hotbar sit
+-- on top of every menu and cover its bottom corners, so they are put away
+-- while a menu is open and come back when it closes. The hotbar is also
+-- hidden while carrying (CarryHud): each side flags its reason on the
+-- player (MenuOpen here, CarryHidesHotbar there) and the hotbar shows only
+-- when neither is set.
+local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
+local StarterGui = game:GetService("StarterGui")
+local controlsAway = false
+local function setControls(menuOpen)
+	if not UserInputService.TouchEnabled or menuOpen == controlsAway then return end
+	controlsAway = menuOpen
+	GuiService.TouchControlsEnabled = not menuOpen
+	local player = game:GetService("Players").LocalPlayer
+	if player then
+		player:SetAttribute("MenuOpen", menuOpen)
+		pcall(function()
+			StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack,
+				not menuOpen and not player:GetAttribute("CarryHidesHotbar"))
+		end)
+	end
+end
 local function updateNavigation()
 	local visible = true
 	for _, modal in ipairs(modals) do
-		if modal.Parent and modal.Visible then visible = false break end
+		if isOpen(modal) then visible = false break end
 	end
 	for _, holder in ipairs(navigation) do if holder.Parent then holder.Visible = visible end end
+	setControls(not visible)
 end
 function Style.Navigation(holder)
 	table.insert(navigation,holder)
@@ -81,9 +112,17 @@ end
 -- Whether any menu is open, for HUD pieces that should get out of its way.
 function Style.ModalOpen()
 	for _, modal in ipairs(modals) do
-		if modal.Parent and modal.Visible then return true end
+		if isOpen(modal) then return true end
 	end
 	return false
+end
+-- A menu that is a ScreenGui of its own, shown by its Enabled: counted as
+-- open like any other menu (the HUD buttons and touch controls step
+-- aside), without closing the others.
+function Style.ModalGui(screenGui)
+	table.insert(modals, screenGui)
+	screenGui:GetPropertyChangedSignal("Enabled"):Connect(updateNavigation)
+	updateNavigation()
 end
 function Style.ScrollDetails(panel, height)
 	local scroll = Instance.new("ScrollingFrame")
@@ -138,7 +177,7 @@ function Style.Modal(panel)
 	panel:GetPropertyChangedSignal("Visible"):Connect(function()
 		if panel.Visible then
 			for _, other in ipairs(modals) do
-				if other ~= panel and other.Parent then other.Visible = false end
+				if other ~= panel and other.Parent and not other:IsA("ScreenGui") then other.Visible = false end
 			end
 		end
 		updateNavigation()
@@ -190,6 +229,8 @@ function Style.Close(button)
 	corner.Parent = button
 	Style.Surface(button,button.BackgroundColor3,4)
 	Style.Outline(button,38)
+	-- Big enough to tap on a phone, where its menu is drawn shrunk.
+	require(script.Parent:WaitForChild("GarageTheme")).TouchTarget(button)
 end
 function Style.Attach(gui)
 	if gui:GetAttribute("Designed") then return end

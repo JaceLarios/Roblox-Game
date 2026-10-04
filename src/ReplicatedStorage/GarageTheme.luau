@@ -32,6 +32,45 @@ function Theme.Header(label)
  edge.ApplyStrokeMode=Enum.ApplyStrokeMode.Border edge.Color=Color3.fromRGB(148,91,12) edge.Thickness=3 edge.Parent=label
  local pad=Instance.new("UIPadding") pad.PaddingLeft=UDim.new(0,14) pad.PaddingRight=UDim.new(0,14) pad.Parent=label
 end
+-- On a phone a menu is drawn shrunk to fit the screen (Canvas, Fit), which
+-- shrank its close button to about 22 pixels, too small to tap. This keeps
+-- a button at least TOUCH_MIN pixels on screen there, with a UIScale of
+-- its own. A button in the right half of its parent (a close button in the
+-- top-right corner) grows leftward from its right edge, so it stays inside
+-- the panel; wherever a script later places it, that place is kept and
+-- only shifted by the growth. For buttons sized in offsets.
+local TOUCH_MIN = 38
+function Theme.TouchTarget(button)
+ if button:GetAttribute("TouchTarget") then return end
+ button:SetAttribute("TouchTarget",true)
+ local grow=Instance.new("UIScale") grow.Name="TouchTarget" grow.Parent=button
+ local placed,lastSet=button.Position,button.Position
+ local function apply()
+  local sg=button:FindFirstAncestorOfClass("ScreenGui")
+  local screen=sg and sg.AbsoluteSize
+  local base=button.AbsoluteSize/grow.Scale
+  local s=1
+  if screen and Theme.IsPhone(screen) and base.X>1 and base.Y>1 then
+   s=math.clamp(TOUCH_MIN/math.min(base.X,base.Y),1,2.4)
+  end
+  local parent=button.Parent
+  local right=parent and parent:IsA("GuiObject")
+   and button.AbsolutePosition.X+button.AbsoluteSize.X/2>parent.AbsolutePosition.X+parent.AbsoluteSize.X/2
+  local shift=right and (s-1)*button.Size.X.Offset*(1-button.AnchorPoint.X) or 0
+  grow.Scale=s
+  lastSet=placed-UDim2.fromOffset(shift,0)
+  button.Position=lastSet
+ end
+ -- A position set by anything else is the new place; this one's own is not.
+ button:GetPropertyChangedSignal("Position"):Connect(function()
+  if button.Position~=lastSet then placed=button.Position apply() end
+ end)
+ button:GetPropertyChangedSignal("AbsoluteSize"):Connect(apply)
+ apply()
+end
+local function isCloseButton(o)
+ return o:IsA("TextButton") and (o.Name=="Close" or o.Text=="X" or o.Text=="×")
+end
 function Theme.Shell(panel)
  if panel:GetAttribute("GarageShell") then return end
  panel:SetAttribute("GarageShell",true) panel:SetAttribute("Designed",true)
@@ -56,7 +95,10 @@ function Theme.Shell(panel)
    b.TextColor3=Color3.new(1,1,1) b.TextSize=30 b.TextStrokeColor3=INK b.TextStrokeTransparency=0
    corner(b,10) stroke(b,INK,3)
   end
+  if isCloseButton(b) then Theme.TouchTarget(b) end
  end
+ -- A close button made after the panel was dressed.
+ panel.ChildAdded:Connect(function(b) task.defer(function() if b.Parent==panel and isCloseButton(b) then Theme.TouchTarget(b) end end) end)
  local function skin(o)
   if o:GetAttribute("Designed") or o:GetAttribute("GarageDecoration") or o:IsA("ViewportFrame") then return end
   if o:IsA("TextBox") then

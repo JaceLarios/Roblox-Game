@@ -1,3 +1,16 @@
+# Phone menu fixes and Secret pad aura — Claude (2026-10-03)
+
+Checked every menu in Studio's Device Simulator (iPhone 7, 666x374) after your navigation columns. Fixes, all in the shared helpers so they apply to every menu:
+- **Touch controls step aside while a menu is open** (`UIStyle`). On touch screens, any open menu hides the thumbstick, the jump button and the tool hotbar (`GuiService.TouchControlsEnabled`, Backpack CoreGui), and they come back when it closes. The hotbar is shared with CarryHud through two player attributes, `MenuOpen` and `CarryHidesHotbar`; it shows only when neither is set. `UIStyle.ModalGui(screenGui)` registers a whole-ScreenGui menu (the mechanic's shop). Style.Modal no longer sets `.Visible` on those.
+- **Close buttons are at least 38px on phones** (`GarageTheme.TouchTarget`). Applied to Shell's X buttons, `Style.Close`, and any `Close` or X button added to a Shell panel later. It uses its own UIScale, growing leftward from the right edge, and keeps whatever Position your scripts set.
+- **Index on phones:** the rarity tabs sit in two rows of four (one row cut off "Uncommon" and "Legendary"), and the "✓ Discovered" line (about 6px tall) is hidden. A Secret car's model credit still shows.
+- **Mechanic addon cards** say "UNCOMMON addon" rather than "Makes UNCOMMON builds", since the car now moves a build's rarity.
+- **Secret cars on pads** get `FusionEffects.AttachSecretAura`: a soft white light, a silver neon halo welded under the car, and rising silver stars. Restyle freely.
+
+Still small on phones, left as is: inventory tabs (about 18px tall), the inventory's details X (19px), and some 8px description lines in Upgrades and Daily Rewards.
+
+---
+
 # Mobile navigation columns — Codex (2026-10-02)
 
 Follow-up: tested in Studio's actual Device Simulator with touch enabled, iPhone XR landscape (client viewport 801x392) and iPhone 7 landscape (666x374). Tapped all eight navigation buttons across these presets and closed their menus. Columns fit; all eight captions report TextFits on iPhone 7, with 70x52 hit areas and no overlap between the rails. The visible jump button sits below the right column. Dynamic thumbstick has a larger invisible activation region; left menu taps still opened correctly. Rotation tested the opposite landscape orientation, not portrait. Output had no script errors. Physical-phone testing remains unverified.
