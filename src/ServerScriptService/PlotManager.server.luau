@@ -2394,6 +2394,9 @@ rebirthRemote.OnServerEvent:Connect(function(player)
 	end
 
 	coins.Value = 0
+	-- Coins waiting on the collector pad go with the rest.
+	s.unclaimed = 0
+	Income.showCollector(plots[s.plotIndex])
 	s.upgrades = { luck = 1, carry = 1, value = 1, speed = 1, storage = 1, bat = 1, coil = 1 }
 	s.inventory = {}
 	s.placed = {}
@@ -3081,6 +3084,95 @@ redeemCodeRemote.OnServerEvent:Connect(function(player, rawCode)
 end)
 
 ------------------------------------------------------------------
+-- The coin collector. What a player's pads earn piles up on a pad in the
+-- aisle by their garage door (s.unclaimed, saved as unclaimedCoins), with
+-- the amount shown over it, and comes to them when they step on it. Until
+-- 2026-10-05 it went straight into their coins. Offline earnings are still
+-- paid straight away, with the welcome-back popup. (A do block: this
+-- script's top level is near Luau's 200-local limit.)
+------------------------------------------------------------------
+
+do
+	local GOLD = Color3.fromRGB(255, 196, 40)
+	local collectors = {} -- [plot] = { part, amount label }
+
+	-- What stepping on it would pay: the 2x Coins pass counts, as it does
+	-- when the coins are added.
+	local function showAmount(plot)
+		local collector = collectors[plot]
+		if not collector then return end
+		local s = plot.owner and state[plot.owner]
+		local amount = s and Gamepasses.Coins(plot.owner, math.floor(s.unclaimed or 0)) or 0
+		collector.label.Text = string.format("%s\n<font size=\"22\">STEP HERE TO COLLECT</font>",
+			amount > 0 and ("💰 " .. Quests.commas(amount)) or "COIN COLLECTOR")
+	end
+
+	for _, plot in ipairs(plots) do
+		local part = makePart({
+			Name = "CoinCollector",
+			Size = Vector3.new(9, 0.4, 9),
+			CFrame = plot.frame * CFrame.new(0, 0.7, -31),
+			Material = Enum.Material.SmoothPlastic,
+			Color = GOLD,
+			Parent = plot.model,
+		})
+		makePart({
+			Name = "CoinCollectorRing",
+			Size = Vector3.new(0.2, 10, 10),
+			CFrame = plot.frame * CFrame.new(0, 0.82, -31) * CFrame.Angles(0, 0, math.pi / 2),
+			Shape = Enum.PartType.Cylinder,
+			Material = Enum.Material.Neon,
+			Color = Color3.fromRGB(255, 232, 120),
+			Transparency = 0.35,
+			CanCollide = false, CanQuery = false, CanTouch = false, CastShadow = false,
+			Parent = plot.model,
+		})
+		local label = makeLabel(part, "COIN COLLECTOR", 4.5, 300, GOLD, 55)
+		label.Parent.Size = UDim2.fromOffset(300, 84)
+		collectors[plot] = { part = part, label = label }
+		showAmount(plot)
+
+		local ready = {} -- [player] = os.clock() when they can collect again
+		part.Touched:Connect(function(hit)
+			local player = Players:GetPlayerFromCharacter(hit.Parent)
+			if not player or plot.owner ~= player then return end
+			local s = state[player]
+			if not s or os.clock() < (ready[player] or 0) then return end
+			ready[player] = os.clock() + 0.6
+			local whole = math.floor(s.unclaimed or 0)
+			if whole <= 0 then return end
+			s.unclaimed -= whole
+			local paid = addCoins(player, whole) or 0
+			playSound(part, "big")
+			toast(player, string.format("+%s coins collected!", Quests.commas(paid)), true)
+			local sparkle = Instance.new("ParticleEmitter")
+			sparkle.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+			sparkle.Color = ColorSequence.new(GOLD)
+			sparkle.Speed = NumberRange.new(8, 14)
+			sparkle.SpreadAngle = Vector2.new(35, 35)
+			sparkle.EmissionDirection = Enum.NormalId.Top
+			sparkle.Lifetime = NumberRange.new(0.5, 0.9)
+			sparkle.LightEmission = 0.6
+			sparkle.Rate = 0
+			sparkle.Parent = part
+			sparkle:Emit(40)
+			task.delay(1.5, function() sparkle:Destroy() end)
+			showAmount(plot)
+			pushUI(player)
+		end)
+	end
+
+	-- Adds pad earnings to a player's pile, and redraws the amount.
+	function Income.bank(player, s, amount)
+		s.unclaimed = (s.unclaimed or 0) + amount
+		local plot = plots[s.plotIndex]
+		if plot then showAmount(plot) end
+	end
+	-- Redraws a plot's collector (it changed hands, or a pile was cleared).
+	Income.showCollector = showAmount
+end
+
+------------------------------------------------------------------
 -- Passive income from placed pets ONLY — sitting in Inventory doesn't
 -- earn a thing anymore; a pet has to actually be on one of a player's
 -- pads (see "Placing and unplacing pets" below) to make money.
@@ -3093,9 +3185,10 @@ task.spawn(function()
 		for _, player in ipairs(Players:GetPlayers()) do
 			local s = state[player]
 			if s then
+				-- Onto the collector pad by their door, not into their coins.
 				local perSecond = Income.perSecond(player, s)
 				if perSecond > 0 then
-					addCoins(player, math.floor(perSecond * INCOME_TICK_SECONDS))
+					Income.bank(player, s, perSecond * INCOME_TICK_SECONDS)
 				end
 			end
 		end
@@ -3277,6 +3370,8 @@ local function onPlayerAdded(player)
 
 	state[player] = {
 		slots = {},
+		-- Coins waiting on the collector pad (see Income.bank).
+		unclaimed = data.unclaimedCoins or 0,
 		inventory = data.inventory or {},
 		placed = data.placedPets or {},
 		discovered = discovered,
@@ -3356,6 +3451,8 @@ local function onPlayerAdded(player)
 		end
 	end
 	task.spawn(Social.join, player)
+	-- Their collector shows what was waiting when they last left.
+	Income.showCollector(plots[state[player].plotIndex])
 
 	refreshPad(player)
 	updateWalkSpeed(player)
@@ -3442,6 +3539,7 @@ local function snapshot(player)
 	return {
 		coins = coins and coins.Value or 0,
 		bolts = bolts and bolts.Value or 0,
+		unclaimedCoins = math.floor(s.unclaimed or 0),
 		discoveredList = s.discoveredList,
 		goalIndex = s.goalIndex,
 		bestTier = s.bestTier,
@@ -3540,6 +3638,7 @@ Players.PlayerRemoving:Connect(function(player)
 			plot.lockedUntil = 0
 			plot.lockCooldownUntil = 0
 			refreshLock(plot)
+			Income.showCollector(plot)
 
 			plot.padLabel.Text = "FUSION PAD"
 			for slot = 1, PET_PAD_COUNT do
