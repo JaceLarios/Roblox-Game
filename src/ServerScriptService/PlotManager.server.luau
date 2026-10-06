@@ -1362,11 +1362,11 @@ local function redrawPetPad(plot, slot, itemName)
 
 	local info = itemTierInfo(itemName)
 	local itemColor = mutationColor or ItemRarity.Color(info.tier, info.isSecret, info.rarity)
-	-- A Secret car's colour is near-black, which would glow nothing: it
-	-- gets a light glow and an aura of its own.
+	-- Every rarity has an aura of its own (FusionEffects); a Secret car's
+	-- is a light glow and silver halo, since its colour is near-black.
 	if info.isSecret then
 		FusionEffects.AttachSecretAura(part, mutationColor)
-	else
+	elseif not FusionEffects.AttachRarityAura(part, info.rarity) then
 		FusionEffects.AttachPlacedGlow(part, itemColor)
 	end
 	pad.label.Text = string.format("%s\n+%.1f coins/sec", instanceTag(itemName), info.value / PLACEMENT_PAYBACK_SECONDS)

@@ -13,161 +13,109 @@
 	   attachCarried); this only changes how the body underneath it looks.
 	   Nothing here can be trusted or cheated into mattering.
 
-	2. The pose comes from a KeyframeSequence registered at runtime rather
-	   than an uploaded animation asset. That matters because an uploaded
-	   Animation has to be owned by the place owner to play at all, and
-	   because the newer physics avatar rig ignores writes to a joint's
-	   Transform outright — posing its arms by hand moves them exactly zero
-	   studs. Going through the animator is the only thing that actually
-	   works on every rig, and RegisterKeyframeSequence gets us there with
-	   no asset to upload. The id it returns is local to this client, which
-	   is fine: every client builds its own and plays it locally.
+	2. The arms are held up by writing each shoulder joint's Transform
+	   every frame, just after the animator has written its own (Stepped),
+	   so the pose wins over the walk cycle. Both kinds of joint have a
+	   Transform: the Motor6D of older rigs and the AnimationConstraint of
+	   the newer physics avatar rig. Until 2026-10-05 this played a pose
+	   made with KeyframeSequenceProvider:RegisterKeyframeSequence, which
+	   works in Studio but not in the published game, where the arms
+	   stayed down (the user saw it there).
 --]]
 
 local Players = game:GetService("Players")
-local KeyframeSequenceProvider = game:GetService("KeyframeSequenceProvider")
+local RunService = game:GetService("RunService")
 
 -- The part the server welds above a carrier's head. Its presence is the
 -- entire signal this script runs on.
 local CARRIED_ITEM_NAME = "CarriedItem"
 
--- Arms straight up, a couple of degrees off vertical so the hands meet
--- near the centre line instead of crossing.
+-- Arms straight up, a few degrees off vertical so the hands meet near the
+-- centre line instead of crossing.
 local RIGHT_ARM_DEGREES = -170
 local LEFT_ARM_DEGREES = 170
 
+-- Seconds to raise the arms, and to let them back down.
 local BLEND_IN = 0.18
 local BLEND_OUT = 0.12
 
--- Which limb each rig hangs off which parent. A KeyframeSequence poses by
--- part NAME, so R6 and R15 need separate sequences.
-local RIG_CHAINS = {
+-- Where each rig keeps its shoulder joints: the part holding the joint
+-- and the joint's name.
+local SHOULDERS = {
 	[Enum.HumanoidRigType.R15] = {
-		spine = { "HumanoidRootPart", "LowerTorso", "UpperTorso" },
-		right = "RightUpperArm",
-		left = "LeftUpperArm",
+		{ part = "RightUpperArm", joint = "RightShoulder", angle = RIGHT_ARM_DEGREES },
+		{ part = "LeftUpperArm", joint = "LeftShoulder", angle = LEFT_ARM_DEGREES },
 	},
 	[Enum.HumanoidRigType.R6] = {
-		spine = { "HumanoidRootPart", "Torso" },
-		right = "Right Arm",
-		left = "Left Arm",
+		{ part = "Torso", joint = "Right Shoulder", angle = RIGHT_ARM_DEGREES },
+		{ part = "Torso", joint = "Left Shoulder", angle = LEFT_ARM_DEGREES },
 	},
 }
 
--- Registered lazily and reused: building the sequence is cheap, but the
--- registration returns a stable id we would rather not churn.
-local poseIdByRig = {}
-
-local function poseIdFor(rigType)
-	if poseIdByRig[rigType] then
-		return poseIdByRig[rigType]
-	end
-	local chain = RIG_CHAINS[rigType]
-	if not chain then
-		return nil
-	end
-
-	local sequence = Instance.new("KeyframeSequence")
-	sequence.Loop = true
-
-	-- Two identical keyframes: a held pose, not a motion. One keyframe
-	-- gives a zero-length track that some animators refuse to play.
-	for _, time in ipairs({ 0, 1 }) do
-		local keyframe = Instance.new("Keyframe")
-		keyframe.Time = time
-
-		-- Poses nest the same way the rig does, so the arm has to hang off
-		-- the torso chain rather than sitting at the root.
-		local root, parent
-		for _, partName in ipairs(chain.spine) do
-			local pose = Instance.new("Pose")
-			pose.Name = partName
-			pose.CFrame = CFrame.identity
-			pose.Weight = 1
-			if parent then
-				pose.Parent = parent
-			else
-				root = pose
-			end
-			parent = pose
-		end
-
-		for angle, partName in pairs({ [RIGHT_ARM_DEGREES] = chain.right, [LEFT_ARM_DEGREES] = chain.left }) do
-			local pose = Instance.new("Pose")
-			pose.Name = partName
-			pose.CFrame = CFrame.Angles(0, 0, math.rad(angle))
-			pose.Weight = 1
-			pose.Parent = parent
-		end
-
-		root.Parent = keyframe
-		keyframe.Parent = sequence
-	end
-
-	local ok, id = pcall(function()
-		return KeyframeSequenceProvider:RegisterKeyframeSequence(sequence)
-	end)
-	sequence:Destroy()
-	if not ok or not id then
-		return nil
-	end
-
-	poseIdByRig[rigType] = id
-	return id
-end
-
--- One entry per character we are currently posing.
+-- One entry per character being posed: its joints and their raised pose,
+-- how far up the arms are (0 to 1), and whether they are going up or down.
 local active = {}
 
-local function stopPose(character)
-	local entry = active[character]
-	if not entry then
-		return
+local function jointsFor(character)
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local layout = humanoid and SHOULDERS[humanoid.RigType]
+	if not layout then
+		return nil
 	end
-	active[character] = nil
-	pcall(function()
-		entry.track:Stop(BLEND_OUT)
-		entry.track:Destroy()
-	end)
+	local joints = {}
+	for _, shoulder in ipairs(layout) do
+		local holder = character:FindFirstChild(shoulder.part)
+		local joint = holder and holder:FindFirstChild(shoulder.joint)
+		if joint and (joint:IsA("Motor6D") or joint:IsA("AnimationConstraint")) then
+			table.insert(joints, { joint = joint, pose = CFrame.Angles(0, 0, math.rad(shoulder.angle)) })
+		end
+	end
+	return #joints > 0 and joints or nil
 end
 
 local function startPose(character)
-	if active[character] then
+	local entry = active[character]
+	if entry then
+		entry.raising = true
 		return
 	end
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	if not humanoid or humanoid.Health <= 0 then
 		return
 	end
-	local animator = humanoid:FindFirstChildOfClass("Animator")
-	if not animator then
+	local joints = jointsFor(character)
+	if not joints then
 		return
 	end
-	local id = poseIdFor(humanoid.RigType)
-	if not id then
-		return
-	end
-
-	local animation = Instance.new("Animation")
-	animation.AnimationId = id
-
-	local ok, track = pcall(function()
-		return animator:LoadAnimation(animation)
-	end)
-	animation:Destroy()
-	if not ok or not track then
-		return
-	end
-
-	-- Action4 so it sits above every default movement animation. Without
-	-- this the walk cycle's arm swing wins and the arms drop back down
-	-- the moment the carrier starts running, which is all of the time.
-	track.Priority = Enum.AnimationPriority.Action4
-	track.Looped = true
-	track:Play(BLEND_IN)
-
-	active[character] = { track = track }
+	active[character] = { joints = joints, amount = 0, raising = true }
 end
+
+local function stopPose(character)
+	local entry = active[character]
+	if entry then
+		entry.raising = false
+	end
+end
+
+-- After the animator, before physics: blend each carrier's shoulders from
+-- what the animation says toward arms-up, by how far up they are.
+RunService.Stepped:Connect(function(_, dt)
+	for character, entry in pairs(active) do
+		local step = dt / (entry.raising and BLEND_IN or BLEND_OUT)
+		entry.amount = math.clamp(entry.amount + (entry.raising and step or -step), 0, 1)
+		if entry.amount <= 0 and not entry.raising or not character.Parent then
+			active[character] = nil
+		else
+			-- Eased, so the arms swing up rather than tick up.
+			local alpha = entry.amount * entry.amount * (3 - 2 * entry.amount)
+			for _, j in ipairs(entry.joints) do
+				if j.joint.Parent then
+					j.joint.Transform = j.joint.Transform:Lerp(j.pose, alpha)
+				end
+			end
+		end
+	end
+end)
 
 local function refresh(character)
 	if character:FindFirstChild(CARRIED_ITEM_NAME) then
@@ -191,7 +139,7 @@ local function watch(character)
 	end)
 	character.AncestryChanged:Connect(function(_, parent)
 		if not parent then
-			stopPose(character)
+			active[character] = nil
 		end
 	end)
 
@@ -200,7 +148,7 @@ local function watch(character)
 		-- Dying drops whatever you were carrying anyway; make sure the arms
 		-- come down with it rather than sticking up through the ragdoll.
 		humanoid.Died:Connect(function()
-			stopPose(character)
+			active[character] = nil
 		end)
 	end
 end
@@ -210,7 +158,9 @@ local function track(player)
 		watch(player.Character)
 	end
 	player.CharacterAdded:Connect(watch)
-	player.CharacterRemoving:Connect(stopPose)
+	player.CharacterRemoving:Connect(function(character)
+		active[character] = nil
+	end)
 end
 
 for _, player in ipairs(Players:GetPlayers()) do
