@@ -4,8 +4,9 @@
 	Three quests a day for each player, picked fresh every day (the same
 	UTC day the daily rewards use) from the list below, and the same three
 	however often they rejoin that day. Only quests a player can actually
-	do are picked: race quests wait for the first Rebirth, "discover a new
-	build" for an Index that is not complete.
+	do are picked: "discover a new build" waits for an Index that is not
+	complete (race quests needed the first Rebirth until races opened to
+	everyone).
 
 	PlotManager tells this module what players do (Record) and pays out
 	whatever it reports finished; all this module does is keep the list

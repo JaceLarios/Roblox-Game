@@ -698,8 +698,9 @@ local function refreshQueue()
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		local here = humanoid ~= nil and root ~= nil and humanoid.Health > 0 and not racers[player]
 		local inBox = here and not humanoid.SeatPart and Track.InQueue(root.Position)
-		-- Races are locked until a player's first Rebirth: standing in the
-		-- box does not line them up, and they are told why, once a visit.
+		-- hooks.unlocked can lock races for a player: standing in the box
+		-- then does not line them up, and they are told why, once a visit.
+		-- (Nobody is locked since 2026-10-05; races needed a Rebirth before.)
 		local inLine = inBox and hooks.unlocked(player)
 		if inBox and not inLine then
 			if not lockedTold[player] then

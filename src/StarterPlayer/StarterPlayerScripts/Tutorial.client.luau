@@ -78,7 +78,7 @@ local STEPS = {
 	},
 	finish = {
 		title = "YOU'RE ALL SET!",
-		body = "Keep fusing better addons onto better cars. Save up to Rebirth for bigger multipliers and to unlock Race Wars. Have fun!",
+		body = "Keep fusing better addons onto better cars. Save up to Rebirth for bigger multipliers, and try Race Wars from the Travel menu. Have fun!",
 		button = "AWESOME!",
 	},
 }

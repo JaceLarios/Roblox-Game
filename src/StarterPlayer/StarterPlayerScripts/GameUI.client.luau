@@ -1291,10 +1291,13 @@ local function showStatsFor(entry)
 
 	statName.Text = ItemNames.Display(entry.name)
 	statName.RichText=false
-	statPerSecond.Text = string.format("If placed:  %.1f / sec", entry.perSecond)
+	-- Addons earn nothing and never go on a pad: they are only for fusing.
+	local isAddon = FusionRecipes.IsAddon(baseName)
+	statPerSecond.Text = isAddon and "Addon: fuse it with a car"
+		or string.format("If placed:  %.1f / sec", entry.perSecond)
 	emptyHint.Visible = false
 	moveToCarryBtn.Visible = true
-	placeBtn.Visible = true
+	placeBtn.Visible = not isAddon
 	UIStyle.Surface(placeBtn,#currentPlaced >= currentPlacedCapacity and Color3.fromRGB(89,122,144) or Color3.fromRGB(20,218,157),3)
 placeBtn.TextColor3=Color3.new(1,1,1)
 	for _,g in placeBtn:GetChildren() do if g:IsA("UIGradient") then g:Destroy() end end

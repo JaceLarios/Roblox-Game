@@ -158,14 +158,17 @@ local BAT_RANGE = 12
 -- within range in any direction. ~0.5 is a 120-degree cone.
 local BAT_ARC_DOT = 0.5
 local FLOP_SECONDS = 2.5
--- How hard a bat hit sends someone flying: studs per second away from the
--- swinger, and upward.
-local BAT_KNOCK_SPEED = 85
-local BAT_KNOCK_LIFT = 70
+-- How hard a bat hit pushes someone: studs per second away from the
+-- swinger, and upward. A hit knocks them a few studs back (about 6 at
+-- level 1, measured in Studio), not across the yard: it was 85 and 70,
+-- which threw people about 75 studs, until the user said it was too far.
+local BAT_KNOCK_SPEED = 16
+local BAT_KNOCK_LIFT = 12
 local COIL_SPEED_BONUS = 0.15
 -- The Bat Strength and Speed Coil upgrades: each level past the first hits
--- 12% harder, and adds 5% to the coil's speed boost.
-local BAT_POWER_PER_LEVEL = 0.12
+-- 6% harder (pushes further, not higher), and adds 5% to the coil's
+-- speed boost.
+local BAT_POWER_PER_LEVEL = 0.06
 local COIL_BONUS_PER_LEVEL = 0.05
 -- MapRevamp paints this plot's guide rails at +/-11.5 from the road
 -- centreline, so a 24-wide bar spans the corridor with a little overhang.
@@ -670,7 +673,11 @@ function Income.perSecond(player, s)
 	local mult = valueMultiplier(player, s)
 	local perSecond = 0
 	for _, itemName in ipairs(s.placed) do
-		perSecond = perSecond + (itemTierInfo(itemName).value / PLACEMENT_PAYBACK_SECONDS) * mult
+		-- Addons earn nothing (they are only for fusing); none should be on
+		-- a pad, but an old save's is skipped all the same.
+		if not FusionRecipes.IsAddon((Mutations.Unwrap(itemName))) then
+			perSecond = perSecond + (itemTierInfo(itemName).value / PLACEMENT_PAYBACK_SECONDS) * mult
+		end
 	end
 	return perSecond
 end
@@ -957,7 +964,7 @@ end
 -- under MIN_REWARD), and today's three as the Quests panel shows them.
 function Quests.context(player, s)
 	return {
-		races = Rebirth.Get(player) >= 1,
+		races = true,
 		fusedThree = s.count >= 3,
 		indexOpen = s.count < FusionRecipes.GetTotalDiscoveries(),
 	}
@@ -991,9 +998,9 @@ local function pushUI(player)
 	local s = state[player]
 	if not s then return end
 
-	-- For the Race Wars lobby panel: whether races are still locked for
-	-- this player (they unlock with the first Rebirth).
-	player:SetAttribute("RaceLocked", Rebirth.Get(player) < 1)
+	-- For the Race Wars lobby panel. Races are open to everyone from the
+	-- start (they needed the first Rebirth until 2026-10-05).
+	player:SetAttribute("RaceLocked", false)
 
 	-- A Secret car counts as found (the Index's Secret tab) the moment it is
 	-- anywhere of yours: carried home, traded for, staged or placed.
@@ -1447,9 +1454,18 @@ end
 -- Anything dropped stays loose this long, counting down over its name,
 -- and then it is gone for good.
 local DROPPED_ITEM_SECONDS = 30
-local function expireLater(part)
+local function expireLater(part, looseSince)
+	-- And, unseen, a car is gone this long after it was FIRST dropped,
+	-- however often it is picked up and put down again in between (which
+	-- restarted the 30 seconds and kept it alive forever). The time it was
+	-- first let go rides along on the loose part (LooseSince) and on the
+	-- carry record.
+	local LOOSE_LIFETIME_SECONDS = 180
+	looseSince = looseSince or os.clock()
+	part:SetAttribute("LooseSince", looseSince)
+	local left = math.min(DROPPED_ITEM_SECONDS, LOOSE_LIFETIME_SECONDS - (os.clock() - looseSince))
 	ScrapLabel.Countdown(part, DROPPED_ITEM_SECONDS)
-	task.delay(DROPPED_ITEM_SECONDS, function()
+	task.delay(math.max(left, 0), function()
 		if part.Parent and not part:GetAttribute("Collected") then
 			part:Destroy()
 		end
@@ -1491,7 +1507,7 @@ end
 -- as everything else loose in the yard, with DROPPED_ITEM_SECONDS to go.
 -- Parenting into the scrap folder is all a Grab prompt needs: its
 -- ChildAdded hook adds one.
-local function layDownItem(itemName, fromPosition, dropper)
+local function layDownItem(itemName, fromPosition, dropper, looseSince)
 	local floorY = floorBelow(fromPosition)
 	local baseName, mutationId = Mutations.Unwrap(itemName)
 	local part = ItemVisuals.Create(baseName, Vector3.new(fromPosition.X, floorY, fromPosition.Z), 1)
@@ -1502,7 +1518,7 @@ local function layDownItem(itemName, fromPosition, dropper)
 		part:SetAttribute("DroppedBy", dropper.UserId)
 	end
 	ScrapLabel.Attach(part, itemName)
-	expireLater(part)
+	expireLater(part, looseSince)
 
 	-- Start it where it was and let it fall, eased like gravity, for as
 	-- long as a real fall from that height would take.
@@ -1755,6 +1771,7 @@ local function dropCarried(player, reason)
 
 	local itemName = s.carrying.name
 	local victim = s.carrying.stolenFrom
+	local looseSince = s.carrying.looseSince
 	local root = playerRoot(player)
 	-- Let go from where the item actually was, over the player's head, so
 	-- it visibly falls rather than appearing on the floor.
@@ -1774,7 +1791,7 @@ local function dropCarried(player, reason)
 		return true
 	end
 
-	layDownItem(itemName, origin, player)
+	layDownItem(itemName, origin, player, looseSince)
 
 	if reason then
 		toast(player, reason)
@@ -1859,7 +1876,9 @@ local function grabItem(player, part)
 	-- Exactly what you took: luck no longer rerolls a grab (see LUCK_PER_LEVEL).
 	local grabbed = part:GetAttribute("ItemName") or part.Name
 
-	if not beginCarry(player, grabbed) then return false end
+	-- Picked up off the floor after being dropped: the hidden lifetime
+	-- (LOOSE_LIFETIME_SECONDS) keeps counting from the first drop.
+	if not beginCarry(player, grabbed, { looseSince = part:GetAttribute("LooseSince") }) then return false end
 
 	-- Taken: the conveyor lets go of it (ScrapSpawner), so the pickup
 	-- flight is not dragged back onto the belt.
@@ -1989,7 +2008,7 @@ local function swingBat(player)
 					local away = Vector3.new(offset.X, 0, offset.Z)
 					away = away.Magnitude > 0.1 and away.Unit or Vector3.new(forward.X, 0, forward.Z).Unit
 					local power = batPower(s.upgrades.bat)
-					knockbackRemote:FireClient(other, (away * BAT_KNOCK_SPEED + Vector3.new(0, BAT_KNOCK_LIFT, 0)) * power)
+					knockbackRemote:FireClient(other, away * BAT_KNOCK_SPEED * power + Vector3.new(0, BAT_KNOCK_LIFT, 0))
 					playSound(otherRoot, "big")
 					toast(player, knockedLoose
 						and string.format("You knocked it out of %s!", other.Name)
@@ -2384,8 +2403,7 @@ rebirthRemote.OnServerEvent:Connect(function(player)
 	local level = Rebirth.Get(player)
 	local mult = Rebirth.Multiplier(player)
 	playSound(playerRoot(player), "big")
-	toast(player, string.format("REBIRTH %d\nPermanent x%.2f coin multiplier%s", level, mult,
-		level == 1 and "\nRace Wars unlocked!" or ""), true)
+	toast(player, string.format("REBIRTH %d\nPermanent x%.2f coin multiplier", level, mult), true)
 	broadcast(string.format("%s reached Rebirth %d!", player.Name, level))
 	pushUI(player)
 end)
@@ -2499,10 +2517,6 @@ local function ownsItem(s, itemName)
 	return false
 end
 
--- Race Wars is locked until your first Rebirth (the Rebirth row in
--- Upgrades says so too).
-local RACE_LOCKED_MESSAGE = "Races unlock after your first Rebirth — find it in Upgrades."
-
 RaceWars.Configure({
 	cars = function(player)
 		local s = state[player]
@@ -2520,13 +2534,12 @@ RaceWars.Configure({
 	canRace = function(player)
 		local s = state[player]
 		if not s then return false, "Still loading — try again in a moment." end
-		if Rebirth.Get(player) < 1 then return false, RACE_LOCKED_MESSAGE end
 		if s.carrying then return false, "Take what you're carrying home first." end
 		return true
 	end,
-	-- Races unlock with your first Rebirth; until then you cannot line up.
-	unlocked = function(player)
-		return Rebirth.Get(player) >= 1
+	-- Everyone can race from the start.
+	unlocked = function()
+		return true
 	end,
 	levelCleared = function(player, level)
 		Quests.progress(player, "raceLevel")
@@ -2583,13 +2596,36 @@ openCrateRemote.OnServerEvent:Connect(function(player, crateId)
 	pushUI(player)
 end)
 
+-- Travel: never with something in your hands (a car grabbed in the yard
+-- would otherwise go home with you in one click), and not again for
+-- TRAVEL_COOLDOWN seconds after the last trip. (A do block: this script's
+-- top level is near Luau's 200-local limit.)
+do
+local TRAVEL_COOLDOWN = 4
+local lastTravel = {} -- [player] = os.clock() of their last trip
+Players.PlayerRemoving:Connect(function(player) lastTravel[player] = nil end)
 travelRemote.OnServerEvent:Connect(function(player, destination)
+	if destination ~= "junkyard" and destination ~= "racewars" then return end
+	local s = state[player]
+	if not s then return end
+	if s.carrying then
+		toast(player, "You can't travel while carrying something — take it home first.")
+		return
+	end
+	local remaining = TRAVEL_COOLDOWN - (os.clock() - (lastTravel[player] or -math.huge))
+	if remaining > 0 then
+		local seconds = math.ceil(remaining)
+		toast(player, string.format("You just travelled — wait %d more second%s.", seconds, seconds == 1 and "" or "s"))
+		return
+	end
+	lastTravel[player] = os.clock()
 	if destination == "junkyard" then
 		sendHome(player)
-	elseif destination == "racewars" then
+	else
 		RaceWars.SendToLobby(player)
 	end
 end)
+end
 
 ------------------------------------------------------------------
 -- Trading — 1-for-1, same server, proximity-triggered.
@@ -2935,6 +2971,13 @@ placePetRemote.OnServerEvent:Connect(function(player, index)
 	local itemName = type(index) == "number" and s.inventory[index]
 	if not itemName then return end
 
+	-- Addons are only for fusing with a car: they earn nothing, so they
+	-- never go on a pad.
+	if FusionRecipes.IsAddon((Mutations.Unwrap(itemName))) then
+		toast(player, "Addons can't go on a pad — fuse one with a car at your Fusion Pad.")
+		return
+	end
+
 	if #s.placed >= PET_PAD_COUNT then
 		toast(player, string.format("All %d pads are full — take one off first.", PET_PAD_COUNT))
 		return
@@ -3262,6 +3305,13 @@ local function onPlayerAdded(player)
 				if not FusionRecipes.GetRarity(baseName) and not RaceCrates.IsLoot(baseName) then
 					table.remove(s[field], i)
 				end
+			end
+		end
+		-- Addons stopped going on pads on 2026-10-05: one still on a pad
+		-- goes back into Inventory.
+		for i = #s.placed, 1, -1 do
+			if FusionRecipes.IsAddon((Mutations.Unwrap(s.placed[i]))) then
+				table.insert(s.inventory, table.remove(s.placed, i))
 			end
 		end
 	end

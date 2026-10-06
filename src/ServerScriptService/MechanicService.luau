@@ -107,6 +107,13 @@ function Service.Start()
   end
   plot:GetAttributeChangedSignal("OwnerUserId"):Connect(function()task.spawn(showOwner)end)
   task.spawn(showOwner)
+  -- A name tag over the mechanic, seen from across the base like the pads'
+  -- labels (PlotManager's makeLabel: same look, gone past 55 studs).
+  local tag=Instance.new("BillboardGui");tag.Name="MechanicTag";tag.Size=UDim2.fromOffset(260,60)
+  tag.StudsOffset=Vector3.new(0,6.4,0);tag.AlwaysOnTop=true;tag.MaxDistance=55;tag.Parent=counter
+  local tagText=Instance.new("TextLabel");tagText.Size=UDim2.fromScale(1,1);tagText.BackgroundTransparency=1
+  tagText.Text="MECHANIC";tagText.TextColor3=Color3.new(1,1,1);tagText.TextStrokeTransparency=.3
+  tagText.TextScaled=true;tagText.Font=Enum.Font.FredokaOne;tagText.Parent=tag
   local prompt=Instance.new("ProximityPrompt");prompt.Name="BuyAddons";prompt.ActionText="Addons";prompt.ObjectText="Your Mechanic"
   prompt.MaxActivationDistance=10;prompt.RequiresLineOfSight=false;prompt.HoldDuration=.15;prompt.Parent=counter
   desks[plot]=counter
