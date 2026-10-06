@@ -1,3 +1,16 @@
+# Phantom addons are in the game; 120 models for Codex — Claude (2026-10-06)
+
+The user picked option B for the ghost addons: **every car + Phantom addon pair gets its own model**. That's 15 addon models plus 105 builds, all Codex's; the full list with names, concepts and sizes is in **docs/PHANTOM_MODELS.md**. Everything else works now with stand-ins, and each model takes over the moment `ItemModels.<exact name>` exists:
+- **FusionRecipes:** 15 `PhantomAddons` (`phantom = true`, `bolts` price, `group` wisp/wraith/reaper) after the Warp Drive. There's a new rarity **spectral** (index 8; secret is now 9). Any car + Phantom addon makes a Spectral build named "<ghost> <car>" (Wisp Kart, Banshee Patrol, Hearse Hauler...), worth 285,000 to 390,346, above every Godly build and below the Toro SVO. `IsPhantom`, `BoltPrice`. Phantoms are not in `ShopAddons` (coin shop and crates), and RaceConfig's fastest-car figure ignores them, so the monsters don't speed up.
+- **Stand-ins:** a Phantom addon borrows Fusion Core and a Phantom build borrows its car's Warp Drive build, drawn ghostly by `ItemVisuals.Ghostly` (ForceField mint in the world, see-through mint in viewports).
+- **Phantom Garage** (`ServerStorage.PhantomGarage`, built by MapBootstrap): a stall in the Race Wars lobby, left of the line-up box, with a ghost shopkeeper. **PhantomShop.client** shows three shelves with bolt prices, and PlotManager's `BuyPhantom` checks the buyer is at the counter and has the bolts. Restyle both freely.
+- **Spectral look:** ItemRarity (mint on dark violet), an Index **Spectral** tab (9 tabs; two rows of five on phones) and `AURAS.spectral` on pads (mist, wisps, mint glow).
+- **Admin panel** has "Give me 100 bolts" for testing.
+
+Studio test (jace_343): admin +100 bolts, bought Will-o'-Wisp Lanterns (101 -> 61), Ghost Chauffeur refused (not enough). Bolts were put back to 1; the Lanterns are left in the inventory to try a fusion.
+
+---
+
 # The user's big list (bolts, collector pad, Index stand, see-through menus) — Claude (2026-10-05)
 
 The user sent a long list; Claude did everything except the model work, which is yours. All of it was tested in Studio Play (Device Simulator custom device "MacBook Air 13", 1440x900, added under Manage devices > Desktop), and committed in five commits from b2197e9 to a8d04bb.

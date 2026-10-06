@@ -4,6 +4,7 @@ local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("Ite
 local Style = require(script.Parent:WaitForChild("UIStyle"))
 local Rarity = require(script.Parent:WaitForChild("ItemRarity"))
 local Models = script.Parent:WaitForChild("ItemModels")
+local ItemVisuals = require(script.Parent:WaitForChild("ItemVisuals"))
 local FusionRecipes = require(script.Parent:WaitForChild("FusionRecipes"))
 local P = Style.Palette
 local Gallery = {}
@@ -12,10 +13,10 @@ local Gallery = {}
 -- addon's moved by its car (FusionRecipes), so these are what each tab
 -- holds. Godly's tab and plates are a rainbow, Secret's are near-black
 -- (ItemRarity).
-local ORDER = {"base", "uncommon", "rare", "epic", "mythic", "legendary", "godly", "secret"}
+local ORDER = {"base", "uncommon", "rare", "epic", "mythic", "legendary", "godly", "spectral", "secret"}
 local NAMES = {
 	base = "Base", uncommon = "Uncommon", rare = "Rare", epic = "Epic",
-	mythic = "Mythic", legendary = "Legendary", godly = "Godly", secret = "Secret",
+	mythic = "Mythic", legendary = "Legendary", godly = "Godly", spectral = "Spectral", secret = "Secret",
 }
 -- An entry's filter: Secret cars, then the cars you grab, then builds by rarity.
 local function filterKey(entry)
@@ -82,6 +83,15 @@ local function modelView(parent, name, grey)
 	if not template then return view end
 	local world = make("WorldModel", view, "World")
 	local clone = template:Clone()
+	-- A Phantom build not modelled yet: its borrowed model, drawn ghostly.
+	if not grey and ItemVisuals.IsGhostStandIn(name) then
+		if clone:IsA("BasePart") then
+			local holder = Instance.new("Model") clone.Parent = holder
+			ItemVisuals.Ghostly(holder, true) clone.Parent = nil holder:Destroy()
+		else
+			ItemVisuals.Ghostly(clone, true)
+		end
+	end
 	if grey then
 		if clone:IsA("BasePart") then
 			local holder = Instance.new("Model")
@@ -220,13 +230,13 @@ function Gallery.Create(gui)
 		local flatArea = activeArea == "addons"
 		filter.Visible = not flatArea
 		local row = phone and 100 or 118
-		-- Eight tabs: one row across, or two rows of four in portrait and on
+		-- Nine tabs: one row across, or two rows of five in portrait and on
 		-- a phone on its side, where one row squeezed "Uncommon" and
 		-- "Legendary" past their tabs.
 		local twoRows = portrait or phone
 		filter.Position = UDim2.fromOffset(28, portrait and 205 or row)
 		filter.Size = UDim2.new(1, portrait and -48 or -350, 0, portrait and 74 or phone and 88 or 44)
-		local perRow = twoRows and 4 or #ORDER
+		local perRow = twoRows and 5 or #ORDER
 		local rows = math.ceil(#ORDER / perRow)
 		for i, key in ipairs(ORDER) do
 			local column, line = (i - 1) % perRow, math.floor((i - 1) / perRow)
@@ -288,6 +298,7 @@ function Gallery.Create(gui)
 			-- Godly's pill is cream under its rainbow caption; Secret's is
 			-- near-black, as its rarity.
 			local fill = key == "godly" and P.Cream or key == "secret" and Color3.fromRGB(44, 44, 52)
+				or key == "spectral" and Color3.fromRGB(42, 24, 70)
 				or rc:Lerp(P.Cream,.58)
 			Style.Surface(btn, key==activeRarity and P.Teal or fill, key==activeRarity and 3 or 2.5)
 			-- Ink on the bright fill, not cream: the selected teal is a
@@ -296,6 +307,7 @@ function Gallery.Create(gui)
             Garage.Button(btn)
 			local caption = btn:FindFirstChild("GarageButtonCaption")
 			if key == "godly" and caption then Rarity.Rainbow(caption) end
+			if key == "spectral" and caption and key ~= activeRarity then caption.TextColor3 = rc end
 		end
 		local flatArea = activeArea == "addons"
 		local total, known, shown = 0, 0, 0

@@ -26,8 +26,10 @@ local RARITY_INDEX = {
 	common = 1, uncommon = 2, rare = 3, epic = 4, mythic = 5, legendary = 6,
 	-- Only builds: a Legendary addon on a Box Truck or Monster Truck.
 	godly = 7,
+	-- Only builds: any car with a Phantom addon (see PHANTOM ADDONS below).
+	spectral = 8,
 	-- Only the Secret cars (see FusionRecipes.SecretCars below).
-	secret = 8,
+	secret = 9,
 }
 FusionRecipes.RarityIndex = RARITY_INDEX
 
@@ -43,6 +45,7 @@ FusionRecipes.RarityWeight = {
 	mythic    = 7,
 	legendary = 3,
 	godly     = 2,
+	spectral  = 1.5,
 	secret    = 1,
 }
 
@@ -114,6 +117,35 @@ FusionRecipes.BaseItems = {
 	{ name = "Rocket Booster", rarity = "legendary", value = 335, price = 240000, isAddon = true, resultValue = 52500, standIn = "Jet Engine" },
 	{ name = "Fusion Core",    rarity = "legendary", value = 360, price = 280000, isAddon = true, resultValue = 54500, standIn = "Jet Engine" },
 	{ name = "Warp Drive",     rarity = "legendary", value = 390, exclusive = true, isAddon = true, resultValue = 57000, standIn = "Fusion Core" },
+
+	-- PHANTOM ADDONS (2026-10-06): fifteen ghost addons, never in the yard,
+	-- the coin Shop or a crate. They are bought with the bolts won in Race
+	-- Wars (`bolts`, the price; `group`, the shop's Wisp / Wraith / Reaper
+	-- shelf) at the Phantom Garage in the Race Wars lobby. Concepts:
+	-- https://claude.ai/artifact/6pWuFngQZNMWdvbTRiz7TA. Any car with one
+	-- makes a Spectral build, whatever the car (no shift): the best builds
+	-- in the game, each worth its addon's `resultValue` times a small
+	-- per-car factor (see SPECTRAL_CAR_STEP), so all 105 sit above every
+	-- Godly build and below the Toro SVO. The user chose a model of its own
+	-- for every one of the 105 (Codex, family by family): until a build or
+	-- addon has its model it borrows one (`standIn`) and is drawn see-through
+	-- and ghostly (ItemVisuals.Ghostly). Steps of 4,990 keep every value
+	-- different.
+	{ name = "Will-o'-Wisp Lanterns", rarity = "spectral", value = 400, bolts = 40, group = "wisp", phantom = true, isAddon = true, resultValue = 285000, standIn = "Fusion Core" },
+	{ name = "Phantom Exhaust", rarity = "spectral", value = 410, bolts = 45, group = "wisp", phantom = true, isAddon = true, resultValue = 289990, standIn = "Fusion Core" },
+	{ name = "Crystal Ball Ornament", rarity = "spectral", value = 420, bolts = 50, group = "wisp", phantom = true, isAddon = true, resultValue = 294980, standIn = "Fusion Core" },
+	{ name = "Graveyard Grille", rarity = "spectral", value = 430, bolts = 55, group = "wisp", phantom = true, isAddon = true, resultValue = 299970, standIn = "Fusion Core" },
+	{ name = "Ecto Tank", rarity = "spectral", value = 440, bolts = 60, group = "wisp", phantom = true, isAddon = true, resultValue = 304960, standIn = "Fusion Core" },
+	{ name = "Banshee Horn", rarity = "spectral", value = 450, bolts = 90, group = "wraith", phantom = true, isAddon = true, resultValue = 309950, standIn = "Fusion Core" },
+	{ name = "Poltergeist Spoiler", rarity = "spectral", value = 460, bolts = 100, group = "wraith", phantom = true, isAddon = true, resultValue = 314940, standIn = "Fusion Core" },
+	{ name = "Coffin Carrier", rarity = "spectral", value = 470, bolts = 110, group = "wraith", phantom = true, isAddon = true, resultValue = 319930, standIn = "Fusion Core" },
+	{ name = "Witch's Cauldron", rarity = "spectral", value = 480, bolts = 125, group = "wraith", phantom = true, isAddon = true, resultValue = 324920, standIn = "Fusion Core" },
+	{ name = "Specter Sails", rarity = "spectral", value = 490, bolts = 140, group = "wraith", phantom = true, isAddon = true, resultValue = 329910, standIn = "Fusion Core" },
+	{ name = "Wraith Wheels", rarity = "spectral", value = 500, bolts = 200, group = "reaper", phantom = true, isAddon = true, resultValue = 334900, standIn = "Fusion Core" },
+	{ name = "Soul Turbo", rarity = "spectral", value = 510, bolts = 220, group = "reaper", phantom = true, isAddon = true, resultValue = 339890, standIn = "Fusion Core" },
+	{ name = "Hearse Canopy", rarity = "spectral", value = 520, bolts = 240, group = "reaper", phantom = true, isAddon = true, resultValue = 344880, standIn = "Fusion Core" },
+	{ name = "Reaper Scythes", rarity = "spectral", value = 530, bolts = 270, group = "reaper", phantom = true, isAddon = true, resultValue = 349870, standIn = "Fusion Core" },
+	{ name = "Ghost Chauffeur", rarity = "spectral", value = 540, bolts = 300, group = "reaper", phantom = true, isAddon = true, resultValue = 354860, standIn = "Fusion Core" },
 }
 
 -- The whole recipe book: one result per car per addon, in the addon order
@@ -195,6 +227,25 @@ local BOOK = {
 	},
 }
 
+-- Every car's Phantom builds, in the Phantom addons' order: "<ghost> <car>"
+-- (Wisp Kart, Banshee Patrol, Hearse Hauler...). Added to the rows above.
+do
+	local PHANTOM_ROWS = {
+		["Rusted Sedan"] = { "Wisp Kart", "Skullsmoke Kart", "Oracle Kart", "Graveyard Kart", "Ecto Kart", "Banshee Kart", "Poltergeist Kart", "Coffin Kart", "Cauldron Kart", "Specter Kart", "Wraith Kart", "Soul Kart", "Hearse Kart", "Reaper Kart", "Haunted Kart" },
+		["Dirt Bike"] = { "Wisp Rider", "Skullsmoke Rider", "Oracle Rider", "Graveyard Rider", "Ecto Rider", "Banshee Rider", "Poltergeist Rider", "Coffin Rider", "Cauldron Rider", "Specter Rider", "Wraith Rider", "Soul Rider", "Hearse Rider", "Reaper Rider", "Haunted Rider" },
+		["Golf Cart"] = { "Wisp Caddy", "Skullsmoke Caddy", "Oracle Caddy", "Graveyard Caddy", "Ecto Caddy", "Banshee Caddy", "Poltergeist Caddy", "Coffin Caddy", "Cauldron Caddy", "Specter Caddy", "Wraith Caddy", "Soul Caddy", "Hearse Caddy", "Reaper Caddy", "Haunted Caddy" },
+		["Muscle Car"] = { "Wisp Muscle", "Skullsmoke Muscle", "Oracle Muscle", "Graveyard Muscle", "Ecto Muscle", "Banshee Muscle", "Poltergeist Muscle", "Coffin Muscle", "Cauldron Muscle", "Specter Muscle", "Wraith Muscle", "Soul Muscle", "Hearse Muscle", "Reaper Muscle", "Haunted Muscle" },
+		["Cop Cruiser"] = { "Wisp Patrol", "Skullsmoke Patrol", "Oracle Patrol", "Graveyard Patrol", "Ecto Patrol", "Banshee Patrol", "Poltergeist Patrol", "Coffin Patrol", "Cauldron Patrol", "Specter Patrol", "Wraith Patrol", "Soul Patrol", "Hearse Patrol", "Reaper Patrol", "Haunted Patrol" },
+		["Box Truck"] = { "Wisp Hauler", "Skullsmoke Hauler", "Oracle Hauler", "Graveyard Hauler", "Ecto Hauler", "Banshee Hauler", "Poltergeist Hauler", "Coffin Hauler", "Cauldron Hauler", "Specter Hauler", "Wraith Hauler", "Soul Hauler", "Hearse Hauler", "Reaper Hauler", "Haunted Hauler" },
+		["Monster Truck"] = { "Wisp Crusher", "Skullsmoke Crusher", "Oracle Crusher", "Graveyard Crusher", "Ecto Crusher", "Banshee Crusher", "Poltergeist Crusher", "Coffin Crusher", "Cauldron Crusher", "Specter Crusher", "Wraith Crusher", "Soul Crusher", "Hearse Crusher", "Reaper Crusher", "Haunted Crusher" },
+	}
+	for car, row in pairs(PHANTOM_ROWS) do
+		for _, name in ipairs(row) do
+			table.insert(BOOK[car], name)
+		end
+	end
+end
+
 -- Older code, and the Index filters until they move to rarity, still read
 -- a 1-4 fusion tier. Base items are tier 1; a result's tier is its rarity
 -- step capped at 4, which also keeps the tier colours (green, blue,
@@ -203,7 +254,8 @@ local MAX_TIER = 4
 
 FusionRecipes.Items = {}    -- cars only
 FusionRecipes.Addons = {}   -- addons only, worst to best
-FusionRecipes.ShopAddons = {} -- the addons for sale (and in crates): not the exclusives
+FusionRecipes.ShopAddons = {} -- the addons for sale (and in crates): not the exclusives or the Phantoms
+FusionRecipes.PhantomAddons = {} -- the Phantom addons, sold for bolts (see PHANTOM ADDONS)
 
 local baseByName = {}
 local addonRank = {}        -- [addon name] = 1 (Nitrous) .. 15 (Fusion Core)
@@ -212,7 +264,9 @@ for _, item in ipairs(FusionRecipes.BaseItems) do
 	if item.isAddon then
 		table.insert(FusionRecipes.Addons, item)
 		addonRank[item.name] = #FusionRecipes.Addons
-		if not item.exclusive then
+		if item.phantom then
+			table.insert(FusionRecipes.PhantomAddons, item)
+		elseif not item.exclusive then
 			table.insert(FusionRecipes.ShopAddons, item)
 		end
 	else
@@ -226,6 +280,11 @@ local recipe = {}       -- [car][addon] = result name
 
 local GODLY_BASE = 100000
 local SHIFTED_DOWN, SHIFTED_UP = 1.25, 0.81
+-- A Spectral build is worth its Phantom addon's resultValue times 1 plus
+-- this much of its car's multiplier over 1: from x1 (Scrap Kart) to x1.1
+-- (Monster Truck). Kept small so all 105 fit between the best Godly build
+-- and the Toro SVO.
+local SPECTRAL_CAR_STEP = 0.05
 local rarityName = {}
 for name, index in pairs(RARITY_INDEX) do rarityName[index] = name end
 local rarityBase = { godly = GODLY_BASE }
@@ -242,6 +301,7 @@ for carRank, car in ipairs(FusionRecipes.Items) do
 		assert(not results[name] and not baseByName[name], "FusionRecipes: " .. name .. " is used twice")
 		local addonIndex = RARITY_INDEX[addon.rarity]
 		local index = math.clamp(addonIndex + car.shift, RARITY_INDEX.uncommon, RARITY_INDEX.godly)
+		if addon.phantom then index = RARITY_INDEX.spectral end
 		local rarity = rarityName[index]
 		local step = addon.resultValue / rarityBase[addon.rarity]
 		local lean = index < addonIndex and SHIFTED_DOWN or index > addonIndex and SHIFTED_UP or 1
@@ -254,8 +314,10 @@ for carRank, car in ipairs(FusionRecipes.Items) do
 			addonRarity = addon.rarity,
 			rarity = rarity,
 			tier = math.min(index, MAX_TIER),
-			value = math.round(rarityBase[rarity] * step * car.multiplier * lean),
+			value = addon.phantom and math.round(addon.resultValue * (1 + (car.multiplier - 1) * SPECTRAL_CAR_STEP))
+				or math.round(rarityBase[rarity] * step * car.multiplier * lean),
 			exclusive = addon.exclusive == true,
+			phantom = addon.phantom == true,
 		}
 		recipe[car.name][addon.name] = name
 	end
@@ -282,6 +344,12 @@ do
 		local base = firstOfRarity[entry.addonRarity]
 		if base ~= entry.addon then
 			entry.standIn = recipe[entry.car][base]
+		end
+		-- A Phantom build borrows the same car's Warp Drive build (the
+		-- best model it has) until its own is made; ItemVisuals draws the
+		-- borrowed one see-through and ghostly.
+		if entry.phantom then
+			entry.standIn = recipe[entry.car]["Warp Drive"]
 		end
 	end
 end
@@ -330,7 +398,7 @@ do
 		high[entry.rarity] = math.max(high[entry.rarity] or 0, entry.value)
 	end
 	local below = nil
-	for index = RARITY_INDEX.uncommon, RARITY_INDEX.godly do
+	for index = RARITY_INDEX.uncommon, RARITY_INDEX.spectral do
 		local rarity = rarityName[index]
 		if low[rarity] then
 			assert(not below or low[rarity] > high[below],
@@ -365,6 +433,20 @@ end
 
 function FusionRecipes.IsAddon(name)
 	return addonRank[name] ~= nil
+end
+
+-- True for a Phantom addon and every build made with one (bare names).
+function FusionRecipes.IsPhantom(name)
+	local base = baseByName[name]
+	if base then return base.phantom == true end
+	local entry = results[name]
+	return entry ~= nil and entry.phantom == true
+end
+
+-- What a Phantom addon costs in bolts, or nil for anything else.
+function FusionRecipes.BoltPrice(name)
+	local item = baseByName[name]
+	return item and item.phantom and item.bolts or nil
 end
 
 -- True for a Secret car (bare name).

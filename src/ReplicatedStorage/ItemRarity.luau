@@ -13,6 +13,8 @@ local RunService = game:GetService("RunService")
 	along on players' screens. Color() gives its aqua wherever one colour
 	has to do (a glow, a podium). Secret is near-black, with a light
 	outline on its letters so it still reads on a dark background.
+	Spectral (the Phantom builds) is ectoplasm mint with a dark violet
+	outline, on dark violet plates.
 --]]
 
 local ItemRarity = {}
@@ -51,15 +53,19 @@ local RARITY_COLORS = {
 	mythic    = Color3.fromRGB(255, 70, 70),    -- red
 	legendary = Color3.fromRGB(255, 221, 51),   -- yellow
 	godly     = Color3.fromRGB(110, 255, 240),  -- aqua; shown as a rainbow where it can be (see the top)
+	spectral  = Color3.fromRGB(150, 255, 210),  -- ectoplasm mint on dark violet: the Phantom builds
 	secret    = SECRET_COLOR,                   -- near-black: the Secret cars
 }
 local RARITY_NAMES = {
 	common = "COMMON", uncommon = "UNCOMMON", rare = "RARE",
-	epic = "EPIC", mythic = "MYTHIC", legendary = "LEGENDARY", godly = "GODLY", secret = "SECRET",
+	epic = "EPIC", mythic = "MYTHIC", legendary = "LEGENDARY", godly = "GODLY", spectral = "SPECTRAL", secret = "SECRET",
 }
 -- Best first, so anything that needs to sort or compare rarities has a
 -- single source of truth for the order rather than re-deriving it.
-ItemRarity.Order = { "secret", "godly", "legendary", "mythic", "epic", "rare", "uncommon", "common" }
+ItemRarity.Order = { "secret", "spectral", "godly", "legendary", "mythic", "epic", "rare", "uncommon", "common" }
+-- Spectral's dark violet: the outline round its mint letters, and its
+-- name plates.
+local SPECTRAL_DARK = Color3.fromRGB(42, 24, 70)
 
 function ItemRarity.RarityColor(key)
 	return RARITY_COLORS[key]
@@ -114,6 +120,9 @@ function ItemRarity.Tag(name, tier, isSecret, rarityKey)
 	elseif key == "secret" then
 		return string.format('<stroke color="#%s" thickness="1.5"><font color="#%s">%s</font></stroke>',
 			SECRET_OUTLINE:ToHex(), SECRET_COLOR:ToHex(), name)
+	elseif key == "spectral" then
+		return string.format('<stroke color="#%s" thickness="1.5"><font color="#%s">%s</font></stroke>',
+			SPECTRAL_DARK:ToHex(), RARITY_COLORS.spectral:ToHex(), name)
 	end
 	return string.format('<font color="%s">%s</font>', ItemRarity.Hex(tier, isSecret, rarityKey), name)
 end
@@ -189,7 +198,8 @@ function ItemRarity.Paint(label, tier, isSecret, rarityKey)
 	if holder:GetAttribute("RarityOutline") == nil then
 		holder:SetAttribute("RarityOutline", holder[property])
 	end
-	holder[property] = key == "secret" and SECRET_OUTLINE or holder:GetAttribute("RarityOutline")
+	holder[property] = key == "secret" and SECRET_OUTLINE or key == "spectral" and SPECTRAL_DARK
+		or holder:GetAttribute("RarityOutline")
 end
 
 -- Dresses a name plate (GarageTheme.Plate) for its rarity: a flowing
@@ -205,6 +215,10 @@ function ItemRarity.Plate(plate, rarityKey)
 		plate.BackgroundColor3 = Color3.fromRGB(44, 44, 52)
 		plate.TextColor3 = Color3.fromRGB(236, 236, 242)
 		if rim then rim.Color = Color3.fromRGB(120, 120, 134) end
+	elseif rarityKey == "spectral" then
+		plate.BackgroundColor3 = SPECTRAL_DARK
+		plate.TextColor3 = RARITY_COLORS.spectral
+		if rim then rim.Color = RARITY_COLORS.spectral end
 	end
 end
 

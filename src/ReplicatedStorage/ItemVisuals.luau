@@ -8,11 +8,12 @@ local wheelRigs = {}
 
 -- An item's own model, or, until it has one, the model standing in for it
 -- (FusionRecipes.StandIn: the nearest addon or build that has a model).
+-- The second value is true when the model is borrowed.
 local function templateFor(name)
 	local own = templates:FindFirstChild(name)
-	if own then return own end
+	if own then return own, false end
 	local standIn = FusionRecipes.StandIn(name)
-	return standIn and templates:FindFirstChild(standIn)
+	return standIn and templates:FindFirstChild(standIn), true
 end
 
 local function parts(object)
@@ -22,6 +23,34 @@ local function parts(object)
 		if p:IsA("BasePart") then table.insert(list, p) end
 	end
 	return list
+end
+
+-- A Phantom addon or build whose own model is not made yet borrows one
+-- (FusionRecipes.StandIn) and is drawn see-through and ghostly, so it does
+-- not pass for the build it borrowed from: pale mint, no textures, and in
+-- the world Roblox's shimmering ForceField material. A ViewportFrame (the
+-- Index, Inventory, shops) barely draws ForceField, so `flat` gives it a
+-- plain see-through mint instead.
+local GHOST = Color3.fromRGB(190, 255, 228)
+function ItemVisuals.Ghostly(object, flat)
+	for _, p in parts(object) do
+		p.Color = GHOST
+		if flat then
+			p.Material = Enum.Material.SmoothPlastic
+			p.Transparency = math.max(p.Transparency, 0.3)
+		else
+			p.Material = Enum.Material.ForceField
+		end
+		if p:IsA("MeshPart") then p.TextureID = "" end
+	end
+	for _, d in object:GetDescendants() do
+		if d:IsA("SurfaceAppearance") or d:IsA("Decal") or d:IsA("Texture") then d:Destroy() end
+	end
+end
+
+-- Whether this name is drawn ghostly (see Ghostly).
+function ItemVisuals.IsGhostStandIn(name)
+	return FusionRecipes.IsPhantom(name) and templates:FindFirstChild(name) == nil
 end
 
 function ItemVisuals.Tint(object, color)
@@ -41,12 +70,13 @@ end
 
 -- Viewports use an anchored Model, avoiding physics-dependent joint motion.
 function ItemVisuals.CloneForViewport(name, tint)
-	local template = templateFor(name)
+	local template, borrowed = templateFor(name)
 	if not template then return nil end
 	local model = Instance.new("Model")
 	model.Name = name
 	local clone = template:Clone()
 	clone.Parent = model
+	if borrowed and FusionRecipes.IsPhantom(name) then ItemVisuals.Ghostly(model, true) end
 	for _, p in parts(model) do
 		p.Anchored = true
 		p.CanCollide = false
@@ -61,10 +91,11 @@ end
 
 function ItemVisuals.Create(name, position, sizeScale)
 	local scale = (sizeScale or 1) * ItemVisuals.GLOBAL_SCALE
-	local template = templateFor(name)
+	local template, borrowed = templateFor(name)
 	if template and template:IsA("Model") then
 		local visual = template:Clone()
 		visual.Name = "Visual"
+		if borrowed and FusionRecipes.IsPhantom(name) then ItemVisuals.Ghostly(visual) end
 		-- Sent to players whole, never a few parts at a time (the place
 		-- streams): the wheel rig (RollWheels) and the Atom Rider's hover
 		-- copy (HoverVisuals) take the model as it is when it arrives.

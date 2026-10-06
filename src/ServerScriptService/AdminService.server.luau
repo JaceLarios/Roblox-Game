@@ -11,6 +11,7 @@
 	  CraneDrop, ScrapRush, MutationFrenzy
 	              run that yard event now (ScrapSpawner's TriggerYardEvent)
 	  SecretCar   a Secret car rolls out of the black box now (the same way)
+	  bolts       +100 bolts, to try the Phantom Garage without racing
 	Showing the whole Index needs nothing from the server: it is only on
 	the admin's own screen.
 --]]
@@ -43,6 +44,12 @@ remote.OnServerEvent:Connect(function(player, action)
 	elseif YARD_EVENTS[action] then
 		workspace:SetAttribute("TriggerYardEvent", action)
 		done = action .. " starting now."
+	elseif action == "bolts" then
+		local stats = player:FindFirstChild("leaderstats")
+		local bolts = stats and stats:FindFirstChild("Bolts")
+		if not bolts then return end
+		bolts.Value += 100
+		done = "+100 bolts."
 	else
 		return
 	end

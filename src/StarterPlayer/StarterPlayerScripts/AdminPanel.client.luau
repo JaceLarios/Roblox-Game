@@ -135,6 +135,7 @@ action("Crane Drop now", "CraneDrop")
 action("Scrap Rush now", "ScrapRush")
 action("Mutation Frenzy now", "MutationFrenzy")
 action("Drop a Secret car now", "SecretCar")
+action("Give me 100 bolts", "bolts")
 -- Replays the first-join tutorial on your screen only (Tutorial.client);
 -- finishing it again changes nothing on the server.
 button("Play the tutorial", BLUE, function()

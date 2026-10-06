@@ -49,6 +49,8 @@ YardFeatures.Build()
 Map.DressYard()
 -- The Item Index's stand, south of the crane (it opens the Index).
 require(ServerStorage:WaitForChild("IndexStand")).Build()
+-- The Phantom Garage in the Race Wars lobby (Phantom addons for bolts).
+require(ServerStorage:WaitForChild("PhantomGarage")).Build()
 local plots = workspace:WaitForChild("Plots",30)
 if plots then
  local function dress(plot)

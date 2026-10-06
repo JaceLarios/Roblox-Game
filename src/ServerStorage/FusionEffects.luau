@@ -368,6 +368,29 @@ function AURAS.godly(part)
 	glowLight(part, "AuraLight", Color3.fromRGB(150, 255, 245), 1.6, 16)
 end
 
+-- Spectral (the Phantom builds): ghost mist curling off the car, little
+-- wisps drifting up round it, and a mint glow.
+function AURAS.spectral(part)
+	local mint = Color3.fromRGB(150, 255, 210)
+	emitter(part, {
+		Name = "AuraMist", Texture = TEXTURES .. "smoke_main.dds",
+		Color = ColorSequence.new(Color3.fromRGB(225, 255, 240), mint),
+		Rate = 6, Lifetime = NumberRange.new(2, 3), Speed = NumberRange.new(0.5, 1.2),
+		EmissionDirection = Enum.NormalId.Top, SpreadAngle = Vector2.new(50, 50),
+		Rotation = NumberRange.new(0, 360), RotSpeed = NumberRange.new(-30, 30),
+		Size = grow(1.5, 3, 4), Transparency = fade(0.55, 1), LightEmission = 0.2,
+	})
+	emitter(part, {
+		Name = "AuraWisps", Texture = TEXTURES .. "sparkles_main.dds",
+		Color = ColorSequence.new(mint, Color3.fromRGB(205, 175, 255)),
+		Rate = 14, Lifetime = NumberRange.new(1.6, 2.4), Speed = NumberRange.new(1, 2),
+		EmissionDirection = Enum.NormalId.Top, SpreadAngle = Vector2.new(60, 60),
+		Acceleration = Vector3.new(0, 1.2, 0),
+		Size = grow(0.3, 1, 0), Transparency = fade(0, 1), LightEmission = 0.4,
+	})
+	glowLight(part, "AuraLight", mint, 1.6, 16)
+end
+
 -- Gives a car on a pad its rarity's aura. False for a rarity with none (the
 -- caller falls back to the plain tinted glow).
 function Effects.AttachRarityAura(part, rarity)

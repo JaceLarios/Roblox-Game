@@ -2613,6 +2613,51 @@ openCrateRemote.OnServerEvent:Connect(function(player, crateId)
 	pushUI(player)
 end)
 
+-- The Phantom Garage (ServerStorage.PhantomGarage, in the Race Wars
+-- lobby): Phantom addons for bolts, straight into Inventory. The buyer has
+-- to be standing at its counter. The answer goes back on the same remote
+-- for PhantomShop.client to show on the addon's own button: "bought",
+-- "away", "full" or "bolts" (not enough). (A do block: this script's top
+-- level is near Luau's 200-local limit.)
+do
+	local buyPhantomRemote = ReplicatedStorage:FindFirstChild("BuyPhantom")
+	if not buyPhantomRemote then
+		buyPhantomRemote = Instance.new("RemoteEvent")
+		buyPhantomRemote.Name = "BuyPhantom"
+		buyPhantomRemote.Parent = ReplicatedStorage
+	end
+	local STALL_REACH = 22
+	buyPhantomRemote.OnServerEvent:Connect(function(player, addonName)
+		local s = state[player]
+		if not s or type(addonName) ~= "string" then return end
+		local price = FusionRecipes.BoltPrice(addonName)
+		if not price then return end
+		local stall = workspace:FindFirstChild("PhantomGarage")
+		local counter = stall and stall:FindFirstChild("Counter")
+		local root = playerRoot(player)
+		if not (counter and root) or (root.Position - counter.Position).Magnitude > STALL_REACH then
+			buyPhantomRemote:FireClient(player, addonName, "away")
+			return
+		end
+		if #s.inventory >= inventoryCapacity(s, player) then
+			buyPhantomRemote:FireClient(player, addonName, "full")
+			return
+		end
+		local stats = player:FindFirstChild("leaderstats")
+		local bolts = stats and stats:FindFirstChild("Bolts")
+		if not bolts or bolts.Value < price then
+			buyPhantomRemote:FireClient(player, addonName, "bolts")
+			return
+		end
+		bolts.Value -= price
+		table.insert(s.inventory, addonName)
+		playSound(root, "big")
+		toast(player, string.format("Bought %s — it's in your Inventory. Fuse it with a car!", instanceTag(addonName)), true)
+		buyPhantomRemote:FireClient(player, addonName, "bought")
+		pushUI(player)
+	end)
+end
+
 -- Travel: never with something in your hands (a car grabbed in the yard
 -- would otherwise go home with you in one click), and not again for
 -- TRAVEL_COOLDOWN seconds after the last trip. (A do block: this script's
