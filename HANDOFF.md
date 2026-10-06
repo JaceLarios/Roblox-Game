@@ -1,3 +1,24 @@
+# The user's big list (bolts, collector pad, Index stand, see-through menus) — Claude (2026-10-05)
+
+The user sent a long list; Claude did everything except the model work, which is yours. All of it was tested in Studio Play (Device Simulator custom device "MacBook Air 13", 1440x900, added under Manage devices > Desktop), and committed in five commits from b2197e9 to a8d04bb.
+
+**For Codex (models, the user's own words paraphrased):**
+- **Builds look like duplicates within a tier.** "All of the Godly models look the same but just different addons... I want one car to look like it per tier, not all of the cars in the tier to look the same. The base models are fine but everything after that it starts to look like I'm seeing duplicates." So each build needs a silhouette of its own, not the same body with a different addon bolted on.
+- **Race track props:** the user wanted "bigger models with less quantity". Claude only changed RaceTrack's counts and sizes (9-17 obstacle rows a level, 1-2 per row, 18-26 studs across; wall scenery every 110 studs, 24-34 across). The tree and rock meshes themselves are unchanged and yours to remake.
+- **Phantom addons (concepts, waiting on the user):** 15 ghost-themed addons bought with bolts. The concept sheet is https://claude.ai/artifact/6pWuFngQZNMWdvbTRiz7TA. The user still has to pick between 15 attachable phantom parts and 105 bespoke builds before anything is modelled.
+
+**What changed in code (some of it in your UI files):**
+- **Bolts**, a new currency (`leaderstats.Bolts`, saved as `bolts`). Races pay bolts instead of crates: `RaceConfig.BoltsPerLevel {1,1,2,2,3}` + `FINISH_BOLTS 3`, times luck (the Lucky Wrench now means more bolts). There's a HUD card next to the coins (GameUI do-block, `BoltsCard`, emoji icon for now; a drawn icon would be welcome). The quest "Win N bolts in Race Wars" replaces "Open N race crates", and all three dailies pay 5 bolts. Crates already won still open, and the CRATES tab only shows while there are some.
+- **Coin collector pad** by each garage door (`CoinCollector`): pad income piles up there (`s.unclaimed`, saved as `unclaimedCoins`) and pays when the owner steps on it. Offline earnings still pay on join.
+- **Races** need no Rebirth any more. **Bat** knock is about 6 studs (it was about 75). **Travel** is refused while carrying anything, with a 4 s cooldown. Dropped cars also vanish 180 s after their **first** drop (`LooseSince`). **Addons** earn nothing and can't go on a pad (Inventory details say "Addon: fuse it with a car"). A **MECHANIC** name tag shows over the mechanic.
+- **Carry pose** now writes the shoulder joints' Transform every Stepped. RegisterKeyframeSequence only plays in Studio, so arms stayed down in the live game.
+- **Rarity auras** on pads: `FusionEffects.AttachRarityAura(part, rarity)`, one look per rarity (built-in particle textures only). Restyle freely.
+- **NavButton** desktop fit is now measured from the ScreenGui (below the top bar) and by buttons per rail. It used the camera viewport, so on a 16:10 MacBook TRADE ran off the bottom and QUESTS covered the coins.
+- **See-through menus:** a panel attribute `SeeThrough` hides Shell's world backdrop, and `CanvasFill` (0.66) shrinks Canvas on computers. These are set on Daily Rewards, Upgrades, Travel, the trade list and the trade window; the rewards dimmer is clear.
+- **Index:** the INDEX rail button is gone. The `IndexStand` (ServerStorage module, built by MapBootstrap, south of the crane) opens it by prompt or click, and QUESTS took INDEX's slot. Undiscovered cards show their model in flat grey (`greyOut` in IndexGallery) instead of "?".
+
+---
+
 # Phone menu fixes and Secret pad aura — Claude (2026-10-03)
 
 Checked every menu in Studio's Device Simulator (iPhone 7, 666x374) after your navigation columns. Fixes, all in the shared helpers so they apply to every menu:
