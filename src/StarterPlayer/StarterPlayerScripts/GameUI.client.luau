@@ -395,7 +395,9 @@ dimmer.Name = "RewardsOverlay"
 dimmer:SetAttribute("KeepOverlay",true)
 dimmer.Size = UDim2.new(1, 0, 1, 0)
 dimmer.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-dimmer.BackgroundTransparency = 0.35
+-- Clear: the game stays in view behind Daily Rewards (it was dimmed). A
+-- click outside the box still closes it.
+dimmer.BackgroundTransparency = 1
 dimmer.Text = ""
 dimmer.AutoButtonColor = false
 dimmer.BorderSizePixel = 0
@@ -691,7 +693,6 @@ local function buildItemViewport(parent, itemName, tintColor, opts)
 end
 
 
-local bookBtn = NavButton.Create(gui, "📖", "INDEX", PURPLE, NavButton.RailPosition("left", 3))
 local indexData = { junkyard = {}, addons = {} }
 local indexGallery = require(ReplicatedStorage:WaitForChild("IndexGallery")).Create(gui)
 local function redrawIndex()
@@ -720,6 +721,12 @@ local function applyIndex()
 			entry = table.clone(entry)
 			entry.name = FusionRecipes.Fuse(entry.car, entry.addon) or entry.name
 			entry.known = true
+		elseif not entry.known then
+			-- Not found yet: the Index shows its model in grey, without its
+			-- name, so this is which model to show.
+			entry = table.clone(entry)
+			entry.modelName = entry.hiddenName
+				or (entry.car and entry.addon and FusionRecipes.Fuse(entry.car, entry.addon)) or nil
 		end
 		table.insert(entry.isAddon and addons or junk, entry)
 	end
@@ -734,7 +741,20 @@ local function applyIndex()
 	indexData.addons = addons
 	redrawIndex()
 end
-bookBtn.MouseButton1Click:Connect(indexGallery.Toggle)
+-- The Index opens from its stand in the middle of the yard (walk up and
+-- press, or click it), or with B. It had an INDEX button on the left rail
+-- until 2026-10-05. In a do block: this script's top level is at Luau's
+-- 200-local limit.
+do
+	task.spawn(function()
+		local stand = workspace:WaitForChild("IndexStand", 120)
+		if not stand then return end
+		local prompt = stand:WaitForChild("Book", 30) and stand.Book:WaitForChild("OpenIndex", 30)
+		if prompt then prompt.Triggered:Connect(indexGallery.Open) end
+		local click = stand:WaitForChild("OpenIndexClick", 30)
+		if click then click.MouseClick:Connect(indexGallery.Open) end
+	end)
+end
 UserInputService.InputBegan:Connect(function(input, processed)
 	if not processed and input.KeyCode == Enum.KeyCode.B then indexGallery.Toggle() end
 end)
@@ -2096,6 +2116,9 @@ Players.PlayerRemoving:Connect(function()
 	if tradeListFrame.Visible then task.defer(redrawTradeList) end
 end)
 
+-- See-through, smaller boxes: the game shows round them (GarageTheme's
+-- SeeThrough and CanvasFill), like Daily Rewards, Upgrades and Travel.
+for _,panel in {tradeFrame,tradeListFrame} do panel:SetAttribute("SeeThrough",true) panel:SetAttribute("CanvasFill",.66) end
 for _,panel in {tradeFrame,tradeListFrame} do Garage.Shell(panel) end
 Garage.Inset(tradePickerFrame)
 for _,heading in {tradeTitle,tradeListTitle,tradePickerTitle} do Garage.Header(heading) end
@@ -2369,6 +2392,9 @@ end
 
 -- Apply presentation after construction; future inventory/reward rows inherit it.
 UIStyle.Attach(gui)
+-- Daily Rewards, Upgrades and Travel: see-through, smaller boxes (see the
+-- trade panels above).
+for _,panel in {shopFrame,dailyFrame,travelFrame} do panel:SetAttribute("SeeThrough",true) panel:SetAttribute("CanvasFill",.66) end
 Garage.Shell(shopFrame) Garage.Header(shopTitle)
 Garage.Shell(dailyFrame) Garage.Header(dailyTitle)
 Garage.Shell(travelFrame) Garage.Header(travelTitle)

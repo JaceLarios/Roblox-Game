@@ -1,7 +1,7 @@
 --[[
 	QuestsUI (LocalScript, StarterPlayerScripts) — Junkyard Fusion
 
-	The QUESTS button (left rail, under INDEX) and its panel: today's three
+	The QUESTS button (left rail, under INVENTORY) and its panel: today's three
 	daily quests, how far along each one is and what it pays, the bonus
 	bolts for finishing all three, and when new ones come. The server
 	picks, counts and pays them (DailyQuests, PlotManager); this only shows
@@ -52,7 +52,8 @@ gui.DisplayOrder = 20
 gui:SetAttribute("Designed", true)
 gui.Parent = player:WaitForChild("PlayerGui")
 
-local open = NavButton.Create(gui, "", "QUESTS", GOLD, NavButton.RailPosition("left", 4))
+-- Third on the left rail, where INDEX was until the Index got its stand.
+local open = NavButton.Create(gui, "", "QUESTS", GOLD, NavButton.RailPosition("left", 3))
 local railArt = open:FindFirstChild("Illustration")
 if railArt then
 	railArt.Image = QUEST_ICON

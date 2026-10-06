@@ -284,6 +284,10 @@ function Theme.Canvas(panel,width,height)
   if v.X<100 or v.Y<100 then return end
   panel.Size=UDim2.fromOffset(width,height)
   local fitted=math.min((v.X-34)/width,(v.Y-34)/height,1.45)
+  -- A see-through menu (SeeThrough, below) is a smaller box on a computer,
+  -- CanvasFill of the size that would fill the screen, so the game shows
+  -- round it. A phone keeps the whole screen: it is too small already.
+  if not Theme.IsPhone(v) then fitted*=panel:GetAttribute("CanvasFill") or 1 end
   local wide=math.min((v.X-16)/width,1)
   if Theme.IsPhone(v) and wide>fitted*1.15 then
    scroller=scroller or phoneScroller(panel)
@@ -320,7 +324,10 @@ function Theme.Shell(panel)
   local function vis()
    local shown=panel.Visible local p=panel.Parent
    while p and p~=sg do if p:IsA("GuiObject") and not p.Visible then shown=false end p=p.Parent end
-   bg.Visible=shown
+   -- A menu marked SeeThrough has no backdrop: the game stays in view
+   -- round it (user, 2026-10-05, for Daily Rewards, Upgrades, Travel
+   -- and Trade).
+   bg.Visible=shown and not panel:GetAttribute("SeeThrough")
   end
   panel:GetPropertyChangedSignal("Visible"):Connect(vis)
   panel:GetAttributeChangedSignal("GarageShown"):Connect(vis)

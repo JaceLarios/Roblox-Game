@@ -47,6 +47,8 @@ end
 -- module, so it rebuilds itself whenever its VERSION changes.
 YardFeatures.Build()
 Map.DressYard()
+-- The Item Index's stand, south of the crane (it opens the Index).
+require(ServerStorage:WaitForChild("IndexStand")).Build()
 local plots = workspace:WaitForChild("Plots",30)
 if plots then
  local function dress(plot)

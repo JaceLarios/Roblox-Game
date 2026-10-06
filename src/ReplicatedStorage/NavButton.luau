@@ -8,6 +8,10 @@ end
 function NavButton.ReadableTextColor()
 	return Color3.fromRGB(20,23,30)
 end
+-- How many buttons each rail holds (its highest slot), and every button's
+-- fit, so a rail growing refits the buttons already on screen.
+local railRows = { left = 0, right = 0 }
+local fits = {}
 function NavButton.Create(gui, icon, caption, accentColor, position)
 	local holder = Instance.new("Frame")
 	holder.Name = caption .. "Navigation"
@@ -20,6 +24,8 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 	scale.Parent = holder
 	local slot = math.round((position.Y.Offset+270)/140)
 	local right = position.X.Scale == 1
+	local side = right and "right" or "left"
+	railRows[side] = math.max(railRows[side], slot + 1)
 	local art, label
 	local function fit()
 		local bounds = gui.AbsoluteSize
@@ -53,20 +59,26 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 		end
 		-- On a computer both rails share one size, as big as fits: the
 		-- left rail between the top bar and the coin counter (bottom left),
-		-- the right one under the player list. Up to 1.3x (was 1.1x).
-		local size = workspace.CurrentCamera.ViewportSize
+		-- the right one under the player list, each by how many buttons it
+		-- holds. Up to 1.3x (was 1.1x). Measured in this ScreenGui, below
+		-- Roblox's top bar: it used the whole window, top bar included, so
+		-- on a 16:10 laptop (a MacBook) the right rail ran off the bottom
+		-- and QUESTS sat on the coin counter.
+		local size = bounds
 		local leftTop, rightTop = 110, 260
 		if size.Y < 650 then leftTop, rightTop = 90, 90 end
 		local top = right and rightTop or leftTop
-		local fitLeft = (size.Y - 150 - leftTop) / 616
-		local fitRight = (size.Y - 20 - rightTop) / 616
+		local function railHeight(rows) return 148 + (math.max(rows, 1) - 1) * 156 end
+		local fitLeft = (size.Y - 160 - leftTop) / railHeight(railRows.left)
+		local fitRight = (size.Y - 28 - rightTop) / railHeight(railRows.right)
 		local factor = math.clamp(math.min(fitLeft, fitRight), .3, 1.3)
 		scale.Scale = factor
 		holder.Position = UDim2.new(right and 1 or 0, right and (-16-140*factor) or 16, 0, top+slot*156*factor)
 	end
 	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fit)
 	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
-	fit()
+	table.insert(fits, fit)
+	for _, refit in ipairs(fits) do refit() end
 	local btn = Instance.new("TextButton")
 	btn.Name = caption
 	btn.Size = UDim2.fromScale(1,1)

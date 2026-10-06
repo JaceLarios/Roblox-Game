@@ -49,7 +49,26 @@ local function caption(parent, name, text, size)
 		TextWrapped = true,
 	})
 end
-local function modelView(parent, name)
+-- Flat grey all over, for a model not found yet: every surface's colour,
+-- texture and material goes, so only its shape is left.
+local UNFOUND_GREY = Color3.fromRGB(150, 152, 158)
+local function greyOut(model)
+	for _, d in ipairs(model:GetDescendants()) do
+		if d:IsA("BasePart") then
+			d.Color = UNFOUND_GREY
+			d.Material = Enum.Material.SmoothPlastic
+			if d:IsA("MeshPart") then d.TextureID = "" end
+			if d:IsA("UnionOperation") then d.UsePartColor = true end
+		elseif d:IsA("SurfaceAppearance") or d:IsA("Decal") or d:IsA("Texture")
+			or d:IsA("SpecialMesh") and d.TextureId ~= "" then
+			if d:IsA("SpecialMesh") then d.TextureId = "" else d:Destroy() end
+		elseif d:IsA("ParticleEmitter") or d:IsA("Light") or d:IsA("Beam") or d:IsA("Trail") then
+			d:Destroy()
+		end
+	end
+end
+
+local function modelView(parent, name, grey)
 	local view = make("ViewportFrame", parent, "Model", {
 		BackgroundTransparency = 1, BorderSizePixel = 0,
 		Size = UDim2.new(1, -12, 1, -68), Position = UDim2.fromOffset(6, 10),
@@ -63,6 +82,17 @@ local function modelView(parent, name)
 	if not template then return view end
 	local world = make("WorldModel", view, "World")
 	local clone = template:Clone()
+	if grey then
+		if clone:IsA("BasePart") then
+			local holder = Instance.new("Model")
+			clone.Parent = holder
+			greyOut(holder)
+			clone.Parent = nil
+			holder:Destroy()
+		else
+			greyOut(clone)
+		end
+	end
 	clone.Parent = world
 	local cf, size
 	if clone:IsA("BasePart") then
@@ -307,8 +337,13 @@ function Gallery.Create(gui)
 							),
 						})
 					end
+					-- Found: its model in colour, with its name. Not found yet:
+					-- the same model in flat grey, called "Undiscovered" (a "?"
+					-- until 2026-10-05). A "?" only if it has no model at all.
 					if entry.known then
 						modelView(card, entry.name)
+					elseif entry.modelName and not entry.comingSoon then
+						modelView(card, entry.modelName, true)
 					else
 						local lock = caption(card,"Undiscovered","?",70)
 						lock.Position,lock.Size=UDim2.fromScale(.1,.08),UDim2.new(.8,0,.65,0)
@@ -353,6 +388,8 @@ function Gallery.Create(gui)
 	search:GetPropertyChangedSignal("Text"):Connect(function() scroll.CanvasPosition=Vector2.zero redraw() end)
 	panel:GetPropertyChangedSignal("Visible"):Connect(function() dimmer.Visible=panel.Visible end)
 	function api.Toggle() panel.Visible=not panel.Visible end
+	-- Opens it, if it is not open already (the Index stand).
+	function api.Open() panel.Visible=true end
 	function api.Update(nextData) data=nextData redraw() end
 	close.Activated:Connect(api.Toggle)
 	layout()
