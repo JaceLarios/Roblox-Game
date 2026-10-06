@@ -51,7 +51,8 @@ local function defaultData()
 		lifetimeCoins = 0,
 		totalPlaytimeMinutes = 0,
 		redeemedCodes = {},
-		crates = {}, -- Race Wars crates waiting to be opened; see RaceCrates.luau for the shape of one.
+		crates = {}, -- Race Wars crates waiting to be opened; see RaceCrates.luau for the shape of one. Races pay bolts instead since 2026-10-05; crates already won still open.
+		bolts = 0, -- the Race Wars currency (PlotManager's Bolts).
 		starterPackGiven = false, -- the Starter Pack's Jet Engine and Muscle Car, given once (PlotManager).
 		raceBest = 0, -- furthest ever down the Race Wars track, in studs (RaceLeaderboardService).
 		-- quests (today's daily quests), lastSeen (os.time() at the last

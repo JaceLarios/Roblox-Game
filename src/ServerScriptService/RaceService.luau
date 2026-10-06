@@ -407,8 +407,12 @@ local function endRun(racer, outcome)
 	-- A finish counts as the whole track, whatever the last check read.
 	local reached = outcome == "finished" and #RaceConfig.Levels * RaceConfig.LEVEL_LENGTH or racer.distance
 	task.spawn(hooks.runOver, player, reached)
+	-- Crossing the finish pays a bonus on top of the levels' bolts.
+	if outcome == "finished" and hooks.raceFinished then
+		racer.bolts += hooks.raceFinished(player) or 0
+	end
 	if outcome ~= "left" then
-		fire(player, { kind = outcome, cleared = racer.cleared, crates = racer.crates, place = racer.place, of = race.count })
+		fire(player, { kind = outcome, cleared = racer.cleared, bolts = racer.bolts, place = racer.place, of = race.count })
 	else
 		fire(player, { kind = "ended" })
 	end
@@ -473,7 +477,7 @@ local function seatRacer(race, player, itemName, place)
 		state = "countdown",
 		level = 1,
 		cleared = 0,
-		crates = 0,
+		bolts = 0,
 		distance = distance,
 		offset = offset,
 		checkedAt = os.clock(),
@@ -599,10 +603,11 @@ local function stepRacer(racer, now)
 		racer.lastGood = chassis.CFrame
 	end
 
-	-- Every level cleared wins a crate, quietly: the race carries on.
+	-- Every level cleared pays bolts, quietly: the race carries on.
 	while racer.level <= #RaceConfig.Levels and racer.distance >= racer.level * RaceConfig.LEVEL_LENGTH do
-		if hooks.levelCleared(racer.player, racer.level) == true then
-			racer.crates += 1
+		local paid = hooks.levelCleared(racer.player, racer.level)
+		if type(paid) == "number" then
+			racer.bolts += paid
 		end
 		racer.cleared = racer.level
 		racer.level += 1

@@ -375,8 +375,10 @@ local function buildLevel(root, index, level)
 
 	-- Obstacles in rows, more of them each level: trees and rocks where the
 	-- theme has props, its part-built obstacles where it has none. Every row
-	-- leaves a gap at least GAP studs wide, so there is always a way through,
-	-- and from level two most rows have two or three things to steer round.
+	-- leaves a gap at least GAP studs wide, so there is always a way through.
+	-- Fewer and bigger since 2026-10-05 (the track felt crowded and tight):
+	-- 9 to 17 rows a level instead of 15 to 27, one or two things a row
+	-- instead of up to four, each 18 to 26 studs across instead of 10 to 16.
 	local tree = propTemplate(level.theme, "tree")
 	local rock = propTemplate(level.theme, "rock")
 	local fallback = OBSTACLES[theme.obstacle] or OBSTACLES.bush
@@ -394,19 +396,17 @@ local function buildLevel(root, index, level)
 
 	-- Level 1 gives you a clear run off the grid to get up to speed.
 	local first, last = start + (index == 1 and 160 or 80), start + length - 60
-	local rows = 12 + index * 3
+	local rows = 7 + index * 2
 	local spacing = (last - first) / rows
 	local GAP = 30
 	for row = 1, rows do
 		local distance = first + (row - 0.5) * spacing + rng:NextNumber(-spacing, spacing) * 0.25
 		local gapCentre = rng:NextNumber(-half + GAP / 2 + 6, half - GAP / 2 - 6)
 		local count = 1
-		if index > 1 and rng:NextNumber() < 0.7 then count += 1 end
-		if index > 2 and rng:NextNumber() < 0.5 then count += 1 end
-		if index > 3 and rng:NextNumber() < 0.5 then count += 1 end
+		if index > 1 and rng:NextNumber() < 0.5 then count += 1 end
 		local placed = {}
 		for _ = 1, count do
-			local width = rng:NextNumber(10, 16)
+			local width = rng:NextNumber(18, 26)
 			-- A few tries at a spot clear of the gap and of this row's others.
 			for _ = 1, 8 do
 				local offset = rng:NextNumber(-half + width / 2 + 2, half - width / 2 - 2)
@@ -426,14 +426,15 @@ local function buildLevel(root, index, level)
 	end
 
 	-- Scenery along both walls, like the reference's bushes and cacti:
-	-- trees mostly, the odd rock, tucked in against the wall.
+	-- trees mostly, the odd rock, tucked in against the wall. Bigger and
+	-- further apart since 2026-10-05 (was every 64 studs, 14 to 20 across).
 	if tree or rock then
-		local step = 64
+		local step = 110
 		for i = 0, math.floor(length / step) - 1 do
 			for _, side in ipairs({ -1, 1 }) do
 				local distance = start + (i + 0.5) * step + rng:NextNumber(-12, 12)
 				local isTree = tree and (not rock or rng:NextNumber() < 0.75)
-				local width = isTree and rng:NextNumber(14, 20) or rng:NextNumber(8, 12)
+				local width = isTree and rng:NextNumber(24, 34) or rng:NextNumber(14, 20)
 				local offset = side * (half - width * (isTree and 0.3 or 0.5) - 1)
 				placeProp(folder, isTree and tree or rock, isTree and "tree" or "rock", distance, offset, width, rng)
 			end

@@ -3,7 +3,7 @@
 
 	The QUESTS button (left rail, under INDEX) and its panel: today's three
 	daily quests, how far along each one is and what it pays, the bonus
-	crate for finishing all three, and when new ones come. The server
+	bolts for finishing all three, and when new ones come. The server
 	picks, counts and pays them (DailyQuests, PlotManager); this only shows
 	what GameUpdate sends as `quests`. A quest pays the moment it is done,
 	so there is nothing to claim here.
@@ -138,8 +138,8 @@ local function redraw()
 		end
 	end
 	bonus.Text = quests.bonusCrate
-		and "All three done — your bonus crate is in the Crates tab!"
-		or "Finish all three for a bonus crate!"
+		and "All three done — you won 5 bonus bolts!"
+		or "Finish all three for 5 bonus bolts!"
 end
 
 local function tick()

@@ -49,7 +49,7 @@ local RaceBoard = require(script.Parent:WaitForChild("RaceLeaderboardService"))
 -- offline earnings measured in it) each keep their pieces in one table:
 -- this script's top level is close to Luau's limit of 200 locals.
 -- Daily quests (DailyQuests): Quests.progress counts what a player did.
-local Quests = { lib = require(script.Parent:WaitForChild("DailyQuests")), BONUS_CRATE_LEVEL = 3 }
+local Quests = { lib = require(script.Parent:WaitForChild("DailyQuests")), BONUS_BOLTS = 5 }
 -- Friends and group (SocialConfig): pads earn more for every Roblox friend
 -- in the same server, and for being in the game's group. Friendships are
 -- looked up once per pair when someone joins (Social.join) and kept until
@@ -101,10 +101,11 @@ local PLOT_SIZE   = Layout.PlotSize
 local PET_PAD_COUNT = Layout.PetPadCount
 local PET_PAD_SIZE = 7
 
--- Luck only helps the crates you win in Race Wars (see crateLuck). It used
--- to reroll what you grabbed into a rarer car too, which read as grabbing
--- a bike and getting a Box Truck, so a grab is now always what you took.
-local LUCK_PER_LEVEL = 0.06   -- +6% crate luck per luck level above 1
+-- Luck only adds to the bolts you win in Race Wars (see raceLuck; it
+-- helped race crates until bolts replaced them). It used to reroll what
+-- you grabbed into a rarer car too, which read as grabbing a bike and
+-- getting a Box Truck, so a grab is now always what you took.
+local LUCK_PER_LEVEL = 0.06   -- +6% race bolts per luck level above 1
 local LUCK_MAX_CHANCE = 0.40  -- never more than +40%
 
 -- Upgrades. All four are PERSONAL — none of them touch the shared yard,
@@ -224,7 +225,7 @@ local UPGRADES = {
 		key = "luck", name = "Lucky Wrench", start = 1, max = 10,
 		baseCost = 500, mult = 1.9,
 		describe = function(lv)
-			return string.format("+%d%% luck on the crates you win in races",
+			return string.format("+%d%% more bolts from races",
 				math.floor(math.min(LUCK_MAX_CHANCE, (lv - 1) * LUCK_PER_LEVEL) * 100))
 		end,
 	},
@@ -2445,33 +2446,42 @@ local function sendHome(player)
 	end
 end
 
--- Luck for a crate roll: 1 plus your luck (the Lucky Wrench level, any
--- luck boost and your Rebirth luck), capped at LUCK_MAX_CHANCE. This is
--- the only thing luck does now.
-local function crateLuck(player, s)
+-- Luck for the races: 1 plus your luck (the Lucky Wrench level, any luck
+-- boost and your Rebirth luck), capped at LUCK_MAX_CHANCE. It multiplies
+-- the bolts a race pays; this is the only thing luck does now.
+local function raceLuck(player, s)
 	return 1 + math.min(LUCK_MAX_CHANCE,
 		(s.upgrades.luck * boostMult(s, "luck") - 1) * LUCK_PER_LEVEL * Rebirth.LuckMultiplier(player))
 end
 
--- A crate for clearing `level`, rolled now and timed by what it holds.
--- Returns whether one was given (not when the crate shelf is full).
-local function awardCrate(player, level)
-	local s = state[player]
-	if not s then return false end
-	if #s.crates >= RaceCrates.CAPACITY then
-		toast(player, "Your crate shelf is full — open some crates to win more.")
-		return false
+-- Bolts: the Race Wars currency (leaderstats.Bolts, saved as `bolts`),
+-- paid for every level cleared and for finishing (RaceConfig), instead of
+-- the crates races gave until 2026-10-05. To be spent on Phantom addons.
+local Bolts = {}
+
+-- Adds `amount` bolts and returns it. Counts toward the bolts quest
+-- unless `quiet` (the quests' own bonus).
+function Bolts.add(player, amount, quiet)
+	local stats = player:FindFirstChild("leaderstats")
+	local bolts = stats and stats:FindFirstChild("Bolts")
+	if not bolts or amount <= 0 then return 0 end
+	bolts.Value += amount
+	if not quiet then
+		Quests.progress(player, "bolts", amount)
 	end
-	local item, rarity = RaceCrates.Roll(level, crateLuck(player, s))
-	table.insert(s.crates, {
-		id = HttpService:GenerateGUID(false),
-		level = level,
-		item = item,
-		readyAt = os.time() + (RaceCrates.OpenSeconds[rarity] or 60),
-	})
+	return amount
+end
+
+-- A race pays `base` bolts times the player's luck; the fraction left over
+-- is a chance of one more. Returns what was paid.
+function Bolts.award(player, base)
+	local s = state[player]
+	if not s or base <= 0 then return 0 end
+	local total = base * raceLuck(player, s)
+	local whole = math.floor(total)
+	if math.random() < total - whole then whole += 1 end
 	playSound(playerRoot(player), "big")
-	pushUI(player)
-	return true
+	return Bolts.add(player, whole)
 end
 
 function Quests.commas(n)
@@ -2485,8 +2495,8 @@ function Quests.commas(n)
 end
 
 -- What a player does counts toward today's three quests; each one finished
--- pays its reward straight away, and finishing all three wins a bonus
--- crate at BONUS_CRATE_LEVEL.
+-- pays its reward straight away, and finishing all three wins BONUS_BOLTS
+-- bolts (a bonus race crate until bolts replaced crates).
 function Quests.progress(player, event, amount)
 	local s = state[player]
 	if not s then return end
@@ -2498,9 +2508,8 @@ function Quests.progress(player, event, amount)
 	end
 	if #finished > 0 and not s.quests.bonus and Quests.lib.AllDone(s) then
 		s.quests.bonus = true
-		if awardCrate(player, Quests.BONUS_CRATE_LEVEL) then
-			toast(player, "ALL DAILY QUESTS DONE\nA bonus crate is in your Inventory's Crates tab!", true)
-		end
+		Bolts.add(player, Quests.BONUS_BOLTS, true)
+		toast(player, string.format("ALL DAILY QUESTS DONE\n+%d bonus bolts!", Quests.BONUS_BOLTS), true)
 	end
 	if changed then
 		pushUI(player)
@@ -2541,9 +2550,14 @@ RaceWars.Configure({
 	unlocked = function()
 		return true
 	end,
+	-- Bolts for each level cleared, and a bonus for finishing; each
+	-- returns how many it paid, for the end-of-race banner.
 	levelCleared = function(player, level)
 		Quests.progress(player, "raceLevel")
-		return awardCrate(player, level)
+		return Bolts.award(player, RaceConfig.BoltsPerLevel[level] or 1)
+	end,
+	raceFinished = function(player)
+		return Bolts.award(player, RaceConfig.FINISH_BOLTS)
 	end,
 	toast = toast,
 	broadcast = broadcast,
@@ -3234,6 +3248,12 @@ local function onPlayerAdded(player)
 	coins.Value = data.coins
 	coins.Parent = stats
 
+	-- The Race Wars currency (see Bolts).
+	local bolts = Instance.new("IntValue")
+	bolts.Name = "Bolts"
+	bolts.Value = data.bolts or 0
+	bolts.Parent = stats
+
 	local index = assignPlot(player)
 	if not index then
 		-- Should never happen at 8 max players, but never leave this unhandled.
@@ -3417,9 +3437,11 @@ local function snapshot(player)
 
 	local stats = player:FindFirstChild("leaderstats")
 	local coins = stats and stats:FindFirstChild("Coins")
+	local bolts = stats and stats:FindFirstChild("Bolts")
 
 	return {
 		coins = coins and coins.Value or 0,
+		bolts = bolts and bolts.Value or 0,
 		discoveredList = s.discoveredList,
 		goalIndex = s.goalIndex,
 		bestTier = s.bestTier,

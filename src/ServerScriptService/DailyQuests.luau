@@ -12,7 +12,7 @@
 	whatever it reports finished; all this module does is keep the list
 	and the counting. A quest's reward is some minutes of its player's own
 	pad income (never under MIN_REWARD), so it means as much to a new
-	player as to a Rebirth 6 one. Finishing all three wins a bonus crate.
+	player as to a Rebirth 6 one. Finishing all three wins bonus bolts.
 --]]
 
 local DailyQuests = {}
@@ -33,13 +33,16 @@ local QUESTS = {
 	{ id = "addon",     event = "addon",     text = "Buy an addon in the Shop",              goals = { 1 },         minutes = 3 },
 	{ id = "play",      event = "play",      text = "Play for %d minutes",                   goals = { 10, 20 },    minutes = 4 },
 	{ id = "raceLevel", event = "raceLevel", text = "Clear %d race levels",                  goals = { 2, 4 },      minutes = 6, needs = "races" },
-	{ id = "crate",     event = "crate",     text = "Open %d race crates",                   goals = { 1, 2 },      minutes = 5, needs = "races" },
+	{ id = "bolts",     event = "bolts",     text = "Win %d bolts in Race Wars",             goals = { 4, 8 },      minutes = 5, needs = "races" },
 }
 
 local byId = {}
 for _, quest in ipairs(QUESTS) do
 	byId[quest.id] = quest
 end
+-- Races paid crates, and one quest was to open some, until 2026-10-05: a
+-- saved "crate" quest from that day counts bolts instead.
+byId.crate = byId.bolts
 
 -- Makes sure s.quests holds today's quests, picking them if it does not.
 -- context: { races = bool, fusedThree = bool, indexOpen = bool }.

@@ -200,6 +200,60 @@ end
 gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(placeCoinCard)
 placeCoinCard()
 
+-- Bolts, the Race Wars currency: a smaller card just right of the coins
+-- (and the boost chips moved along to make room), read from leaderstats.
+-- On a phone it sits beside the coins at the top. In a do block because
+-- this script's top level is at Luau's 200-local limit.
+do
+	local card = Instance.new("Frame")
+	card.Name = "BoltsCard"
+	card.Size = UDim2.fromOffset(150, 52)
+	card:SetAttribute("Floating", true)
+	card.BackgroundColor3 = DARK
+	card.BackgroundTransparency = GLASS_HUD
+	card.BorderSizePixel = 0
+	card.Parent = gui
+	UIStyle.Navigation(card)
+	rounded(card)
+	local scale = Instance.new("UIScale")
+	scale.Parent = card
+
+	local icon = label(card, "🔩", UDim2.fromOffset(44, 44), Color3.new(1, 1, 1), Enum.Font.FredokaOne, 32)
+	icon.Position = UDim2.fromOffset(6, 4)
+	icon.TextXAlignment = Enum.TextXAlignment.Center
+	local amount = label(card, "0", UDim2.new(1, -58, 1, 0), Color3.fromRGB(205, 220, 235), Enum.Font.LuckiestGuy, 30)
+	amount.Position = UDim2.fromOffset(52, 0)
+	amount.TextYAlignment = Enum.TextYAlignment.Center
+	UIStyle.Outline(amount, 30)
+
+	local function place()
+		local size = gui.AbsoluteSize
+		if size.Y < 100 then return end
+		local phone = Garage.IsPhone(size)
+		scale.Scale = phone and 0.72 or 1
+		card.Position = phone and UDim2.new(0.5, 116, 0, 14) or UDim2.new(0, 330, 1, -126)
+		if not phone then
+			boostBar.Position = UDim2.new(0, 494, 1, -94)
+		end
+	end
+	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(place)
+	place()
+
+	task.spawn(function()
+		local bolts = player:WaitForChild("leaderstats"):WaitForChild("Bolts", 30)
+		if not bolts then return end
+		local function update()
+			amount.Text = commas(bolts.Value)
+		end
+		bolts.Changed:Connect(function()
+			update()
+			amount.TextSize = 36
+			TweenService:Create(amount, TweenInfo.new(0.25), { TextSize = 30 }):Play()
+		end)
+		update()
+	end)
+end
+
 local BOOST_STYLE = {
 	luck  = { text = "LUCK", color = Color3.fromRGB(120, 200, 255) },
 	value = { text = "INCOME", color = Color3.fromRGB(150, 240, 165) },

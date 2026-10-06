@@ -258,10 +258,14 @@ local function layout()
 	local width = compact and 600 or 1200
 	local tabWidth = compact and 104 or 150
 	local y = compact and 140 or 98
-	-- Right to left: CRATES, ADDONS, CARS.
-	for i, tab in ipairs({ cratesTab, addonsTab, carsTab }) do
-		tab.Size = UDim2.fromOffset(tabWidth, 34)
-		tab.Position = UDim2.fromOffset(width - 24 - tabWidth * i - 8 * (i - 1), y)
+	-- Right to left: CRATES (only while there are any), ADDONS, CARS.
+	local i = 0
+	for _, tab in ipairs({ cratesTab, addonsTab, carsTab }) do
+		if tab.Visible then
+			i += 1
+			tab.Size = UDim2.fromOffset(tabWidth, 34)
+			tab.Position = UDim2.fromOffset(width - 24 - tabWidth * i - 8 * (i - 1), y)
+		end
 	end
 
 	-- Over the item grid and the details panel together.
@@ -286,6 +290,25 @@ end
 carsTab.Activated:Connect(function() show("cars") end)
 addonsTab.Activated:Connect(function() show("addons") end)
 cratesTab.Activated:Connect(function() show("crates") end)
+
+-- Races pay bolts instead of crates since 2026-10-05: the CRATES tab only
+-- shows while a player still has crates won before that to open.
+local function cratesTabShown(list)
+	local any = #list > 0
+	if cratesTab.Visible ~= any then
+		cratesTab.Visible = any
+		layout()
+	end
+	if not any and showing == "crates" then
+		show("cars")
+	end
+end
+gameUpdate.OnClientEvent:Connect(function(data)
+	if type(data) == "table" and type(data.crates) == "table" then
+		cratesTabShown(data.crates)
+	end
+end)
+cratesTab.Visible = false
 panel:GetAttributeChangedSignal("Compact"):Connect(layout)
 gridBoard:GetPropertyChangedSignal("Position"):Connect(layout)
 gridBoard:GetPropertyChangedSignal("Size"):Connect(layout)

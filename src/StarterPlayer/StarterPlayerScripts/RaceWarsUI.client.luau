@@ -133,10 +133,10 @@ local function placeText(event)
 	return string.format("%s OF %d · ", ordinal(event.place or 1), event.of)
 end
 
-local function cratesText(count)
+local function boltsText(count)
 	count = count or 0
-	if count == 0 then return "no crates" end
-	return string.format("%d crate%s won", count, count == 1 and "" or "s")
+	if count == 0 then return "no bolts" end
+	return string.format("+%d bolt%s", count, count == 1 and "" or "s")
 end
 
 eventRemote.OnClientEvent:Connect(function(event)
@@ -165,18 +165,18 @@ eventRemote.OnClientEvent:Connect(function(event)
 		racing = false
 		View.HideHud()
 		View.Banner("CAUGHT!", placeText(event) .. (event.cleared > 0
-			and string.format("cleared %d level%s · %s", event.cleared, event.cleared == 1 and "" or "s", cratesText(event.crates))
+			and string.format("cleared %d level%s · %s", event.cleared, event.cleared == 1 and "" or "s", boltsText(event.bolts))
 			or "it got you on Level 1 — try a faster car"), View.Colours.red)
 	elseif kind == "finished" then
 		racing = false
 		View.HideHud()
 		local won = (event.of or 1) > 1 and event.place == 1
-		View.Banner(won and "YOU WON!" or "YOU ESCAPED!", placeText(event) .. "every level cleared · " .. cratesText(event.crates),
+		View.Banner(won and "YOU WON!" or "YOU ESCAPED!", placeText(event) .. "every level cleared · " .. boltsText(event.bolts),
 			View.Colours.gold)
 	elseif kind == "bailed" then
 		racing = false
 		View.HideHud()
-		View.Banner("BAILED OUT", placeText(event) .. cratesText(event.crates), View.Colours.white)
+		View.Banner("BAILED OUT", placeText(event) .. boltsText(event.bolts), View.Colours.white)
 	elseif kind == "ended" then
 		racing = false
 		View.HideHud()

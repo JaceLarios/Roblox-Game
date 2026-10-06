@@ -36,6 +36,13 @@ RaceConfig.Levels = {
 	{ name = "Neon Rush",   theme = "neon" },
 }
 
+-- Bolts, the race currency: what clearing each level pays (more the
+-- further you get) and a bonus for crossing the finish. Races paid crates
+-- until 2026-10-05; bolts start small on purpose ("start very little"),
+-- and luck (PlotManager's raceLuck) adds its percentage on top.
+RaceConfig.BoltsPerLevel = { 1, 1, 2, 2, 3 }
+RaceConfig.FINISH_BOLTS = 3
+
 -- How fast the monster runs (studs per second). It starts at
 -- FIRST_MONSTER_SPEED on level 1 and gets faster by the same big
 -- percentage every level you clear, until on the last level it is
