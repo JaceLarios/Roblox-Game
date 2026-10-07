@@ -925,6 +925,9 @@ for i = 1, PLOT_COUNT do
 end
 
 ------------------------------------------------------------------
+-- The anti-cheat (speed, teleport, fly, noclip, remote spam).
+require(script.Parent:WaitForChild("AntiCheat")).Start()
+
 -- Two central boards backed by the existing all-time ranking services.
 -- And the "furthest race" board, in the Race Wars lobby.
 require(game.ServerStorage:WaitForChild("CentralLeaderboards")).Start(Leaderboard, PlaytimeLeaderboard,
@@ -1867,6 +1870,10 @@ local function grabItem(player, part)
 	-- One item at a time, and it goes into your hand rather than into
 	-- staging. Staging is only fed from the Inventory panel now.
 	if s.carrying then return false end
+	-- Within reach (anti-cheat: a cheat can fire a Grab prompt from
+	-- anywhere on the map).
+	local reach = playerRoot(player)
+	if not reach or (reach.Position - part.Position).Magnitude > 24 then return false end
 
 	-- Exactly what you took: luck no longer rerolls a grab (see LUCK_PER_LEVEL).
 	local grabbed = part:GetAttribute("ItemName") or part.Name
@@ -2003,6 +2010,7 @@ local function swingBat(player)
 					local away = Vector3.new(offset.X, 0, offset.Z)
 					away = away.Magnitude > 0.1 and away.Unit or Vector3.new(forward.X, 0, forward.Z).Unit
 					local power = batPower(s.upgrades.bat)
+					require(script.Parent:WaitForChild("AntiCheat")).Allow(other, 2)
 					knockbackRemote:FireClient(other, away * BAT_KNOCK_SPEED * power + Vector3.new(0, BAT_KNOCK_LIFT, 0))
 					playSound(otherRoot, "big")
 					toast(player, knockedLoose
@@ -2439,6 +2447,7 @@ local function sendHome(player)
 	local character = player.Character
 	if plot and character then
 		RaceWars.Leave(player)
+		require(script.Parent:WaitForChild("AntiCheat")).Allow(player, 3)
 		character:PivotTo(plot.frame * CFrame.new(0, 5, -20))
 	end
 end

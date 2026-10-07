@@ -43,6 +43,8 @@ local Mutations = require(ReplicatedStorage:WaitForChild("Mutations"))
 local ItemNames = require(ReplicatedStorage:WaitForChild("ItemNames"))
 local Track = require(ServerStorage:WaitForChild("RaceTrack"))
 local Monster = require(ServerStorage:WaitForChild("RaceMonster"))
+-- Told before every move made here, so it is not taken for a cheat.
+local AntiCheat = require(script.Parent:WaitForChild("AntiCheat"))
 
 local Race = {}
 
@@ -448,6 +450,7 @@ local function endRun(racer, outcome)
 			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 			if player.Parent and humanoid and humanoid.Health > 0 and not racers[player] then
 				task.wait(0.1)
+				AntiCheat.Allow(player, 3)
 				character:PivotTo(Track.LobbySpawn())
 				fire(player, { kind = "arrived", facing = Track.Heading.LookVector })
 			end
@@ -493,6 +496,7 @@ local function seatRacer(race, player, itemName, place)
 		racer.ownScale = character:GetScale()
 		character:ScaleTo(racer.ownScale * driverScale)
 	end
+	AntiCheat.Allow(player, 3)
 	character:PivotTo(seat.CFrame * CFrame.new(0, 3, 0))
 	seat:Sit(humanoid)
 	setRacingGroup(racer, true)
@@ -795,6 +799,7 @@ function Race.SendToLobby(player)
 	if racer then endRun(racer, "left") end
 	local character = player.Character
 	if character then
+		AntiCheat.Allow(player, 3)
 		character:PivotTo(Track.LobbySpawn())
 		fire(player, { kind = "arrived", facing = Track.Heading.LookVector })
 	end
