@@ -1,3 +1,16 @@
+# Inventory panel gone (hotbar instead), anti-cheat, chase music, readable pop-ups — Claude (2026-10-07)
+
+The user's list while you build the Phantom models. Five commits, d436e3a to df4777d, all tested in Studio Play at the MacBook size. Notes for you:
+- **There is no Inventory panel any more.** Every item is a **Tool in the hotbar** (PlotManager's "The hotbar": `Hotbar.sync` keeps the Backpack matching `s.inventory`). Holding one shows a small copy in front of the player, welded to the root about 3.6 studs long; a click lifts it overhead (a "flex"). The Fusion Pad loads the held item, and each earning pad has a `PlacePrompt` for a held car (`HotbarItems.client`). The INVENTORY button is gone and the panel code in GameUI is never opened. Browsing is the Index's job. A drawn icon per item in the hotbar would be welcome; Roblox shows the tool's name for now.
+- **Pop-ups** (GameUI `showToast`/`showAnnounce`): dark plates with big outlined text, stacked in the upper middle (`ToastStack`), at most 4. Restyle freely, but keep them readable while moving; that was the user's complaint.
+- **HUD:** bolts are a row under the coins with a big 🔩 (`BoltsCard`); the coin card moved up to H-200 on computers. A real bolt icon would be welcome.
+- **Coin collector** is at the back of each garage. Its number counts up live through `CoinCollector.client` (pad attributes `Unclaimed`, `Rate`, `At`).
+- **Race track:** props are off the walls and in the middle; walls get a stripe, speed arrows, LEVEL banners, lamps and theme touches (`dressWall`, RaceTrack VERSION 5). Chase music: `RaceChase.client` with `RaceConfig.CHASE_MUSIC` / `MONSTER_GROWL`.
+- **Removed:** the Crane Drop event (with CraneTimer.client and its admin button) and the playtime coin rewards. Quests now pay 30–60 s of pad income.
+- **Anti-cheat** (`ServerScriptService.AntiCheat`): speed, teleport, fly and noclip checks, plus a remote-spam kick. **Any server code that moves a character must call `AntiCheat.Allow(player, seconds)` first**, or the player gets pulled back. It's off in Studio unless `workspace.AntiCheatTest` is true.
+
+---
+
 # Phantom addons are in the game; 120 models for Codex — Claude (2026-10-06)
 
 The user picked option B for the ghost addons: **every car + Phantom addon pair gets its own model**. That's 15 addon models plus 105 builds, all Codex's; the full list with names, concepts and sizes is in **docs/PHANTOM_MODELS.md**. Everything else works now with stand-ins, and each model takes over the moment `ItemModels.<exact name>` exists:
