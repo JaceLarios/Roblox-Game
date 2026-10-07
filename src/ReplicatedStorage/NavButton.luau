@@ -69,7 +69,9 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 		if size.Y < 650 then leftTop, rightTop = 90, 90 end
 		local top = right and rightTop or leftTop
 		local function railHeight(rows) return 148 + (math.max(rows, 1) - 1) * 156 end
-		local fitLeft = (size.Y - 160 - leftTop) / railHeight(railRows.left)
+		-- The coin card's top (with its art) is about 210 above the bottom:
+		-- the bolts sit under the coins.
+		local fitLeft = (size.Y - 224 - leftTop) / railHeight(railRows.left)
 		local fitRight = (size.Y - 28 - rightTop) / railHeight(railRows.right)
 		local factor = math.clamp(math.min(fitLeft, fitRight), .3, 1.3)
 		scale.Scale = factor

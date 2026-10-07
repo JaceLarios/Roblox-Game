@@ -451,17 +451,6 @@ local DAILY_REWARDS = {
 }
 local DAILY_MAX_STREAK = #DAILY_REWARDS
 
--- Four fixed check-in points per session, each paid out exactly once —
--- not a repeating-forever timer. "minutes" is time played THIS session
--- (s.playMinutes resets to 0 on join); lifetime playtime for the
--- "Most Dedicated" leaderboard is tracked separately, in
--- PlaytimeLeaderboardService, and never resets.
-local PLAYTIME_MILESTONES = {
-	{ minutes = 5, reward = 300 },
-	{ minutes = 15, reward = 500 },
-	{ minutes = 30, reward = 800 },
-	{ minutes = 60, reward = 1500 },
-}
 
 -- Days since epoch. Simple, and immune to timezone drift because it's
 -- computed from UTC on the server, never from the client's clock.
@@ -971,9 +960,14 @@ function Quests.context(player, s)
 	}
 end
 
+-- A quest's reward: its `minutes` times QUEST_SECONDS_PER_MINUTE seconds of
+-- the player's pad income, so 30 to 60 seconds of it (never under
+-- MIN_REWARD). It was the whole 3 to 6 minutes, which the user found far
+-- too much (2026-10-07).
+Quests.SECONDS_PER_MINUTE = 10
 function Quests.reward(player, s, entry)
 	return math.max(Quests.lib.MIN_REWARD,
-		math.floor(Income.perSecond(player, s) * Quests.lib.Minutes(entry) * 60))
+		math.floor(Income.perSecond(player, s) * Quests.lib.Minutes(entry) * Quests.SECONDS_PER_MINUTE))
 end
 
 function Quests.info(player, s)
@@ -3129,42 +3123,50 @@ redeemCodeRemote.OnServerEvent:Connect(function(player, rawCode)
 end)
 
 ------------------------------------------------------------------
--- The coin collector. What a player's pads earn piles up on a pad in the
--- aisle by their garage door (s.unclaimed, saved as unclaimedCoins), with
--- the amount shown over it, and comes to them when they step on it. Until
--- 2026-10-05 it went straight into their coins. Offline earnings are still
--- paid straight away, with the welcome-back popup. (A do block: this
--- script's top level is near Luau's 200-local limit.)
+-- The coin collector. What a player's pads earn piles up on a pad at the
+-- back of their garage, left of the Lock Base button as you face it
+-- (s.unclaimed, saved as unclaimedCoins), and comes to them when they step
+-- on it. Until 2026-10-05 it went straight into their coins; the pad sat by
+-- the door until 2026-10-07. The amount over it counts up live:
+-- CoinCollector.client draws it from the pad's attributes, Unclaimed (what
+-- stepping on it pays now), Rate (coins a second, both with the 2x Coins
+-- pass counted) and At (the server time they were set). Offline earnings
+-- are still paid straight away, with the welcome-back popup. (A do block:
+-- this script's top level is near Luau's 200-local limit.)
 ------------------------------------------------------------------
 
 do
 	local GOLD = Color3.fromRGB(255, 196, 40)
 	local collectors = {} -- [plot] = { part, amount label }
 
-	-- What stepping on it would pay: the 2x Coins pass counts, as it does
-	-- when the coins are added.
+	-- What stepping on it would pay, and how fast that grows: the 2x Coins
+	-- pass counts, as it does when the coins are added.
 	local function showAmount(plot)
 		local collector = collectors[plot]
 		if not collector then return end
-		local s = plot.owner and state[plot.owner]
-		local amount = s and Gamepasses.Coins(plot.owner, math.floor(s.unclaimed or 0)) or 0
-		collector.label.Text = string.format("%s\n<font size=\"22\">STEP HERE TO COLLECT</font>",
-			amount > 0 and ("💰 " .. Quests.commas(amount)) or "COIN COLLECTOR")
+		local player = plot.owner
+		local s = player and state[player]
+		local pass = s and Gamepasses.Coins(player, 1000) / 1000 or 1
+		collector.part:SetAttribute("Unclaimed", s and math.floor((s.unclaimed or 0) * pass) or 0)
+		collector.part:SetAttribute("Rate", s and Income.perSecond(player, s) * pass or 0)
+		collector.part:SetAttribute("At", workspace:GetServerTimeNow())
 	end
 
 	for _, plot in ipairs(plots) do
+		local spot = plot.frame * CFrame.new(-15, 0, 35)
 		local part = makePart({
 			Name = "CoinCollector",
 			Size = Vector3.new(9, 0.4, 9),
-			CFrame = plot.frame * CFrame.new(0, 0.7, -31),
+			CFrame = spot * CFrame.new(0, 0.7, 0),
 			Material = Enum.Material.SmoothPlastic,
 			Color = GOLD,
 			Parent = plot.model,
 		})
+		CollectionService:AddTag(part, "CoinCollector")
 		makePart({
 			Name = "CoinCollectorRing",
 			Size = Vector3.new(0.2, 10, 10),
-			CFrame = plot.frame * CFrame.new(0, 0.82, -31) * CFrame.Angles(0, 0, math.pi / 2),
+			CFrame = spot * CFrame.new(0, 0.82, 0) * CFrame.Angles(0, 0, math.pi / 2),
 			Shape = Enum.PartType.Cylinder,
 			Material = Enum.Material.Neon,
 			Color = Color3.fromRGB(255, 232, 120),
@@ -3172,9 +3174,7 @@ do
 			CanCollide = false, CanQuery = false, CanTouch = false, CastShadow = false,
 			Parent = plot.model,
 		})
-		local label = makeLabel(part, "COIN COLLECTOR", 4.5, 300, GOLD, 55)
-		label.Parent.Size = UDim2.fromOffset(300, 84)
-		collectors[plot] = { part = part, label = label }
+		collectors[plot] = { part = part }
 		showAmount(plot)
 
 		local ready = {} -- [player] = os.clock() when they can collect again
@@ -3234,6 +3234,9 @@ task.spawn(function()
 				local perSecond = Income.perSecond(player, s)
 				if perSecond > 0 then
 					Income.bank(player, s, perSecond * INCOME_TICK_SECONDS)
+				else
+					-- Nothing earning: its collector stops counting up.
+					Income.showCollector(plots[s.plotIndex])
 				end
 			end
 		end
@@ -3322,18 +3325,13 @@ task.spawn(function()
 		for _, player in ipairs(Players:GetPlayers()) do
 			local s = state[player]
 			if s then
+				-- Minutes played count toward the all-time playtime board and
+				-- the "play for N minutes" quest. (Playing 5, 15, 30 and 60
+				-- minutes paid coins too, until the user removed those
+				-- playtime rewards on 2026-10-07.)
 				s.playMinutes = (s.playMinutes or 0) + 1
 				PlaytimeLeaderboard.Record(player, 1)
 				Quests.progress(player, "play")
-
-				for _, milestone in ipairs(PLAYTIME_MILESTONES) do
-					if s.playMinutes >= milestone.minutes and not s.playtimeMilestonesClaimed[milestone.minutes] then
-						s.playtimeMilestonesClaimed[milestone.minutes] = true
-						local awarded = addCoins(player, milestone.reward) or 0
-						toast(player, string.format("%d MINUTES PLAYED\n+%d coins", milestone.minutes, awarded), true)
-						pushUI(player)
-					end
-				end
 			end
 		end
 	end
@@ -3432,7 +3430,6 @@ local function onPlayerAdded(player)
 		dailyStreak = data.dailyStreak or 0,
 		boosts = data.boosts or {},
 		playMinutes = 0,
-		playtimeMilestonesClaimed = {},
 		redeemedCodes = data.redeemedCodes or {},
 		crates = data.crates or {},
 		starterPackGiven = data.starterPackGiven == true,

@@ -43,6 +43,13 @@ RaceConfig.Levels = {
 RaceConfig.BoltsPerLevel = { 1, 1, 2, 2, 3 }
 RaceConfig.FINISH_BOLTS = 3
 
+-- The chase: a pulsing tension loop that plays through a race, louder the
+-- closer the monster gets to you, and the monster's growl when it is
+-- right behind you (RaceChase.client). Roblox's licensed APM library and
+-- Pro Sound Effects, so both play in any game.
+RaceConfig.CHASE_MUSIC = "rbxassetid://1843764058" -- "Rhythm Drone 44", APM
+RaceConfig.MONSTER_GROWL = "rbxassetid://9113980319" -- creature roar, Pro Sound Effects
+
 -- How fast the monster runs (studs per second). It starts at
 -- FIRST_MONSTER_SPEED on level 1 and gets faster by the same big
 -- percentage every level you clear, until on the last level it is

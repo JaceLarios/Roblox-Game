@@ -554,8 +554,9 @@ function View.Countdown(seconds)
 	end)
 end
 
+-- Five seconds: a result banner says what you won, which takes reading.
 function View.Banner(titleText, subText, colour)
-	pop(titleText, subText, colour, 3)
+	pop(titleText, subText, colour, 5)
 end
 
 View.Colours = { gold = GOLD, red = RED, green = GREEN, white = WHITE }

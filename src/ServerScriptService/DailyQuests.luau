@@ -10,9 +10,11 @@
 
 	PlotManager tells this module what players do (Record) and pays out
 	whatever it reports finished; all this module does is keep the list
-	and the counting. A quest's reward is some minutes of its player's own
-	pad income (never under MIN_REWARD), so it means as much to a new
-	player as to a Rebirth 6 one. Finishing all three wins bonus bolts.
+	and the counting. A quest's reward is some seconds of its player's own
+	pad income (`minutes` below, times PlotManager's
+	Quests.SECONDS_PER_MINUTE; never under MIN_REWARD), so it means as much
+	to a new player as to a Rebirth 6 one. Finishing all three wins bonus
+	bolts.
 --]]
 
 local DailyQuests = {}

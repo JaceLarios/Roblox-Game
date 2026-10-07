@@ -97,7 +97,7 @@ end
 
 local coinCard = Instance.new("Frame")
 coinCard.Size = UDim2.new(0, 300, 0, 76)
-coinCard.Position = UDim2.new(0, 20, 1, -136)
+coinCard.Position = UDim2.new(0, 20, 1, -200)
 coinCard:SetAttribute("Floating",true)
 coinCard.BackgroundColor3 = DARK
 coinCard.BackgroundTransparency = GLASS_HUD
@@ -192,22 +192,24 @@ local function placeCoinCard()
 	local phone = Garage.IsPhone(size)
 	coinScale.Scale = phone and 0.72 or 1
 	coinCard.AnchorPoint = phone and Vector2.new(0.5, 0) or Vector2.zero
-	coinCard.Position = phone and UDim2.new(0.5, 0, 0, 10) or UDim2.new(0, 20, 1, -136)
+	-- Higher than it was (H-136) on a computer: the bolts sit under it now.
+	coinCard.Position = phone and UDim2.new(0.5, 0, 0, 10) or UDim2.new(0, 20, 1, -200)
 	boostBar.AnchorPoint = phone and Vector2.new(0.5, 0) or Vector2.zero
-	boostBar.Position = phone and UDim2.new(0.5, 0, 0, 80) or UDim2.new(0, 334, 1, -94)
+	boostBar.Position = phone and UDim2.new(0.5, 0, 0, 118) or UDim2.new(0, 334, 1, -170)
 	boostLayout.HorizontalAlignment = phone and Enum.HorizontalAlignment.Center or Enum.HorizontalAlignment.Left
 end
 gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(placeCoinCard)
 placeCoinCard()
 
--- Bolts, the Race Wars currency: a smaller card just right of the coins
--- (and the boost chips moved along to make room), read from leaderstats.
--- On a phone it sits beside the coins at the top. In a do block because
--- this script's top level is at Luau's 200-local limit.
+-- Bolts, the Race Wars currency: a row under the coins (under their
+-- friend and group bonus line), a big bolt and the number lined up with
+-- the coins' (the user asked for it bigger and under the coins on
+-- 2026-10-07; it sat small to their right). Read from leaderstats. In a do
+-- block because this script's top level is at Luau's 200-local limit.
 do
 	local card = Instance.new("Frame")
 	card.Name = "BoltsCard"
-	card.Size = UDim2.fromOffset(150, 52)
+	card.Size = UDim2.fromOffset(240, 62)
 	card:SetAttribute("Floating", true)
 	card.BackgroundColor3 = DARK
 	card.BackgroundTransparency = GLASS_HUD
@@ -218,23 +220,23 @@ do
 	local scale = Instance.new("UIScale")
 	scale.Parent = card
 
-	local icon = label(card, "🔩", UDim2.fromOffset(44, 44), Color3.new(1, 1, 1), Enum.Font.FredokaOne, 32)
-	icon.Position = UDim2.fromOffset(6, 4)
+	local icon = label(card, "🔩", UDim2.fromOffset(72, 62), Color3.new(1, 1, 1), Enum.Font.FredokaOne, 54)
+	icon.Position = UDim2.fromOffset(6, 0)
 	icon.TextXAlignment = Enum.TextXAlignment.Center
-	local amount = label(card, "0", UDim2.new(1, -58, 1, 0), Color3.fromRGB(205, 220, 235), Enum.Font.LuckiestGuy, 30)
-	amount.Position = UDim2.fromOffset(52, 0)
+	icon.TextYAlignment = Enum.TextYAlignment.Center
+	local amount = label(card, "0", UDim2.new(1, -88, 1, 0), Color3.fromRGB(205, 220, 235), Enum.Font.LuckiestGuy, 36)
+	amount.Position = UDim2.fromOffset(88, 0)
 	amount.TextYAlignment = Enum.TextYAlignment.Center
-	UIStyle.Outline(amount, 30)
+	UIStyle.Outline(amount, 36)
 
 	local function place()
 		local size = gui.AbsoluteSize
 		if size.Y < 100 then return end
 		local phone = Garage.IsPhone(size)
 		scale.Scale = phone and 0.72 or 1
-		card.Position = phone and UDim2.new(0.5, 116, 0, 14) or UDim2.new(0, 330, 1, -126)
-		if not phone then
-			boostBar.Position = UDim2.new(0, 494, 1, -94)
-		end
+		-- Under the coins (and their bonus line): top centre on a phone.
+		card.AnchorPoint = phone and Vector2.new(0.5, 0) or Vector2.zero
+		card.Position = phone and UDim2.new(0.5, -20, 0, 70) or UDim2.new(0, 20, 1, -104)
 	end
 	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(place)
 	place()
@@ -247,8 +249,8 @@ do
 		end
 		bolts.Changed:Connect(function()
 			update()
-			amount.TextSize = 36
-			TweenService:Create(amount, TweenInfo.new(0.25), { TextSize = 30 }):Play()
+			amount.TextSize = 42
+			TweenService:Create(amount, TweenInfo.new(0.25), { TextSize = 36 }):Play()
 		end)
 		update()
 	end)
@@ -1691,14 +1693,15 @@ local redrawTrade, myTradeItems
 do
 
 local eventBanner = Instance.new("TextLabel")
-eventBanner.Size = UDim2.new(0, 460, 0, 28)
-eventBanner.Position = UDim2.new(0.5, -230, 0, 54)
+-- At the very top, big enough to read on the move (was 28 high, 15-point).
+eventBanner.Size = UDim2.new(0, 560, 0, 40)
+eventBanner.Position = UDim2.new(0.5, -280, 0, 8)
 eventBanner.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 eventBanner.Text = ""
 eventBanner.TextColor3 = Color3.fromRGB(255, 255, 255)
 eventBanner.TextStrokeTransparency = 0.4
 eventBanner.Font = Enum.Font.LuckiestGuy
-eventBanner.TextSize = 15
+eventBanner.TextSize = 24
 eventBanner.BorderSizePixel = 0
 eventBanner.Visible = false
 eventBanner.Parent = gui
@@ -1707,6 +1710,16 @@ rounded(eventBanner)
 local eventBannerGradient = Instance.new("UIGradient")
 eventBannerGradient.Color = ColorSequence.new(Color3.fromRGB(255, 60, 60), Color3.fromRGB(255, 150, 60))
 eventBannerGradient.Parent = eventBanner
+-- On a phone the coins and bolts hold the top centre: the banner goes
+-- under them, a little smaller.
+local function fitEventBanner()
+	local phone = Garage.IsPhone(gui.AbsoluteSize)
+	eventBanner.Size = phone and UDim2.new(0, 420, 0, 32) or UDim2.new(0, 560, 0, 40)
+	eventBanner.Position = phone and UDim2.new(0.5, -210, 0, 120) or UDim2.new(0.5, -280, 0, 8)
+	eventBanner.TextSize = phone and 18 or 24
+end
+gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitEventBanner)
+fitEventBanner()
 
 local function formatEventDuration(seconds)
 	if seconds < 60 then return string.format("%ds", seconds) end
@@ -2153,34 +2166,104 @@ end -- do (Event banner + Trading section)
 ------------------------------------------------------------------
 
 local function showToast(message, big)
-	local toast = Instance.new("TextLabel")
-	toast.Size = UDim2.new(0, 470, 0, big and 86 or 44)
-	toast.Position = UDim2.new(0.5, -235, 0.5, big and -140 or -110)
-	toast.BackgroundColor3 = big and GOLD or DARK
-	toast.BackgroundTransparency = 0.08
-	toast.Text = ItemNames.Display(message)
-	toast.TextColor3 = big and DARK or LIGHT
-	toast.Font = big and Enum.Font.LuckiestGuy or Enum.Font.FredokaOne
-	toast.TextSize = big and 20 or 15
-	toast.TextWrapped = true
-	toast.BorderSizePixel = 0
-	toast.RichText = true
-	toast.Parent = gui
-	rounded(toast)
+	-- Readable while you play (the user, 2026-10-07: "you can't read most
+	-- of them"). Every toast was drawn at the same spot over your
+	-- character, so several at once piled into a blur, in small text, gone
+	-- in under two seconds, and a big toast's coloured item names sat on
+	-- gold. Now each is a dark plate with large outlined text, stacked in
+	-- the upper middle of the screen (newest on top, at most four), shown
+	-- for longer the longer it is. Smaller on a phone.
+	local stack = gui:FindFirstChild("ToastStack")
+	if not stack then
+		stack = Instance.new("Frame")
+		stack.Name = "ToastStack"
+		stack.AnchorPoint = Vector2.new(0.5, 0)
+		stack.Position = UDim2.new(0.5, 0, 0.17, 0)
+		stack.Size = UDim2.new(0, 560, 0.6, 0)
+		stack.BackgroundTransparency = 1
+		stack.ZIndex = 40
+		stack:SetAttribute("Designed", true)
+		stack.Parent = gui
+		local list = Instance.new("UIListLayout")
+		list.SortOrder = Enum.SortOrder.LayoutOrder
+		list.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		list.Padding = UDim.new(0, 8)
+		list.Parent = stack
+		local scale = Instance.new("UIScale")
+		scale.Parent = stack
+		local function fit()
+			local phone = Garage.IsPhone(gui.AbsoluteSize)
+			scale.Scale = phone and 0.72 or 1
+			stack.Position = UDim2.new(0.5, 0, phone and 0.3 or 0.17, 0)
+		end
+		gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
+		fit()
+	end
+	stack:SetAttribute("Count", (stack:GetAttribute("Count") or 0) + 1)
 
-	task.delay(big and 2.8 or 1.8, function()
-		local fade = TweenService:Create(toast, TweenInfo.new(0.4), {
-			BackgroundTransparency = 1,
-			TextTransparency = 1,
-		})
+	local plate = Instance.new("Frame")
+	plate.Name = "Toast"
+	plate.Size = UDim2.new(1, 0, 0, 0)
+	plate.AutomaticSize = Enum.AutomaticSize.Y
+	plate.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
+	plate.BackgroundTransparency = 0.12
+	plate.BorderSizePixel = 0
+	plate.LayoutOrder = -stack:GetAttribute("Count")
+	plate.ZIndex = 40
+	plate:SetAttribute("Designed", true)
+	rounded(plate, 14)
+	local rim = Instance.new("UIStroke")
+	rim.Color = big and GOLD or Color3.fromRGB(120, 120, 140)
+	rim.Thickness = big and 3 or 1.5
+	rim.Parent = plate
+	local pad = Instance.new("UIPadding")
+	pad.PaddingTop, pad.PaddingBottom = UDim.new(0, 10), UDim.new(0, 10)
+	pad.PaddingLeft, pad.PaddingRight = UDim.new(0, 16), UDim.new(0, 16)
+	pad.Parent = plate
+
+	local text = Instance.new("TextLabel")
+	text.Name = "Text"
+	text.Size = UDim2.new(1, 0, 0, 0)
+	text.AutomaticSize = Enum.AutomaticSize.Y
+	text.BackgroundTransparency = 1
+	text.Text = ItemNames.Display(message)
+	text.TextColor3 = big and GOLD or Color3.new(1, 1, 1)
+	text.Font = big and Enum.Font.LuckiestGuy or Enum.Font.FredokaOne
+	text.TextSize = big and 28 or 23
+	text.TextWrapped = true
+	text.RichText = true
+	text.TextStrokeColor3 = Color3.new(0, 0, 0)
+	text.TextStrokeTransparency = 0.35
+	text.ZIndex = 41
+	text:SetAttribute("Designed", true)
+	text.Parent = plate
+	plate.Parent = stack
+
+	-- Four at most: the oldest goes.
+	local shown = {}
+	for _, child in ipairs(stack:GetChildren()) do
+		if child:IsA("Frame") then table.insert(shown, child) end
+	end
+	table.sort(shown, function(a, b) return a.LayoutOrder < b.LayoutOrder end)
+	for i = 5, #shown do shown[i]:Destroy() end
+
+	local plain = #(text.ContentText or message)
+	task.delay(math.min((big and 3.5 or 2.6) + plain * 0.04, 7), function()
+		if not plate.Parent then return end
+		local fadeTime = TweenInfo.new(0.4)
+		TweenService:Create(plate, fadeTime, { BackgroundTransparency = 1 }):Play()
+		TweenService:Create(rim, fadeTime, { Transparency = 1 }):Play()
+		local fade = TweenService:Create(text, fadeTime, { TextTransparency = 1, TextStrokeTransparency = 1 })
 		fade:Play()
 		fade.Completed:Wait()
-		toast:Destroy()
+		plate:Destroy()
 	end)
 end
 
--- Server-wide announcements (golden scrap, big finds). Deliberately
--- different from a personal toast: top of screen, wider, longer.
+-- Server-wide announcements (big finds, yard events). Deliberately
+-- different from a personal toast: across the top, longer. A dark plate
+-- with a gold rim and large outlined text (it was a yellow bar with
+-- 17-point text, and coloured names on yellow could not be read).
 local announceActive = nil
 
 local function showAnnounce(message)
@@ -2188,31 +2271,57 @@ local function showAnnounce(message)
 		announceActive:Destroy()
 	end
 
-	local banner = Instance.new("TextLabel")
-	banner.Size = UDim2.new(0, 640, 0, 46)
-	banner.Position = UDim2.new(0.5, -320, 0, -60)
-	banner.BackgroundColor3 = Color3.fromRGB(255, 205, 60)
-	banner.BackgroundTransparency = 0.05
-	banner.Text = ItemNames.Display(message)
-	banner.TextColor3 = DARK
-	banner.Font = Enum.Font.LuckiestGuy
-	banner.TextSize = 17
-	banner.TextWrapped = true
+	local banner = Instance.new("Frame")
+	banner.Name = "Announcement"
+	banner.AnchorPoint = Vector2.new(0.5, 0)
+	banner.Size = UDim2.new(0, 700, 0, 0)
+	banner.AutomaticSize = Enum.AutomaticSize.Y
+	banner.Position = UDim2.new(0.5, 0, 0, -120)
+	banner.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
+	banner.BackgroundTransparency = 0.1
 	banner.BorderSizePixel = 0
-	banner.RichText = true
+	banner.ZIndex = 42
+	banner:SetAttribute("Designed", true)
+	rounded(banner, 14)
+	local rim = Instance.new("UIStroke")
+	rim.Color = Color3.fromRGB(255, 205, 60)
+	rim.Thickness = 3
+	rim.Parent = banner
+	local pad = Instance.new("UIPadding")
+	pad.PaddingTop, pad.PaddingBottom = UDim.new(0, 10), UDim.new(0, 10)
+	pad.PaddingLeft, pad.PaddingRight = UDim.new(0, 18), UDim.new(0, 18)
+	pad.Parent = banner
+	local scale = Instance.new("UIScale")
+	scale.Scale = Garage.IsPhone(gui.AbsoluteSize) and 0.7 or 1
+	scale.Parent = banner
+	local text = Instance.new("TextLabel")
+	text.Size = UDim2.new(1, 0, 0, 0)
+	text.AutomaticSize = Enum.AutomaticSize.Y
+	text.BackgroundTransparency = 1
+	text.Text = ItemNames.Display(message)
+	text.TextColor3 = Color3.new(1, 1, 1)
+	text.Font = Enum.Font.LuckiestGuy
+	text.TextSize = 24
+	text.TextWrapped = true
+	text.RichText = true
+	text.TextStrokeColor3 = Color3.new(0, 0, 0)
+	text.TextStrokeTransparency = 0.3
+	text.ZIndex = 43
+	text:SetAttribute("Designed", true)
+	text.Parent = banner
 	banner.Parent = gui
-	rounded(banner)
 
 	announceActive = banner
 
+	-- Below the event banner when one is up (it sits at the very top).
 	TweenService:Create(banner, TweenInfo.new(0.35, Enum.EasingStyle.Back), {
-		Position = UDim2.new(0.5, -320, 0, 18),
+		Position = UDim2.new(0.5, 0, 0, 56),
 	}):Play()
 
-	task.delay(4.5, function()
+	task.delay(6, function()
 		if banner.Parent then
 			local out = TweenService:Create(banner, TweenInfo.new(0.4), {
-				Position = UDim2.new(0.5, -320, 0, -60),
+				Position = UDim2.new(0.5, 0, 0, -160),
 			})
 			out:Play()
 			out.Completed:Wait()

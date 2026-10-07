@@ -3,8 +3,8 @@ local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("Ite
 	ScrapSpawner (Script, ServerScriptService) — Junkyard Fusion v1
 	Sends a random car out of the black box onto the yard's conveyor every
 	few seconds and moves everything riding it round the loop (YardConveyor
-	owns the belt itself). Also runs the yard's timed events: Crane Drop,
-	Scrap Rush and Mutation Frenzy.
+	owns the belt itself). Also runs the yard's timed events: Scrap Rush
+	and Mutation Frenzy.
 	Server-only on purpose: the server decides what spawns, never the client.
 --]]
 
@@ -64,11 +64,10 @@ local MAX_ON_MAP = {
 }
 
 -- Secret cars (FusionRecipes.SecretCars): about one drop in SECRET_CHANCE
--- is one of them instead, announced to the whole server, and a Crane Drop
--- crate holds one CRATE_SECRET_CHANCE of the time. Never two of the same
--- out at once.
+-- is one of them instead, announced to the whole server. Never two of the
+-- same out at once. (A Crane Drop crate could hold one too, until the
+-- Crane Drop event was removed on 2026-10-07.)
 local SECRET_CHANCE = 1 / 500
-local CRATE_SECRET_CHANCE = 0.04
 for _, car in ipairs(FusionRecipes.SecretCars) do
 	MAX_ON_MAP[car.name] = 1
 end
@@ -92,19 +91,6 @@ local FRENZY_SECONDS = 90
 local FRENZY_DROP_CHANCE = 0.25
 local FRENZY_DROP_WEIGHTS = { shiny = 60, toxic = 25, golden = 10, frenzy = 3, cosmic = 2 }
 
--- Crane Drop: the crate only ever holds a rare-or-better car (Cop Cruiser,
--- Box Truck or Monster Truck), picked by rarity rather than by spawn rate
--- so a crate stays worth racing for. Addons are Shop-only now.
-local CRATE_MIN_RARITY = "rare"
-local CRATE_DESPAWN_AFTER = 60
-local CRANE_SWING_SECONDS = 6
-local CRATE_FALL_SECONDS = 1.1
--- A Crane Drop is called two minutes ahead, with a big countdown in the
--- sky over the yard (CraneTimer.client, from workspace's CraneDropAt and
--- CraneDropSpot), so people across the map have time to get there.
-local CRANE_WARNING = 120
--- The last call, this many seconds before it drops.
-local CRANE_LAST_CALL = 15
 
 -- Light pillar over anything worth racing for, in its rarity colour.
 local BEAM_HEIGHT = 70
@@ -497,152 +483,7 @@ end)
 -- Yard events
 ------------------------------------------------------------------
 
-local function craneArm()
-	local features = YardFeatures.Find()
-	local crane = features and features:FindFirstChild("MagnetCrane")
-	return crane and crane:FindFirstChild("Arm")
-end
-
--- Turns the arm so the magnet hangs over `angle` (radians around the yard,
--- measured the same way as math.atan2(z, x)). The arm's jib points along
--- +X at yaw 0, and a yaw of -angle swings +X onto that bearing.
-local function swingArm(arm, angle, seconds)
-	local pivot = arm:GetPivot()
-	local from = arm:GetAttribute("Yaw") or 0
-	local to = -angle
-	-- The short way round, never a full lap.
-	local delta = (to - from + math.pi) % (math.pi * 2) - math.pi
-
-	local driver = Instance.new("NumberValue")
-	driver.Value = from
-	local conn = driver.Changed:Connect(function(yaw)
-		arm:PivotTo(CFrame.new(pivot.Position) * CFrame.Angles(0, yaw, 0))
-	end)
-	local tween = TweenService:Create(driver, TweenInfo.new(seconds, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
-		{ Value = from + delta })
-	tween:Play()
-	tween.Completed:Wait()
-	conn:Disconnect()
-	driver:Destroy()
-	arm:SetAttribute("Yaw", from + delta)
-end
-
--- A pulsing ring and a light pillar on the landing spot, so everyone can
--- see where to stand before the crate comes down.
-local function dropMarker(spot)
-	local marker = Instance.new("Model")
-	marker.Name = "CraneDropMarker"
-
-	local ring = Instance.new("Part")
-	ring.Name = "Ring"
-	ring.Shape = Enum.PartType.Cylinder
-	ring.Size = Vector3.new(0.2, 9, 9)
-	ring.CFrame = CFrame.new(spot + Vector3.new(0, 0.12, 0)) * CFrame.Angles(0, 0, math.rad(90))
-	ring.Anchored = true
-	ring.CanCollide = false
-	ring.CanQuery = false
-	ring.CanTouch = false
-	ring.Material = Enum.Material.Neon
-	ring.Color = Color3.fromRGB(255, 205, 40)
-	ring.Transparency = 0.2
-	ring.Parent = marker
-
-	local pulse = TweenService:Create(ring, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-		{ Transparency = 0.75 })
-	pulse:Play()
-
-	marker.Parent = workspace
-	addBeam(ring, Color3.fromRGB(255, 205, 40))
-	return marker
-end
-
-local function rollCrateItem()
-	if math.random() < CRATE_SECRET_CHANCE then
-		local secret = FusionRecipes.RollSecretCar()
-		if secret and not atLimit(secret) then return secret end
-	end
-	local floor = FusionRecipes.RarityIndex[CRATE_MIN_RARITY]
-	local pool = {}
-	for _, item in ipairs(FusionRecipes.Items) do
-		if FusionRecipes.RarityIndex[item.rarity] >= floor and not atLimit(item.name) then
-			table.insert(pool, item)
-		end
-	end
-	return weightedPick(pool, function(item) return FusionRecipes.RarityWeight[item.rarity] end).name
-end
-
--- A wooden crate falling from the magnet onto the spot, then bursting.
-local function dropCrate(origin, spot)
-	local crate = Instance.new("Part")
-	crate.Name = "CraneCrate"
-	crate.Size = Vector3.new(4, 4, 4)
-	crate.CFrame = CFrame.new(origin - Vector3.new(0, 2, 0))
-	crate.Anchored = true
-	crate.CanCollide = false
-	crate.CanQuery = false
-	crate.Material = Enum.Material.WoodPlanks
-	crate.Color = Color3.fromRGB(150, 104, 58)
-	crate.Parent = workspace
-
-	local fall = TweenService:Create(crate, TweenInfo.new(CRATE_FALL_SECONDS, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-		{ CFrame = CFrame.new(spot + Vector3.new(0, 2, 0)) * CFrame.Angles(0, math.rad(35), 0) })
-	fall:Play()
-	fall.Completed:Wait()
-
-	local burst = Instance.new("ParticleEmitter")
-	burst.Color = ColorSequence.new(Color3.fromRGB(190, 150, 100))
-	burst.Size = NumberSequence.new(1.2, 0)
-	burst.Lifetime = NumberRange.new(0.4, 0.8)
-	burst.Speed = NumberRange.new(10, 18)
-	burst.SpreadAngle = Vector2.new(180, 180)
-	burst.Rate = 0
-	burst.Parent = crate
-	burst:Emit(40)
-	crate.Transparency = 1
-	task.delay(1, function()
-		crate:Destroy()
-	end)
-end
-
 local runEvent = {}
-
--- The leaderboard board stands on the +X bearing just off the crane (see
--- PlotManager). Crane Drops pick any bearing except within this much of it.
-local LEADERBOARD_CLEARANCE = math.rad(25)
-
-function runEvent.CraneDrop()
-	local angle = LEADERBOARD_CLEARANCE + math.random() * (math.pi * 2 - LEADERBOARD_CLEARANCE * 2)
-	local reach = YardFeatures.CRANE_REACH
-	local x, z = math.cos(angle) * reach, math.sin(angle) * reach
-	local spot = Vector3.new(x, surfaceY(x, z) or YardFeatures.GROUND_Y, z)
-
-	local marker = dropMarker(spot)
-	local dropAt = workspace:GetServerTimeNow() + CRANE_WARNING
-	workspace:SetAttribute("CraneDropSpot", spot)
-	workspace:SetAttribute("CraneDropAt", dropAt)
-	announce("<font color=\"#FFCD28\">CRANE DROP</font> in 2 minutes — look up at the timer and get under the magnet!")
-
-	local arm = craneArm()
-	if arm then
-		swingArm(arm, angle, CRANE_SWING_SECONDS)
-	end
-	task.wait(math.max(0, dropAt - CRANE_LAST_CALL - workspace:GetServerTimeNow()))
-	announce(string.format("<font color=\"#FFCD28\">CRANE DROP</font> in %d seconds — get under the magnet!", CRANE_LAST_CALL))
-	task.wait(math.max(0, dropAt - workspace:GetServerTimeNow()))
-
-	-- Fall from wherever the magnet actually ended up, so the crate always
-	-- leaves the magnet even if the arm is a hair off the marker.
-	local magnet = arm and arm:FindFirstChild("Magnet")
-	local origin = magnet and (magnet.Position - Vector3.new(0, magnet.Size.X / 2, 0)) or (spot + Vector3.new(0, 20, 0))
-	dropCrate(Vector3.new(spot.X, origin.Y, spot.Z), spot)
-	marker:Destroy()
-	workspace:SetAttribute("CraneDropAt", nil)
-	workspace:SetAttribute("CraneDropSpot", nil)
-
-	local itemName = rollCrateItem()
-	spawnItemAt(itemName, spot, { beam = true, silent = true, despawnAfter = CRATE_DESPAWN_AFTER })
-	announce(string.format("<font color=\"#FFCD28\">CRANE DROP:</font> %s just landed by the crane!", itemTag(itemName)))
-end
 
 function runEvent.ScrapRush()
 	announce(string.format("<font color=\"#5ADC78\">SCRAP RUSH</font> in %d seconds — double drops incoming!", EVENT_WARNING))
@@ -675,7 +516,8 @@ function runEvent.SecretCar()
 	ride(part, -math.max(part.Size.X, part.Size.Z) / 2)
 end
 
-local EVENT_ORDER = { "CraneDrop", "ScrapRush", "MutationFrenzy" }
+-- The Crane Drop was one of these until 2026-10-07 (the user removed it).
+local EVENT_ORDER = { "ScrapRush", "MutationFrenzy" }
 local eventRunning = false
 local lastEvent = nil
 

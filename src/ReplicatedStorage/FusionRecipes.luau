@@ -35,8 +35,7 @@ FusionRecipes.RarityIndex = RARITY_INDEX
 
 -- How exciting each rarity is, as a relative weight. This is NOT the
 -- yard's spawn rate any more (each item's own `weight` below is); it is
--- kept for picks that should lean on rarity alone, like what a Crane Drop
--- crate holds.
+-- kept for picks that should lean on rarity alone.
 FusionRecipes.RarityWeight = {
 	common    = 100,
 	uncommon  = 55,
@@ -357,7 +356,7 @@ end
 -- SECRET CARS: finished supercars based on real ones, the rarest things in
 -- the game. They are already built, so they never take an addon (and need
 -- one model each, not a set of builds). They roll out of the black box
--- very rarely, or come down in a Crane Drop crate (ScrapSpawner), are worth
+-- very rarely (ScrapSpawner), are worth
 -- more than any build (the best earners on a pad) and are the fastest cars
 -- in Race Wars. They have their own tab in the Index, "???" until found.
 -- Their names are made up: real car brands are trademarks, and Roblox

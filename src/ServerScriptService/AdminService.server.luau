@@ -8,7 +8,7 @@
 	              (ScrapSpawner watches workspace's LegendaryDropAt)
 	  race        cut the line-up countdown short: the race starts now, for
 	              whoever is lined up (RaceService's RaceNextAt)
-	  CraneDrop, ScrapRush, MutationFrenzy
+	  ScrapRush, MutationFrenzy
 	              run that yard event now (ScrapSpawner's TriggerYardEvent)
 	  SecretCar   a Secret car rolls out of the black box now (the same way)
 	  bolts       +100 bolts, to try the Phantom Garage without racing
@@ -27,7 +27,7 @@ if not remote then
 	remote.Parent = ReplicatedStorage
 end
 
-local YARD_EVENTS = { CraneDrop = true, ScrapRush = true, MutationFrenzy = true, SecretCar = true }
+local YARD_EVENTS = { ScrapRush = true, MutationFrenzy = true, SecretCar = true }
 
 remote.OnServerEvent:Connect(function(player, action)
 	if not AdminConfig.IsAdmin(player) or type(action) ~= "string" then

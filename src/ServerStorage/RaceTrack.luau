@@ -39,7 +39,7 @@ local FINISH_DEPTH = 160
 
 local FOLDER_NAME = "RaceWars"
 -- Bump when the geometry changes, so a stale build is replaced.
-local VERSION = 4
+local VERSION = 5 -- 5: dressed walls, scenery off the walls (2026-10-07)
 
 -- White and light grey squares, tinted per level (assets/race-wars).
 local CHECKER = "rbxassetid://126970654411709"
@@ -336,6 +336,101 @@ local function buildGate(folder, distance, text, colour)
 	end
 end
 
+-- The walls' dressing, so the track feels alive (user, 2026-10-07): a
+-- stripe the whole length in the level's trim colour, glowing speed
+-- arrows every 100 studs pointing the way, a "LEVEL n" banner twice a
+-- side, a row of lamps along the top, and one touch of the level's own
+-- (icicles, lava drips, neon zigzags, palm-green hedges, sandstone bands).
+-- Nothing here can be hit: it is all on the wall's face.
+local function dressWall(folder, index, level, theme, side, start, length)
+	local half = Track.WIDTH / 2
+	local face = side < 0 and Enum.NormalId.Right or Enum.NormalId.Left
+	local inner = side * (half - 0.3)   -- just off the wall, on the track side
+	local glow = theme.trimNeon and Enum.Material.Neon or Enum.Material.SmoothPlastic
+	local function onWall(name, size, distance, height, props, depth)
+		props = props or {}
+		props.Name = name
+		props.Size = size
+		-- `depth`: how much further into the wall (a rim behind a board).
+		props.CFrame = CFrame.new(Track.PointAt(distance, inner + side * (depth or 0), height)) * Track.Heading
+		props.CanCollide = false
+		props.CanQuery = false
+		props.CanTouch = false
+		props.CastShadow = false
+		return part(folder, props)
+	end
+	local function faceText(p, text, colour, stroke, font)
+		local gui = Instance.new("SurfaceGui")
+		gui.Face = face
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = 8
+		gui.LightInfluence = 0
+		gui.Parent = p
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.fromScale(1, 1)
+		label.BackgroundTransparency = 1
+		label.Text = text
+		label.TextScaled = true
+		label.TextWrapped = false
+		label.Font = font or Enum.Font.LuckiestGuy
+		label.TextColor3 = colour
+		label.Parent = gui
+		local outline = Instance.new("UIStroke")
+		outline.Color = stroke
+		outline.Thickness = 5
+		outline.Parent = label
+		return label
+	end
+
+	-- The stripe, a third of the way up.
+	onWall("WallStripe", Vector3.new(0.4, 3, length), start + length / 2, 14,
+		{ Color = theme.trim, Material = glow })
+	-- Speed arrows, pointing down the track: ">>>" reads forward on the
+	-- left wall's face, "<<<" on the right's.
+	for d = start + 50, start + length - 30, 100 do
+		local arrows = onWall("SpeedArrows", Vector3.new(0.4, 9, 22), d, 26, { Transparency = 1 })
+		faceText(arrows, side < 0 and "»»»" or "«««", theme.trim, rgb(30, 24, 40))
+	end
+	-- Two level banners a side, staggered so one is always coming up.
+	for _, d in ipairs({ start + 200 + (side > 0 and 100 or 0), start + 600 + (side > 0 and 100 or 0) }) do
+		local board = onWall("LevelBanner", Vector3.new(0.5, 8, 50), d, 33, { Color = rgb(24, 22, 34) })
+		faceText(board, string.format("LEVEL %d · %s", index, string.upper(level.name)), rgb(255, 255, 255), theme.trim)
+		onWall("BannerRim", Vector3.new(0.4, 9.4, 51.4), d, 33, { Color = theme.trim, Material = Enum.Material.Neon }, 0.3)
+	end
+	-- Lamps along the top.
+	for d = start + 30, start + length - 10, 80 do
+		local lamp = onWall("WallLamp", Vector3.new(1.4, 1.4, 1.4), d, WALL_HEIGHT - 4,
+			{ Color = theme.trimNeon and theme.trim or rgb(255, 236, 170), Material = Enum.Material.Neon, Shape = Enum.PartType.Ball })
+		lamp.CFrame = CFrame.new(Track.PointAt(d, side * (half - 1), WALL_HEIGHT - 4))
+	end
+	-- The level's own touch.
+	if level.theme == "snow" then
+		for d = start + 12, start + length - 12, 24 do
+			local icicle = onWall("Icicle", Vector3.new(1.6, 6, 1.6), d, WALL_HEIGHT - 3,
+				{ Color = rgb(220, 240, 255), Material = Enum.Material.Ice, Transparency = 0.15 })
+			icicle.CFrame = CFrame.new(Track.PointAt(d, side * (half - 1), WALL_HEIGHT - 3)) * Track.Heading
+		end
+	elseif level.theme == "volcano" then
+		for d = start + 40, start + length - 20, 70 do
+			onWall("LavaDrip", Vector3.new(0.4, 18, 2.2), d, WALL_HEIGHT - 12,
+				{ Color = rgb(255, 120, 30), Material = Enum.Material.Neon })
+		end
+	elseif level.theme == "neon" then
+		for d = start + 25, start + length - 25, 50 do
+			local bar = onWall("NeonZig", Vector3.new(0.4, 1.2, 16), d, 6, { Color = theme.trim, Material = Enum.Material.Neon })
+			bar.CFrame = bar.CFrame * CFrame.Angles(math.rad(side * 25 * ((d // 50) % 2 == 0 and 1 or -1)), 0, 0)
+		end
+	elseif level.theme == "grass" then
+		onWall("Hedge", Vector3.new(2, 4, length), start + length / 2, WALL_HEIGHT - 2,
+			{ Color = rgb(70, 160, 60), Material = Enum.Material.Grass })
+	elseif level.theme == "desert" then
+		for _, h in ipairs({ 5, 20 }) do
+			onWall("SandBand", Vector3.new(0.4, 2, length), start + length / 2, h,
+				{ Color = rgb(186, 128, 70), Material = Enum.Material.Sandstone })
+		end
+	end
+end
+
 local function buildLevel(root, index, level)
 	local theme = THEMES[level.theme] or THEMES.grass
 	local folder = Instance.new("Folder")
@@ -364,6 +459,7 @@ local function buildLevel(root, index, level)
 		})
 		-- Only the face toward the track: +X for the left wall, -X for the right.
 		checker(wall, side < 0 and Enum.NormalId.Right or Enum.NormalId.Left, theme.wall, 24)
+		dressWall(folder, index, level, theme, side, start, length)
 		part(folder, {
 			Name = "WallTrim",
 			Size = Vector3.new(WALL_THICKNESS + 1, 3, length),
@@ -409,7 +505,8 @@ local function buildLevel(root, index, level)
 			local width = rng:NextNumber(18, 26)
 			-- A few tries at a spot clear of the gap and of this row's others.
 			for _ = 1, 8 do
-				local offset = rng:NextNumber(-half + width / 2 + 2, half - width / 2 - 2)
+				-- Never against a wall (it hides the walls' dressing).
+				local offset = rng:NextNumber(-half + width / 2 + 8, half - width / 2 - 8)
 				local clear = math.abs(offset - gapCentre) >= GAP / 2 + width / 2
 				for _, other in ipairs(placed) do
 					if math.abs(offset - other.offset) < (width + other.width) / 2 + 4 then
@@ -425,19 +522,20 @@ local function buildLevel(root, index, level)
 		end
 	end
 
-	-- Scenery along both walls, like the reference's bushes and cacti:
-	-- trees mostly, the odd rock, tucked in against the wall. Bigger and
-	-- further apart since 2026-10-05 (was every 64 studs, 14 to 20 across).
+	-- The scenery that lined both walls now stands out on the track, in
+	-- the middle half of it, one every 160 studs on alternating sides,
+	-- halfway between obstacle rows where it can (user, 2026-10-07: "move
+	-- all the objects off the wall and put them more in the middle"). It
+	-- hits like any other tree or rock.
 	if tree or rock then
-		local step = 110
+		local step = 160
 		for i = 0, math.floor(length / step) - 1 do
-			for _, side in ipairs({ -1, 1 }) do
-				local distance = start + (i + 0.5) * step + rng:NextNumber(-12, 12)
-				local isTree = tree and (not rock or rng:NextNumber() < 0.75)
-				local width = isTree and rng:NextNumber(24, 34) or rng:NextNumber(14, 20)
-				local offset = side * (half - width * (isTree and 0.3 or 0.5) - 1)
-				placeProp(folder, isTree and tree or rock, isTree and "tree" or "rock", distance, offset, width, rng)
-			end
+			local side = i % 2 == 0 and -1 or 1
+			local distance = start + (i + 0.5) * step + rng:NextNumber(-10, 10)
+			local isTree = tree and (not rock or rng:NextNumber() < 0.75)
+			local width = isTree and rng:NextNumber(22, 30) or rng:NextNumber(14, 20)
+			local offset = side * rng:NextNumber(half * 0.3, half * 0.55)
+			placeProp(folder, isTree and tree or rock, isTree and "tree" or "rock", distance, offset, width, rng)
 		end
 	end
 

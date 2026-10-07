@@ -87,15 +87,25 @@ banner.Parent = gui
 
 local subtitle = Instance.new("TextLabel")
 subtitle.AnchorPoint = Vector2.new(0.5, 0)
-subtitle.Size = UDim2.fromOffset(420, 26)
+subtitle.Size = UDim2.fromOffset(0, 34)
 subtitle.Position = UDim2.new(0.5, 0, 0, 104)
 subtitle.BackgroundTransparency = 1
 subtitle.Text = "Get it back to your base!"
 subtitle.TextColor3 = Color3.fromRGB(255, 225, 225)
 subtitle.Font = Enum.Font.FredokaOne
-subtitle.TextSize = 20
+subtitle.TextSize = 26
 subtitle.TextStrokeColor3 = Color3.new(0, 0, 0)
-subtitle.TextStrokeTransparency = 0.2
+subtitle.TextStrokeTransparency = 0
+-- On a dark plate, so it reads over a bright sky or the white garage.
+subtitle.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
+subtitle.BackgroundTransparency = 0.25
+subtitle.AutomaticSize = Enum.AutomaticSize.X
+local subtitleCorner = Instance.new("UICorner")
+subtitleCorner.CornerRadius = UDim.new(0, 10)
+subtitleCorner.Parent = subtitle
+local subtitlePad = Instance.new("UIPadding")
+subtitlePad.PaddingLeft, subtitlePad.PaddingRight = UDim.new(0, 12), UDim.new(0, 12)
+subtitlePad.Parent = subtitle
 subtitle:SetAttribute("Designed", true)
 subtitle.Parent = gui
 
@@ -107,7 +117,7 @@ local function fitBanner()
 	banner.TextSize = phone and 50 or 80
 	banner.Size = phone and UDim2.fromOffset(240, 60) or UDim2.fromOffset(360, 96)
 	banner.Position = UDim2.new(0.5, 0, 0, phone and 128 or 14)
-	subtitle.TextSize = phone and 15 or 20
+	subtitle.TextSize = phone and 18 or 26
 	subtitle.Position = UDim2.new(0.5, 0, 0, phone and 186 or 104)
 end
 workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fitBanner)
