@@ -1008,6 +1008,10 @@ local currentPlaced = {}
 local currentPlacedCapacity = 8
 
 local inventoryBtn = NavButton.Create(gui, "📦", "INVENTORY", BLUE, NavButton.RailPosition("left", 2))
+-- No Inventory panel since 2026-10-07: every item is in the hotbar
+-- (PlotManager's "The hotbar"), browsed in the Index. Its button goes; the
+-- panel below is never opened any more.
+inventoryBtn.Parent:Destroy()
 
 -- 2026-09-15 rebuild against a reference the user supplied (Pet Simulator X's
 -- inventory): big panel, generous spacing, small-but-legible tiles, and real

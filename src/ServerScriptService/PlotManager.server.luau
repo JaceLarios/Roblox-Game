@@ -992,9 +992,13 @@ function Quests.info(player, s)
 	}
 end
 
+-- The hotbar: the inventory as tools (see "The hotbar" further down).
+local Hotbar = {}
+
 local function pushUI(player)
 	local s = state[player]
 	if not s then return end
+	if Hotbar.sync then Hotbar.sync(player, s) end
 
 	-- For the Race Wars lobby panel. Races are open to everyone from the
 	-- start (they needed the first Rebirth until 2026-10-05).
@@ -1170,7 +1174,7 @@ local function giveStarterPack(player)
 	for _, itemName in ipairs(STARTER_PACK_ITEMS) do
 		table.insert(s.inventory, itemName)
 	end
-	toast(player, "STARTER PACK\nA Jet Engine and a Muscle Car are in your Inventory. Fuse them for a Legendary!", true)
+	toast(player, "STARTER PACK\nA Jet Engine and a Muscle Car are in your hotbar. Fuse them for a Legendary!", true)
 	pushUI(player)
 end
 
@@ -1335,6 +1339,8 @@ local function redrawPetPad(plot, slot, itemName)
 		pad.itemPart:Destroy()
 		pad.itemPart = nil
 	end
+	-- For HotbarItems.client: which pad is the next free one to place on.
+	pad.part:SetAttribute("Occupied", itemName ~= nil)
 
 	if not itemName then
 		pad.label.Text = "EMPTY PAD"
@@ -2281,6 +2287,13 @@ for i, plot in ipairs(plots) do
 			toast(player, "That's not your plot.")
 			return
 		end
+		-- Holding an item from the hotbar: it goes on the pad, and the pad
+		-- fuses as soon as it has a car and an addon.
+		local held = Hotbar.heldIndex(player)
+		if held then
+			if not Hotbar.stage(player, held) then return end
+			if #state[player].slots < 2 then return end
+		end
 		attemptFusion(player)
 	end)
 end
@@ -2363,7 +2376,7 @@ buyAddonRemote.OnServerEvent:Connect(function(player, addonName)
 	coins.Value = coins.Value - price
 	table.insert(s.inventory, addonName)
 	playSound(playerRoot(player), "big")
-	toast(player, string.format("Bought %s — it's in your Inventory.", instanceTag(addonName)), true)
+	toast(player, string.format("Bought %s — it's in your hotbar.", instanceTag(addonName)), true)
 	buyAddonRemote:FireClient(player, addonName, "bought")
 	Quests.progress(player, "addon")
 	pushUI(player)
@@ -2655,7 +2668,7 @@ do
 		bolts.Value -= price
 		table.insert(s.inventory, addonName)
 		playSound(root, "big")
-		toast(player, string.format("Bought %s — it's in your Inventory. Fuse it with a car!", instanceTag(addonName)), true)
+		toast(player, string.format("Bought %s — it's in your hotbar. Fuse it with a car!", instanceTag(addonName)), true)
 		buyPhantomRemote:FireClient(player, addonName, "bought")
 		pushUI(player)
 	end)
@@ -2969,11 +2982,13 @@ end)
 -- itemRef source alongside "carry".
 ------------------------------------------------------------------
 
-moveToCarryRemote.OnServerEvent:Connect(function(player, index)
+-- Puts inventory item `index` on the player's Fusion Pad (the held item,
+-- from the pad's prompt). True when it went on.
+function Hotbar.stage(player, index)
 	local s = state[player]
-	if not s then return end
+	if not s then return false end
 	local itemName = type(index) == "number" and s.inventory[index]
-	if not itemName then return end
+	if not itemName then return false end
 
 	-- Turn away a pairing that could never fuse instead of letting it sit
 	-- on the pad and fail later. Only the first pair is checked here:
@@ -2982,21 +2997,23 @@ moveToCarryRemote.OnServerEvent:Connect(function(player, index)
 		local problem = fusionPairProblem(s.slots[1], itemName)
 		if problem then
 			toast(player, problem)
-			return
+			return false
 		end
 	end
 
 	if not canReceiveTradedItem(player, itemName, "carry") then
-		toast(player, "Hands full — fuse or place something first.")
-		return
+		toast(player, "Your Fusion Pad is full — fuse what is on it first.")
+		return false
 	end
 
 	removeTradedItem(player, { source = "inventory", index = index, itemName = itemName })
 	giveTradedItem(player, itemName, "carry")
 
-	toast(player, string.format("%s is ready to fuse — head to your pad.", instanceTag(itemName)))
+	toast(player, string.format("%s is on your Fusion Pad.", instanceTag(itemName)))
 	pushUI(player)
-end)
+	return true
+end
+moveToCarryRemote.OnServerEvent:Connect(Hotbar.stage)
 
 -- Lets a fresh grab sitting on the pad (not fused yet) go back to
 -- Inventory instead of being stuck there until you commit to a fuse.
@@ -3030,7 +3047,9 @@ removeFromCarryRemote.OnServerEvent:Connect(returnSlotToInventory)
 -- itself" pattern as the fusion pad.
 ------------------------------------------------------------------
 
-placePetRemote.OnServerEvent:Connect(function(player, index)
+-- Puts inventory item `index` on the player's next empty earning pad
+-- (the held car, from that pad's PlacePrompt).
+function Hotbar.place(player, index)
 	local s = state[player]
 	if not s then return end
 	local itemName = type(index) == "number" and s.inventory[index]
@@ -3057,7 +3076,8 @@ placePetRemote.OnServerEvent:Connect(function(player, index)
 	Quests.progress(player, "place")
 	checkGoals(player)
 	pushUI(player)
-end)
+end
+placePetRemote.OnServerEvent:Connect(Hotbar.place)
 
 local function unplacePet(player, slot)
 	local s = state[player]
@@ -3082,6 +3102,162 @@ end
 unplacePetRemote.OnServerEvent:Connect(function(player, slot)
 	unplacePet(player, slot)
 end)
+
+------------------------------------------------------------------
+-- The hotbar. Since 2026-10-07 there is no Inventory panel (the user:
+-- "make everything stay within your hotbar so you're able to hold out the
+-- item and flex it"): every item in s.inventory is a Tool in its owner's
+-- Backpack, named after it, with the item in their hand when they hold it
+-- (a small copy of its model) and a flex on click. s.inventory is still
+-- the record; Hotbar.sync makes the tools match it (pushUI calls it, so
+-- every change shows). What you hold is what the pads use: the Fusion Pad
+-- loads it (and fuses once there are two), and your next empty earning
+-- pad offers to place a held car (PlacePrompt; HotbarItems.client shows
+-- it only then). The Index is where every item is browsed.
+------------------------------------------------------------------
+
+do
+	-- The held copy's longest side, in studs, whatever the car's size.
+	local HELD_LENGTH = 3.6
+
+	-- The item tool a player is holding: its inventory index, or nil.
+	function Hotbar.heldIndex(player)
+		local s = state[player]
+		local tool = player.Character and player.Character:FindFirstChildOfClass("Tool")
+		local itemName = tool and tool:GetAttribute("ItemName")
+		if not (s and itemName) then return nil end
+		for i, name in ipairs(s.inventory) do
+			if name == itemName then return i end
+		end
+		return nil
+	end
+
+	-- The item in front of its holder, nose forward, resting just above
+	-- their hands, about HELD_LENGTH long. Welded to the body rather than
+	-- the hand: the arm's pose is only on each player's screen, so a copy
+	-- on the hand sat at a different angle for everyone.
+	local function showHeld(tool, itemName)
+		if tool:FindFirstChild("HeldItem") then return end
+		local root = tool.Parent and tool.Parent:FindFirstChild("HumanoidRootPart")
+		if not root then return end
+		local baseName, mutationId = Mutations.Unwrap(itemName)
+		local probe, size = ItemVisuals.CloneForViewport(baseName)
+		if probe then probe:Destroy() end
+		local longest = size and math.max(size.X, size.Y, size.Z) or 5
+		local held = ItemVisuals.Create(baseName, Vector3.zero, HELD_LENGTH / (longest * ItemVisuals.GLOBAL_SCALE))
+		local tint = Mutations.Color(mutationId)
+		if tint then ItemVisuals.Tint(held, tint) end
+		held.Name = "HeldItem"
+		for _, p in ipairs(held:GetDescendants()) do
+			if p:IsA("BasePart") then p.CanCollide, p.CanQuery, p.CanTouch, p.Massless = false, false, false, true end
+		end
+		held.Anchored = false
+		held.CanQuery, held.CanTouch, held.Massless = false, false, true
+		local weld = Instance.new("Weld")
+		weld.Name = "HoldWeld"
+		weld.Part0 = root
+		weld.Part1 = held
+		weld.C0 = CFrame.new(0, 0.7 + held.Size.Y / 2, -(held.Size.Z / 2 + 1.1)) * CFrame.Angles(0, math.pi, 0)
+		weld.Parent = held
+		held.Parent = tool
+	end
+
+	-- Click: lift it overhead and spin it round, then back.
+	local function flex(tool)
+		local held = tool:FindFirstChild("HeldItem")
+		local weld = held and held:FindFirstChild("HoldWeld")
+		if not weld or tool:GetAttribute("Flexing") then return end
+		tool:SetAttribute("Flexing", true)
+		local rest = weld.C0
+		TweenService:Create(weld, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+			{ C0 = CFrame.new(0, 4.2 + held.Size.Y / 2, 0) * CFrame.Angles(0, 0, 0) }):Play()
+		task.delay(1, function()
+			if weld.Parent then
+				TweenService:Create(weld, TweenInfo.new(0.35), { C0 = rest }):Play()
+			end
+			tool:SetAttribute("Flexing", nil)
+		end)
+	end
+
+	function Hotbar.makeTool(itemName)
+		local baseName = Mutations.Unwrap(itemName)
+		local tool = Instance.new("Tool")
+		tool.Name = ItemNames.Display(itemName)
+		tool:SetAttribute("ItemName", itemName)
+		tool.CanBeDropped = false
+		local info = itemTierInfo(itemName)
+		tool.ToolTip = string.format("%s%s", ItemRarity.Name(info.tier, info.isSecret, info.rarity) or "",
+			FusionRecipes.IsAddon(baseName) and " addon: hold it at your Fusion Pad with a car" or ": hold it at your Fusion Pad or an earning pad")
+		-- No handle: the held copy is welded to the body (showHeld).
+		tool.RequiresHandle = false
+		tool.Equipped:Connect(function() showHeld(tool, itemName) end)
+		tool.Unequipped:Connect(function()
+			local held = tool:FindFirstChild("HeldItem")
+			if held then held:Destroy() end
+		end)
+		tool.Activated:Connect(function() flex(tool) end)
+		return tool
+	end
+
+	-- Makes the player's item tools match their inventory: one per item,
+	-- adding what is missing and taking away what is gone (keeping the one
+	-- in their hand when it is still theirs).
+	function Hotbar.sync(player, s)
+		local backpack = player:FindFirstChildOfClass("Backpack")
+		if not backpack then return end
+		local want = {}
+		for _, name in ipairs(s.inventory) do
+			want[name] = (want[name] or 0) + 1
+		end
+		local tools = {}
+		local character = player.Character
+		for _, container in ipairs({ character, backpack }) do
+			if container then
+				for _, tool in ipairs(container:GetChildren()) do
+					if tool:IsA("Tool") and tool:GetAttribute("ItemName") then
+						table.insert(tools, tool)
+					end
+				end
+			end
+		end
+		for _, tool in ipairs(tools) do
+			local name = tool:GetAttribute("ItemName")
+			if (want[name] or 0) > 0 then
+				want[name] -= 1
+			else
+				tool:Destroy()
+			end
+		end
+		for name, count in pairs(want) do
+			for _ = 1, count do
+				Hotbar.makeTool(name).Parent = backpack
+			end
+		end
+	end
+
+	-- Placing a held car on your next empty earning pad.
+	for _, plot in ipairs(plots) do
+		for _, pad in ipairs(plot.petPads) do
+			local prompt = Instance.new("ProximityPrompt")
+			prompt.Name = "PlacePrompt"
+			prompt.ActionText = "Place"
+			prompt.ObjectText = "Earning Pad"
+			prompt.HoldDuration = 0
+			prompt.MaxActivationDistance = 10
+			prompt.RequiresLineOfSight = false
+			prompt.Parent = pad.part
+			prompt.Triggered:Connect(function(player)
+				if plot.owner ~= player then return end
+				local index = Hotbar.heldIndex(player)
+				if not index then
+					toast(player, "Hold a car from your hotbar to place it.")
+					return
+				end
+				Hotbar.place(player, index)
+			end)
+		end
+	end
+end
 
 -- Walking up to an occupied pad and taking it off directly — same
 -- "physical prompt right on the thing" pattern as the fusion pad, wired
@@ -3473,6 +3649,15 @@ local function onPlayerAdded(player)
 				end
 			end
 		end
+		-- Race crates stopped on 2026-10-05 and the Crates tab went with the
+		-- Inventory panel on 2026-10-07: a crate still waiting opens now, its
+		-- item straight into the hotbar.
+		for _, crate in ipairs(s.crates) do
+			if type(crate) == "table" and type(crate.item) == "string" then
+				table.insert(s.inventory, crate.item)
+			end
+		end
+		s.crates = {}
 		-- Addons stopped going on pads on 2026-10-05: one still on a pad
 		-- goes back into Inventory.
 		for i = #s.placed, 1, -1 do

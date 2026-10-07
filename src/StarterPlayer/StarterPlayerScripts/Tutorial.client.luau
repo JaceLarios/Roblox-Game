@@ -53,7 +53,7 @@ local STEPS = {
 	},
 	home = {
 		title = "TAKE IT HOME",
-		body = "Carry it back to your base. Follow the arrows! It goes into your Inventory when you get there. Watch out, other players can knock it off you.",
+		body = "Carry it back to your base. Follow the arrows! It goes into your hotbar when you get there. Watch out, other players can knock it off you.",
 		marker = "base", markerText = "YOUR BASE",
 	},
 	buy = {
@@ -63,8 +63,8 @@ local STEPS = {
 	},
 	stage = {
 		title = "LOAD THE FUSION PAD",
-		body = "Open your INVENTORY. Tap your car and press CARRY TO FUSE. Then open the ADDONS tab and do the same with the Nitrous Tank.",
-		nav = { "JunkyardUI", "INVENTORYNavigation" },
+		body = "Hold your car from your hotbar (tap it, or press its number) and press E on your Fusion Pad to load it. Then hold the Nitrous Tank and do the same.",
+		marker = "pad", markerText = "FUSION PAD",
 	},
 	fuse = {
 		title = "FUSE!",
@@ -73,8 +73,8 @@ local STEPS = {
 	},
 	place = {
 		title = "PUT IT TO WORK",
-		body = "Open your INVENTORY, tap your new build and press PLACE ON PAD. Builds on earning pads make coins every second, even while you're away!",
-		nav = { "JunkyardUI", "INVENTORYNavigation" },
+		body = "Hold your new build from your hotbar and press E on your next empty earning pad. Builds on pads make coins every second, even while you're away!",
+		marker = "base", markerText = "EARNING PADS",
 	},
 	finish = {
 		title = "YOU'RE ALL SET!",
