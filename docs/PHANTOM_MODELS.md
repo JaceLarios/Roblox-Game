@@ -4,6 +4,11 @@ The user picked **option B** for the Phantom (ghost) addons: every car + Phantom
 
 Everything else is already in the game (Claude, 2026-10-06): the 15 Phantom addons are sold for bolts at the **Phantom Garage** stall in the Race Wars lobby, and any car fused with one makes a **Spectral** build (a new rarity above Godly, the best earners on a pad). Until a model exists, the game borrows one and draws it see-through and ghostly (`ItemVisuals.Ghostly`): a Phantom addon borrows `Fusion Core`, a Phantom build borrows the same car's Warp Drive build. **As soon as `ReplicatedStorage.ItemModels.<exact name>` exists it is used instead, with no code change.**
 
+## Status (2026-10-08)
+
+- **The 15 Phantom addon models are DONE** (Claude, `assets/phantom-addons`): built in Blender, uploaded and installed in `ReplicatedStorage.ItemModels` under the exact names below, at 4.6 / 4.8 / 5.0 studs (Wisp / Wraith / Reaper). Don't rebuild them; see that folder's README for the builder and the look. The user wanted to see these before deciding who builds the rest.
+- **The 105 Spectral builds are still to do.** Each should feature its own Phantom addon's look (the installed addon models are the reference).
+
 ## The user's art direction
 
 - "I want one car to look like it per tier, not all of the cars in the tier to look the same... everything after [the base models] starts to look like I'm seeing duplicates." So each of the 105 should read as its **own** vehicle: the car's body itself changed by its ghost theme (shape, trim, materials), not the base car with one part bolted on. The ghost part should still be the obvious feature.

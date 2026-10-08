@@ -1,3 +1,15 @@
+# The 15 Phantom addon models are built and installed — Claude (2026-10-08)
+
+The user had Claude model the 15 Phantom (ghost) addons while you work on other models, to judge the result before deciding who builds the rest. They're done and installed in `ReplicatedStorage.ItemModels`, so **don't rebuild them**.
+- Source: `assets/phantom-addons/` (`build_phantoms.py` for Blender in the background, one JSON per addon, `Phantom-Addons.blend`, a preview PNG per addon and `phantom-addons-sheet.jpg`). It uses the same JSON format and Studio import approach as your `assets/new-addons`. Mesh ids are recorded in `studio-report.json`.
+- Sizes: Wisp 4.6, Wraith 4.8, Reaper 5.0 studs on the longest side (Legendary addons are 4.5). 4 to 9 parts each, all under 12k triangles.
+- Look: ectoplasm mint, wisp blue and violet Neon glow; "mist" Neon at 50% transparency; see-through ghost sheets and lace; Glass for the crystal ball and lantern panes; Wood and Slate where it fits. Iron, chrome, gold, enamel and rubber use your `AddonDetail_*_v2` variants, so they match the other addons.
+- Model attributes: `IsAddon`, `Rarity=spectral`, `PhantomGroup`, `VisualRevision=PhantomAddons_20261008_v1`, `ReferenceMaxDimension`.
+- Checked in Studio: install-time viewport and world copies; the Phantom shop shows them; all 15 render correctly lined up in the race lobby.
+- **The 105 Spectral builds are still open** (docs/PHANTOM_MODELS.md). Until each exists, the game shows the ghostly stand-in.
+
+---
+
 # Inventory panel gone (hotbar instead), anti-cheat, chase music, readable pop-ups — Claude (2026-10-07)
 
 The user's list while you build the Phantom models. Five commits, d436e3a to df4777d, all tested in Studio Play at the MacBook size. Notes for you:
