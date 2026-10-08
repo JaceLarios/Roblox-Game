@@ -110,6 +110,50 @@ local function keys(values)
 	for i, v in values do points[i] = NumberSequenceKeypoint.new(#values == 3 and (i == 2 and .35 or i == 3 and 1 or 0) or (i - 1), v) end
 	return NumberSequence.new(points)
 end
+-- The Spectral rarity's aura: ghost mist curling off the car, wisps
+-- drifting up round it and a mint glow. Earning pads get it from the server
+-- (FusionEffects' AURAS.spectral calls this); everywhere else a Spectral car
+-- gets its own copy here (phantomEffects). `scale` 1 is a car on a pad;
+-- `prefix` goes in front of the part names.
+function Effects.FitSpectralAura(aura, scale)
+	aura.mist.Speed = NumberRange.new(.5 * scale, 1.2 * scale)
+	aura.mist.Size = keys({1.5 * scale, 3 * scale, 4 * scale})
+	aura.wisps.Speed = NumberRange.new(scale, 2 * scale)
+	aura.wisps.Size = keys({.3 * scale, scale, 0})
+	aura.wisps.Acceleration = Vector3.new(0, 1.2 * scale, 0)
+	aura.light.Range = 16 * scale
+end
+function Effects.SpectralAura(part, scale, prefix)
+	prefix = prefix or ""
+	local mist = Instance.new("ParticleEmitter")
+	mist.Name = prefix .. "AuraMist"; mist.Texture = "rbxasset://textures/particles/smoke_main.dds"
+	mist.Color = ColorSequence.new(Color3.fromRGB(225, 255, 240), MINT)
+	mist.Rate = 6; mist.Lifetime = NumberRange.new(2, 3)
+	mist.EmissionDirection = Enum.NormalId.Top; mist.SpreadAngle = Vector2.new(50, 50)
+	mist.Rotation = NumberRange.new(0, 360); mist.RotSpeed = NumberRange.new(-30, 30)
+	mist.Transparency = keys({.55, 1}); mist.LightEmission = .2
+	local wisps = Instance.new("ParticleEmitter")
+	wisps.Name = prefix .. "AuraWisps"; wisps.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	wisps.Color = ColorSequence.new(MINT, Color3.fromRGB(205, 175, 255))
+	wisps.Rate = 14; wisps.Lifetime = NumberRange.new(1.6, 2.4)
+	wisps.EmissionDirection = Enum.NormalId.Top; wisps.SpreadAngle = Vector2.new(60, 60)
+	wisps.Transparency = keys({0, 1}); wisps.LightEmission = .4
+	local light = Instance.new("PointLight")
+	light.Name = prefix .. "AuraLight"; light.Color = MINT; light.Brightness = 1.6; light.Shadows = false
+	local aura = {mist = mist, wisps = wisps, light = light}
+	Effects.FitSpectralAura(aura, scale or 1)
+	mist.Parent = part; wisps.Parent = part; light.Parent = part
+	return aura
+end
+-- The car's own Spectral aura, on while its effects are, except on an
+-- earning pad, where the server's is already there.
+local function showAura(state)
+	local on = state.active and not state.root:FindFirstChild("AuraMist")
+	local aura = state.aura
+	if aura.mist.Enabled == on then return end
+	for _, e in {aura.mist, aura.wisps} do e.Enabled = on; if not on then e:Clear() end end
+	aura.light.Enabled = on
+end
 local function orbit(state, root, color0, color1)
 	state.orbit = {}
 	for i=1,12 do
@@ -170,6 +214,10 @@ local function phantomEffects(root, specs, rank)
 			end
 		end
 	end
+	local aura = Effects.SpectralAura(root, 1, "Phantom")
+	aura.mist.Enabled = false; aura.wisps.Enabled = false; aura.light.Enabled = false
+	state.aura = aura
+	table.insert(state.attachments, aura.mist); table.insert(state.attachments, aura.wisps); table.insert(state.attachments, aura.light)
 	return state
 end
 function Effects.Supports(name)
@@ -220,6 +268,7 @@ function Effects.SetActive(state, active)
 	state.active=active
 	for _,p in state.emitters do p.Enabled=active; if not active then p:Clear() end end
 	for _,b in state.beams do b.Enabled=active end
+	if state.aura then showAura(state) end
 end
 function Effects.Step(state, time)
 	local size=state.root.Size
@@ -227,6 +276,7 @@ function Effects.Step(state, time)
 	if state.lastSize ~= size then
 	state.lastSize = size
 	for _,item in state.anchors do item.a.Position=item.offset*size end
+	if state.aura then Effects.FitSpectralAura(state.aura,math.clamp(size.Z/7.5,.35,1.5)) end
 	for _,item in state.scaled or {} do
 		local spec,sizes=item.spec,{}
 		for i,v in spec.size do sizes[i]=v*scale end
@@ -239,6 +289,8 @@ function Effects.Step(state, time)
 		p.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,.06*scale),NumberSequenceKeypoint.new(.35,(.09+state.rank*.015)*scale),NumberSequenceKeypoint.new(1,0)})
 	end
 	end
+	-- A car only just put on a pad may get the server's aura after its own.
+	if state.aura and time>=(state.auraCheck or 0) then state.auraCheck=time+.5;showAura(state) end
 	if state.orbit then
 		local tangents = {}
 		for i,a in state.orbit do
