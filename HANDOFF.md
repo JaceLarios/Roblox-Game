@@ -1,3 +1,13 @@
+# 7 sample Phantom builds (base cars wearing ghost addons) — Claude (2026-10-08)
+
+The user liked the 15 Phantom addons and asked to see them fused onto cars. Claude made one sample Spectral build per base car and installed them in `ReplicatedStorage.ItemModels`: **Wisp Kart, Skullsmoke Rider, Coffin Caddy, Banshee Muscle, Graveyard Patrol, Specter Hauler, Wraith Crusher**.
+- Source: `assets/phantom-builds/` (README there). `build_builds.py` loads your base car from `assets/warp-drive-batch/base-inputs` (untouched) and the addon parts from `build_phantoms.py`, repaints the car (violet enamel, night-black and bone panels, gold calipers, ectoplasm lamps, violet tail lights, underglow) and mounts the addon.
+- The Studio importer **copies the base car's parts from its model in ItemModels** (size and position checked) and uploads only the new parts, so the cars are exactly yours. Wheels keep your WheelId / WheelPivot / WheelRadius; the Wraith Crusher's fire rings and spokes carry their wheel's and roll.
+- All under 90k triangles (Specter Hauler is 89,826); install checked recipe, rarity, wheel count, viewport and world copies, rolling and resize.
+- **These are samples, not the final look** that docs/PHANTOM_MODELS.md asks for (the body itself reshaped by the ghost theme). If you build any of these seven properly, install over it; the 98 others still use the ghostly stand-in.
+
+---
+
 # The 15 Phantom addon models are built and installed — Claude (2026-10-08)
 
 The user had Claude model the 15 Phantom (ghost) addons while you work on other models, to judge the result before deciding who builds the rest. They're done and installed in `ReplicatedStorage.ItemModels`, so **don't rebuild them**.

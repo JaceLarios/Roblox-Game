@@ -1,0 +1,100 @@
+[
+  {
+    "name": "Wisp Kart",
+    "base": "Rusted Sedan",
+    "addon": "Will-o'-Wisp Lanterns",
+    "file": "Wisp_Kart.json",
+    "triangles": 74456,
+    "newTriangles": 4332,
+    "newParts": 6,
+    "size": [
+      3.299999952316284,
+      3.212639808654785,
+      4.945000171661377
+    ]
+  },
+  {
+    "name": "Skullsmoke Rider",
+    "base": "Dirt Bike",
+    "addon": "Phantom Exhaust",
+    "file": "Skullsmoke_Rider.json",
+    "triangles": 46802,
+    "newTriangles": 9584,
+    "newParts": 4,
+    "size": [
+      2.0,
+      2.5642800331115723,
+      4.781970024108887
+    ]
+  },
+  {
+    "name": "Coffin Caddy",
+    "base": "Golf Cart",
+    "addon": "Coffin Carrier",
+    "file": "Coffin_Caddy.json",
+    "triangles": 72082,
+    "newTriangles": 3244,
+    "newParts": 6,
+    "size": [
+      3.0999999046325684,
+      5.506939888000488,
+      5.864999771118164
+    ]
+  },
+  {
+    "name": "Banshee Muscle",
+    "base": "Muscle Car",
+    "addon": "Banshee Horn",
+    "file": "Banshee_Muscle.json",
+    "triangles": 71597,
+    "newTriangles": 4156,
+    "newParts": 8,
+    "size": [
+      2.5999999046325684,
+      2.507200002670288,
+      5.555379867553711
+    ]
+  },
+  {
+    "name": "Graveyard Patrol",
+    "base": "Cop Cruiser",
+    "addon": "Graveyard Grille",
+    "file": "Graveyard_Patrol.json",
+    "triangles": 71000,
+    "newTriangles": 3890,
+    "newParts": 6,
+    "size": [
+      3.0999999046325684,
+      2.969640016555786,
+      6.597499847412109
+    ]
+  },
+  {
+    "name": "Specter Hauler",
+    "base": "Box Truck",
+    "addon": "Specter Sails",
+    "file": "Specter_Hauler.json",
+    "triangles": 89826,
+    "newTriangles": 3432,
+    "newParts": 6,
+    "size": [
+      3.5999999046325684,
+      7.425300121307373,
+      7.474999904632568
+    ]
+  },
+  {
+    "name": "Wraith Crusher",
+    "base": "Monster Truck",
+    "addon": "Wraith Wheels",
+    "file": "Wraith_Crusher.json",
+    "triangles": 86062,
+    "newTriangles": 5352,
+    "newParts": 10,
+    "size": [
+      3.6700000762939453,
+      3.0618600845336914,
+      4.783480167388916
+    ]
+  }
+]

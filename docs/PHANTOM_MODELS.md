@@ -8,6 +8,7 @@ Everything else is already in the game (Claude, 2026-10-06): the 15 Phantom addo
 
 - **The 15 Phantom addon models are DONE** (Claude, `assets/phantom-addons`): built in Blender, uploaded and installed in `ReplicatedStorage.ItemModels` under the exact names below, at 4.6 / 4.8 / 5.0 studs (Wisp / Wraith / Reaper). Don't rebuild them; see that folder's README for the builder and the look. The user wanted to see these before deciding who builds the rest.
 - **The 105 Spectral builds are still to do.** Each should feature its own Phantom addon's look (the installed addon models are the reference).
+- **7 sample builds are installed** (Claude, `assets/phantom-builds`): Wisp Kart, Skullsmoke Rider, Coffin Caddy, Banshee Muscle, Graveyard Patrol, Specter Hauler, Wraith Crusher. The user asked to see how the addons look on the cars. Each is the base car's own body in a haunted livery with the addon mounted, so it's less than the art direction below asks for. Count them as samples: a proper model under the same name replaces one (installers back up what they replace).
 
 ## The user's art direction
 
