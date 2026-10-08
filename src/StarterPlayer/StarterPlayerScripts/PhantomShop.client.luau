@@ -22,6 +22,7 @@ local Garage = require(ReplicatedStorage:WaitForChild("GarageTheme"))
 local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local ItemNames = require(ReplicatedStorage:WaitForChild("ItemNames"))
+local EventAddons = require(ReplicatedStorage:WaitForChild("EventAddons"))
 local buyRemote = ReplicatedStorage:WaitForChild("BuyPhantom")
 
 local player = Players.LocalPlayer
@@ -105,7 +106,7 @@ local function outline(label)
 end
 
 local intro = Garage.Text(page, "Intro",
-	"Win bolts in Race Wars and trade them here for ghost addons. Fuse one with any car for a Spectral build, the best earners in the game.",
+	"Win bolts in Race Wars and trade them here for ghost addons. Put one on any car or build at your Fusion Pad: it turns into a ghost for good and earns more. One phantom per car.",
 	UDim2.new(), UDim2.new(1, -8, 0, 64), 21, Color3.new(1, 1, 1))
 intro.LayoutOrder = 0
 intro.TextXAlignment = Enum.TextXAlignment.Left
@@ -137,7 +138,7 @@ end
 local cards = {}
 local grids = {}
 for order, shelf in ipairs(SHELVES) do
-	local heading = Garage.Text(page, shelf.key .. "Heading", shelf.name .. "  ·  " .. shelf.line,
+	local heading = Garage.Text(page, shelf.key .. "Heading", string.format("%s  ·  %s  ·  x%s earnings", shelf.name, shelf.line, tostring(EventAddons.SHELF_MULTIPLIER[shelf.key])),
 		UDim2.new(), UDim2.new(1, -8, 0, 36), 24, MINT)
 	heading.LayoutOrder = order * 2 - 1
 	heading.TextXAlignment = Enum.TextXAlignment.Left

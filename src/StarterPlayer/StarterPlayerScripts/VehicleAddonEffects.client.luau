@@ -4,7 +4,7 @@ local RunService=game:GetService("RunService")
 local candidates,states={},{}
 local function consider(object)
 	if not object:IsA("BasePart") then return end
-	if object:GetAttribute("ItemAssembly") and Effects.Supports(object.Name) then candidates[object]=true end
+	if object:GetAttribute("ItemAssembly") and Effects.SupportsRoot(object) then candidates[object]=true end
 end
 workspace.DescendantAdded:Connect(consider)
 for _,object in workspace:GetDescendants() do consider(object) end

@@ -7,6 +7,8 @@
 	lanterns and a floating ghost behind the counter. Its "Phantom Shop"
 	prompt is on the Counter; PhantomShop.client opens the shop from it, and
 	PlotManager's BuyPhantom checks the buyer is standing near the Counter.
+	The Counter's Remove Phantom prompt takes the Phantom off a held ghost
+	car (PlotManager; see EventAddons).
 
 	Built by MapBootstrap, from scratch every time. Stands left of the
 	line-up box, near the start gate, turned to face players arriving at
@@ -155,6 +157,20 @@ function Garage.Build()
 	prompt.MaxActivationDistance = 14
 	prompt.RequiresLineOfSight = false
 	prompt.Parent = counter
+
+	-- Taking a Phantom off the ghost car you hold (PlotManager): its own key
+	-- and a hold, since the Phantom is lost, and shown under the shop's.
+	local remove = Instance.new("ProximityPrompt")
+	remove.Name = "RemovePhantomPrompt"
+	remove.ActionText = "Remove Phantom"
+	remove.ObjectText = "From the car you hold (it's lost)"
+	remove.KeyboardKeyCode = Enum.KeyCode.R
+	remove.GamepadKeyCode = Enum.KeyCode.ButtonY
+	remove.HoldDuration = 1.5
+	remove.MaxActivationDistance = 14
+	remove.RequiresLineOfSight = false
+	remove.UIOffset = Vector2.new(0, 90)
+	remove.Parent = counter
 
 	model.Parent = workspace
 	return model

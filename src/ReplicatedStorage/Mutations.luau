@@ -13,10 +13,16 @@ local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("Ite
 	needs the UNWRAPPED base name — mutations are a value/display layer on
 	top, never a new recipe or a separate Index entry — so Unwrap() must
 	run before calling into FusionRecipes/ItemVisuals.
+
+	An event addon (EventAddons: a Phantom on a ghost car) is the same kind
+	of layer and sits after the mutation: "[Shiny] {Wisp} Rusted Sedan".
+	Unwrap takes both off and hands the event addon back third; Wrap puts
+	both on.
 --]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local EventConfig = require(ReplicatedStorage:WaitForChild("EventConfig"))
+local EventAddons = require(ReplicatedStorage:WaitForChild("EventAddons"))
 
 local Mutations = {}
 
@@ -78,24 +84,28 @@ function Mutations.EventActive()
 	return EventConfig.IsActive()
 end
 
--- "Rusted Sedan" + "shiny" -> "[Shiny] Rusted Sedan". Passing a nil/unknown
--- mutationId hands the base name back unchanged.
-function Mutations.Wrap(baseName, mutationId)
+-- "Rusted Sedan" + "shiny" -> "[Shiny] Rusted Sedan", and with an event
+-- addon ("Wisp") "[Shiny] {Wisp} Rusted Sedan". A nil/unknown id leaves its
+-- layer off.
+function Mutations.Wrap(baseName, mutationId, eventId)
+	baseName = EventAddons.Join(baseName, eventId)
 	local tier = mutationId and BY_ID[mutationId]
 	if not tier then return baseName end
 	return string.format("[%s] %s", tier.name, baseName)
 end
 
--- Returns baseName, mutationId — mutationId is nil for a plain name, and a
--- plain name is handed back untouched.
+-- Returns baseName, mutationId, eventId — the ids are nil for a layer the
+-- name doesn't have, and a plain name is handed back untouched.
 function Mutations.Unwrap(name)
 	if type(name) ~= "string" then return name, nil end
+	local mutationId
 	local bracket, rest = name:match("^%[(%a+)%]%s(.+)$")
 	local tier = bracket and BY_NAME_LOWER[bracket:lower()]
 	if tier then
-		return rest, tier.id
+		name, mutationId = rest, tier.id
 	end
-	return name, nil
+	local baseName, eventId = EventAddons.Split(name)
+	return baseName, mutationId, eventId
 end
 
 function Mutations.IsMutated(name)

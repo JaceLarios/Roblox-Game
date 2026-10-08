@@ -138,7 +138,8 @@ local function instanceTag(name)
 	if mutationId then
 		return Mutations.Tag(name, mutationId)
 	end
-	return ItemRarity.Tag(baseName, FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
+	-- The whole name, so a ghost car shows its Phantom's word.
+	return ItemRarity.Tag(name, FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
 		FusionRecipes.GetRarity(baseName))
 end
 
@@ -684,8 +685,10 @@ local function buildItemViewport(parent, itemName, tintColor, opts)
 	viewport.CurrentCamera = cam
 	cam.Parent = viewport
 
+	-- Any item name: a ghost car is drawn with its Phantom (ItemVisuals).
 	local clone, size = ItemVisuals.CloneForViewport(itemName, tintColor)
-	if clone then Garage.Podium(clone, tintColor or ItemRarity.Color(FusionRecipes.GetTier(itemName), false, FusionRecipes.GetRarity(itemName))) end
+	local key = Mutations.Unwrap(itemName)
+	if clone then Garage.Podium(clone, tintColor or ItemRarity.Color(FusionRecipes.GetTier(key), false, FusionRecipes.GetRarity(key))) end
 	if clone then
 		clone.Parent = viewport
 		local reach = math.max(size.X, size.Y, size.Z) * math.max(opts.zoom or 1.5,1.65) + 0.2
@@ -1363,7 +1366,7 @@ local function showStatsFor(entry)
 
 	local baseName, mutationId = Mutations.Unwrap(entry.name)
 	local tintColor = Mutations.Color(mutationId)
-	buildItemViewport(statViewportHolder, baseName, tintColor, {
+	buildItemViewport(statViewportHolder, entry.name, tintColor, {
 		size = UDim2.new(1, -12, 1, -12),
 		position = UDim2.fromOffset(6, 6),
 		zoom = 1.35,
@@ -1502,7 +1505,7 @@ function redrawInventory(items, capacity)
 		shadow.ZIndex = 3
 		shadow.Parent = card
 
-		buildItemViewport(card, baseName, tintColor, {
+		buildItemViewport(card, entry.name, tintColor, {
 			size = UDim2.new(1, -6, 1, -72),
 			position = UDim2.fromOffset(3, 0),
 			zoom = 1.28,
@@ -1604,7 +1607,7 @@ function redrawPlaced(items, capacity)
 			shadow.ZIndex = 3
 			shadow.Parent = card
 
-			buildItemViewport(card, baseName, tintColor, {
+			buildItemViewport(card, entry.name, tintColor, {
 				size = UDim2.new(1, -6, 1, -20),
 				position = UDim2.fromOffset(3, 0),
 				zoom = 1.28,
@@ -1931,8 +1934,7 @@ local function redrawTradePicker()
   rowLabel.Text=ItemNames.Display(ref.itemName)
   rowLabel.Position=UDim2.new(0,3,1,-35) rowLabel.Size=UDim2.new(1,-6,0,32) rowLabel.TextSize=13
   Garage.Plate(rowLabel)
-  local base=Mutations.Unwrap(ref.itemName)
-  buildItemViewport(row,base,nil,{size=UDim2.new(1,-4,0,106),position=UDim2.fromOffset(2,2),zoom=1.75})
+  buildItemViewport(row,ref.itemName,nil,{size=UDim2.new(1,-4,0,106),position=UDim2.fromOffset(2,2),zoom=1.75})
   Garage.Inset(row)
 		rowLabel.ZIndex = 5
 
@@ -1977,10 +1979,10 @@ function redrawTrade(trade)
   if box:GetAttribute("ShownItem")~=shown then
    box:SetAttribute("ShownItem",shown)
    for _,c in box:GetChildren() do if c:IsA("ViewportFrame") then c:Destroy() end end
-   if offer then local base,tint=Mutations.Unwrap(offer.itemName) buildItemViewport(box,base,Mutations.Color(tint),{size=UDim2.new(1,-18,0,320),position=UDim2.fromOffset(9,65),zoom=1.7}) end
+   if offer then local _,tint=Mutations.Unwrap(offer.itemName) buildItemViewport(box,offer.itemName,Mutations.Color(tint),{size=UDim2.new(1,-18,0,320),position=UDim2.fromOffset(9,65),zoom=1.7}) end
   end
 		if offer then
-			itemLbl.Text = ItemRarity.Tag(offer.itemName, FusionRecipes.GetTier(offer.itemName), FusionRecipes.IsSecretResult(offer.itemName))
+			itemLbl.Text = instanceTag(offer.itemName)
 		else
 			itemLbl.Text = "Nothing selected"
 		end

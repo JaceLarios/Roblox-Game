@@ -121,30 +121,32 @@ FusionRecipes.BaseItems = {
 	-- the coin Shop or a crate. They are bought with the bolts won in Race
 	-- Wars (`bolts`, the price; `group`, the shop's Wisp / Wraith / Reaper
 	-- shelf) at the Phantom Garage in the Race Wars lobby. Concepts:
-	-- https://claude.ai/artifact/6pWuFngQZNMWdvbTRiz7TA. Any car with one
-	-- makes a Spectral build, whatever the car (no shift): the best builds
-	-- in the game, each worth its addon's `resultValue` times a small
-	-- per-car factor (see SPECTRAL_CAR_STEP), so all 105 sit above every
-	-- Godly build and below the Toro SVO. The user chose a model of its own
-	-- for every one of the 105 (Codex, family by family): until a build or
-	-- addon has its model it borrows one (`standIn`) and is drawn see-through
-	-- and ghostly (ItemVisuals.Ghostly). Steps of 4,990 keep every value
-	-- different.
-	{ name = "Will-o'-Wisp Lanterns", rarity = "spectral", value = 400, bolts = 40, group = "wisp", phantom = true, isAddon = true, resultValue = 285000, standIn = "Fusion Core" },
-	{ name = "Phantom Exhaust", rarity = "spectral", value = 410, bolts = 45, group = "wisp", phantom = true, isAddon = true, resultValue = 289990, standIn = "Fusion Core" },
-	{ name = "Crystal Ball Ornament", rarity = "spectral", value = 420, bolts = 50, group = "wisp", phantom = true, isAddon = true, resultValue = 294980, standIn = "Fusion Core" },
-	{ name = "Graveyard Grille", rarity = "spectral", value = 430, bolts = 55, group = "wisp", phantom = true, isAddon = true, resultValue = 299970, standIn = "Fusion Core" },
-	{ name = "Ecto Tank", rarity = "spectral", value = 440, bolts = 60, group = "wisp", phantom = true, isAddon = true, resultValue = 304960, standIn = "Fusion Core" },
-	{ name = "Banshee Horn", rarity = "spectral", value = 450, bolts = 90, group = "wraith", phantom = true, isAddon = true, resultValue = 309950, standIn = "Fusion Core" },
-	{ name = "Poltergeist Spoiler", rarity = "spectral", value = 460, bolts = 100, group = "wraith", phantom = true, isAddon = true, resultValue = 314940, standIn = "Fusion Core" },
-	{ name = "Coffin Carrier", rarity = "spectral", value = 470, bolts = 110, group = "wraith", phantom = true, isAddon = true, resultValue = 319930, standIn = "Fusion Core" },
-	{ name = "Witch's Cauldron", rarity = "spectral", value = 480, bolts = 125, group = "wraith", phantom = true, isAddon = true, resultValue = 324920, standIn = "Fusion Core" },
-	{ name = "Specter Sails", rarity = "spectral", value = 490, bolts = 140, group = "wraith", phantom = true, isAddon = true, resultValue = 329910, standIn = "Fusion Core" },
-	{ name = "Wraith Wheels", rarity = "spectral", value = 500, bolts = 200, group = "reaper", phantom = true, isAddon = true, resultValue = 334900, standIn = "Fusion Core" },
-	{ name = "Soul Turbo", rarity = "spectral", value = 510, bolts = 220, group = "reaper", phantom = true, isAddon = true, resultValue = 339890, standIn = "Fusion Core" },
-	{ name = "Hearse Canopy", rarity = "spectral", value = 520, bolts = 240, group = "reaper", phantom = true, isAddon = true, resultValue = 344880, standIn = "Fusion Core" },
-	{ name = "Reaper Scythes", rarity = "spectral", value = 530, bolts = 270, group = "reaper", phantom = true, isAddon = true, resultValue = 349870, standIn = "Fusion Core" },
-	{ name = "Ghost Chauffeur", rarity = "spectral", value = 540, bolts = 300, group = "reaper", phantom = true, isAddon = true, resultValue = 354860, standIn = "Fusion Core" },
+	-- https://claude.ai/artifact/6pWuFngQZNMWdvbTRiz7TA.
+	-- Since 2026-10-08 they are EVENT ADDONS (ReplicatedStorage.EventAddons):
+	-- one goes on any car or build as a ghost layer (its `ghost` word goes in
+	-- the item's name) instead of making a new build, so the Fusion Pad never
+	-- fuses them through this book. Their 105 rows below (Wisp Kart...) are
+	-- the Index's Spectral tab: one entry per car and Phantom, found by
+	-- putting that Phantom on any build of that car. The values still sit
+	-- above every Godly build and below the Toro SVO, as before (steps of
+	-- 4,990 keep every value different), though no item is worth them now.
+	-- A row with a model of its own in ItemModels shows it; the rest show
+	-- their car drawn ghostly with the addon mounted (ItemVisuals).
+	{ name = "Will-o'-Wisp Lanterns", ghost = "Wisp", rarity = "spectral", value = 400, bolts = 40, group = "wisp", phantom = true, isAddon = true, resultValue = 285000, standIn = "Fusion Core" },
+	{ name = "Phantom Exhaust", ghost = "Skullsmoke", rarity = "spectral", value = 410, bolts = 45, group = "wisp", phantom = true, isAddon = true, resultValue = 289990, standIn = "Fusion Core" },
+	{ name = "Crystal Ball Ornament", ghost = "Oracle", rarity = "spectral", value = 420, bolts = 50, group = "wisp", phantom = true, isAddon = true, resultValue = 294980, standIn = "Fusion Core" },
+	{ name = "Graveyard Grille", ghost = "Graveyard", rarity = "spectral", value = 430, bolts = 55, group = "wisp", phantom = true, isAddon = true, resultValue = 299970, standIn = "Fusion Core" },
+	{ name = "Ecto Tank", ghost = "Ecto", rarity = "spectral", value = 440, bolts = 60, group = "wisp", phantom = true, isAddon = true, resultValue = 304960, standIn = "Fusion Core" },
+	{ name = "Banshee Horn", ghost = "Banshee", rarity = "spectral", value = 450, bolts = 90, group = "wraith", phantom = true, isAddon = true, resultValue = 309950, standIn = "Fusion Core" },
+	{ name = "Poltergeist Spoiler", ghost = "Poltergeist", rarity = "spectral", value = 460, bolts = 100, group = "wraith", phantom = true, isAddon = true, resultValue = 314940, standIn = "Fusion Core" },
+	{ name = "Coffin Carrier", ghost = "Coffin", rarity = "spectral", value = 470, bolts = 110, group = "wraith", phantom = true, isAddon = true, resultValue = 319930, standIn = "Fusion Core" },
+	{ name = "Witch's Cauldron", ghost = "Cauldron", rarity = "spectral", value = 480, bolts = 125, group = "wraith", phantom = true, isAddon = true, resultValue = 324920, standIn = "Fusion Core" },
+	{ name = "Specter Sails", ghost = "Specter", rarity = "spectral", value = 490, bolts = 140, group = "wraith", phantom = true, isAddon = true, resultValue = 329910, standIn = "Fusion Core" },
+	{ name = "Wraith Wheels", ghost = "Wraith", rarity = "spectral", value = 500, bolts = 200, group = "reaper", phantom = true, isAddon = true, resultValue = 334900, standIn = "Fusion Core" },
+	{ name = "Soul Turbo", ghost = "Soul", rarity = "spectral", value = 510, bolts = 220, group = "reaper", phantom = true, isAddon = true, resultValue = 339890, standIn = "Fusion Core" },
+	{ name = "Hearse Canopy", ghost = "Hearse", rarity = "spectral", value = 520, bolts = 240, group = "reaper", phantom = true, isAddon = true, resultValue = 344880, standIn = "Fusion Core" },
+	{ name = "Reaper Scythes", ghost = "Reaper", rarity = "spectral", value = 530, bolts = 270, group = "reaper", phantom = true, isAddon = true, resultValue = 349870, standIn = "Fusion Core" },
+	{ name = "Ghost Chauffeur", ghost = "Haunted", rarity = "spectral", value = 540, bolts = 300, group = "reaper", phantom = true, isAddon = true, resultValue = 354860, standIn = "Fusion Core" },
 }
 
 -- The whole recipe book: one result per car per addon, in the addon order
@@ -440,6 +442,22 @@ function FusionRecipes.IsPhantom(name)
 	if base then return base.phantom == true end
 	local entry = results[name]
 	return entry ~= nil and entry.phantom == true
+end
+
+-- The base car a car or build is made from ("Warp Wreck" -> "Rusted
+-- Sedan"; a base car is its own), or nil for anything else (an addon, a
+-- Secret car). Bare names.
+function FusionRecipes.CarOf(name)
+	local base = baseByName[name]
+	if base then return (not base.isAddon and not secretByName[name]) and name or nil end
+	local entry = results[name]
+	return entry and entry.car
+end
+
+-- The addon a build was made with, or nil. Bare names.
+function FusionRecipes.AddonOf(name)
+	local entry = results[name]
+	return entry and entry.addon
 end
 
 -- What a Phantom addon costs in bolts, or nil for anything else.

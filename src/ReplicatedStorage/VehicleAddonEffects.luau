@@ -1,5 +1,6 @@
 -- Cosmetic only. Clients build these on world copies; templates, physics and data stay untouched.
 local Recipes = require(script.Parent:WaitForChild("FusionRecipes"))
+local EventAddons = require(script.Parent:WaitForChild("EventAddons"))
 local Effects = {}
 local results = {}
 for _, car in Recipes.BaseItems do
@@ -28,7 +29,8 @@ local profiles = {
 	["Fusion Core"] = {color = Color3.fromRGB(65, 240, 255), kind = "plasma"},
 	["Warp Drive"] = {color = Color3.fromRGB(170, 100, 255), kind = "warp"},
 }
--- The Phantom addons: every Spectral build shows its ghost addon's own effect.
+-- The Phantom addons: every ghost car (an EventAddon on its root, see
+-- EventAddons) shows its Phantom's own effect, as well as its own addon's.
 -- `at` is a point on the car as a fraction of its size (front is +Z, so the
 -- back is -Z), `mirror` adds the same on the other side, "wheels" puts one on
 -- every wheel. `dir` is the way particles leave ("Front" is backwards out of
@@ -187,11 +189,13 @@ local function wheelPoints(root)
 	end
 	return points
 end
-local function phantomEffects(root, specs, rank)
-	local state = {root = root, profile = {kind = "phantom"}, rank = rank, attachments = {}, emitters = {}, beams = {}, anchors = {}, scaled = {}, active = false}
+-- Adds a Phantom's effect and the Spectral aura to a car's state.
+local function phantomEffects(state, root, specs)
+	state.scaled = {}
 	for _, spec in specs do
 		if spec.orbit then
-			orbit(state, root, spec.color, spec.color2); state.orbitHeight = spec.height
+			-- One orbit a car: a Warp Drive build keeps its own.
+			if not state.orbit then orbit(state, root, spec.color, spec.color2); state.orbitHeight = spec.height end
 		else
 			local points = spec.at == "wheels" and wheelPoints(root) or spec.mirror and {spec.at * Vector3.new(-1, 1, 1), spec.at} or {spec.at}
 			for _, offset in points do
@@ -218,19 +222,24 @@ local function phantomEffects(root, specs, rank)
 	aura.mist.Enabled = false; aura.wisps.Enabled = false; aura.light.Enabled = false
 	state.aura = aura
 	table.insert(state.attachments, aura.mist); table.insert(state.attachments, aura.wisps); table.insert(state.attachments, aura.light)
-	return state
 end
 function Effects.Supports(name)
 	return results[name] ~= nil
 end
+-- A car in the world that has an effect: a build with an addon that has
+-- one, or a ghost car.
+function Effects.SupportsRoot(root)
+	return results[root.Name] ~= nil or root:GetAttribute("EventAddon") ~= nil
+end
 function Effects.Attach(root)
+	if not root:IsA("BasePart") then return nil end
 	local entry = results[root.Name]
-	if not entry or not root:IsA("BasePart") then return nil end
-	local rank = Recipes.RarityIndex[entry.rarity] or 2
-	if phantoms[entry.addon] then return phantomEffects(root, phantoms[entry.addon], rank) end
-	local profile = profiles[entry.addon]
-	if not profile then return nil end
-	local state = {root = root, profile = profile, rank = rank, attachments = {}, emitters = {}, beams = {}, anchors = {}, active = false}
+	local phantom = EventAddons.Addon(root:GetAttribute("EventAddon")) or (entry and phantoms[entry.addon] and entry.addon)
+	local profile = entry and profiles[entry.addon]
+	if not (profile or phantom) then return nil end
+	local rank = Recipes.RarityIndex[entry and entry.rarity or "spectral"] or 2
+	local state = {root = root, profile = profile or {kind = "phantom"}, rank = rank, attachments = {}, emitters = {}, plain = {}, beams = {}, anchors = {}, active = false}
+	if not profile then phantomEffects(state, root, phantoms[phantom]) return state end
 	local function anchor(offset)
 		local a = attachment(root, offset * root.Size)
 		table.insert(state.attachments, a); table.insert(state.anchors, {a = a, offset = offset})
@@ -255,12 +264,13 @@ function Effects.Attach(root)
 		p.Size = NumberSequence.new({NumberSequenceKeypoint.new(0,.06),NumberSequenceKeypoint.new(.35,.15),NumberSequenceKeypoint.new(1,0)})
 		p.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0,.3),NumberSequenceKeypoint.new(.7,.65),NumberSequenceKeypoint.new(1,1)})
 		p.Rotation = NumberRange.new(0,360); p.RotSpeed = NumberRange.new(-80,80)
-		p.Enabled = false; p.Parent = a; table.insert(state.emitters,p)
+		p.Enabled = false; p.Parent = a; table.insert(state.emitters,p); table.insert(state.plain,p)
 	end
 	-- Only the top energy addons get orbiting ribbons. Lower rarities retain clear silhouettes.
 	if profile.kind == "warp" or profile.kind == "plasma" or profile.kind == "hover" then
 		orbit(state, root, profile.color, Color3.fromRGB(75,235,255))
 	end
+	if phantom then phantomEffects(state, root, phantoms[phantom]) end
 	return state
 end
 function Effects.SetActive(state, active)
@@ -284,7 +294,7 @@ function Effects.Step(state, time)
 		item.p.Size=keys(sizes)
 		item.p.Acceleration=Vector3.new(0,(spec.lift or 0)*scale,0)
 	end
-	for _,p in state.scaled and {} or state.emitters do
+	for _,p in state.plain do
 		p.Speed=NumberRange.new(.3*scale,1.2*scale)
 		p.Size=NumberSequence.new({NumberSequenceKeypoint.new(0,.06*scale),NumberSequenceKeypoint.new(.35,(.09+state.rank*.015)*scale),NumberSequenceKeypoint.new(1,0)})
 	end

@@ -33,6 +33,11 @@ local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local ItemVisuals   = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local ItemRarity    = require(ReplicatedStorage:WaitForChild("ItemRarity"))
 local Mutations     = require(ReplicatedStorage:WaitForChild("Mutations"))
+-- Ghost cars (2026-10-08): the shared event addon rules (Ghost.Addons, see
+-- EventAddons) and this script's half of them (Ghost.apply, the Phantom
+-- Garage's Remove Phantom prompt). One table: this script's top level is
+-- near Luau's 200-local limit.
+local Ghost = { Addons = require(ReplicatedStorage:WaitForChild("EventAddons")) }
 local PromoCodes    = require(ReplicatedStorage:WaitForChild("PromoCodes"))
 local RaceConfig    = require(ReplicatedStorage:WaitForChild("RaceConfig"))
 local RaceCrates    = require(ReplicatedStorage:WaitForChild("RaceCrates"))
@@ -524,7 +529,8 @@ local function instanceTag(name)
 	if mutationId then
 		return Mutations.Tag(name, mutationId)
 	end
-	return ItemRarity.Tag(baseName, FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
+	-- The whole name, so a ghost car shows its Phantom's word.
+	return ItemRarity.Tag(name, FusionRecipes.GetTier(baseName), FusionRecipes.IsSecretResult(baseName),
 		FusionRecipes.GetRarity(baseName))
 end
 
@@ -533,12 +539,14 @@ end
 -- since pushUI needs it for inventory stats, well before Trading (which
 -- also uses it) is defined.
 local function itemTierInfo(itemName)
-	local baseName, mutationId = Mutations.Unwrap(itemName)
+	local baseName, mutationId, eventId = Mutations.Unwrap(itemName)
 	return {
 		tier = FusionRecipes.GetTier(baseName),
 		rarity = FusionRecipes.GetRarity(baseName),
 		isSecret = FusionRecipes.IsSecretResult(baseName),
-		value = FusionRecipes.GetValue(baseName) * Mutations.ValueMultiplier(mutationId),
+		-- A ghost car's Phantom multiplies it too, on top of a mutation.
+		value = FusionRecipes.GetValue(baseName) * Mutations.ValueMultiplier(mutationId)
+			* Ghost.Addons.Multiplier(eventId),
 	}
 end
 
@@ -1293,7 +1301,7 @@ local function refreshPad(player)
 			local baseName, mutationId = Mutations.Unwrap(itemName)
 			local offset = (i == 1) and -4.6 or 4.6
 			local padSurfaceY = plot.pad.Position.Y + plot.pad.Size.Y / 2
-			local slotPart = ItemVisuals.Create(baseName, Vector3.new(plot.pad.Position.X + offset, padSurfaceY, plot.pad.Position.Z), 0.85)
+			local slotPart = ItemVisuals.Create(itemName, Vector3.new(plot.pad.Position.X + offset, padSurfaceY, plot.pad.Position.Z), 0.85)
 			slotPart.Name = "Slot" .. i
 			slotPart.Parent = plot.model
 			local mutationColor = Mutations.Color(mutationId)
@@ -1352,7 +1360,7 @@ local function redrawPetPad(plot, slot, itemName)
 
 	local baseName, mutationId = Mutations.Unwrap(itemName)
 	local padSurfaceY = pad.part.Position.Y + pad.part.Size.Y / 2
-	local part = ItemVisuals.Create(baseName, Vector3.new(pad.part.Position.X, padSurfaceY, pad.part.Position.Z), 0.75)
+	local part = ItemVisuals.Create(itemName, Vector3.new(pad.part.Position.X, padSurfaceY, pad.part.Position.Z), 0.75)
 	local mutationColor = Mutations.Color(mutationId)
 	if mutationColor then ItemVisuals.Tint(part, mutationColor) end
 	part.Parent = plot.model
@@ -1479,7 +1487,7 @@ end
 local function dropItemNearYard(itemName)
 	local position = yardDropPosition()
 	local baseName, mutationId = Mutations.Unwrap(itemName)
-	local part = ItemVisuals.Create(baseName, position, 1)
+	local part = ItemVisuals.Create(itemName, position, 1)
 	local mutationColor = Mutations.Color(mutationId)
 	if mutationColor then ItemVisuals.Tint(part, mutationColor) end
 	part:SetAttribute("ItemName", itemName)
@@ -1514,7 +1522,7 @@ end
 local function layDownItem(itemName, fromPosition, dropper, looseSince)
 	local floorY = floorBelow(fromPosition)
 	local baseName, mutationId = Mutations.Unwrap(itemName)
-	local part = ItemVisuals.Create(baseName, Vector3.new(fromPosition.X, floorY, fromPosition.Z), 1)
+	local part = ItemVisuals.Create(itemName, Vector3.new(fromPosition.X, floorY, fromPosition.Z), 1)
 	local mutationColor = Mutations.Color(mutationId)
 	if mutationColor then ItemVisuals.Tint(part, mutationColor) end
 	part:SetAttribute("ItemName", itemName)
@@ -1552,7 +1560,79 @@ end
 -- better than the one it has. Returns why a pair is not allowed, or nil
 -- when it is.
 local function fusionPairProblem(a, b)
-	return FusionRecipes.PairProblem((Mutations.Unwrap(a)), (Mutations.Unwrap(b)))
+	local baseA, _, eventA = Mutations.Unwrap(a)
+	local baseB, _, eventB = Mutations.Unwrap(b)
+	if Ghost.Addons.Of(baseA) or Ghost.Addons.Of(baseB) then
+		return Ghost.Addons.Problem(baseA, eventA, baseB, eventB)
+	end
+	return FusionRecipes.PairProblem(baseA, baseB)
+end
+
+-- A Phantom and a car on the Fusion Pad: the car becomes a ghost
+-- (EventAddons), whatever it is, keeping its build and mutation; the
+-- Phantom is used up. The first time that Phantom goes on any build of a
+-- car, the Index's Spectral entry for them is found.
+function Ghost.apply(player, s, plot, a, b)
+	local Addons = Ghost.Addons
+	local car, addon = a, b
+	if Addons.Of((Mutations.Unwrap(a))) then car, addon = b, a end
+	local carBase, mutationId, carEvent = Mutations.Unwrap(car)
+	local addonBase = Mutations.Unwrap(addon)
+	local problem = Addons.Problem(carBase, carEvent, addonBase, nil)
+	if problem then
+		toast(player, problem)
+		playSound(plot.pad, "fail")
+		return
+	end
+
+	s.slots[1], s.slots[2] = nil, nil
+	local remaining = {}
+	for i = 3, capacity(player, s) do
+		if s.slots[i] then table.insert(remaining, s.slots[i]) end
+	end
+	s.slots = remaining
+	refreshPad(player)
+
+	local eventId = Addons.Of(addonBase)
+	local instanceName = Mutations.Wrap(carBase, mutationId, eventId)
+	local info = itemTierInfo(instanceName)
+	local resultTag = instanceTag(instanceName)
+	local rarityName = ItemRarity.Name(info.tier, info.isSecret, info.rarity)
+	local rateLine = string.format("Ghost x%s — +%.1f coins/sec if placed",
+		tostring(Addons.Multiplier(eventId)), info.value / PLACEMENT_PAYBACK_SECONDS)
+
+	local entry = Addons.IndexName(carBase, eventId)
+	local isNewDiscovery = entry ~= nil and not s.discovered[entry]
+	if isNewDiscovery then
+		s.discovered[entry] = true
+		s.count = s.count + 1
+		table.insert(s.discoveredList, entry)
+		toast(player, string.format("NEW DISCOVERY\n%s", ItemRarity.Tag(entry, FusionRecipes.GetTier(entry), false, "spectral")), true)
+	end
+	toast(player, string.format("%s is a ghost now!\n%s", resultTag, rateLine), true)
+	fusionCelebrationRemote:FireClient(player, {
+		area = "junkyard",
+		headerText = isNewDiscovery and "NEW DISCOVERY   •   GHOSTED" or "GHOSTED",
+		aTag = instanceTag(car), bTag = instanceTag(addon), resultTag = resultTag,
+		aName = car, bName = addon, resultName = instanceName,
+		rarityName = rarityName,
+		color = ItemRarity.Color(info.tier, false, "spectral"),
+		rateLine = rateLine,
+	})
+	FusionEffects.FusionShimmer(plot.pad)
+
+	table.insert(s.inventory, instanceName)
+	if #s.inventory > inventoryCapacity(s, player) then
+		toast(player, string.format("%s squeezed into a full Inventory — place or fuse something to make room.", resultTag))
+	end
+	updateWalkSpeed(player)
+	playSound(plot.pad, "big")
+	Quests.progress(player, "fuse")
+	if isNewDiscovery then
+		Quests.progress(player, "discover")
+	end
+	checkGoals(player)
+	pushUI(player)
 end
 
 local function attemptFusion(player)
@@ -1572,8 +1652,14 @@ local function attemptFusion(player)
 	-- — recipe lookups need the bare name, or a "[Shiny] Trail Blazer"
 	-- would never be found in the book. The ingredient's own mutation is
 	-- dealt with separately, below the result's roll.
-	local baseA = Mutations.Unwrap(a)
-	local baseB = Mutations.Unwrap(b)
+	local baseA, _, eventA = Mutations.Unwrap(a)
+	local baseB, _, eventB = Mutations.Unwrap(b)
+
+	-- A Phantom isn't fused through the recipe book: it goes on as a ghost.
+	if Ghost.Addons.Of(baseA) or Ghost.Addons.Of(baseB) then
+		Ghost.apply(player, s, plot, a, b)
+		return
+	end
 
 	-- Nothing is consumed unless the pair actually makes something.
 	local result, info = FusionRecipes.Fuse(baseA, baseB)
@@ -1609,8 +1695,10 @@ local function attemptFusion(player)
 			mutationId = inherited
 		end
 	end
-	local instanceName = Mutations.Wrap(result, mutationId)
-	local instanceValue = math.floor(info.value * Mutations.ValueMultiplier(mutationId))
+	-- A ghost car stays a ghost whatever it is fused into (EventAddons).
+	local eventId = eventA or eventB
+	local instanceName = Mutations.Wrap(result, mutationId, eventId)
+	local instanceValue = math.floor(info.value * Mutations.ValueMultiplier(mutationId) * Ghost.Addons.Multiplier(eventId))
 	local mutationColor = Mutations.Color(mutationId)
 
 	local resultTag = instanceTag(instanceName)
@@ -1659,6 +1747,7 @@ local function attemptFusion(player)
 			aTag = aTag,
 			bTag = bTag,
 			resultTag = resultTag,
+			aName = a, bName = b, resultName = instanceName,
 			rarityName = rarityName,
 			color = mutationColor or ItemRarity.Color(info.tier, false, info.rarity),
 			rateLine = rateLine,
@@ -1706,8 +1795,7 @@ local function attachCarried(player, itemName)
 	local anchor = char:FindFirstChild("HumanoidRootPart")
 	if not anchor then return nil end
 
-	local baseName = Mutations.Unwrap(itemName)
-	local held = ItemVisuals.Create(baseName, anchor.Position, CARRY_SCALE)
+	local held = ItemVisuals.Create(itemName, anchor.Position, CARRY_SCALE)
 	held.Name = "CarriedItem"
 	held.Anchored = false
 	held.CanCollide = false
@@ -2668,9 +2756,41 @@ do
 		bolts.Value -= price
 		table.insert(s.inventory, addonName)
 		playSound(root, "big")
-		toast(player, string.format("Bought %s — it's in your hotbar. Fuse it with a car!", instanceTag(addonName)), true)
+		toast(player, string.format("Bought %s — it's in your hotbar. Put it on any car at your Fusion Pad!", instanceTag(addonName)), true)
 		buyPhantomRemote:FireClient(player, addonName, "bought")
 		pushUI(player)
+	end)
+
+	-- Taking a Phantom off a ghost car, to make room for another event
+	-- addon: hold the car at the counter and use its Remove Phantom prompt
+	-- (PhantomGarage). The Phantom is lost; the car is what it was before.
+	task.spawn(function()
+		local stall = workspace:WaitForChild("PhantomGarage", 120)
+		local counter = stall and stall:WaitForChild("Counter", 30)
+		local prompt = counter and counter:WaitForChild("RemovePhantomPrompt", 30)
+		if not prompt then
+			warn("[PlotManager] No Remove Phantom prompt at the Phantom Garage")
+			return
+		end
+		prompt.Triggered:Connect(function(player)
+			local s = state[player]
+			local index = s and Hotbar.heldIndex(player)
+			local itemName = index and s.inventory[index]
+			if not itemName then
+				toast(player, "Hold the ghost car you want to take the phantom off.")
+				return
+			end
+			local baseName, mutationId, eventId = Mutations.Unwrap(itemName)
+			if not eventId then
+				toast(player, "That isn't a ghost car: it has no phantom on it.")
+				return
+			end
+			s.inventory[index] = Mutations.Wrap(baseName, mutationId)
+			playSound(counter, "big")
+			toast(player, string.format("The %s is gone. %s is back to normal.",
+				Ghost.Addons.Addon(eventId), instanceTag(s.inventory[index])), true)
+			pushUI(player)
+		end)
 	end)
 end
 
@@ -3140,11 +3260,11 @@ do
 		if tool:FindFirstChild("HeldItem") then return end
 		local root = tool.Parent and tool.Parent:FindFirstChild("HumanoidRootPart")
 		if not root then return end
-		local baseName, mutationId = Mutations.Unwrap(itemName)
-		local probe, size = ItemVisuals.CloneForViewport(baseName)
+		local _, mutationId = Mutations.Unwrap(itemName)
+		local probe, size = ItemVisuals.CloneForViewport(itemName)
 		if probe then probe:Destroy() end
 		local longest = size and math.max(size.X, size.Y, size.Z) or 5
-		local held = ItemVisuals.Create(baseName, Vector3.zero, HELD_LENGTH / (longest * ItemVisuals.GLOBAL_SCALE))
+		local held = ItemVisuals.Create(itemName, Vector3.zero, HELD_LENGTH / (longest * ItemVisuals.GLOBAL_SCALE))
 		local tint = Mutations.Color(mutationId)
 		if tint then ItemVisuals.Tint(held, tint) end
 		held.Name = "HeldItem"
@@ -3187,7 +3307,9 @@ do
 		tool.CanBeDropped = false
 		local info = itemTierInfo(itemName)
 		tool.ToolTip = string.format("%s%s", ItemRarity.Name(info.tier, info.isSecret, info.rarity) or "",
-			FusionRecipes.IsAddon(baseName) and " addon: hold it at your Fusion Pad with a car" or ": hold it at your Fusion Pad or an earning pad")
+			Ghost.Addons.Of(baseName) and " phantom: hold it at your Fusion Pad with any car to make it a ghost"
+			or FusionRecipes.IsAddon(baseName) and " addon: hold it at your Fusion Pad with a car"
+			or ": hold it at your Fusion Pad or an earning pad")
 		-- No handle: the held copy is welded to the body (showHeld).
 		tool.RequiresHandle = false
 		tool.Equipped:Connect(function() showHeld(tool, itemName) end)
@@ -3647,6 +3769,16 @@ local function onPlayerAdded(player)
 				if not FusionRecipes.GetRarity(baseName) and not RaceCrates.IsLoot(baseName) then
 					table.remove(s[field], i)
 				end
+			end
+		end
+		-- The Phantom addons became event addons on 2026-10-08 (EventAddons):
+		-- a named Spectral build (Wisp Kart...) in an older save is its car
+		-- with that Phantom on it.
+		for _, field in ipairs({ "inventory", "placed" }) do
+			for i, name in ipairs(s[field]) do
+				local baseName, mutationId = Mutations.Unwrap(name)
+				local car, eventId = Ghost.Addons.FromIndexName(baseName)
+				if car then s[field][i] = Mutations.Wrap(car, mutationId, eventId) end
 			end
 		end
 		-- Race crates stopped on 2026-10-05 and the Crates tab went with the

@@ -336,8 +336,9 @@ local function spawnItemAt(itemName, position, opts)
 	opts = opts or {}
 	local baseName, mutationId = Mutations.Unwrap(itemName)
 
-	-- Detailed mesh when one exists in ItemModels, else the old block.
-	local part = ItemVisuals.Create(baseName, position, 1)
+	-- Detailed mesh when one exists in ItemModels, else the old block (a
+	-- dropped ghost car keeps its Phantom: the whole name goes in).
+	local part = ItemVisuals.Create(itemName, position, 1)
 
 	-- Stores the item's identity as data, not just a display name.
 	-- The fusion pad will read this attribute later, so renaming

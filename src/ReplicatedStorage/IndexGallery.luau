@@ -77,48 +77,15 @@ local function modelView(parent, name, grey)
 		LightDirection = Vector3.new(-1, -1, -1), ZIndex = 3,
 	})
 	-- Its own model, or the one standing in for it (a Secret car's model can
-	-- have another name, and a build without a model yet borrows one).
-	local standIn = FusionRecipes.StandIn(name)
-	local template = Models:FindFirstChild(name) or (standIn and Models:FindFirstChild(standIn))
-	if not template then return view end
+	-- have another name, a build without a model yet borrows one, and a
+	-- Spectral entry is its car as a ghost with that Phantom mounted on it;
+	-- see ItemVisuals), centred.
+	local clone, size = ItemVisuals.CloneForViewport(name)
+	if not clone then return view end
 	local world = make("WorldModel", view, "World")
-	local clone = template:Clone()
-	-- A Phantom build not modelled yet: its borrowed model, drawn ghostly.
-	if not grey and ItemVisuals.IsGhostStandIn(name) then
-		if clone:IsA("BasePart") then
-			local holder = Instance.new("Model") clone.Parent = holder
-			ItemVisuals.Ghostly(holder, true) clone.Parent = nil holder:Destroy()
-		else
-			ItemVisuals.Ghostly(clone, true)
-		end
-	end
-	if grey then
-		if clone:IsA("BasePart") then
-			local holder = Instance.new("Model")
-			clone.Parent = holder
-			greyOut(holder)
-			clone.Parent = nil
-			holder:Destroy()
-		else
-			greyOut(clone)
-		end
-	end
+	if grey then greyOut(clone) end
 	clone.Parent = world
-	local cf, size
-	if clone:IsA("BasePart") then
-		clone.Anchored = true
-		clone.CFrame = CFrame.new()
-		cf, size = clone.CFrame, clone.Size
-	elseif clone:IsA("Model") then
-		clone:PivotTo(CFrame.new())
-		for _, p in ipairs(clone:GetDescendants()) do
-			if p:IsA("BasePart") then p.Anchored = true end
-		end
-		cf, size = clone:GetBoundingBox()
-	else
-		clone:Destroy()
-		return view
-	end
+	local cf = clone:GetBoundingBox()
 	Garage.Podium(world, Color3.fromRGB(62,226,223))
 	local cam = make("Camera", view, "Camera", {FieldOfView = 35})
 	view.CurrentCamera = cam

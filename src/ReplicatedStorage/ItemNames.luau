@@ -7,6 +7,9 @@ function ItemNames.Display(name)
 	for key, display in pairs(DISPLAY_NAMES) do
 		name = name:gsub(key, display)
 	end
+	-- An event addon's word (EventAddons): "{Wisp} Warp Wreck" reads
+	-- "Wisp Warp Wreck".
+	name = name:gsub("{(%a+)} ", "%1 ")
 	return name
 end
 return ItemNames

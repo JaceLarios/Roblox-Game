@@ -60,7 +60,7 @@ local function displacement(name)
 end
 local function clone(world,tag,target)
  local base,mutation=Mutations.Unwrap(clean(tag))
- local model=Visuals.CloneForViewport(base,mutation and Mutations.Color(mutation))
+ local model=Visuals.CloneForViewport(clean(tag),mutation and Mutations.Color(mutation))
  if not model then return nil end
  for _,o in model:GetDescendants() do
   if o:IsA("LuaSourceContainer") or o:IsA("JointInstance") or o:IsA("Constraint") then o:Destroy() end
@@ -105,12 +105,13 @@ local function build(data)
   BackgroundTransparency=1,Ambient=Color3.fromRGB(185,200,225),LightColor=Color3.fromRGB(255,242,222),LightDirection=Vector3.new(-1,-2,-1),ZIndex=2})
  local world=new("WorldModel",viewport,"WorkshopStage")
  local camera=new("Camera",viewport,"Camera",{FieldOfView=37}) viewport.CurrentCamera=camera
- local a,b=clean(data.aTag),clean(data.bTag)
+ -- The raw names when the server sends them (a ghost car's Phantom shows).
+ local a,b=data.aName or clean(data.aTag),data.bName or clean(data.bTag)
  local baseA=Mutations.Unwrap(a)
  if Recipes.IsAddon(baseA) then a,b=b,a end
  local car=clone(world,a,6)
  local addon=clone(world,b,1.9)
- local result=clone(world,data.resultTag,6)
+ local result=clone(world,data.resultName or data.resultTag,6)
  local output=text(overlay,"Result",Names.Display(clean(data.resultTag)),UDim2.fromScale(.12,.795),UDim2.fromScale(.76,.055),36)
  Garage.Plate(output)
  Rarity.Plate(output,rarity:lower())

@@ -213,10 +213,10 @@ end
 -- races at (see driverSeat).
 local function buildCar(player, itemName, stats, frame)
 	local baseName, mutationId = Mutations.Unwrap(itemName)
-	local probe = ItemVisuals.Create(baseName, Vector3.zero, 1)
+	local probe = ItemVisuals.Create(itemName, Vector3.zero, 1)
 	local probeSize = probe.Size
 	probe:Destroy()
-	local body = ItemVisuals.Create(baseName, Vector3.zero, RaceConfig.CAR_LENGTH / math.max(probeSize.Z, probeSize.X, 1))
+	local body = ItemVisuals.Create(itemName, Vector3.zero, RaceConfig.CAR_LENGTH / math.max(probeSize.Z, probeSize.X, 1))
 	local size = body.Size
 
 	local car = Instance.new("Model")

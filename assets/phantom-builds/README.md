@@ -14,6 +14,8 @@ Seven sample Spectral builds, one per base car, each wearing one of the Phantom 
 
 Every build also wears the haunted livery: violet enamel paint, night-black and bone panels, gold calipers, ectoplasm headlights, violet tail lights and ectoplasm underglow (not on the bike).
 
+Since the Phantoms became event addons (later on 2026-10-08, `ReplicatedStorage.EventAddons`), these seven show for a plain base car wearing that Phantom and on their Index cards; every other ghost car is its own model drawn ghostly with the Phantom mounted (ItemVisuals).
+
 These are the base car's own body, repainted, with the addon mounted on it. `docs/PHANTOM_MODELS.md` asks for more than that from the final 105 (the body itself reshaped by its ghost theme), so treat these as samples: a proper model installed under the same name replaces one (the installers back up what they replace).
 
 ## Files
