@@ -1,3 +1,9 @@
+# Every Spectral build has its ghost addon's effect — Claude (2026-10-08)
+
+`ReplicatedStorage.VehicleAddonEffects` (the client-side addon effects on cars in the world, nearest 12, off in potato mode) now has a `phantoms` table: one effect per Phantom addon, so all 105 Spectral builds show it, stand-ins included. Wisps off the lanterns, ectoplasm smoke rings out of the back, a violet orbit for the crystal ball, graveyard fog, ecto bubbles, banshee sound waves forward, poltergeist sparks, ectoplasm leaking from the coffin, cauldron bubbles over green flames, a ghost-ship wake, blue fire on every wheel, a soul vortex, hearse smoke and candle glints, scythe sparks, a ghost trail. Positions are fractions of the car's size (front +Z), so if a proper model puts its addon somewhere else, move that addon's `at` to match. Particles only; models and data are untouched.
+
+---
+
 # 7 sample Phantom builds (base cars wearing ghost addons) — Claude (2026-10-08)
 
 The user liked the 15 Phantom addons and asked to see them fused onto cars. Claude made one sample Spectral build per base car and installed them in `ReplicatedStorage.ItemModels`: **Wisp Kart, Skullsmoke Rider, Coffin Caddy, Banshee Muscle, Graveyard Patrol, Specter Hauler, Wraith Crusher**.
