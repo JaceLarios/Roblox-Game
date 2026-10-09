@@ -9,7 +9,13 @@ The game already awards these (`ServerStorage.Badges`). Each one needs a badge m
 3. Copy the new badge's **id** (the number in its URL) into `src/ServerStorage/Badges.luau`, on that badge's `id = 0`.
 4. Sync the script to Studio and publish.
 
-Roblox may charge Robux for badges past a free daily allowance; the Creator Hub says what it costs before you confirm.
+The first five badges per experience every 24 hours (GMT) are free; each one past that costs 100 Robux. The Create page says so before you confirm.
+
+## Made so far
+
+Made on 2026-10-09 (the five free ones; ids are in `Badges.luau` and Studio): `welcome` 2018639245002603, `firstFusion` 3372506036321754, `firstGhost` 1195291716831241, `firstRebirth` 1698272688187589, `raceFinish` 3321738086322531. Checked in Studio Play: all five are active, and jace_343 was given Welcome and Born Again.
+
+**Still to make** (free again after the GMT reset): `secretCar`, `maxRebirth`, `collector`, `masterBuilder`, `ghostCollector`.
 
 ## The badges
 

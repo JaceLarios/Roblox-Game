@@ -22,13 +22,13 @@ local FusionRecipes = require(ReplicatedStorage:WaitForChild("FusionRecipes"))
 local Badges = {}
 
 Badges.LIST = {
-	welcome      = { id = 0, name = "Welcome to the Junkyard", description = "Join Junkyard Fusion." },
-	firstFusion  = { id = 0, name = "First Fusion", description = "Fuse a car with an addon at your Fusion Pad." },
-	firstGhost   = { id = 0, name = "Ghost Rider", description = "Put a Phantom on a car and make it a ghost." },
+	welcome      = { id = 2018639245002603, name = "Welcome to the Junkyard", description = "Join Junkyard Fusion." },
+	firstFusion  = { id = 3372506036321754, name = "First Fusion", description = "Fuse a car with an addon at your Fusion Pad." },
+	firstGhost   = { id = 1195291716831241, name = "Ghost Rider", description = "Put a Phantom on a car and make it a ghost." },
 	secretCar    = { id = 0, name = "Secret Find", description = "Get one of the Secret cars." },
-	firstRebirth = { id = 0, name = "Born Again", description = "Rebirth for the first time." },
+	firstRebirth = { id = 1698272688187589, name = "Born Again", description = "Rebirth for the first time." },
 	maxRebirth   = { id = 0, name = "Ceiling Breaker", description = "Reach the highest Rebirth." },
-	raceFinish   = { id = 0, name = "Outran the Monster", description = "Finish a Race Wars race." },
+	raceFinish   = { id = 3321738086322531, name = "Outran the Monster", description = "Finish a Race Wars race." },
 	collector    = { id = 0, name = "Collector", description = "Discover 25 builds in the Index." },
 	masterBuilder = { id = 0, name = "Master Builder", description = "Discover every fusion build in the Index." },
 	ghostCollector = { id = 0, name = "Ghost Collector", description = "Fill the whole Spectral tab: every Phantom on every car." },
