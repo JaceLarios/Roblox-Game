@@ -116,8 +116,8 @@ local function modelView(card, itemName)
 		BackgroundTransparency = 1, Position = UDim2.fromOffset(8, 8), Size = UDim2.new(1, -16, 0, 150),
 		Ambient = Color3.fromRGB(205, 205, 215), LightColor = WHITE, LightDirection = Vector3.new(-1, -1, -1), ZIndex = 3,
 	})
-	local baseName, mutationId = Mutations.Unwrap(itemName)
-	local model, size = ItemVisuals.CloneForViewport(baseName)
+	local _, mutationId = Mutations.Unwrap(itemName)
+	local model, size = ItemVisuals.CloneForViewport(itemName, Mutations.Color(mutationId))
 	if not model then return end
 	local world = Instance.new("WorldModel")
 	world.Parent = view

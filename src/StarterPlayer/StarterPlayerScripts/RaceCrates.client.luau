@@ -137,8 +137,8 @@ local function showReveal(itemName)
 	local token = revealToken
 	revealView:ClearAllChildren()
 	revealSpin = nil
-	local baseName, mutationId = Mutations.Unwrap(itemName)
-	local model, size = ItemVisuals.CloneForViewport(baseName, nil)
+	local _, mutationId = Mutations.Unwrap(itemName)
+	local model, size = ItemVisuals.CloneForViewport(itemName, Mutations.Color(mutationId))
 	if model then
 		local world = Instance.new("WorldModel")
 		world.Parent = revealView

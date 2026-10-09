@@ -1,0 +1,277 @@
+{
+  "nativeScenesOpened": 33,
+  "copyHashesChecked": 79,
+  "builderInputs": {
+    "BASE": "civic-fusions/source/Honda-Civic-Rusted-v2.blend",
+    "MECH": "new-addons/Junkyard-Fusion-10-Addons-Textured.blend",
+    "WARP": "warp-drive-batch/Warp-Drive-v1.blend",
+    "GHOST": "phantom-addons/Phantom-Addons.blend"
+  },
+  "checks": [
+    {
+      "file": "v2/Nitrous_Tank.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 30,
+      "meshes": 20,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Straight_Pipes.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 32,
+      "meshes": 23,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Scrap_Turbo.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 52,
+      "meshes": 33,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Inline_4.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 41,
+      "meshes": 32,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Rotary_Engine.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 100,
+      "meshes": 91,
+      "packedFileImages": 36,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Twin_Turbo.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 119,
+      "meshes": 75,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/V6_Engine.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 69,
+      "meshes": 55,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Supercharger.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 71,
+      "meshes": 58,
+      "packedFileImages": 36,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Diesel_Stack.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 107,
+      "meshes": 99,
+      "packedFileImages": 32,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/V8_Engine.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 69,
+      "meshes": 47,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/V12_Engine.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 204,
+      "meshes": 197,
+      "packedFileImages": 36,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Hover_Fans.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 77,
+      "meshes": 68,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Jet_Engine.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 48,
+      "meshes": 26,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Rocket_Booster.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 129,
+      "meshes": 120,
+      "packedFileImages": 84,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Fusion_Core.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 113,
+      "meshes": 102,
+      "packedFileImages": 44,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Warp_Drive.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 170,
+      "meshes": 163,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Will_o_Wisp_Lanterns.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 65,
+      "meshes": 58,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Phantom_Exhaust.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 74,
+      "meshes": 67,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Crystal_Ball_Ornament.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 32,
+      "meshes": 25,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Graveyard_Grille.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 56,
+      "meshes": 49,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Ecto_Tank.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 68,
+      "meshes": 60,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Banshee_Horn.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 30,
+      "meshes": 23,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Poltergeist_Spoiler.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 49,
+      "meshes": 42,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Coffin_Carrier.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 49,
+      "meshes": 42,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Witch_s_Cauldron.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 45,
+      "meshes": 38,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Specter_Sails.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 29,
+      "meshes": 22,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Wraith_Wheels.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 57,
+      "meshes": 18,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Soul_Turbo.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 55,
+      "meshes": 47,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Hearse_Canopy.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 88,
+      "meshes": 81,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Reaper_Scythes.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 38,
+      "meshes": 31,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "v2/Ghost_Chauffeur.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 49,
+      "meshes": 41,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "source/Honda-Civic-Rusted-v2.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 11,
+      "meshes": 6,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    },
+    {
+      "file": "source/Honda-Civic-Loose-Bumper-v4.blend",
+      "sha256MatchesApprovedSource": true,
+      "objects": 64,
+      "meshes": 35,
+      "packedFileImages": 4,
+      "unpackedFileImages": []
+    }
+  ],
+  "limits": "Native Blender packaging validation only; no Roblox import or playtest."
+}

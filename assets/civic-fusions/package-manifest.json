@@ -1,0 +1,488 @@
+{
+  "date": "2026-10-08",
+  "reviewedMainCommit": "d36f6e3",
+  "authoringCatalogCommit": "f6e79c6",
+  "nativeScenes": 33,
+  "approvedModels": 32,
+  "fusionVariants": 31,
+  "mechanicalVariants": 16,
+  "phantomConceptVariants": 15,
+  "gameIntegrated": false,
+  "notes": "31 approved variants, the approved rusty base, and one rebuild seed. Phantom concepts are optional under the event-addon system. Builders use existing repository addon libraries.",
+  "copies": [
+    {
+      "file": "v2/Nitrous_Tank.blend",
+      "bytes": 41057089,
+      "sha256": "ca5f9122318e1998d79781b581853984716a820995a29df18264445bd4436fc7",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Nitrous_Tank.png",
+      "bytes": 599797,
+      "sha256": "bef89f7a910fd11a7a9a2233fbc4ad3910ed333a5d21664fec5210f13b038601",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Straight_Pipes.blend",
+      "bytes": 40812563,
+      "sha256": "5abcc817fb51c5e8ef3aee706ee9b8033fb2c57a137f66445b5262124fe530f4",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Straight_Pipes.png",
+      "bytes": 583848,
+      "sha256": "75f1a13df7e26706a6ae63f5c654735591f5ebc1ad2aaf68aea89c97578d8519",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Scrap_Turbo.blend",
+      "bytes": 40827152,
+      "sha256": "0d7cbf160b484d604f34edbc40ae1eb230c77b998606241392dbf2a36f358c4e",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Scrap_Turbo.png",
+      "bytes": 601971,
+      "sha256": "edfd1a44c45cbf131a6848c47683cd23477b9a7ac3daedc08701d053bb96fd22",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Inline_4.blend",
+      "bytes": 41040370,
+      "sha256": "edf63b6ef8ddecb65ec8ef0576eeae1f6291681570b0887182debb8ab31c0bb7",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Inline_4.png",
+      "bytes": 598130,
+      "sha256": "bdbc12fe5bf63c7921c512e3d1df6932a049aee3702f45ac890df27bfd866cac",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Rotary_Engine.blend",
+      "bytes": 41913203,
+      "sha256": "7e827f3ece73de32b76c340b5c97a32e95875336214bf0987b14a19db75556a3",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Rotary_Engine.png",
+      "bytes": 601048,
+      "sha256": "8819c6cec4ddd84c9cf1d834664c042624ed249de85629f3fa25530b22f2e5d1",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Twin_Turbo.blend",
+      "bytes": 41026835,
+      "sha256": "3a9e960157e1ffa317db72c2f3823aefa6de6f26d192a3e533bd7d43a5dc27a1",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Twin_Turbo.png",
+      "bytes": 604373,
+      "sha256": "7a901441c75b328727f7556dc1e84d8489676bde2fac6d880804fe36638f4e27",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/V6_Engine.blend",
+      "bytes": 40983452,
+      "sha256": "bede6f888e8329f1058783c751039525572b954570104c9f7864374a478aff91",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/V6_Engine.png",
+      "bytes": 593161,
+      "sha256": "04e2e81c1b3624fd0c8c10f13d8580f092a6c2f6c371c1ce3e0c23da8b6a4032",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Supercharger.blend",
+      "bytes": 41832785,
+      "sha256": "2c99aa0d4c36306a299a1efd849e386bc61132f7f2163f9f9b905ed7d09e85c4",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Supercharger.png",
+      "bytes": 622631,
+      "sha256": "0c7b25a8232504bd4549e9ab159de3976bfa093c7d8a2489e48ae276e5bf1758",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Diesel_Stack.blend",
+      "bytes": 42029370,
+      "sha256": "882052ec5b014c7fe289bc8edf86fbbd9c9831fb0760b49081bce02a04e16d1f",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Diesel_Stack.png",
+      "bytes": 609199,
+      "sha256": "cbdd29985902065fa6c34e2e80750bc6fafd103be57716be7e86fade6f84008a",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/V8_Engine.blend",
+      "bytes": 41013688,
+      "sha256": "0ed2e4345030b357849bc6ac5d4b7d631ed735c73a37501ad96d3750e0d661e3",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/V8_Engine.png",
+      "bytes": 603536,
+      "sha256": "99f205aa29b0f592332a6fb99dea59f46df1704b9bc8ad062a5b7651a12519b4",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/V12_Engine.blend",
+      "bytes": 42077227,
+      "sha256": "482b9449b9ffa1010244ffae5dab570c0ef72cef957803182b6467f2e5d561cd",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/V12_Engine.png",
+      "bytes": 587100,
+      "sha256": "0cce5fb1ca191c222f35d923b777056ae4a370598b70b0cf87dce156f56101cb",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Hover_Fans.blend",
+      "bytes": 40825752,
+      "sha256": "58af0cfc8c7b15cc644a54e7e080509928c758eafef92c2fd6aaa5ad4011ff22",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Hover_Fans.png",
+      "bytes": 590136,
+      "sha256": "71107150c147c10a8b2d2ff565f7a9a8d22550f08e904a7739aa08c9c089ce6f",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Jet_Engine.blend",
+      "bytes": 41024404,
+      "sha256": "3c37707af55869597c5e0984db6975a598bba3a59a6451038407de4b5f502748",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Jet_Engine.png",
+      "bytes": 621411,
+      "sha256": "1f37bdd644efaaa0d62ed8e960680636a5ef4e37ec2575259a6d9a64458cc7f7",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Rocket_Booster.blend",
+      "bytes": 41770186,
+      "sha256": "13f5ff3ccfa995c04bdc9e93a67dfded716125a09fccf8c594deec755219578f",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Rocket_Booster.png",
+      "bytes": 598105,
+      "sha256": "ac3fa754180abc919eb09aa900b577ca7d88790df36c8d7d74b1a6a1661aca15",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Fusion_Core.blend",
+      "bytes": 42034714,
+      "sha256": "bac20c0f23f003d93826fc40e74075026ea3fd75f08295d7c4418682463ddf3c",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Fusion_Core.png",
+      "bytes": 635237,
+      "sha256": "8b2ee97cdbc43a127780d3cf8f4cf9066ae94e6edb27f1ba68101631e167cb34",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Warp_Drive.blend",
+      "bytes": 40740838,
+      "sha256": "48463463a9e877359fecdcda162dca66137f7986e2f5292d6dc452cb103fc2d4",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Warp_Drive.png",
+      "bytes": 634558,
+      "sha256": "f8fc5dc677a15246c346b01669c5eaf373c24d8acd4b3964d512f3230a5eae22",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Will_o_Wisp_Lanterns.blend",
+      "bytes": 40843173,
+      "sha256": "430a46617043bc1d9bb8b34bf0aa30c2653a706fdade9790e2c63a17ee926da3",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Will_o_Wisp_Lanterns.png",
+      "bytes": 607793,
+      "sha256": "5baa586bd990cdbc5467fff13e4904b79fd66d22caad2fb5d46efd447c9cbb19",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Phantom_Exhaust.blend",
+      "bytes": 40777176,
+      "sha256": "30336595b4a101032a78a8e66cbcac35f4272b8435148577c29fe507103ee8cf",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Phantom_Exhaust.png",
+      "bytes": 589879,
+      "sha256": "61ed24f1b5fc489e2c4efc92ee03f54a95ad2ca433fc1ee558795d218f2c3629",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Crystal_Ball_Ornament.blend",
+      "bytes": 40868081,
+      "sha256": "6f472b1b889c6e10a965b2a4dc08e881a26939bfbf733e22e0e23a34e814dce1",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Crystal_Ball_Ornament.png",
+      "bytes": 612188,
+      "sha256": "35b12d6a8f2e20a8ef0073d29a714673ca749b50e7668fa03ff0d2c9b21ffe10",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Graveyard_Grille.blend",
+      "bytes": 40841171,
+      "sha256": "c7f63d04626f3be637d6aca4b91c4de0a6d926ae9f45f9e4877ab0bfb705dfa1",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Graveyard_Grille.png",
+      "bytes": 586469,
+      "sha256": "4c59c16a17d918ccb63dccbc40fffd7b20cd7813cca0908b0fc51f7ede35ee80",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Ecto_Tank.blend",
+      "bytes": 41135907,
+      "sha256": "b32839365bb75fb35d26557f89714bd2326f2a37346537e4e4a6df064775942b",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Ecto_Tank.png",
+      "bytes": 594296,
+      "sha256": "6b041543dbd0143ca5d7437c817b6fa309d18f7ceca10659948fe316cb8a6d5d",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Banshee_Horn.blend",
+      "bytes": 40833067,
+      "sha256": "1afde91d4d28ba74b809fbb2426700102d59c1ee81d7c6b7ce67d503947d25d6",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Banshee_Horn.png",
+      "bytes": 607916,
+      "sha256": "a83bcb2e60455ac6292ff2e3b548669ca8decf110a4ee5b04630daaf4e3fff91",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Poltergeist_Spoiler.blend",
+      "bytes": 40825356,
+      "sha256": "10b5942710650d068e3c97943335e8eec03fc6b9f4891af76f7ed55fb88e8366",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Poltergeist_Spoiler.png",
+      "bytes": 600932,
+      "sha256": "fb70f6d49edd44e7f7fdabd7c092742c53f7a3c4f0397e0cac9a701f1f863eaa",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Coffin_Carrier.blend",
+      "bytes": 40725928,
+      "sha256": "df2659278bf73d52091eab13a6e80daee8002b11a65cb50dcc38675bd80a8a0c",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Coffin_Carrier.png",
+      "bytes": 598656,
+      "sha256": "48da9cd1b837e29509e2c751220b2d9c16a6d305134b9f4d07d28f0d13cd6f91",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Witch_s_Cauldron.blend",
+      "bytes": 41111034,
+      "sha256": "7cbdc07df3c35b71ac55b3b36ac0a1c1f488dd5d354d8f54eb76b71f38b42980",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Witch_s_Cauldron.png",
+      "bytes": 579214,
+      "sha256": "269495541d954d5ce5cdd84d5b6b56d1b136923c5560c3e6b5ec1000278ab0a1",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Specter_Sails.blend",
+      "bytes": 40809079,
+      "sha256": "b6005cb1e0c97fb8de55a0a99934cd44bcd559624cfb28560acdcccc2a6bbadc",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Specter_Sails.png",
+      "bytes": 602833,
+      "sha256": "d8e05b6daeca3ed70036d391b6ac5e5fd120e93ed0eaaca674a93ee329ad0267",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Wraith_Wheels.blend",
+      "bytes": 40807390,
+      "sha256": "b427a2edce5ede924bd13a7b26156c1e332e6b8b411f364870aedcdff8b2fd27",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Wraith_Wheels.png",
+      "bytes": 598533,
+      "sha256": "3c4d75c69d4cfe989da7c27b89286d2c4ac71c27a84fd24ecfc011e765afdd8a",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Soul_Turbo.blend",
+      "bytes": 40876561,
+      "sha256": "101bb7cb8b69847612529804d384a5d926e4b74fb9f21eb66ea4fcfd5c96f68a",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Soul_Turbo.png",
+      "bytes": 615526,
+      "sha256": "6db5cad14e983d4e62afb83dd1693b66599875d41d9e4b1aeaa41c034768683b",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Hearse_Canopy.blend",
+      "bytes": 40922117,
+      "sha256": "3fc39b36813c6897e2da90d76ca9410e5f0c0d372892c20703f61a2829fced16",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Hearse_Canopy.png",
+      "bytes": 628931,
+      "sha256": "0b9bf487c7f141e4bbfefafdf03b69c6f73932d70b2f9fddaa39dc789b3b9ea4",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Reaper_Scythes.blend",
+      "bytes": 40822343,
+      "sha256": "5c57f055702f4499dfceba786b0b5fa9822e8fbe21dd6c56be43e180bc1ae382",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Reaper_Scythes.png",
+      "bytes": 591132,
+      "sha256": "88e6c2b44f001a3ed71164ac4961acdfc66de654aead80831fddf63dc35a0f76",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Ghost_Chauffeur.blend",
+      "bytes": 41071898,
+      "sha256": "6115a3d1572ff6e41ec854aeddb221fb185f0ab7701027852ef4960d08b8ade2",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Ghost_Chauffeur.png",
+      "bytes": 601983,
+      "sha256": "e3a815a22a33ecacb7a2e82bb7e75fdd885868fcd2574ba2de3933d363db5494",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/Twin_Turbo-rear-detail.png",
+      "bytes": 664897,
+      "sha256": "462b98d0c08663e9aac531e7fee52b570226ad4fc852a4cf1b629ca81dc482b6",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/mechanical-lineup.jpg",
+      "bytes": 442682,
+      "sha256": "8e3e1635e9b5aaeb39a7be7770ddb4e2c1a98bf96a89a3c683ef8e082bae393e",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/phantom-lineup.jpg",
+      "bytes": 398353,
+      "sha256": "4992a6e60f0fafca2a328579801b523c0f87b300ffe0cd1b374fd90ffb2789d6",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/new-placement-closeups.jpg",
+      "bytes": 276093,
+      "sha256": "62cecb556bc90b569ce9e7e9eee9a201b107644d312dad2a9315d9cbf8624eba",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/catalog.json",
+      "bytes": 12188,
+      "sha256": "b8954625c185a1429924227b5a447e6598ba55a41dab88cac6ebacf6f5bf977d",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/validation.json",
+      "bytes": 8701,
+      "sha256": "e06a3ad2a5c4444db655319b1a86ebb2a6e2132c7ebdee5d13c446aa1dfcf967",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/rear-exhaust-checks.json",
+      "bytes": 342,
+      "sha256": "496ec213f8e6a9090b1cfbae6850ac278953761206468525c4aa3d42c8921465",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/build-v2.py",
+      "bytes": 25039,
+      "sha256": "d1cb78f1cea8ac8394e0f3d7fcaefc201f8009bd70ea462da75844c82ffcb5b3",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/contact-sheets.py",
+      "bytes": 2147,
+      "sha256": "d91594e38da79c5dcc8c42ee598bfffe0e1c9c480ed828853e4e1332cdcd3776",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/validate.py",
+      "bytes": 1371,
+      "sha256": "edb4bc5964e737d467e31bd45f89b5653dab53786541326519216eacf11d6629",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "v2/check-rear-exhausts.py",
+      "bytes": 1827,
+      "sha256": "a5bf462f9c8c02946420205d626c5745447b10c5ec2948a04e1511c4a40a0485",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "FusionRecipes.reference.luau",
+      "bytes": 33282,
+      "sha256": "f81ed0059a833bc105ddda3e881f5e3171c8054d37edfcc514c2107742b3de05",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "source/Honda-Civic-Rusted-v2.blend",
+      "bytes": 40692618,
+      "sha256": "8619fe16542d011a6e6d9e14ad09a4f7d652465aea4984755af90c8d50690e6c",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "source/Honda-Civic-Loose-Bumper-v4.blend",
+      "bytes": 40714281,
+      "sha256": "601587fbe4a9b89534fd75e3a1149fd31eede95875cbe8a7ce782e6fd8526caa",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "source/Honda-Civic-Loose-Bumper-v4.png",
+      "bytes": 1256005,
+      "sha256": "c320f1544610f6a1ce9656d8d3d113fc7ee9dc4e434b262b723446c3751fc61d",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "source/Honda-Civic-Loose-Bumper-detail.png",
+      "bytes": 1554132,
+      "sha256": "20c38184bb08bd5819ff7a462447af70eb100f0ad85edcd40ba1c72433d8557e",
+      "identicalToApprovedSource": true
+    },
+    {
+      "file": "source/source-record.json",
+      "bytes": 1046,
+      "sha256": "a424dd25bc5a3334ab5c37e9c704c392a19efa38b3dff19537df166e29e62590",
+      "identicalToApprovedSource": true
+    }
+  ]
+}

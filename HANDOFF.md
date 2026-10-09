@@ -1,3 +1,15 @@
+# Civic model backup and latest changes review — Codex (2026-10-08)
+
+- Pulled and reviewed the 17 commits from `d49684a` through `d36f6e3`, including the hotbar replacement, mobile/menu changes, coin collector, race rewards/chase audio, anti-cheat and Phantom event layers. Existing game changes are preserved.
+- **Civic Blender sources:** `assets/civic-fusions/README.txt` describes the approved rusty base and all **31 restored variants** (16 mechanical, 15 Phantom concepts), with individual previews and contact sheets. Straight Pipes has tall open rear stacks; Twin Turbo has the rear bumper deleted with two exposed rear-facing turbos. Native files match the approved local files byte-for-byte. A separate earlier seed is included for rebuilding, for 33 scenes total.
+- **Follow the newest Phantom design below.** The 15 Civic Phantom models are optional base-car/Index concepts, not 15 mandatory new permanent fusion recipes. The Civic itself is not yet registered among the seven base cars. Do not replace the live FusionRecipes with the pinned authoring reference in this asset folder.
+- **Review fix:** RaceWarsView stripped the event tag before creating its preview, hiding a car's Phantom in the race picker. It now passes the full item name and mutation tint. The remaining RaceCrates preview caller uses the same contract, preserving mutation colors there too. No price, inventory, race-speed or save behavior changed.
+- **Verification:** all 33 native scenes reopen with packed textures and no linked libraries; copied-file SHA256 checks and repository-relative builder inputs are recorded in `package-validation.json`. Earlier clean-body and rear-exhaust checks are included. Preview call sites were checked against ItemVisuals' current full-name/tint interface. **No Studio session, mobile-device test or race playtest was run in this pass.**
+- **Before Civic import:** optimize/bake, convert Blender -Y nose to Roblox +Z, keep wheel groups and Glass parts for the driver seat, confirm item names/values/scale, then test hotbar, conveyor, pads, fusion and racing. The native scenes are not installed in the game. Studio and the pending Revuelto import were left untouched.
+- Remaining non-Civic requests in the earlier handoff still apply: distinct fused-car silhouettes and improved race tree/rock meshes; hotbar item art and a drawn bolt icon remain UI opportunities. The obsolete requirement for 105 separate Phantom build models is superseded by the latest event-addon system.
+
+---
+
 # Phantoms are EVENT ADDONS now: a ghost layer on any car — Claude (2026-10-08)
 
 The user's design. **This replaces "every car + Phantom makes a named Spectral build":**

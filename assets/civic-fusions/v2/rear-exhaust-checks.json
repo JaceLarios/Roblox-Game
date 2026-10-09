@@ -1,0 +1,15 @@
+{
+  "Straight Pipes": {
+    "openTallOutlets": 2,
+    "outletHeightMeters": 2.467,
+    "roofHeightMeters": 1.279,
+    "cleanRestored": true
+  },
+  "Twin Turbo": {
+    "rearBumperRemoved": true,
+    "bumperAndTrimVerticesRemoved": 2791,
+    "rearFacingTurboHousings": 2,
+    "cleanRestored": true
+  },
+  "gameIntegrated": false
+}

@@ -1,0 +1,5 @@
+# Preserve the snapshot bytes across platforms for package-manifest SHA256 checks.
+* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+*.blend binary
+*.png binary
+*.jpg binary

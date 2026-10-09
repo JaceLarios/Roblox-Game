@@ -1,0 +1,379 @@
+{
+  "total": 31,
+  "sourceCommit": "f6e79c6",
+  "checks": [
+    {
+      "addon": "Nitrous Tank",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 24,
+      "bounds": [
+        1.8387629389762878,
+        3.934462308883667,
+        1.3977930694818497
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Straight Pipes",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 26,
+      "bounds": [
+        1.8387629389762878,
+        4.496078729629517,
+        2.5938732773065567
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Scrap Turbo",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 46,
+      "bounds": [
+        1.9430229663848877,
+        3.965157985687256,
+        1.3977930694818497
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Inline 4",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 35,
+      "bounds": [
+        1.8387629389762878,
+        3.948657989501953,
+        1.3977930694818497
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Rotary Engine",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 94,
+      "bounds": [
+        1.8387629389762878,
+        4.096204996109009,
+        1.578476920723915
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Twin Turbo",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 113,
+      "bounds": [
+        1.8387629389762878,
+        4.149204969406128,
+        1.3975889831781387
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "V6 Engine",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 63,
+      "bounds": [
+        1.8387629389762878,
+        4.038901090621948,
+        1.3977930694818497
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Supercharger",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 65,
+      "bounds": [
+        1.8654905557632446,
+        3.9482572078704834,
+        1.3978329971432686
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Diesel Stack",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 101,
+      "bounds": [
+        2.009999990463257,
+        3.934462308883667,
+        1.6004768759012222
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "V8 Engine",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 63,
+      "bounds": [
+        1.8654905557632446,
+        4.566205024719238,
+        1.396865613758564
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "V12 Engine",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 198,
+      "bounds": [
+        1.8387629389762878,
+        4.2089011669158936,
+        1.3977930694818497
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Hover Fans",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 67,
+      "bounds": [
+        2.450000047683716,
+        3.934462308883667,
+        1.3193162120878696
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Jet Engine",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 42,
+      "bounds": [
+        1.8387629389762878,
+        4.203205108642578,
+        1.586476817727089
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Rocket Booster",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 123,
+      "bounds": [
+        2.4799997806549072,
+        4.025106191635132,
+        1.3978329971432686
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Fusion Core",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 107,
+      "bounds": [
+        1.8387629389762878,
+        4.025106191635132,
+        1.8553518205881119
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Warp Drive",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 164,
+      "bounds": [
+        1.9200000762939453,
+        4.025106191635132,
+        1.97478748857975
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Will-o'-Wisp Lanterns",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 59,
+      "bounds": [
+        1.8387629389762878,
+        3.934462308883667,
+        1.9684769064188004
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Phantom Exhaust",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 68,
+      "bounds": [
+        1.8387629389762878,
+        4.146204948425293,
+        1.3977930694818497
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Crystal Ball Ornament",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 26,
+      "bounds": [
+        1.8387629389762878,
+        3.934462308883667,
+        1.9684767872095108
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Graveyard Grille",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 50,
+      "bounds": [
+        1.8387629389762878,
+        4.033430099487305,
+        1.3977930694818497
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Ecto Tank",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 62,
+      "bounds": [
+        1.8387629389762878,
+        3.934462308883667,
+        1.7808370739221573
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Banshee Horn",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 24,
+      "bounds": [
+        1.8387629389762878,
+        3.934462308883667,
+        1.8487430959939957
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Poltergeist Spoiler",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 43,
+      "bounds": [
+        1.8387629389762878,
+        3.934462308883667,
+        1.6884768158197403
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Coffin Carrier",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 43,
+      "bounds": [
+        1.8387629389762878,
+        3.934462308883667,
+        1.8584768921136856
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Witch's Cauldron",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 39,
+      "bounds": [
+        1.8387629389762878,
+        3.934462308883667,
+        1.6868840605020523
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Specter Sails",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 23,
+      "bounds": [
+        1.8387629389762878,
+        3.934462308883667,
+        2.9177227169275284
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Wraith Wheels",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 47,
+      "bounds": [
+        1.8387629389762878,
+        3.934462308883667,
+        1.3873161673545837
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Soul Turbo",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 49,
+      "bounds": [
+        2.146022915840149,
+        3.9348630905151367,
+        1.3977930694818497
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Hearse Canopy",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 82,
+      "bounds": [
+        1.8387629389762878,
+        3.934462308883667,
+        2.068477049469948
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Reaper Scythes",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 32,
+      "bounds": [
+        2.4360527992248535,
+        3.934462308883667,
+        1.5784768015146255
+      ],
+      "gameIntegrated": false
+    },
+    {
+      "addon": "Ghost Chauffeur",
+      "cleanPaint": true,
+      "repairedBody": true,
+      "components": 43,
+      "bounds": [
+        1.8387629389762878,
+        3.934462308883667,
+        1.4040367752313614
+      ],
+      "gameIntegrated": false
+    }
+  ],
+  "limits": "Blender authoring and render review only. No game registration, mesh optimization, texture baking, dynamic VFX or race playtest."
+}
