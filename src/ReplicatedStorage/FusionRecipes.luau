@@ -53,8 +53,8 @@ FusionRecipes.RarityWeight = {
 -- worth is ever shown to players).
 --
 -- Cars ride the yard's conveyor. `weight` is how often each comes out of
--- the black box, relative to the other cars (they add up to 88, so a
--- Rusted Sedan is 24/88, about 27%). Each car's `shift` is how many
+-- the black box, relative to the other cars (they add up to 100, so a
+-- Rusted Sedan is 24/100, or 24%). Each car's `shift` is how many
 -- rarities it moves a build from its addon's (see the top), and its
 -- `multiplier` is how much more its builds are worth inside their rarity.
 -- On the cars that leave the rarity alone a build is worth its addon's
@@ -66,6 +66,7 @@ FusionRecipes.RarityWeight = {
 FusionRecipes.BaseItems = {
 	{ name = "Rusted Sedan",  rarity = "common",   value = 5,  weight = 24,  multiplier = 1.0,  shift = -1 },
 	{ name = "Dirt Bike",     rarity = "common",   value = 10, weight = 24,  multiplier = 1.1,  shift = -1 },
+	{ name = "Civic",         rarity = "common",   value = 12, weight = 12,  multiplier = 1.18, shift = -1 },
 	{ name = "Golf Cart",     rarity = "uncommon", value = 15, weight = 14,  multiplier = 1.3,  shift = 0 },
 	{ name = "Muscle Car",    rarity = "uncommon", value = 25, weight = 14,  multiplier = 1.45, shift = 0 },
 	{ name = "Cop Cruiser",   rarity = "rare",     value = 35, weight = 7,   multiplier = 1.7,  shift = 0 },
@@ -132,21 +133,24 @@ FusionRecipes.BaseItems = {
 	-- 4,990 keep every value different), though no item is worth them now.
 	-- A row with a model of its own in ItemModels shows it; the rest show
 	-- their car drawn ghostly with the addon mounted (ItemVisuals).
-	{ name = "Will-o'-Wisp Lanterns", ghost = "Wisp", rarity = "spectral", value = 400, bolts = 40, group = "wisp", phantom = true, isAddon = true, resultValue = 285000, standIn = "Fusion Core" },
-	{ name = "Phantom Exhaust", ghost = "Skullsmoke", rarity = "spectral", value = 410, bolts = 45, group = "wisp", phantom = true, isAddon = true, resultValue = 289990, standIn = "Fusion Core" },
-	{ name = "Crystal Ball Ornament", ghost = "Oracle", rarity = "spectral", value = 420, bolts = 50, group = "wisp", phantom = true, isAddon = true, resultValue = 294980, standIn = "Fusion Core" },
-	{ name = "Graveyard Grille", ghost = "Graveyard", rarity = "spectral", value = 430, bolts = 55, group = "wisp", phantom = true, isAddon = true, resultValue = 299970, standIn = "Fusion Core" },
-	{ name = "Ecto Tank", ghost = "Ecto", rarity = "spectral", value = 440, bolts = 60, group = "wisp", phantom = true, isAddon = true, resultValue = 304960, standIn = "Fusion Core" },
-	{ name = "Banshee Horn", ghost = "Banshee", rarity = "spectral", value = 450, bolts = 90, group = "wraith", phantom = true, isAddon = true, resultValue = 309950, standIn = "Fusion Core" },
-	{ name = "Poltergeist Spoiler", ghost = "Poltergeist", rarity = "spectral", value = 460, bolts = 100, group = "wraith", phantom = true, isAddon = true, resultValue = 314940, standIn = "Fusion Core" },
-	{ name = "Coffin Carrier", ghost = "Coffin", rarity = "spectral", value = 470, bolts = 110, group = "wraith", phantom = true, isAddon = true, resultValue = 319930, standIn = "Fusion Core" },
-	{ name = "Witch's Cauldron", ghost = "Cauldron", rarity = "spectral", value = 480, bolts = 125, group = "wraith", phantom = true, isAddon = true, resultValue = 324920, standIn = "Fusion Core" },
-	{ name = "Specter Sails", ghost = "Specter", rarity = "spectral", value = 490, bolts = 140, group = "wraith", phantom = true, isAddon = true, resultValue = 329910, standIn = "Fusion Core" },
-	{ name = "Wraith Wheels", ghost = "Wraith", rarity = "spectral", value = 500, bolts = 200, group = "reaper", phantom = true, isAddon = true, resultValue = 334900, standIn = "Fusion Core" },
-	{ name = "Soul Turbo", ghost = "Soul", rarity = "spectral", value = 510, bolts = 220, group = "reaper", phantom = true, isAddon = true, resultValue = 339890, standIn = "Fusion Core" },
-	{ name = "Hearse Canopy", ghost = "Hearse", rarity = "spectral", value = 520, bolts = 240, group = "reaper", phantom = true, isAddon = true, resultValue = 344880, standIn = "Fusion Core" },
-	{ name = "Reaper Scythes", ghost = "Reaper", rarity = "spectral", value = 530, bolts = 270, group = "reaper", phantom = true, isAddon = true, resultValue = 349870, standIn = "Fusion Core" },
-	{ name = "Ghost Chauffeur", ghost = "Haunted", rarity = "spectral", value = 540, bolts = 300, group = "reaper", phantom = true, isAddon = true, resultValue = 354860, standIn = "Fusion Core" },
+	-- `earn` is what a Phantom multiplies its car's value (and pad income)
+	-- by: Wisp x1.4 to x1.6, Wraith x1.8 to x2.2, Reaper x2.6 to x3.0, the
+	-- pricier the more (the user, 2026-10-09: graded by price).
+	{ name = "Will-o'-Wisp Lanterns", earn = 1.4, ghost = "Wisp", rarity = "spectral", value = 400, bolts = 40, group = "wisp", phantom = true, isAddon = true, resultValue = 285000, standIn = "Fusion Core" },
+	{ name = "Phantom Exhaust", earn = 1.45, ghost = "Skullsmoke", rarity = "spectral", value = 410, bolts = 45, group = "wisp", phantom = true, isAddon = true, resultValue = 289990, standIn = "Fusion Core" },
+	{ name = "Crystal Ball Ornament", earn = 1.5, ghost = "Oracle", rarity = "spectral", value = 420, bolts = 50, group = "wisp", phantom = true, isAddon = true, resultValue = 294980, standIn = "Fusion Core" },
+	{ name = "Graveyard Grille", earn = 1.55, ghost = "Graveyard", rarity = "spectral", value = 430, bolts = 55, group = "wisp", phantom = true, isAddon = true, resultValue = 299970, standIn = "Fusion Core" },
+	{ name = "Ecto Tank", earn = 1.6, ghost = "Ecto", rarity = "spectral", value = 440, bolts = 60, group = "wisp", phantom = true, isAddon = true, resultValue = 304960, standIn = "Fusion Core" },
+	{ name = "Banshee Horn", earn = 1.8, ghost = "Banshee", rarity = "spectral", value = 450, bolts = 90, group = "wraith", phantom = true, isAddon = true, resultValue = 309950, standIn = "Fusion Core" },
+	{ name = "Poltergeist Spoiler", earn = 1.9, ghost = "Poltergeist", rarity = "spectral", value = 460, bolts = 100, group = "wraith", phantom = true, isAddon = true, resultValue = 314940, standIn = "Fusion Core" },
+	{ name = "Coffin Carrier", earn = 2.0, ghost = "Coffin", rarity = "spectral", value = 470, bolts = 110, group = "wraith", phantom = true, isAddon = true, resultValue = 319930, standIn = "Fusion Core" },
+	{ name = "Witch's Cauldron", earn = 2.1, ghost = "Cauldron", rarity = "spectral", value = 480, bolts = 125, group = "wraith", phantom = true, isAddon = true, resultValue = 324920, standIn = "Fusion Core" },
+	{ name = "Specter Sails", earn = 2.2, ghost = "Specter", rarity = "spectral", value = 490, bolts = 140, group = "wraith", phantom = true, isAddon = true, resultValue = 329910, standIn = "Fusion Core" },
+	{ name = "Wraith Wheels", earn = 2.6, ghost = "Wraith", rarity = "spectral", value = 500, bolts = 200, group = "reaper", phantom = true, isAddon = true, resultValue = 334900, standIn = "Fusion Core" },
+	{ name = "Soul Turbo", earn = 2.7, ghost = "Soul", rarity = "spectral", value = 510, bolts = 220, group = "reaper", phantom = true, isAddon = true, resultValue = 339890, standIn = "Fusion Core" },
+	{ name = "Hearse Canopy", earn = 2.8, ghost = "Hearse", rarity = "spectral", value = 520, bolts = 240, group = "reaper", phantom = true, isAddon = true, resultValue = 344880, standIn = "Fusion Core" },
+	{ name = "Reaper Scythes", earn = 2.9, ghost = "Reaper", rarity = "spectral", value = 530, bolts = 270, group = "reaper", phantom = true, isAddon = true, resultValue = 349870, standIn = "Fusion Core" },
+	{ name = "Ghost Chauffeur", earn = 3.0, ghost = "Haunted", rarity = "spectral", value = 540, bolts = 300, group = "reaper", phantom = true, isAddon = true, resultValue = 354860, standIn = "Fusion Core" },
 }
 
 -- The whole recipe book: one result per car per addon, in the addon order
@@ -170,6 +174,14 @@ FusionRecipes.BaseItems = {
 -- build is worth exactly its addon's resultValue times the multiplier.
 -- Nothing ties and no rarity overlaps the next (both checked below).
 local BOOK = {
+	["Civic"] = {
+		"Civic + Nitrous Tank", "Civic + Straight Pipes", "Civic + Scrap Turbo",
+		"Civic + Inline 4", "Civic + Rotary Engine", "Civic + Twin Turbo",
+		"Civic + V6 Engine", "Civic + Supercharger", "Civic + Diesel Stack",
+		"Civic + V8 Engine", "Civic + V12 Engine", "Civic + Hover Fans",
+		"Civic + Jet Engine", "Civic + Rocket Booster", "Civic + Fusion Core",
+		"Civic + Warp Drive",
+	},
 	["Rusted Sedan"] = {
 		"Rusty Splice", "Loud Lemon", "Turbo Tin Can",
 		"Boosted Beater", "Spin Cycle Sedan", "Double Trouble",
@@ -232,6 +244,7 @@ local BOOK = {
 -- (Wisp Kart, Banshee Patrol, Hearse Hauler...). Added to the rows above.
 do
 	local PHANTOM_ROWS = {
+		["Civic"] = { "Wisp Civic", "Skullsmoke Civic", "Oracle Civic", "Graveyard Civic", "Ecto Civic", "Banshee Civic", "Poltergeist Civic", "Coffin Civic", "Cauldron Civic", "Specter Civic", "Wraith Civic", "Soul Civic", "Hearse Civic", "Reaper Civic", "Haunted Civic" },
 		["Rusted Sedan"] = { "Wisp Kart", "Skullsmoke Kart", "Oracle Kart", "Graveyard Kart", "Ecto Kart", "Banshee Kart", "Poltergeist Kart", "Coffin Kart", "Cauldron Kart", "Specter Kart", "Wraith Kart", "Soul Kart", "Hearse Kart", "Reaper Kart", "Haunted Kart" },
 		["Dirt Bike"] = { "Wisp Rider", "Skullsmoke Rider", "Oracle Rider", "Graveyard Rider", "Ecto Rider", "Banshee Rider", "Poltergeist Rider", "Coffin Rider", "Cauldron Rider", "Specter Rider", "Wraith Rider", "Soul Rider", "Hearse Rider", "Reaper Rider", "Haunted Rider" },
 		["Golf Cart"] = { "Wisp Caddy", "Skullsmoke Caddy", "Oracle Caddy", "Graveyard Caddy", "Ecto Caddy", "Banshee Caddy", "Poltergeist Caddy", "Coffin Caddy", "Cauldron Caddy", "Specter Caddy", "Wraith Caddy", "Soul Caddy", "Hearse Caddy", "Reaper Caddy", "Haunted Caddy" },

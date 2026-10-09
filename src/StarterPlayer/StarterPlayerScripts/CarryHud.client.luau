@@ -25,7 +25,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local StarterGui = game:GetService("StarterGui")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -295,13 +294,9 @@ local function setCarrying(nextCarrying, nextFrom)
 	end
 
 	-- Hiding the hotbar is the whole point of the carry state: no bat, no
-	-- speed coil, nothing to do but run. pcall because SetCoreGuiEnabled
-	-- throws if the CoreGui is not ready yet on a fresh join. A menu open on
-	-- a phone hides it too (UIStyle, MenuOpen), so it stays hidden for that.
+	-- speed coil, nothing to do but run. The hotbar (ItemBar) reads this; a
+	-- menu open on a phone hides it too (UIStyle, MenuOpen).
 	player:SetAttribute("CarryHidesHotbar", carrying ~= nil)
-	pcall(function()
-		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, carrying == nil and not player:GetAttribute("MenuOpen"))
-	end)
 end
 
 updateRemote.OnClientEvent:Connect(function(data)

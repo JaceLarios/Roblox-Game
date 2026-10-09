@@ -1,3 +1,13 @@
+# Economy retune, Roblox badges, hotbar with 3D icons — Claude (2026-10-09)
+
+- **Your Civic was live in Studio but not in the repo:** FusionRecipes' Civic registration and RaceService's `DriverCabin` seat hint. Both are merged into the repo now, unchanged, alongside this work, and your RaceCrates/RaceWarsView preview fix is synced into Studio. Studio and the repo match (94 scripts). The 32 Civic models in ItemModels were left as they are.
+- **Economy** (docs/ECONOMY.md, tools/economy/econ_sim.py; the user's picks): pads earn half (`PLACEMENT_PAYBACK_SECONDS` 360); **a Rebirth takes only coins** (cars, ghost cars, inventory, upgrades all stay; the Rebirth panel says so) and costs 400k / 4M / 15M / 40M / 120M / 350M; the "Complete the index" objective counts fusion builds only; **Phantom multipliers are graded by price** (FusionRecipes `earn`: Wisp x1.4–1.6, Wraith x1.8–2.2, Reaper x2.6–3.0; the Phantom Shop shows each). Sim: Rebirth 6 in about 7 h (3.6 with 2x Coins), was 3.5 h.
+- **Badges** (`ServerStorage.Badges`, docs/BADGES.md): 10 badges (welcome, first fusion, first ghost, Secret car, first and max Rebirth, race finish, 25 builds, every build, every Spectral entry), awarded from PlotManager and RaceService. Every id is 0 until the user makes them on the Creator Hub; pictures in `assets/badges` (`make_badges.py`), restyle freely.
+- **Hotbar with real icons:** `ItemBar.client` + `ItemBarView` replace Roblox's own Backpack bar (disabled). Each slot shows the item's 3D model (`ItemVisuals.CloneForViewport`, so ghost cars and mutations show), its rarity colour and number key; the Bat and Speed Coil use their GarageTheme icons. Order: Bat, coil, cars best first, then addons. Pages of 10 (6 on a phone) with arrows. It hides on `CarryHidesHotbar` / `MenuOpen`; UIStyle and CarryHud only set those attributes now. **ItemBarView is the look: restyle it freely** (drawn icons instead of 3D would slot into `makeSlot`).
+- Tested in Studio Play: the bar draws (Toro, Junk Mashup, engines), number keys hold and put away, Phantom Shop labels, no errors.
+
+---
+
 # Civic model backup and latest changes review — Codex (2026-10-08)
 
 - Pulled and reviewed the 17 commits from `d49684a` through `d36f6e3`, including the hotbar replacement, mobile/menu changes, coin collector, race rewards/chase audio, anti-cheat and Phantom event layers. Existing game changes are preserved.

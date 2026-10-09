@@ -963,8 +963,8 @@ local function redrawRebirth(info)
 	else
 		-- What a Rebirth takes, and what it leaves alone (PlotManager's
 		-- rebirth handler).
-		rebirthNext.Text = "Resets your coins, upgrades, inventory and earning pads. "
-			.. "Keeps your Index, crates, gamepasses, daily streak and race best." 
+		rebirthNext.Text = "Resets your coins. "
+			.. "Keeps your cars, earning pads, upgrades, Index, bolts, gamepasses and daily streak." 
 		rebirthBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 		rebirthBtn.Active = true
 		setRebirthArmed(rebirthArmed)

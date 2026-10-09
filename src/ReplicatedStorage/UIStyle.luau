@@ -74,15 +74,14 @@ local function isOpen(modal)
 	if modal:IsA("ScreenGui") then return modal.Enabled end
 	return modal.Visible
 end
--- On a touch screen the thumbstick, the jump button and the tool hotbar sit
--- on top of every menu and cover its bottom corners, so they are put away
+-- On a touch screen the thumbstick, the jump button and the hotbar sit on
+-- top of every menu and cover its bottom corners, so they are put away
 -- while a menu is open and come back when it closes. The hotbar is also
 -- hidden while carrying (CarryHud): each side flags its reason on the
--- player (MenuOpen here, CarryHidesHotbar there) and the hotbar shows only
--- when neither is set.
+-- player (MenuOpen here, CarryHidesHotbar there) and the hotbar (ItemBar,
+-- since 2026-10-09 in place of Roblox's own) shows only when neither is set.
 local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
-local StarterGui = game:GetService("StarterGui")
 local controlsAway = false
 local function setControls(menuOpen)
 	if not UserInputService.TouchEnabled or menuOpen == controlsAway then return end
@@ -91,10 +90,6 @@ local function setControls(menuOpen)
 	local player = game:GetService("Players").LocalPlayer
 	if player then
 		player:SetAttribute("MenuOpen", menuOpen)
-		pcall(function()
-			StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack,
-				not menuOpen and not player:GetAttribute("CarryHidesHotbar"))
-		end)
 	end
 end
 local function updateNavigation()

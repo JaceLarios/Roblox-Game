@@ -2,10 +2,10 @@
 	RebirthService (ModuleScript, ServerScriptService) — Junkyard Fusion v1
 
 	A permanent, account-wide coin multiplier — same small shared-module
-	shape as GamepassService. PlotManager owns the actual reset (coins,
-	placed items, upgrades) since it's the only place holding that state;
-	this module just tracks the rebirth count and looks up the multiplier
-	for it.
+	shape as GamepassService. PlotManager owns the actual reset (only coins
+	since 2026-10-09: cars, inventory and upgrades stay) since it's the only
+	place holding that state; this module just tracks the rebirth count and
+	looks up the multiplier for it.
 --]]
 
 local RebirthService = {}
@@ -18,14 +18,19 @@ local RebirthService = {}
 -- curve since it multiplies a chance that's already capped elsewhere
 -- (LUCK_MAX_CHANCE in PlotManager.server.luau), so it can't compound into
 -- something absurd the way an uncapped coin multiplier safely can.
+-- Costs raised 2026-10-09, when a Rebirth stopped taking your cars (it
+-- only takes coins now) and pads started earning half as much: an economy
+-- sim of an active player (a third of the belt, a car every 45 s, the
+-- best buy each time) has Rebirth 1 at about 40 minutes and Rebirth 6 at
+-- about 7 hours (about 3.5 with the 2x Coins pass). Most players are slower.
 local TIERS = {
 	[0] = { cost = nil,       multiplier = 1,    luckMultiplier = 1 },
-	[1] = { cost = 100000,    multiplier = 1.25, luckMultiplier = 1.10 },
-	[2] = { cost = 500000,    multiplier = 1.60, luckMultiplier = 1.20 },
-	[3] = { cost = 2000000,   multiplier = 2.00, luckMultiplier = 1.35 },
-	[4] = { cost = 8000000,   multiplier = 2.50, luckMultiplier = 1.50 },
-	[5] = { cost = 30000000,  multiplier = 3.25, luckMultiplier = 1.75 },
-	[6] = { cost = 100000000, multiplier = 4.00, luckMultiplier = 2.00 },
+	[1] = { cost = 400000,    multiplier = 1.25, luckMultiplier = 1.10 },
+	[2] = { cost = 4000000,   multiplier = 1.60, luckMultiplier = 1.20 },
+	[3] = { cost = 15000000,  multiplier = 2.00, luckMultiplier = 1.35 },
+	[4] = { cost = 40000000,  multiplier = 2.50, luckMultiplier = 1.50 },
+	[5] = { cost = 120000000, multiplier = 3.25, luckMultiplier = 1.75 },
+	[6] = { cost = 350000000, multiplier = 4.00, luckMultiplier = 2.00 },
 }
 RebirthService.MaxLevel = 6
 

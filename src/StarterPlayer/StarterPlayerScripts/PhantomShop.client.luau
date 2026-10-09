@@ -138,7 +138,12 @@ end
 local cards = {}
 local grids = {}
 for order, shelf in ipairs(SHELVES) do
-	local heading = Garage.Text(page, shelf.key .. "Heading", string.format("%s  ·  %s  ·  x%s earnings", shelf.name, shelf.line, tostring(EventAddons.SHELF_MULTIPLIER[shelf.key])),
+	-- The shelf's earnings range (each Phantom's `earn`, see EventAddons).
+	local low, high = math.huge, 0
+	for _, addon in ipairs(FusionRecipes.PhantomAddons) do
+		if addon.group == shelf.key then low, high = math.min(low, addon.earn), math.max(high, addon.earn) end
+	end
+	local heading = Garage.Text(page, shelf.key .. "Heading", string.format("%s  ·  %s  ·  x%s to x%s earnings", shelf.name, shelf.line, tostring(low), tostring(high)),
 		UDim2.new(), UDim2.new(1, -8, 0, 36), 24, MINT)
 	heading.LayoutOrder = order * 2 - 1
 	heading.TextXAlignment = Enum.TextXAlignment.Left
@@ -162,6 +167,13 @@ for order, addon in ipairs(FusionRecipes.PhantomAddons) do
 		UDim2.new(0, 8, 0, 164), UDim2.new(1, -16, 0, 34), 22)
 	Garage.Plate(name)
 	name.TextScaled = true
+
+	-- What it multiplies a car's earnings by, over the model.
+	local earn = Garage.Text(card, "Earn", string.format("x%s earnings", tostring(EventAddons.AddonMultiplier(addon.name))),
+		UDim2.new(0, 10, 0, 8), UDim2.new(1, -20, 0, 26), 20, MINT)
+	earn.TextXAlignment = Enum.TextXAlignment.Right
+	earn.ZIndex = 6
+	outline(earn)
 
 	local blurb = Garage.Text(card, "Blurb", BLURBS[addon.name] or "",
 		UDim2.new(0, 8, 0, 202), UDim2.new(1, -16, 0, 44), 17, Color3.new(1, 1, 1))

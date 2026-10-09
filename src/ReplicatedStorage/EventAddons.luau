@@ -10,7 +10,8 @@
 	  - it stays through everything else: a ghost car that later takes a
 	    better addon at the Fusion Pad is still a ghost;
 	  - it multiplies the car's value (and so its pad earnings) by its
-	    Phantom shelf, on top of any mutation;
+	    `earn` (FusionRecipes: x1.4 to x3.0, more for a pricier Phantom),
+	    on top of any mutation;
 	  - the car looks ghostly with the addon's model mounted on it, plus the
 	    addon's effect and the Spectral aura (ItemVisuals, VehicleAddonEffects).
 
@@ -30,15 +31,10 @@ local FusionRecipes = require(script.Parent:WaitForChild("FusionRecipes"))
 
 local EventAddons = {}
 
--- How much a Phantom multiplies its car's value, by its shop shelf (the
--- Phantom Shop shows these).
-local SHELF_MULTIPLIER = { wisp = 1.5, wraith = 2, reaper = 3 }
-EventAddons.SHELF_MULTIPLIER = SHELF_MULTIPLIER
-
 local byId, byAddon = {}, {}
 for _, addon in ipairs(FusionRecipes.PhantomAddons) do
-	local entry = { id = addon.ghost, addon = addon.name, multiplier = SHELF_MULTIPLIER[addon.group] }
-	assert(entry.id and entry.multiplier and not byId[entry.id], "EventAddons: " .. addon.name .. " needs a unique ghost word and a shelf")
+	local entry = { id = addon.ghost, addon = addon.name, multiplier = addon.earn }
+	assert(entry.id and entry.multiplier and not byId[entry.id], "EventAddons: " .. addon.name .. " needs a unique ghost word and an `earn`")
 	byId[entry.id] = entry
 	byAddon[addon.name] = entry
 end
@@ -68,6 +64,12 @@ end
 function EventAddons.Addon(id)
 	local entry = byId[id]
 	return entry and entry.addon
+end
+
+-- What a Phantom addon multiplies a car's value by (nil for anything else).
+function EventAddons.AddonMultiplier(addonName)
+	local entry = byAddon[addonName]
+	return entry and entry.multiplier
 end
 
 -- What it multiplies the car's value by (1 for none).

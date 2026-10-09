@@ -291,8 +291,17 @@ local GOALS = {
 	{ text = "Discover 12 different builds",      reward = 3000,  check = function(s) return s.count >= 12 end },
 	{ text = "Fuse a Mythic build (V8 Engine on a Golf Cart or better)", reward = 8000, check = function(s) return hasDiscoveredRarity(s, "mythic") end },
 	{ text = "Fuse a Legendary build (Jet Engine on a Golf Cart or better)", reward = 15000, check = function(s) return hasDiscoveredRarity(s, "legendary") end },
-	{ text = string.format("Complete the index: all %d builds", FusionRecipes.GetTotalDiscoveries()),
-	  reward = 50000, check = function(s) return s.count >= FusionRecipes.GetTotalDiscoveries() end },
+	-- Every fusion build (not the Spectral tab: a Phantom on each car,
+	-- thousands of bolts, is its own long-term collection, with its own
+	-- badge; the user, 2026-10-09).
+	{ text = string.format("Complete the index: all %d builds", FusionRecipes.GetTotalDiscoveries() - #FusionRecipes.PhantomAddons * #FusionRecipes.Items),
+	  reward = 50000, check = function(s)
+		local found = 0
+		for name in pairs(s.discovered) do
+			if not FusionRecipes.IsPhantom(name) then found += 1 end
+		end
+		return found >= FusionRecipes.GetTotalDiscoveries() - #FusionRecipes.PhantomAddons * #FusionRecipes.Items
+	end },
 }
 
 -- Client talks to this for UI updates.
@@ -659,9 +668,11 @@ end
 
 -- How long a placed build takes to earn its own worth once (its worth
 -- divided by this is what it earns a second). Was 90; doubled 2026-09-30
--- (with the Shop's addon prices) because money came too easily. Offline
--- earnings and quest rewards are measured in pad income, so they follow.
-local PLACEMENT_PAYBACK_SECONDS = 180
+-- (with the Shop's addon prices) because money came too easily, and again
+-- 2026-10-09 (the user: "slow everything down") when an economy sim had
+-- an active player at max Rebirth in about 3.5 hours. Offline earnings and
+-- quest rewards are measured in pad income, so they follow.
+local PLACEMENT_PAYBACK_SECONDS = 360
 local INCOME_TICK_SECONDS = 3
 
 -- Coins a second a player's placed builds earn right now, every
@@ -1023,6 +1034,10 @@ local function pushUI(player)
 		end
 	end
 	local secretsFound, secretTotal = FusionRecipes.GetSecretProgress(s.secretCars)
+	-- Roblox badges for all of that (ServerStorage.Badges; each is only
+	-- ever asked about once).
+	require(ServerStorage:WaitForChild("Badges")).Check(player, s.discovered, s.secretCars,
+		Rebirth.Get(player), Rebirth.MaxLevel)
 	local goal = GOALS[s.goalIndex]
 
 	local shop = {}
@@ -1620,6 +1635,7 @@ function Ghost.apply(player, s, plot, a, b)
 		rateLine = rateLine,
 	})
 	FusionEffects.FusionShimmer(plot.pad)
+	require(ServerStorage:WaitForChild("Badges")).Award(player, "firstGhost")
 
 	table.insert(s.inventory, instanceName)
 	if #s.inventory > inventoryCapacity(s, player) then
@@ -1755,6 +1771,7 @@ local function attemptFusion(player)
 	end
 
 	FusionEffects.FusionShimmer(plot.pad)
+	require(ServerStorage:WaitForChild("Badges")).Award(player, "firstFusion")
 
 	-- Straight into inventory — the pad is the only place a new item
 	-- enters a player's hands now. Fusing always nets -1 slot overall
@@ -2496,15 +2513,14 @@ rebirthRemote.OnServerEvent:Connect(function(player)
 		return
 	end
 
+	-- A Rebirth takes only coins (the user, 2026-10-09: "only have the
+	-- rebirths reset coins, keep the cars and anything in the inventory"):
+	-- cars, ghost cars, pads, inventory and upgrades all stay. Rebirth
+	-- costs were raised to match (RebirthService).
 	coins.Value = 0
 	-- Coins waiting on the collector pad go with the rest.
 	s.unclaimed = 0
 	Income.showCollector(plots[s.plotIndex])
-	s.upgrades = { luck = 1, carry = 1, value = 1, speed = 1, storage = 1, bat = 1, coil = 1 }
-	s.inventory = {}
-	s.placed = {}
-	updateWalkSpeed(player)
-	refreshPlacedPets(player)
 	Rebirth.Increment(player)
 
 	local level = Rebirth.Get(player)

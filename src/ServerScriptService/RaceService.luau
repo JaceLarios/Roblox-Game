@@ -162,11 +162,18 @@ end
 local DRIVER_HEADROOM = 0.15   -- studs from the top of the head to the roof
 local MIN_DRIVER_SCALE = 0.55
 local function driverSeat(body, size, chassisHeight, character)
+	-- Imported cars may also have glass headlights or a glass addon above
+	-- the roof. An explicit cabin hint keeps those out of the seat bounds.
+	local hasCabinHint = false
+	for _, p in ipairs(body:GetDescendants()) do
+		if p:IsA("BasePart") and p:GetAttribute("DriverCabin") then hasCabinHint = true; break end
+	end
 	local glassLo, glassHi
 	local bodyBottom = math.huge
 	for _, p in ipairs(body:GetDescendants()) do
 		if p:IsA("BasePart") and not p:GetAttribute("WheelPivot") then
-			local glass = p.Material == Enum.Material.Glass or p.Name:lower():find("glass") ~= nil
+			local glass = p:GetAttribute("DriverCabin") == true
+				or (not hasCabinHint and (p.Material == Enum.Material.Glass or p.Name:lower():find("glass") ~= nil))
 			local inBody = body.CFrame:ToObjectSpace(p.CFrame)
 			local half = p.Size / 2
 			for _, sx in ipairs({ -1, 1 }) do
@@ -412,6 +419,9 @@ local function endRun(racer, outcome)
 	-- Crossing the finish pays a bonus on top of the levels' bolts.
 	if outcome == "finished" and hooks.raceFinished then
 		racer.bolts += hooks.raceFinished(player) or 0
+	end
+	if outcome == "finished" then
+		require(ServerStorage:WaitForChild("Badges")).Award(player, "raceFinish")
 	end
 	if outcome ~= "left" then
 		fire(player, { kind = outcome, cleared = racer.cleared, bolts = racer.bolts, place = racer.place, of = race.count })
