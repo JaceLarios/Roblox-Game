@@ -1,0 +1,194 @@
+[
+  {
+    "name": "Civic",
+    "addon": null,
+    "event": null,
+    "file": "Civic.json"
+  },
+  {
+    "name": "Civic + Nitrous Tank",
+    "addon": "Nitrous Tank",
+    "event": null,
+    "file": "Civic_Nitrous_Tank.json"
+  },
+  {
+    "name": "Civic + Straight Pipes",
+    "addon": "Straight Pipes",
+    "event": null,
+    "file": "Civic_Straight_Pipes.json"
+  },
+  {
+    "name": "Civic + Scrap Turbo",
+    "addon": "Scrap Turbo",
+    "event": null,
+    "file": "Civic_Scrap_Turbo.json"
+  },
+  {
+    "name": "Civic + Inline 4",
+    "addon": "Inline 4",
+    "event": null,
+    "file": "Civic_Inline_4.json"
+  },
+  {
+    "name": "Civic + Rotary Engine",
+    "addon": "Rotary Engine",
+    "event": null,
+    "file": "Civic_Rotary_Engine.json"
+  },
+  {
+    "name": "Civic + Twin Turbo",
+    "addon": "Twin Turbo",
+    "event": null,
+    "file": "Civic_Twin_Turbo.json"
+  },
+  {
+    "name": "Civic + V6 Engine",
+    "addon": "V6 Engine",
+    "event": null,
+    "file": "Civic_V6_Engine.json"
+  },
+  {
+    "name": "Civic + Supercharger",
+    "addon": "Supercharger",
+    "event": null,
+    "file": "Civic_Supercharger.json"
+  },
+  {
+    "name": "Civic + Diesel Stack",
+    "addon": "Diesel Stack",
+    "event": null,
+    "file": "Civic_Diesel_Stack.json"
+  },
+  {
+    "name": "Civic + V8 Engine",
+    "addon": "V8 Engine",
+    "event": null,
+    "file": "Civic_V8_Engine.json"
+  },
+  {
+    "name": "Civic + V12 Engine",
+    "addon": "V12 Engine",
+    "event": null,
+    "file": "Civic_V12_Engine.json"
+  },
+  {
+    "name": "Civic + Hover Fans",
+    "addon": "Hover Fans",
+    "event": null,
+    "file": "Civic_Hover_Fans.json"
+  },
+  {
+    "name": "Civic + Jet Engine",
+    "addon": "Jet Engine",
+    "event": null,
+    "file": "Civic_Jet_Engine.json"
+  },
+  {
+    "name": "Civic + Rocket Booster",
+    "addon": "Rocket Booster",
+    "event": null,
+    "file": "Civic_Rocket_Booster.json"
+  },
+  {
+    "name": "Civic + Fusion Core",
+    "addon": "Fusion Core",
+    "event": null,
+    "file": "Civic_Fusion_Core.json"
+  },
+  {
+    "name": "Civic + Warp Drive",
+    "addon": "Warp Drive",
+    "event": null,
+    "file": "Civic_Warp_Drive.json"
+  },
+  {
+    "name": "Wisp Civic",
+    "addon": "Will-o'-Wisp Lanterns",
+    "event": "Wisp",
+    "file": "Wisp_Civic.json"
+  },
+  {
+    "name": "Skullsmoke Civic",
+    "addon": "Phantom Exhaust",
+    "event": "Skullsmoke",
+    "file": "Skullsmoke_Civic.json"
+  },
+  {
+    "name": "Oracle Civic",
+    "addon": "Crystal Ball Ornament",
+    "event": "Oracle",
+    "file": "Oracle_Civic.json"
+  },
+  {
+    "name": "Graveyard Civic",
+    "addon": "Graveyard Grille",
+    "event": "Graveyard",
+    "file": "Graveyard_Civic.json"
+  },
+  {
+    "name": "Ecto Civic",
+    "addon": "Ecto Tank",
+    "event": "Ecto",
+    "file": "Ecto_Civic.json"
+  },
+  {
+    "name": "Banshee Civic",
+    "addon": "Banshee Horn",
+    "event": "Banshee",
+    "file": "Banshee_Civic.json"
+  },
+  {
+    "name": "Poltergeist Civic",
+    "addon": "Poltergeist Spoiler",
+    "event": "Poltergeist",
+    "file": "Poltergeist_Civic.json"
+  },
+  {
+    "name": "Coffin Civic",
+    "addon": "Coffin Carrier",
+    "event": "Coffin",
+    "file": "Coffin_Civic.json"
+  },
+  {
+    "name": "Cauldron Civic",
+    "addon": "Witch's Cauldron",
+    "event": "Cauldron",
+    "file": "Cauldron_Civic.json"
+  },
+  {
+    "name": "Specter Civic",
+    "addon": "Specter Sails",
+    "event": "Specter",
+    "file": "Specter_Civic.json"
+  },
+  {
+    "name": "Wraith Civic",
+    "addon": "Wraith Wheels",
+    "event": "Wraith",
+    "file": "Wraith_Civic.json"
+  },
+  {
+    "name": "Soul Civic",
+    "addon": "Soul Turbo",
+    "event": "Soul",
+    "file": "Soul_Civic.json"
+  },
+  {
+    "name": "Hearse Civic",
+    "addon": "Hearse Canopy",
+    "event": "Hearse",
+    "file": "Hearse_Civic.json"
+  },
+  {
+    "name": "Reaper Civic",
+    "addon": "Reaper Scythes",
+    "event": "Reaper",
+    "file": "Reaper_Civic.json"
+  },
+  {
+    "name": "Haunted Civic",
+    "addon": "Ghost Chauffeur",
+    "event": "Haunted",
+    "file": "Haunted_Civic.json"
+  }
+]

@@ -1,0 +1,1180 @@
+{
+  "name": "Civic + Diesel Stack",
+  "addon": "Diesel Stack",
+  "event": null,
+  "parts": [
+    {
+      "name": "Black_MAT_0",
+      "center": [
+        -0.0006690000000000307,
+        0.9007965,
+        0.0915315000000001
+      ],
+      "size": [
+        2.203856,
+        1.515667,
+        5.003674999999999
+      ],
+      "appearance": {
+        "color": [
+          0.002750998828560114,
+          0.002750998828560114,
+          0.002750998828560114
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-229.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "e21c9eff7cf3d1ca6a66cbc01b36b2d74c99829eed624b996874dd4a054e4a68",
+      "file": "meshes/e21c9eff7cf3d1ca6a66cbc01b36b2d74c99829eed624b996874dd4a054e4a68.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Black_MAT_1",
+      "center": [
+        0.012147000000000019,
+        0.934468,
+        -0.5354074999999999
+      ],
+      "size": [
+        2.0720020000000003,
+        1.445108,
+        3.515657
+      ],
+      "appearance": {
+        "color": [
+          0.002750998828560114,
+          0.002750998828560114,
+          0.002750998828560114
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-229.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "f64f10a8f2a7e50e6171117fae307584b5c908c3c93f0b2286436aee90dca075",
+      "file": "meshes/f64f10a8f2a7e50e6171117fae307584b5c908c3c93f0b2286436aee90dca075.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Black_MAT_2",
+      "center": [
+        0.0009925000000000628,
+        0.9634750000000001,
+        0.197816
+      ],
+      "size": [
+        2.103801,
+        1.430818,
+        4.65454
+      ],
+      "appearance": {
+        "color": [
+          0.002750998828560114,
+          0.002750998828560114,
+          0.002750998828560114
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-229.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "172d00f9da1c4e75861ed008d404d4c3118d716c3997359882c761e362af242e",
+      "file": "meshes/172d00f9da1c4e75861ed008d404d4c3118d716c3997359882c761e362af242e.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Black_MAT_3",
+      "center": [
+        0.002546999999999966,
+        0.9201170000000001,
+        0.15260450000000003
+      ],
+      "size": [
+        2.1731879999999997,
+        1.507596,
+        5.125821
+      ],
+      "appearance": {
+        "color": [
+          0.002750998828560114,
+          0.002750998828560114,
+          0.002750998828560114
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-229.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 4888,
+      "geometryHash": "fa7ab6a3e702f9d68cea888067e913606d7f4345d808a14fa653308c87df190f",
+      "file": "meshes/fa7ab6a3e702f9d68cea888067e913606d7f4345d808a14fa653308c87df190f.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Silver_MAT_4",
+      "center": [
+        -0.0001295000000000046,
+        0.7132740000000001,
+        0.043094500000000036
+      ],
+      "size": [
+        2.1183370000000004,
+        0.9527960000000001,
+        4.985131
+      ],
+      "appearance": {
+        "color": [
+          0.44999998807907104,
+          0.28999999165534973,
+          0.08500000089406967
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-043.png",
+          "MetalnessMap": "textures/constant-229.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 1044,
+      "geometryHash": "ad630c2ebc117534eeafe1bc00980f07f0224964103ac6b5963e475b0fb848e0",
+      "file": "meshes/ad630c2ebc117534eeafe1bc00980f07f0224964103ac6b5963e475b0fb848e0.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Body_MAT_5",
+      "center": [
+        0.003641499999999964,
+        0.937976,
+        0.16845199999999982
+      ],
+      "size": [
+        2.2294910000000003,
+        1.505934,
+        5.09835
+      ],
+      "appearance": {
+        "color": [
+          1,
+          1,
+          1
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Paint-Civic_Diesel_Stack.png",
+          "RoughnessMap": "textures/constant-061.png",
+          "MetalnessMap": "textures/constant-082.png"
+        },
+        "paintTint": [
+          0.23000000417232513,
+          0.3199999928474426,
+          0.36000001430511475
+        ]
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "3d3c7ac16ec1df0c67dca9ae6031758cfcb0bd0e73413971ed3b651df994615c",
+      "file": "meshes/3d3c7ac16ec1df0c67dca9ae6031758cfcb0bd0e73413971ed3b651df994615c.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Body_MAT_6",
+      "center": [
+        -0.008552000000000004,
+        0.9168014999999999,
+        0.11494199999999988
+      ],
+      "size": [
+        2.4302159999999997,
+        1.463585,
+        5.194742
+      ],
+      "appearance": {
+        "color": [
+          1,
+          1,
+          1
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Paint-Civic_Diesel_Stack.png",
+          "RoughnessMap": "textures/constant-061.png",
+          "MetalnessMap": "textures/constant-082.png"
+        },
+        "paintTint": [
+          0.23000000417232513,
+          0.3199999928474426,
+          0.36000001430511475
+        ]
+      },
+      "wheel": null,
+      "triangles": 2925,
+      "geometryHash": "07b6a7695520ffbfb033ba1a9e8da104921f04890da33f432e7ecb73b1748307",
+      "file": "meshes/07b6a7695520ffbfb033ba1a9e8da104921f04890da33f432e7ecb73b1748307.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Glass_Glass_MAT_7",
+      "center": [
+        0.0,
+        1.2462955,
+        -0.5861119999999999
+      ],
+      "size": [
+        1.896082,
+        0.703033,
+        3.4635119999999997
+      ],
+      "appearance": {
+        "color": [
+          0.3199999928474426,
+          0.4399999976158142,
+          0.5
+        ],
+        "transparency": 0.38,
+        "finish": "Glass",
+        "maps": {}
+      },
+      "wheel": null,
+      "triangles": 476,
+      "geometryHash": "851845788261581b2c9234b4b2300351aadb06aad8b740042af1727405880e65",
+      "file": "meshes/851845788261581b2c9234b4b2300351aadb06aad8b740042af1727405880e65.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Glass_Glass_02_MAT_8",
+      "center": [
+        0.0,
+        0.9707705,
+        -0.5364744999999999
+      ],
+      "size": [
+        2.108,
+        0.455321,
+        3.562787
+      ],
+      "appearance": {
+        "color": [
+          0.8000000715255737,
+          0.1326354742050171,
+          0.0
+        ],
+        "transparency": 0.24,
+        "finish": "Glass",
+        "maps": {}
+      },
+      "wheel": null,
+      "triangles": 504,
+      "geometryHash": "2d0de9f339946180343aaf9ce98c5ead97d15612130948be5d5b18688061b025",
+      "file": "meshes/2d0de9f339946180343aaf9ce98c5ead97d15612130948be5d5b18688061b025.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Mirror_MAT_9",
+      "center": [
+        -0.008781000000000039,
+        0.9231095,
+        0.104522
+      ],
+      "size": [
+        2.3879200000000003,
+        0.590261,
+        4.838478
+      ],
+      "appearance": {
+        "color": [
+          0.800000011920929,
+          0.800000011920929,
+          0.800000011920929
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-019.png",
+          "MetalnessMap": "textures/constant-255.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 2830,
+      "geometryHash": "7693ffc003771c2b5e2e526537bfd5da230388571e823594ff49a215b728e1ca",
+      "file": "meshes/7693ffc003771c2b5e2e526537bfd5da230388571e823594ff49a215b728e1ca.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Glass_Clear fluted headlamp lens_10",
+      "center": [
+        0.0,
+        0.742649,
+        2.316489
+      ],
+      "size": [
+        1.944798,
+        0.2028939999999999,
+        0.4263119999999998
+      ],
+      "appearance": {
+        "color": [
+          0.9399999976158142,
+          0.9700000286102295,
+          1.0
+        ],
+        "transparency": 0.7,
+        "finish": "Glass",
+        "maps": {}
+      },
+      "wheel": null,
+      "triangles": 332,
+      "geometryHash": "9902d536ba19c6e64c0309af5df12fa2bf00161e682c41655eb4a29b5b2610cf",
+      "file": "meshes/9902d536ba19c6e64c0309af5df12fa2bf00161e682c41655eb4a29b5b2610cf.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Silver_MAT_11",
+      "center": [
+        0.906257,
+        0.38388649999999996,
+        1.6416335
+      ],
+      "size": [
+        0.302068,
+        0.552555,
+        0.5540609999999999
+      ],
+      "appearance": {
+        "color": [
+          0.44999998807907104,
+          0.28999999165534973,
+          0.08500000089406967
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-043.png",
+          "MetalnessMap": "textures/constant-229.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_FL",
+        "pivot": [
+          0.897339,
+          0.384621,
+          1.639735
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 2730,
+      "geometryHash": "f30dae51bce61f9c3b8cc60ea10583996252523ab99558121aab919e44904124",
+      "file": "meshes/f30dae51bce61f9c3b8cc60ea10583996252523ab99558121aab919e44904124.json",
+      "components": [
+        "Wheel_FL"
+      ]
+    },
+    {
+      "name": "Tire_MAT_12",
+      "center": [
+        0.8978565,
+        0.3836965,
+        1.639603
+      ],
+      "size": [
+        0.32376099999999997,
+        0.767301,
+        0.7614959999999997
+      ],
+      "appearance": {
+        "color": [
+          0.18,
+          0.18,
+          0.18
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Honda_Civic_Tire_BaseColor.png",
+          "NormalMap": "textures/Honda_Civic_Tire_Normal.png",
+          "RoughnessMap": "textures/Honda_Civic_Tire_Roughness.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_FL",
+        "pivot": [
+          0.897339,
+          0.384621,
+          1.639735
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 668,
+      "geometryHash": "5b67d863a83298e334cf390b1d7f6152d055cba6870c23b2360a2ade10d2c710",
+      "file": "meshes/5b67d863a83298e334cf390b1d7f6152d055cba6870c23b2360a2ade10d2c710.json",
+      "components": [
+        "Wheel_FL"
+      ]
+    },
+    {
+      "name": "Silver_MAT_13",
+      "center": [
+        -0.902017,
+        0.38388649999999996,
+        1.6376315
+      ],
+      "size": [
+        0.302068,
+        0.552555,
+        0.5540610000000001
+      ],
+      "appearance": {
+        "color": [
+          0.44999998807907104,
+          0.28999999165534973,
+          0.08500000089406967
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-043.png",
+          "MetalnessMap": "textures/constant-229.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_FR",
+        "pivot": [
+          -0.893099,
+          0.384621,
+          1.63953
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 2730,
+      "geometryHash": "cb3d222daefbe7e904a3fecf33863276a63b88dfeed9b7370c2e540a4ff06dd5",
+      "file": "meshes/cb3d222daefbe7e904a3fecf33863276a63b88dfeed9b7370c2e540a4ff06dd5.json",
+      "components": [
+        "Wheel_FR"
+      ]
+    },
+    {
+      "name": "Tire_MAT_14",
+      "center": [
+        -0.8936165,
+        0.3836965,
+        1.6396625
+      ],
+      "size": [
+        0.32376099999999985,
+        0.767301,
+        0.7614970000000001
+      ],
+      "appearance": {
+        "color": [
+          0.18,
+          0.18,
+          0.18
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Honda_Civic_Tire_BaseColor.png",
+          "NormalMap": "textures/Honda_Civic_Tire_Normal.png",
+          "RoughnessMap": "textures/Honda_Civic_Tire_Roughness.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_FR",
+        "pivot": [
+          -0.893099,
+          0.384621,
+          1.63953
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 668,
+      "geometryHash": "5af0f928baae82d8974163ad81f8a5ed8b4783c650c1e6b70ef34e9f2ec57cfc",
+      "file": "meshes/5af0f928baae82d8974163ad81f8a5ed8b4783c650c1e6b70ef34e9f2ec57cfc.json",
+      "components": [
+        "Wheel_FR"
+      ]
+    },
+    {
+      "name": "Silver_MAT_15",
+      "center": [
+        0.951374,
+        0.383886,
+        -1.6328935
+      ],
+      "size": [
+        0.302068,
+        0.5525559999999999,
+        0.5540609999999999
+      ],
+      "appearance": {
+        "color": [
+          0.44999998807907104,
+          0.28999999165534973,
+          0.08500000089406967
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-043.png",
+          "MetalnessMap": "textures/constant-229.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_RL",
+        "pivot": [
+          0.942456,
+          0.384621,
+          -1.634792
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 2730,
+      "geometryHash": "45ee43a9e450019c958a7ccd5c186a3562ca738b9206c70144cb742840c6d6f5",
+      "file": "meshes/45ee43a9e450019c958a7ccd5c186a3562ca738b9206c70144cb742840c6d6f5.json",
+      "components": [
+        "Wheel_RL"
+      ]
+    },
+    {
+      "name": "Tire_MAT_16",
+      "center": [
+        0.9429730000000001,
+        0.383696,
+        -1.6349245
+      ],
+      "size": [
+        0.323762,
+        0.767302,
+        0.7614970000000001
+      ],
+      "appearance": {
+        "color": [
+          0.18,
+          0.18,
+          0.18
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Honda_Civic_Tire_BaseColor.png",
+          "NormalMap": "textures/Honda_Civic_Tire_Normal.png",
+          "RoughnessMap": "textures/Honda_Civic_Tire_Roughness.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_RL",
+        "pivot": [
+          0.942456,
+          0.384621,
+          -1.634792
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 668,
+      "geometryHash": "1e05c1c29068c1062ebd52325ea7c6e412bd70bea8a82f2054d6632494f0943a",
+      "file": "meshes/1e05c1c29068c1062ebd52325ea7c6e412bd70bea8a82f2054d6632494f0943a.json",
+      "components": [
+        "Wheel_RL"
+      ]
+    },
+    {
+      "name": "Silver_MAT_17",
+      "center": [
+        -0.941251,
+        0.383886,
+        -1.6368955
+      ],
+      "size": [
+        0.302068,
+        0.5525559999999999,
+        0.5540609999999999
+      ],
+      "appearance": {
+        "color": [
+          0.44999998807907104,
+          0.28999999165534973,
+          0.08500000089406967
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-043.png",
+          "MetalnessMap": "textures/constant-229.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_RR",
+        "pivot": [
+          -0.932333,
+          0.384621,
+          -1.634997
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 2730,
+      "geometryHash": "d13bd79a0f974a1c4676f413ae50eed1aa3c433117e17fd20f02c0763bf5e34b",
+      "file": "meshes/d13bd79a0f974a1c4676f413ae50eed1aa3c433117e17fd20f02c0763bf5e34b.json",
+      "components": [
+        "Wheel_RR"
+      ]
+    },
+    {
+      "name": "Tire_MAT_18",
+      "center": [
+        -0.9328505,
+        0.383696,
+        -1.6348645
+      ],
+      "size": [
+        0.32376099999999985,
+        0.767302,
+        0.7614970000000001
+      ],
+      "appearance": {
+        "color": [
+          0.18,
+          0.18,
+          0.18
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Honda_Civic_Tire_BaseColor.png",
+          "NormalMap": "textures/Honda_Civic_Tire_Normal.png",
+          "RoughnessMap": "textures/Honda_Civic_Tire_Roughness.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_RR",
+        "pivot": [
+          -0.932333,
+          0.384621,
+          -1.634997
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 668,
+      "geometryHash": "e5db3de7739654589db4dd4a17692a0749033727cd0e69dfb21eaf3805207ffd",
+      "file": "meshes/e5db3de7739654589db4dd4a17692a0749033727cd0e69dfb21eaf3805207ffd.json",
+      "components": [
+        "Wheel_RR"
+      ]
+    },
+    {
+      "name": "Graphite mechanical housings_19",
+      "center": [
+        0.0,
+        1.1661365000000001,
+        1.0594154999999998
+      ],
+      "size": [
+        2.608946,
+        1.5851110000000002,
+        3.617587
+      ],
+      "appearance": {
+        "color": [
+          0.02199999988079071,
+          0.029999999329447746,
+          0.03999999910593033
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-074.png",
+          "MetalnessMap": "textures/constant-166.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 5516,
+      "geometryHash": "3931c854239eb50d6b37176c4fec8108ab9f764b24e4317677af301b0ddc5321",
+      "file": "meshes/3931c854239eb50d6b37176c4fec8108ab9f764b24e4317677af301b0ddc5321.json",
+      "components": [
+        "Diesel heat guard band",
+        "Diesel heat guard band.001",
+        "Diesel heat guard band.002",
+        "Diesel heat guard band.003",
+        "Diesel heat guard band.004",
+        "Diesel heat guard band.005",
+        "Engine bay inner cradle",
+        "Front protective bumper tube",
+        "Soot black stack mouth",
+        "Soot black stack mouth.001"
+      ]
+    },
+    {
+      "name": "Clean polished aluminum_20",
+      "center": [
+        0.0,
+        1.0376645,
+        0.08160200000000001
+      ],
+      "size": [
+        2.698404,
+        1.8223790000000002,
+        1.79685
+      ],
+      "appearance": {
+        "color": [
+          0.550000011920929,
+          0.6100000143051147,
+          0.6700000166893005
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-038.png",
+          "MetalnessMap": "textures/constant-242.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 1440,
+      "geometryHash": "5359c1c30283383bf38a35853250de8556e4e9b6c352eadcae8f7dc6eda9e23c",
+      "file": "meshes/5359c1c30283383bf38a35853250de8556e4e9b6c352eadcae8f7dc6eda9e23c.json",
+      "components": [
+        "B-pillar diesel stack",
+        "B-pillar diesel stack.001"
+      ]
+    },
+    {
+      "name": "Clean carbon trim_21",
+      "center": [
+        0.0,
+        0.19164,
+        0.3304135
+      ],
+      "size": [
+        2.656526,
+        0.08590799999999998,
+        1.334871
+      ],
+      "appearance": {
+        "color": [
+          0.17,
+          0.18,
+          0.2
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {},
+        "variant": "AddonCarbonTwill"
+      },
+      "wheel": null,
+      "triangles": 376,
+      "geometryHash": "59e7acc5c12efd571b9ebadf331383f51d62c2bc0b842802f07520ffd28167d1",
+      "file": "meshes/59e7acc5c12efd571b9ebadf331383f51d62c2bc0b842802f07520ffd28167d1.json",
+      "components": [
+        "Utility step",
+        "Utility step.001"
+      ]
+    },
+    {
+      "name": "Iron_22",
+      "center": [
+        0.0,
+        1.0465165,
+        1.6902380000000001
+      ],
+      "size": [
+        0.735362,
+        0.7978109999999999,
+        0.836802
+      ],
+      "appearance": {
+        "color": [
+          0.07500000298023224,
+          0.10000000149011612,
+          0.12999999523162842
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {},
+        "variant": "AddonDetail_Cast_v2"
+      },
+      "wheel": null,
+      "triangles": 1064,
+      "geometryHash": "465ae7fb2403f2130cd8731384d3861324e0647763831f4c1d56657194d48fdf",
+      "file": "meshes/465ae7fb2403f2130cd8731384d3861324e0647763831f4c1d56657194d48fdf.json",
+      "components": [
+        "Cast crankcase.001",
+        "Heavy radiator",
+        "Mounting rail.008",
+        "Mounting rail.009",
+        "Soot blackened stack tip",
+        "Soot blackened stack tip.001",
+        "Stack manifold",
+        "Stack manifold.001"
+      ]
+    },
+    {
+      "name": "Teal_23",
+      "center": [
+        0.0,
+        0.6776035,
+        1.654246
+      ],
+      "size": [
+        0.521876,
+        0.05398700000000001,
+        0.6658419999999998
+      ],
+      "appearance": {
+        "color": [
+          0.004999999888241291,
+          0.7200000286102295,
+          0.4300000071525574
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {},
+        "variant": "AddonDetail_Enamel_v2"
+      },
+      "wheel": null,
+      "triangles": 216,
+      "geometryHash": "a14d2ff4c382cf1a8a505e00bb620f203490107d5cbb58d09e2dfab9c559f118",
+      "file": "meshes/a14d2ff4c382cf1a8a505e00bb620f203490107d5cbb58d09e2dfab9c559f118.json",
+      "components": [
+        "Cross brace.008",
+        "Cross brace.009"
+      ]
+    },
+    {
+      "name": "Chrome_24",
+      "center": [
+        0.0,
+        1.0645125,
+        1.7334275
+      ],
+      "size": [
+        0.713832,
+        0.731827,
+        0.8092089999999998
+      ],
+      "appearance": {
+        "color": [
+          0.5699999928474426,
+          0.6600000262260437,
+          0.7400000095367432
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {},
+        "variant": "AddonDetail_Brushed_v2"
+      },
+      "wheel": null,
+      "triangles": 1160,
+      "geometryHash": "537c50463ec76d82ae08b5bb26453d319dad21e944a4e0d6c88a922ed33be38c",
+      "file": "meshes/537c50463ec76d82ae08b5bb26453d319dad21e944a4e0d6c88a922ed33be38c.json",
+      "components": [
+        "Flywheel rim.001",
+        "Hex fastener.056",
+        "Hex fastener.057",
+        "Hex fastener.058",
+        "Hex fastener.059",
+        "Hex fastener.060",
+        "Hex fastener.061",
+        "Hex fastener.062",
+        "Hex fastener.063",
+        "Hex fastener.064",
+        "Hex fastener.065",
+        "Hex fastener.066",
+        "Hex fastener.067",
+        "Hex fastener.068",
+        "Hex fastener.069",
+        "Hex fastener.123",
+        "Hex fastener.124",
+        "Hex fastener.125",
+        "Hex fastener.126",
+        "Hex fastener.127",
+        "Hex fastener.128",
+        "Vertical exhaust stack",
+        "Vertical exhaust stack.001"
+      ]
+    },
+    {
+      "name": "Rubber_25",
+      "center": [
+        0.0,
+        1.188008,
+        1.654246
+      ],
+      "size": [
+        0.701834,
+        0.521426,
+        0.7123320000000002
+      ],
+      "appearance": {
+        "color": [
+          0.012000000104308128,
+          0.020999999716877937,
+          0.027000000700354576
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {},
+        "variant": "AddonDetail_Rubber_v2"
+      },
+      "wheel": null,
+      "triangles": 356,
+      "geometryHash": "5c4fafcf1bf588919f05b842365721858edba8cc50e5d0e6b271bf561f040333",
+      "file": "meshes/5c4fafcf1bf588919f05b842365721858edba8cc50e5d0e6b271bf561f040333.json",
+      "components": [
+        "Gasket seam.001",
+        "Hollow stack mouth",
+        "Hollow stack mouth.001"
+      ]
+    },
+    {
+      "name": "Orange_26",
+      "center": [
+        0.0,
+        0.9295439999999999,
+        1.7167815000000002
+      ],
+      "size": [
+        0.530874,
+        0.395906,
+        0.8017110000000003
+      ],
+      "appearance": {
+        "color": [
+          1.0,
+          0.1599999964237213,
+          0.00800000037997961
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {},
+        "variant": "AddonDetail_Enamel_v2"
+      },
+      "wheel": null,
+      "triangles": 540,
+      "geometryHash": "8f0d48193d585ea87b341b93d46792ad9725d5db3bd8c90d61cd5cae7cc2d001",
+      "file": "meshes/8f0d48193d585ea87b341b93d46792ad9725d5db3bd8c90d61cd5cae7cc2d001.json",
+      "components": [
+        "Cam cover.001",
+        "Cam cover.002",
+        "Radiator side armor",
+        "Radiator side armor.001",
+        "Radiator surround top"
+      ]
+    },
+    {
+      "name": "Steel_27",
+      "center": [
+        0.0,
+        1.07321,
+        1.7113075
+      ],
+      "size": [
+        0.739026,
+        0.7612199999999999,
+        0.7226789999999998
+      ],
+      "appearance": {
+        "color": [
+          0.23999999463558197,
+          0.30000001192092896,
+          0.3400000035762787
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {},
+        "variant": "AddonDetail_Cast_v2"
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "5a0e80bcf9aa4ec9cda1077e06f1fe04062c3002eebefb8de17ff79795d71e50",
+      "file": "meshes/5a0e80bcf9aa4ec9cda1077e06f1fe04062c3002eebefb8de17ff79795d71e50.json",
+      "components": [
+        "Cast cooling rib.006",
+        "Cast cooling rib.007",
+        "Cast cooling rib.008",
+        "Cast cooling rib.009",
+        "Cast cooling rib.010",
+        "Cast cooling rib.011",
+        "Flywheel.001",
+        "Heat shield band",
+        "Heat shield band.001",
+        "Heat shield band.002",
+        "Heat shield band.003",
+        "Heat shield band.004",
+        "Heat shield band.005",
+        "Heat shield band.006",
+        "Heat shield band.007",
+        "Heat shield band.008",
+        "Heat shield band.009",
+        "Radiator vertical fin",
+        "Radiator vertical fin.001",
+        "Radiator vertical fin.002",
+        "Radiator vertical fin.003",
+        "Radiator vertical fin.004",
+        "Radiator vertical fin.005",
+        "Radiator vertical fin.006",
+        "Radiator vertical fin.007",
+        "Radiator vertical fin.008",
+        "Radiator vertical fin.009",
+        "Radiator vertical fin.010",
+        "Radiator vertical fin.011",
+        "Stack rolled lip",
+        "Stack rolled lip.001"
+      ]
+    },
+    {
+      "name": "Steel_28",
+      "center": [
+        0.06853349999999998,
+        1.0972045,
+        1.7643204999999997
+      ],
+      "size": [
+        0.586361,
+        0.7132309999999998,
+        0.7156309999999999
+      ],
+      "appearance": {
+        "color": [
+          0.23999999463558197,
+          0.30000001192092896,
+          0.3400000035762787
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {},
+        "variant": "AddonDetail_Cast_v2"
+      },
+      "wheel": null,
+      "triangles": 1712,
+      "geometryHash": "c39dac545b90fc8ac2f91c8535f3eca6874f31a64ce702dfb2d6c0487d999ad7",
+      "file": "meshes/c39dac545b90fc8ac2f91c8535f3eca6874f31a64ce702dfb2d6c0487d999ad7.json",
+      "components": [
+        "Cast cooling rib.006",
+        "Cast cooling rib.007",
+        "Cast cooling rib.008",
+        "Cast cooling rib.009",
+        "Cast cooling rib.010",
+        "Cast cooling rib.011",
+        "Flywheel.001",
+        "Heat shield band",
+        "Heat shield band.001",
+        "Heat shield band.002",
+        "Heat shield band.003",
+        "Heat shield band.004",
+        "Heat shield band.005",
+        "Heat shield band.006",
+        "Heat shield band.007",
+        "Heat shield band.008",
+        "Heat shield band.009",
+        "Radiator vertical fin",
+        "Radiator vertical fin.001",
+        "Radiator vertical fin.002",
+        "Radiator vertical fin.003",
+        "Radiator vertical fin.004",
+        "Radiator vertical fin.005",
+        "Radiator vertical fin.006",
+        "Radiator vertical fin.007",
+        "Radiator vertical fin.008",
+        "Radiator vertical fin.009",
+        "Radiator vertical fin.010",
+        "Radiator vertical fin.011",
+        "Stack rolled lip",
+        "Stack rolled lip.001"
+      ]
+    },
+    {
+      "name": "Copper_29",
+      "center": [
+        0.0,
+        1.071542,
+        1.6472895
+      ],
+      "size": [
+        0.263638,
+        0.05455399999999999,
+        0.518767
+      ],
+      "appearance": {
+        "color": [
+          0.7699999809265137,
+          0.33000001311302185,
+          0.07500000298023224
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {},
+        "variant": "AddonDetail_Brushed_v2"
+      },
+      "wheel": null,
+      "triangles": 1440,
+      "geometryHash": "139c41f860de3e1b0a1e94e8bc1147b3f39c88397d02cda0443bb86507cdbcc5",
+      "file": "meshes/139c41f860de3e1b0a1e94e8bc1147b3f39c88397d02cda0443bb86507cdbcc5.json",
+      "components": [
+        "High pressure injector line",
+        "High pressure injector line.001",
+        "High pressure injector line.002",
+        "High pressure injector line.003",
+        "High pressure injector line.004",
+        "High pressure injector line.005",
+        "High pressure injector line.006",
+        "High pressure injector line.007",
+        "High pressure injector line.008",
+        "High pressure injector line.009"
+      ]
+    }
+  ],
+  "triangles": 72911,
+  "sourceTriangles": 269371,
+  "targetSize": [
+    2.698404,
+    1.958647,
+    5.350638
+  ],
+  "expectedWheels": 4,
+  "noseAxis": "+Z",
+  "source": "Diesel_Stack.blend"
+}

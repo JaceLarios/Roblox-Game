@@ -1,0 +1,1288 @@
+{
+  "name": "Civic + Twin Turbo",
+  "addon": "Twin Turbo",
+  "event": null,
+  "parts": [
+    {
+      "name": "Black_MAT_0",
+      "center": [
+        -0.0007719999999999949,
+        0.890652,
+        0.12355550000000015
+      ],
+      "size": [
+        2.202892,
+        1.495378,
+        4.940283
+      ],
+      "appearance": {
+        "color": [
+          0.002750998828560114,
+          0.002750998828560114,
+          0.002750998828560114
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-229.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "01e25c6dc1c070eadbc4dd6ae19f12866b210a7b719fb9385ae2b542b22c097e",
+      "file": "meshes/01e25c6dc1c070eadbc4dd6ae19f12866b210a7b719fb9385ae2b542b22c097e.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Black_MAT_1",
+      "center": [
+        0.002887000000000084,
+        0.934468,
+        -0.5355219999999999
+      ],
+      "size": [
+        2.090522,
+        1.445108,
+        3.515886
+      ],
+      "appearance": {
+        "color": [
+          0.002750998828560114,
+          0.002750998828560114,
+          0.002750998828560114
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-229.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "19e38797c9443847a9e94569b6d04a0f9a2ccdbce52897138ac8242b48c78c7c",
+      "file": "meshes/19e38797c9443847a9e94569b6d04a0f9a2ccdbce52897138ac8242b48c78c7c.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Black_MAT_2",
+      "center": [
+        0.03986500000000004,
+        0.9554045,
+        0.197816
+      ],
+      "size": [
+        2.025008,
+        1.4146770000000002,
+        4.65454
+      ],
+      "appearance": {
+        "color": [
+          0.002750998828560114,
+          0.002750998828560114,
+          0.002750998828560114
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-229.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "5f0045f51ecdf48e68a33c7c60d4c1a125643f5972b2f574f75f2b49401a4b27",
+      "file": "meshes/5f0045f51ecdf48e68a33c7c60d4c1a125643f5972b2f574f75f2b49401a4b27.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Black_MAT_3",
+      "center": [
+        -0.015529000000000015,
+        0.914559,
+        0.1737804999999999
+      ],
+      "size": [
+        2.0707579999999997,
+        1.4885279999999999,
+        5.083469
+      ],
+      "appearance": {
+        "color": [
+          0.002750998828560114,
+          0.002750998828560114,
+          0.002750998828560114
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-229.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 5730,
+      "geometryHash": "1a3f59696984e88129f9d8952586d614cb44b5ae2a433bb01ae02ee7a2024be9",
+      "file": "meshes/1a3f59696984e88129f9d8952586d614cb44b5ae2a433bb01ae02ee7a2024be9.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Silver_MAT_4",
+      "center": [
+        -0.00013649999999998386,
+        0.8538185,
+        0.08385299999999996
+      ],
+      "size": [
+        2.118323,
+        0.671707,
+        4.903614
+      ],
+      "appearance": {
+        "color": [
+          0.44999998807907104,
+          0.28999999165534973,
+          0.08500000089406967
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-043.png",
+          "MetalnessMap": "textures/constant-229.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 912,
+      "geometryHash": "c41d07941ecbf13b085fe568e373417fa3749298ad76125ee6b7db1f8d0a4279",
+      "file": "meshes/c41d07941ecbf13b085fe568e373417fa3749298ad76125ee6b7db1f8d0a4279.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Body_MAT_5",
+      "center": [
+        0.0033885000000000165,
+        0.9378535,
+        0.16845199999999982
+      ],
+      "size": [
+        2.229997,
+        1.5054429999999999,
+        5.09835
+      ],
+      "appearance": {
+        "color": [
+          1,
+          1,
+          1
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Paint-Civic_Twin_Turbo.png",
+          "RoughnessMap": "textures/constant-061.png",
+          "MetalnessMap": "textures/constant-082.png"
+        },
+        "paintTint": [
+          0.014999999664723873,
+          0.5,
+          0.6499999761581421
+        ]
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "3360e6c68b5fcd22286e7e84d4cf36c6c51b85b45f226a1250b21064ec74c9eb",
+      "file": "meshes/3360e6c68b5fcd22286e7e84d4cf36c6c51b85b45f226a1250b21064ec74c9eb.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Body_MAT_6",
+      "center": [
+        -0.008552000000000004,
+        0.9512579999999999,
+        0.177338
+      ],
+      "size": [
+        2.4302159999999997,
+        1.478634,
+        5.06995
+      ],
+      "appearance": {
+        "color": [
+          1,
+          1,
+          1
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Paint-Civic_Twin_Turbo.png",
+          "RoughnessMap": "textures/constant-061.png",
+          "MetalnessMap": "textures/constant-082.png"
+        },
+        "paintTint": [
+          0.014999999664723873,
+          0.5,
+          0.6499999761581421
+        ]
+      },
+      "wheel": null,
+      "triangles": 2129,
+      "geometryHash": "7c7539d231ce1b4db9df39a92cc17810cff1f94e0c31c56e401451d12842632a",
+      "file": "meshes/7c7539d231ce1b4db9df39a92cc17810cff1f94e0c31c56e401451d12842632a.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Glass_Glass_MAT_7",
+      "center": [
+        0.0,
+        1.2502375,
+        -0.5846539999999999
+      ],
+      "size": [
+        1.896082,
+        0.695149,
+        3.460596
+      ],
+      "appearance": {
+        "color": [
+          0.3199999928474426,
+          0.4399999976158142,
+          0.5
+        ],
+        "transparency": 0.38,
+        "finish": "Glass",
+        "maps": {}
+      },
+      "wheel": null,
+      "triangles": 450,
+      "geometryHash": "f52807cea1201a7873da505a1723d15890fedf11079da3386d18628a44193300",
+      "file": "meshes/f52807cea1201a7873da505a1723d15890fedf11079da3386d18628a44193300.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Glass_Glass_02_MAT_8",
+      "center": [
+        0.0,
+        0.970731,
+        -0.5364809999999999
+      ],
+      "size": [
+        2.108,
+        0.45524200000000004,
+        3.5628
+      ],
+      "appearance": {
+        "color": [
+          0.8000000715255737,
+          0.1326354742050171,
+          0.0
+        ],
+        "transparency": 0.24,
+        "finish": "Glass",
+        "maps": {}
+      },
+      "wheel": null,
+      "triangles": 527,
+      "geometryHash": "75f678b540e5684c31dacfd382781e4bbc61636afe5c4fc6926b98a44ad16903",
+      "file": "meshes/75f678b540e5684c31dacfd382781e4bbc61636afe5c4fc6926b98a44ad16903.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Mirror_MAT_9",
+      "center": [
+        -0.008781000000000039,
+        0.9231095,
+        0.10491150000000005
+      ],
+      "size": [
+        2.3879200000000003,
+        0.590261,
+        4.838253
+      ],
+      "appearance": {
+        "color": [
+          0.800000011920929,
+          0.800000011920929,
+          0.800000011920929
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-019.png",
+          "MetalnessMap": "textures/constant-255.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 2905,
+      "geometryHash": "0d4be4dd115ccd045b0c84d410c659ef9b2485da47efd269872b75e4697b7d8a",
+      "file": "meshes/0d4be4dd115ccd045b0c84d410c659ef9b2485da47efd269872b75e4697b7d8a.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Glass_Clear fluted headlamp lens_10",
+      "center": [
+        0.0,
+        0.742649,
+        2.3164854999999998
+      ],
+      "size": [
+        1.945198,
+        0.2028939999999999,
+        0.4263049999999997
+      ],
+      "appearance": {
+        "color": [
+          0.9399999976158142,
+          0.9700000286102295,
+          1.0
+        ],
+        "transparency": 0.7,
+        "finish": "Glass",
+        "maps": {}
+      },
+      "wheel": null,
+      "triangles": 346,
+      "geometryHash": "7ae140d4c5d1fe3f66b8754d791e089df8c8958b316072c0bbbb76c03f5b5553",
+      "file": "meshes/7ae140d4c5d1fe3f66b8754d791e089df8c8958b316072c0bbbb76c03f5b5553.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Silver_MAT_11",
+      "center": [
+        0.906257,
+        0.38388649999999996,
+        1.6416335
+      ],
+      "size": [
+        0.302068,
+        0.552555,
+        0.5540609999999999
+      ],
+      "appearance": {
+        "color": [
+          0.44999998807907104,
+          0.28999999165534973,
+          0.08500000089406967
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-043.png",
+          "MetalnessMap": "textures/constant-229.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_FL",
+        "pivot": [
+          0.897339,
+          0.384621,
+          1.639735
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 2730,
+      "geometryHash": "f30dae51bce61f9c3b8cc60ea10583996252523ab99558121aab919e44904124",
+      "file": "meshes/f30dae51bce61f9c3b8cc60ea10583996252523ab99558121aab919e44904124.json",
+      "components": [
+        "Wheel_FL"
+      ]
+    },
+    {
+      "name": "Tire_MAT_12",
+      "center": [
+        0.8978565,
+        0.3836965,
+        1.639603
+      ],
+      "size": [
+        0.32376099999999997,
+        0.767301,
+        0.7614959999999997
+      ],
+      "appearance": {
+        "color": [
+          0.18,
+          0.18,
+          0.18
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Honda_Civic_Tire_BaseColor.png",
+          "NormalMap": "textures/Honda_Civic_Tire_Normal.png",
+          "RoughnessMap": "textures/Honda_Civic_Tire_Roughness.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_FL",
+        "pivot": [
+          0.897339,
+          0.384621,
+          1.639735
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 668,
+      "geometryHash": "5b67d863a83298e334cf390b1d7f6152d055cba6870c23b2360a2ade10d2c710",
+      "file": "meshes/5b67d863a83298e334cf390b1d7f6152d055cba6870c23b2360a2ade10d2c710.json",
+      "components": [
+        "Wheel_FL"
+      ]
+    },
+    {
+      "name": "Silver_MAT_13",
+      "center": [
+        -0.902017,
+        0.38388649999999996,
+        1.6376315
+      ],
+      "size": [
+        0.302068,
+        0.552555,
+        0.5540610000000001
+      ],
+      "appearance": {
+        "color": [
+          0.44999998807907104,
+          0.28999999165534973,
+          0.08500000089406967
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-043.png",
+          "MetalnessMap": "textures/constant-229.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_FR",
+        "pivot": [
+          -0.893099,
+          0.384621,
+          1.63953
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 2730,
+      "geometryHash": "cb3d222daefbe7e904a3fecf33863276a63b88dfeed9b7370c2e540a4ff06dd5",
+      "file": "meshes/cb3d222daefbe7e904a3fecf33863276a63b88dfeed9b7370c2e540a4ff06dd5.json",
+      "components": [
+        "Wheel_FR"
+      ]
+    },
+    {
+      "name": "Tire_MAT_14",
+      "center": [
+        -0.8936165,
+        0.3836965,
+        1.6396625
+      ],
+      "size": [
+        0.32376099999999985,
+        0.767301,
+        0.7614970000000001
+      ],
+      "appearance": {
+        "color": [
+          0.18,
+          0.18,
+          0.18
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Honda_Civic_Tire_BaseColor.png",
+          "NormalMap": "textures/Honda_Civic_Tire_Normal.png",
+          "RoughnessMap": "textures/Honda_Civic_Tire_Roughness.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_FR",
+        "pivot": [
+          -0.893099,
+          0.384621,
+          1.63953
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 668,
+      "geometryHash": "5af0f928baae82d8974163ad81f8a5ed8b4783c650c1e6b70ef34e9f2ec57cfc",
+      "file": "meshes/5af0f928baae82d8974163ad81f8a5ed8b4783c650c1e6b70ef34e9f2ec57cfc.json",
+      "components": [
+        "Wheel_FR"
+      ]
+    },
+    {
+      "name": "Silver_MAT_15",
+      "center": [
+        0.951374,
+        0.383886,
+        -1.6328935
+      ],
+      "size": [
+        0.302068,
+        0.5525559999999999,
+        0.5540609999999999
+      ],
+      "appearance": {
+        "color": [
+          0.44999998807907104,
+          0.28999999165534973,
+          0.08500000089406967
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-043.png",
+          "MetalnessMap": "textures/constant-229.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_RL",
+        "pivot": [
+          0.942456,
+          0.384621,
+          -1.634792
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 2730,
+      "geometryHash": "45ee43a9e450019c958a7ccd5c186a3562ca738b9206c70144cb742840c6d6f5",
+      "file": "meshes/45ee43a9e450019c958a7ccd5c186a3562ca738b9206c70144cb742840c6d6f5.json",
+      "components": [
+        "Wheel_RL"
+      ]
+    },
+    {
+      "name": "Tire_MAT_16",
+      "center": [
+        0.9429730000000001,
+        0.383696,
+        -1.6349245
+      ],
+      "size": [
+        0.323762,
+        0.767302,
+        0.7614970000000001
+      ],
+      "appearance": {
+        "color": [
+          0.18,
+          0.18,
+          0.18
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Honda_Civic_Tire_BaseColor.png",
+          "NormalMap": "textures/Honda_Civic_Tire_Normal.png",
+          "RoughnessMap": "textures/Honda_Civic_Tire_Roughness.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_RL",
+        "pivot": [
+          0.942456,
+          0.384621,
+          -1.634792
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 668,
+      "geometryHash": "1e05c1c29068c1062ebd52325ea7c6e412bd70bea8a82f2054d6632494f0943a",
+      "file": "meshes/1e05c1c29068c1062ebd52325ea7c6e412bd70bea8a82f2054d6632494f0943a.json",
+      "components": [
+        "Wheel_RL"
+      ]
+    },
+    {
+      "name": "Silver_MAT_17",
+      "center": [
+        -0.941251,
+        0.383886,
+        -1.6368955
+      ],
+      "size": [
+        0.302068,
+        0.5525559999999999,
+        0.5540609999999999
+      ],
+      "appearance": {
+        "color": [
+          0.44999998807907104,
+          0.28999999165534973,
+          0.08500000089406967
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-043.png",
+          "MetalnessMap": "textures/constant-229.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_RR",
+        "pivot": [
+          -0.932333,
+          0.384621,
+          -1.634997
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 2730,
+      "geometryHash": "d13bd79a0f974a1c4676f413ae50eed1aa3c433117e17fd20f02c0763bf5e34b",
+      "file": "meshes/d13bd79a0f974a1c4676f413ae50eed1aa3c433117e17fd20f02c0763bf5e34b.json",
+      "components": [
+        "Wheel_RR"
+      ]
+    },
+    {
+      "name": "Tire_MAT_18",
+      "center": [
+        -0.9328505,
+        0.383696,
+        -1.6348645
+      ],
+      "size": [
+        0.32376099999999985,
+        0.767302,
+        0.7614970000000001
+      ],
+      "appearance": {
+        "color": [
+          0.18,
+          0.18,
+          0.18
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Honda_Civic_Tire_BaseColor.png",
+          "NormalMap": "textures/Honda_Civic_Tire_Normal.png",
+          "RoughnessMap": "textures/Honda_Civic_Tire_Roughness.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": {
+        "id": "Wheel_RR",
+        "pivot": [
+          -0.932333,
+          0.384621,
+          -1.634997
+        ],
+        "radius": 0.541206
+      },
+      "triangles": 668,
+      "geometryHash": "e5db3de7739654589db4dd4a17692a0749033727cd0e69dfb21eaf3805207ffd",
+      "file": "meshes/e5db3de7739654589db4dd4a17692a0749033727cd0e69dfb21eaf3805207ffd.json",
+      "components": [
+        "Wheel_RR"
+      ]
+    },
+    {
+      "name": "Clean carbon trim_19",
+      "center": [
+        0.0,
+        0.7100825,
+        -0.03304150000000006
+      ],
+      "size": [
+        2.326112,
+        1.090979,
+        2.1542969999999997
+      ],
+      "appearance": {
+        "color": [
+          0.17,
+          0.18,
+          0.2
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {},
+        "variant": "AddonCarbonTwill"
+      },
+      "wheel": null,
+      "triangles": 220,
+      "geometryHash": "354221b60ba33c6362816e95fa984a84570d6eb6c418e83e002465734fe8ef16",
+      "file": "meshes/354221b60ba33c6362816e95fa984a84570d6eb6c418e83e002465734fe8ef16.json",
+      "components": [
+        "Engine compartment rear wall",
+        "Sculpted rocker extension",
+        "Sculpted rocker extension.001"
+      ]
+    },
+    {
+      "name": "Graphite mechanical housings_20",
+      "center": [
+        0.0,
+        0.876257,
+        -1.680748
+      ],
+      "size": [
+        1.79745,
+        1.05468,
+        1.893402
+      ],
+      "appearance": {
+        "color": [
+          0.02199999988079071,
+          0.029999999329447746,
+          0.03999999910593033
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-074.png",
+          "MetalnessMap": "textures/constant-166.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 1192,
+      "geometryHash": "188ad509eb1a9e6eecde63e75cff710c06d6cb955723337043405b83d07da166",
+      "file": "meshes/188ad509eb1a9e6eecde63e75cff710c06d6cb955723337043405b83d07da166.json",
+      "components": [
+        "Engine bay inner cradle",
+        "Exposed rear valance inner panel",
+        "Fused engine cast block",
+        "Intake dark bore",
+        "Intake dark bore.001",
+        "Intake dark bore.002",
+        "Intake dark bore.003",
+        "Rear turbo dark impeller well",
+        "Rear turbo dark impeller well.001",
+        "Rear turbo turbine housing",
+        "Rear turbo turbine housing.001"
+      ]
+    },
+    {
+      "name": "Clean polished aluminum_21",
+      "center": [
+        0.0,
+        0.756033,
+        -1.7889545
+      ],
+      "size": [
+        1.896206,
+        1.311074,
+        2.1429289999999996
+      ],
+      "appearance": {
+        "color": [
+          0.550000011920929,
+          0.6100000143051147,
+          0.6700000166893005
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-038.png",
+          "MetalnessMap": "textures/constant-242.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "5de67b26448e9c7b51484391a12e57559ac4db50c668ea1161309e7ba528583e",
+      "file": "meshes/5de67b26448e9c7b51484391a12e57559ac4db50c668ea1161309e7ba528583e.json",
+      "components": [
+        "Bellmouth intake",
+        "Bellmouth intake.001",
+        "Bellmouth intake.002",
+        "Bellmouth intake.003",
+        "Charge-pipe stainless hose clamp",
+        "Charge-pipe stainless hose clamp.001",
+        "Charge-pipe stainless hose clamp.002",
+        "Charge-pipe stainless hose clamp.003",
+        "Exposed engine perimeter rail",
+        "Exposed engine perimeter rail.001",
+        "Intake rolled lip",
+        "Intake rolled lip.001",
+        "Intake rolled lip.002",
+        "Intake rolled lip.003",
+        "Rear engine turbine exhaust feed",
+        "Rear engine turbine exhaust feed.001",
+        "Rear turbo cast snail housing",
+        "Rear turbo cast snail housing.001",
+        "Rear turbo curved impeller blade",
+        "Rear turbo curved impeller blade.001",
+        "Rear turbo curved impeller blade.002",
+        "Rear turbo curved impeller blade.003",
+        "Rear turbo curved impeller blade.004",
+        "Rear turbo curved impeller blade.005",
+        "Rear turbo curved impeller blade.006",
+        "Rear turbo curved impeller blade.007",
+        "Rear turbo curved impeller blade.008",
+        "Rear turbo curved impeller blade.009",
+        "Rear turbo curved impeller blade.010",
+        "Rear turbo curved impeller blade.011",
+        "Rear turbo curved impeller blade.012",
+        "Rear turbo curved impeller blade.013",
+        "Rear turbo curved impeller blade.014",
+        "Rear turbo curved impeller blade.015",
+        "Rear turbo curved impeller blade.016",
+        "Rear turbo curved impeller blade.017",
+        "Rear turbo curved impeller blade.018",
+        "Rear turbo curved impeller blade.019",
+        "Rear turbo curved impeller blade.020",
+        "Rear turbo curved impeller blade.021",
+        "Rear turbo curved impeller blade.022",
+        "Rear turbo curved impeller blade.023",
+        "Rear turbo impeller spindle",
+        "Rear turbo impeller spindle.001",
+        "Rear turbo open velocity inlet",
+        "Rear turbo open velocity inlet.001",
+        "Rear turbo polished charge pipe",
+        "Rear turbo polished charge pipe.001",
+        "Swept engine header",
+        "Swept engine header.001",
+        "Swept engine header.002",
+        "Swept engine header.003",
+        "Turbine housing cast rib",
+        "Turbine housing cast rib.001",
+        "Turbine housing cast rib.002",
+        "Turbine housing cast rib.003",
+        "Turbine housing cast rib.004",
+        "Turbine housing cast rib.005",
+        "Turbo chassis bolted mounting plate",
+        "Turbo chassis bolted mounting plate.001",
+        "Turbo chassis mounting diagonal",
+        "Turbo chassis mounting diagonal.001",
+        "Turbo scroll tangential outlet",
+        "Turbo scroll tangential outlet.001",
+        "Twin turbo tubular lower cradle",
+        "Valve cover bolt",
+        "Valve cover bolt.001",
+        "Valve cover bolt.002",
+        "Valve cover bolt.003"
+      ]
+    },
+    {
+      "name": "Clean polished aluminum_22",
+      "center": [
+        -0.532299,
+        0.769624,
+        -2.1011255
+      ],
+      "size": [
+        0.904668,
+        1.0365659999999999,
+        1.330195
+      ],
+      "appearance": {
+        "color": [
+          0.550000011920929,
+          0.6100000143051147,
+          0.6700000166893005
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-038.png",
+          "MetalnessMap": "textures/constant-242.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "7ab61e58cc8b44298ba420947ac6619b3e92c72a71c8f0e6f486ba8eac69a4d4",
+      "file": "meshes/7ab61e58cc8b44298ba420947ac6619b3e92c72a71c8f0e6f486ba8eac69a4d4.json",
+      "components": [
+        "Bellmouth intake",
+        "Bellmouth intake.001",
+        "Bellmouth intake.002",
+        "Bellmouth intake.003",
+        "Charge-pipe stainless hose clamp",
+        "Charge-pipe stainless hose clamp.001",
+        "Charge-pipe stainless hose clamp.002",
+        "Charge-pipe stainless hose clamp.003",
+        "Exposed engine perimeter rail",
+        "Exposed engine perimeter rail.001",
+        "Intake rolled lip",
+        "Intake rolled lip.001",
+        "Intake rolled lip.002",
+        "Intake rolled lip.003",
+        "Rear engine turbine exhaust feed",
+        "Rear engine turbine exhaust feed.001",
+        "Rear turbo cast snail housing",
+        "Rear turbo cast snail housing.001",
+        "Rear turbo curved impeller blade",
+        "Rear turbo curved impeller blade.001",
+        "Rear turbo curved impeller blade.002",
+        "Rear turbo curved impeller blade.003",
+        "Rear turbo curved impeller blade.004",
+        "Rear turbo curved impeller blade.005",
+        "Rear turbo curved impeller blade.006",
+        "Rear turbo curved impeller blade.007",
+        "Rear turbo curved impeller blade.008",
+        "Rear turbo curved impeller blade.009",
+        "Rear turbo curved impeller blade.010",
+        "Rear turbo curved impeller blade.011",
+        "Rear turbo curved impeller blade.012",
+        "Rear turbo curved impeller blade.013",
+        "Rear turbo curved impeller blade.014",
+        "Rear turbo curved impeller blade.015",
+        "Rear turbo curved impeller blade.016",
+        "Rear turbo curved impeller blade.017",
+        "Rear turbo curved impeller blade.018",
+        "Rear turbo curved impeller blade.019",
+        "Rear turbo curved impeller blade.020",
+        "Rear turbo curved impeller blade.021",
+        "Rear turbo curved impeller blade.022",
+        "Rear turbo curved impeller blade.023",
+        "Rear turbo impeller spindle",
+        "Rear turbo impeller spindle.001",
+        "Rear turbo open velocity inlet",
+        "Rear turbo open velocity inlet.001",
+        "Rear turbo polished charge pipe",
+        "Rear turbo polished charge pipe.001",
+        "Swept engine header",
+        "Swept engine header.001",
+        "Swept engine header.002",
+        "Swept engine header.003",
+        "Turbine housing cast rib",
+        "Turbine housing cast rib.001",
+        "Turbine housing cast rib.002",
+        "Turbine housing cast rib.003",
+        "Turbine housing cast rib.004",
+        "Turbine housing cast rib.005",
+        "Turbo chassis bolted mounting plate",
+        "Turbo chassis bolted mounting plate.001",
+        "Turbo chassis mounting diagonal",
+        "Turbo chassis mounting diagonal.001",
+        "Turbo scroll tangential outlet",
+        "Turbo scroll tangential outlet.001",
+        "Twin turbo tubular lower cradle",
+        "Valve cover bolt",
+        "Valve cover bolt.001",
+        "Valve cover bolt.002",
+        "Valve cover bolt.003"
+      ]
+    },
+    {
+      "name": "Clean polished aluminum_23",
+      "center": [
+        0.20454849999999997,
+        0.680187,
+        -2.2858015
+      ],
+      "size": [
+        1.424127,
+        0.9446239999999999,
+        0.9608430000000001
+      ],
+      "appearance": {
+        "color": [
+          0.550000011920929,
+          0.6100000143051147,
+          0.6700000166893005
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-038.png",
+          "MetalnessMap": "textures/constant-242.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "b5318d5ea8e4e032e443f58e66304da5cd839bf5869f11cbec78d9653230b2d2",
+      "file": "meshes/b5318d5ea8e4e032e443f58e66304da5cd839bf5869f11cbec78d9653230b2d2.json",
+      "components": [
+        "Bellmouth intake",
+        "Bellmouth intake.001",
+        "Bellmouth intake.002",
+        "Bellmouth intake.003",
+        "Charge-pipe stainless hose clamp",
+        "Charge-pipe stainless hose clamp.001",
+        "Charge-pipe stainless hose clamp.002",
+        "Charge-pipe stainless hose clamp.003",
+        "Exposed engine perimeter rail",
+        "Exposed engine perimeter rail.001",
+        "Intake rolled lip",
+        "Intake rolled lip.001",
+        "Intake rolled lip.002",
+        "Intake rolled lip.003",
+        "Rear engine turbine exhaust feed",
+        "Rear engine turbine exhaust feed.001",
+        "Rear turbo cast snail housing",
+        "Rear turbo cast snail housing.001",
+        "Rear turbo curved impeller blade",
+        "Rear turbo curved impeller blade.001",
+        "Rear turbo curved impeller blade.002",
+        "Rear turbo curved impeller blade.003",
+        "Rear turbo curved impeller blade.004",
+        "Rear turbo curved impeller blade.005",
+        "Rear turbo curved impeller blade.006",
+        "Rear turbo curved impeller blade.007",
+        "Rear turbo curved impeller blade.008",
+        "Rear turbo curved impeller blade.009",
+        "Rear turbo curved impeller blade.010",
+        "Rear turbo curved impeller blade.011",
+        "Rear turbo curved impeller blade.012",
+        "Rear turbo curved impeller blade.013",
+        "Rear turbo curved impeller blade.014",
+        "Rear turbo curved impeller blade.015",
+        "Rear turbo curved impeller blade.016",
+        "Rear turbo curved impeller blade.017",
+        "Rear turbo curved impeller blade.018",
+        "Rear turbo curved impeller blade.019",
+        "Rear turbo curved impeller blade.020",
+        "Rear turbo curved impeller blade.021",
+        "Rear turbo curved impeller blade.022",
+        "Rear turbo curved impeller blade.023",
+        "Rear turbo impeller spindle",
+        "Rear turbo impeller spindle.001",
+        "Rear turbo open velocity inlet",
+        "Rear turbo open velocity inlet.001",
+        "Rear turbo polished charge pipe",
+        "Rear turbo polished charge pipe.001",
+        "Swept engine header",
+        "Swept engine header.001",
+        "Swept engine header.002",
+        "Swept engine header.003",
+        "Turbine housing cast rib",
+        "Turbine housing cast rib.001",
+        "Turbine housing cast rib.002",
+        "Turbine housing cast rib.003",
+        "Turbine housing cast rib.004",
+        "Turbine housing cast rib.005",
+        "Turbo chassis bolted mounting plate",
+        "Turbo chassis bolted mounting plate.001",
+        "Turbo chassis mounting diagonal",
+        "Turbo chassis mounting diagonal.001",
+        "Turbo scroll tangential outlet",
+        "Turbo scroll tangential outlet.001",
+        "Twin turbo tubular lower cradle",
+        "Valve cover bolt",
+        "Valve cover bolt.001",
+        "Valve cover bolt.002",
+        "Valve cover bolt.003"
+      ]
+    },
+    {
+      "name": "Clean polished aluminum_24",
+      "center": [
+        0.531881,
+        0.769498,
+        -2.0131755
+      ],
+      "size": [
+        0.905504,
+        1.036314,
+        1.152569
+      ],
+      "appearance": {
+        "color": [
+          0.550000011920929,
+          0.6100000143051147,
+          0.6700000166893005
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-038.png",
+          "MetalnessMap": "textures/constant-242.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 2616,
+      "geometryHash": "0301ecf191c30b67ebe328037444fddd57f434ce13f45413c4e05a14a7cccec3",
+      "file": "meshes/0301ecf191c30b67ebe328037444fddd57f434ce13f45413c4e05a14a7cccec3.json",
+      "components": [
+        "Bellmouth intake",
+        "Bellmouth intake.001",
+        "Bellmouth intake.002",
+        "Bellmouth intake.003",
+        "Charge-pipe stainless hose clamp",
+        "Charge-pipe stainless hose clamp.001",
+        "Charge-pipe stainless hose clamp.002",
+        "Charge-pipe stainless hose clamp.003",
+        "Exposed engine perimeter rail",
+        "Exposed engine perimeter rail.001",
+        "Intake rolled lip",
+        "Intake rolled lip.001",
+        "Intake rolled lip.002",
+        "Intake rolled lip.003",
+        "Rear engine turbine exhaust feed",
+        "Rear engine turbine exhaust feed.001",
+        "Rear turbo cast snail housing",
+        "Rear turbo cast snail housing.001",
+        "Rear turbo curved impeller blade",
+        "Rear turbo curved impeller blade.001",
+        "Rear turbo curved impeller blade.002",
+        "Rear turbo curved impeller blade.003",
+        "Rear turbo curved impeller blade.004",
+        "Rear turbo curved impeller blade.005",
+        "Rear turbo curved impeller blade.006",
+        "Rear turbo curved impeller blade.007",
+        "Rear turbo curved impeller blade.008",
+        "Rear turbo curved impeller blade.009",
+        "Rear turbo curved impeller blade.010",
+        "Rear turbo curved impeller blade.011",
+        "Rear turbo curved impeller blade.012",
+        "Rear turbo curved impeller blade.013",
+        "Rear turbo curved impeller blade.014",
+        "Rear turbo curved impeller blade.015",
+        "Rear turbo curved impeller blade.016",
+        "Rear turbo curved impeller blade.017",
+        "Rear turbo curved impeller blade.018",
+        "Rear turbo curved impeller blade.019",
+        "Rear turbo curved impeller blade.020",
+        "Rear turbo curved impeller blade.021",
+        "Rear turbo curved impeller blade.022",
+        "Rear turbo curved impeller blade.023",
+        "Rear turbo impeller spindle",
+        "Rear turbo impeller spindle.001",
+        "Rear turbo open velocity inlet",
+        "Rear turbo open velocity inlet.001",
+        "Rear turbo polished charge pipe",
+        "Rear turbo polished charge pipe.001",
+        "Swept engine header",
+        "Swept engine header.001",
+        "Swept engine header.002",
+        "Swept engine header.003",
+        "Turbine housing cast rib",
+        "Turbine housing cast rib.001",
+        "Turbine housing cast rib.002",
+        "Turbine housing cast rib.003",
+        "Turbine housing cast rib.004",
+        "Turbine housing cast rib.005",
+        "Turbo chassis bolted mounting plate",
+        "Turbo chassis bolted mounting plate.001",
+        "Turbo chassis mounting diagonal",
+        "Turbo chassis mounting diagonal.001",
+        "Turbo scroll tangential outlet",
+        "Turbo scroll tangential outlet.001",
+        "Twin turbo tubular lower cradle",
+        "Valve cover bolt",
+        "Valve cover bolt.001",
+        "Valve cover bolt.002",
+        "Valve cover bolt.003"
+      ]
+    },
+    {
+      "name": "Fusion accent_25",
+      "center": [
+        0.0,
+        1.1333185,
+        -1.4810465000000002
+      ],
+      "size": [
+        0.993884,
+        0.178423,
+        0.9129989999999999
+      ],
+      "appearance": {
+        "color": [
+          0.014999999664723873,
+          0.5,
+          0.6499999761581421
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-059.png",
+          "MetalnessMap": "textures/constant-128.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 336,
+      "geometryHash": "87882d1347a4f14d3d7cfffbc894b291edc5986f24cd4e817ca971e9a745ef7e",
+      "file": "meshes/87882d1347a4f14d3d7cfffbc894b291edc5986f24cd4e817ca971e9a745ef7e.json",
+      "components": [
+        "Charge pipe blue silicone coupling",
+        "Charge pipe blue silicone coupling.001",
+        "Engine valve bank"
+      ]
+    },
+    {
+      "name": "Machined brass_26",
+      "center": [
+        0.0,
+        0.5154449999999999,
+        -2.4311835
+      ],
+      "size": [
+        1.910568,
+        0.49558599999999997,
+        0.450685
+      ],
+      "appearance": {
+        "color": [
+          0.6499999761581421,
+          0.36000001430511475,
+          0.06499999761581421
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-056.png",
+          "MetalnessMap": "textures/constant-204.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 440,
+      "geometryHash": "1962b3029a7376421bff50d319aef95dbeaacdf19f8cc615617b37e9edd71c31",
+      "file": "meshes/1962b3029a7376421bff50d319aef95dbeaacdf19f8cc615617b37e9edd71c31.json",
+      "components": [
+        "Rear turbo flange hex screw",
+        "Rear turbo flange hex screw.001",
+        "Rear turbo flange hex screw.002",
+        "Rear turbo flange hex screw.003",
+        "Rear turbo flange hex screw.004",
+        "Rear turbo flange hex screw.005",
+        "Rear turbo flange hex screw.006",
+        "Rear turbo flange hex screw.007",
+        "Rear turbo flange hex screw.008",
+        "Rear turbo flange hex screw.009",
+        "Rear turbo flange hex screw.010",
+        "Rear turbo flange hex screw.011",
+        "Rear turbo flange hex screw.012",
+        "Rear turbo flange hex screw.013",
+        "Turbo mount bolt",
+        "Turbo mount bolt.001",
+        "Turbo mount bolt.002",
+        "Turbo mount bolt.003",
+        "Turbo mount bolt.004",
+        "Turbo mount bolt.005",
+        "Turbo mount bolt.006",
+        "Turbo mount bolt.007"
+      ]
+    }
+  ],
+  "triangles": 76895,
+  "sourceTriangles": 272748,
+  "targetSize": [
+    2.4302159999999997,
+    1.6905299999999999,
+    5.578046
+  ],
+  "expectedWheels": 4,
+  "noseAxis": "+Z",
+  "source": "Twin_Turbo.blend"
+}

@@ -1,0 +1,587 @@
+{
+  "name": "Wraith Civic",
+  "addon": "Wraith Wheels",
+  "event": "Wraith",
+  "parts": [
+    {
+      "name": "Black_MAT_0",
+      "center": [
+        -0.0006690000000000307,
+        0.9007965,
+        0.09193600000000002
+      ],
+      "size": [
+        2.203856,
+        1.515667,
+        5.005738
+      ],
+      "appearance": {
+        "color": [
+          0.002750998828560114,
+          0.002750998828560114,
+          0.002750998828560114
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-229.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "45559dce8e44a6c1b1c9f568a3567082680da54a6230eda6b1a5113eccba6bab",
+      "file": "meshes/45559dce8e44a6c1b1c9f568a3567082680da54a6230eda6b1a5113eccba6bab.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Black_MAT_1",
+      "center": [
+        0.002887000000000084,
+        0.931272,
+        0.1278235000000001
+      ],
+      "size": [
+        2.090522,
+        1.4515,
+        4.842119
+      ],
+      "appearance": {
+        "color": [
+          0.002750998828560114,
+          0.002750998828560114,
+          0.002750998828560114
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-229.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "ddf2a540376f3d3c512906338df1dd0958ec0623af35a1cecc9fb839c52fd739",
+      "file": "meshes/ddf2a540376f3d3c512906338df1dd0958ec0623af35a1cecc9fb839c52fd739.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Black_MAT_2",
+      "center": [
+        0.03986500000000004,
+        0.9634750000000001,
+        0.197816
+      ],
+      "size": [
+        2.025008,
+        1.430818,
+        4.65454
+      ],
+      "appearance": {
+        "color": [
+          0.002750998828560114,
+          0.002750998828560114,
+          0.002750998828560114
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-229.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "44cac1c6a2c3c4c7ff5b6cfff68ea665c14357fda252de53f15ae0518b8eb711",
+      "file": "meshes/44cac1c6a2c3c4c7ff5b6cfff68ea665c14357fda252de53f15ae0518b8eb711.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Black_MAT_3",
+      "center": [
+        -0.039509499999999975,
+        0.9417260000000001,
+        0.1737804999999999
+      ],
+      "size": [
+        2.0227969999999997,
+        1.433652,
+        5.083469
+      ],
+      "appearance": {
+        "color": [
+          0.002750998828560114,
+          0.002750998828560114,
+          0.002750998828560114
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-229.png",
+          "MetalnessMap": "textures/constant-000.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 5147,
+      "geometryHash": "791607d7eeb4ff9e9836975288b8b07df45e7fb72ffbd775cd89aadbf3a050e0",
+      "file": "meshes/791607d7eeb4ff9e9836975288b8b07df45e7fb72ffbd775cd89aadbf3a050e0.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Silver_MAT_4",
+      "center": [
+        -0.0001295000000000046,
+        0.713075,
+        0.04309600000000002
+      ],
+      "size": [
+        2.1183370000000004,
+        0.9531940000000001,
+        4.985128
+      ],
+      "appearance": {
+        "color": [
+          0.44999998807907104,
+          0.28999999165534973,
+          0.08500000089406967
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-043.png",
+          "MetalnessMap": "textures/constant-229.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 1040,
+      "geometryHash": "2e6d94dd28de6c4f1194656bfb30e7d104d8de3b2d9d23f21bcac1307db8aa9f",
+      "file": "meshes/2e6d94dd28de6c4f1194656bfb30e7d104d8de3b2d9d23f21bcac1307db8aa9f.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Body_MAT_5",
+      "center": [
+        0.0033885000000000165,
+        0.9380375000000001,
+        0.16845199999999982
+      ],
+      "size": [
+        2.229997,
+        1.505811,
+        5.09835
+      ],
+      "appearance": {
+        "color": [
+          1,
+          1,
+          1
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Paint-Wraith_Civic.png",
+          "RoughnessMap": "textures/constant-061.png",
+          "MetalnessMap": "textures/constant-082.png"
+        },
+        "paintTint": [
+          0.05999999865889549,
+          0.10000000149011612,
+          0.18000000715255737
+        ]
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "aeef90f526b69243b9a77c9d35cbcc1ae1a099a55454f439fb4df430605424d2",
+      "file": "meshes/aeef90f526b69243b9a77c9d35cbcc1ae1a099a55454f439fb4df430605424d2.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Body_MAT_6",
+      "center": [
+        -0.008552000000000004,
+        0.766115,
+        0.11496299999999993
+      ],
+      "size": [
+        2.4302159999999997,
+        0.9394799999999999,
+        5.1947
+      ],
+      "appearance": {
+        "color": [
+          1,
+          1,
+          1
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "ColorMap": "textures/Paint-Wraith_Civic.png",
+          "RoughnessMap": "textures/constant-061.png",
+          "MetalnessMap": "textures/constant-082.png"
+        },
+        "paintTint": [
+          0.05999999865889549,
+          0.10000000149011612,
+          0.18000000715255737
+        ]
+      },
+      "wheel": null,
+      "triangles": 2783,
+      "geometryHash": "7d6f65556e1f1e348b38723d86612468b3f31d600c01b04e21ce08853cda9410",
+      "file": "meshes/7d6f65556e1f1e348b38723d86612468b3f31d600c01b04e21ce08853cda9410.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Glass_Glass_MAT_7",
+      "center": [
+        0.0,
+        1.2462955,
+        -0.5861119999999999
+      ],
+      "size": [
+        1.896082,
+        0.703033,
+        3.4635119999999997
+      ],
+      "appearance": {
+        "color": [
+          0.3199999928474426,
+          0.4399999976158142,
+          0.5
+        ],
+        "transparency": 0.38,
+        "finish": "Glass",
+        "maps": {}
+      },
+      "wheel": null,
+      "triangles": 432,
+      "geometryHash": "19ef50a20413baf230b09f915f358325642de4233a110216b82b4131df9a4cbf",
+      "file": "meshes/19ef50a20413baf230b09f915f358325642de4233a110216b82b4131df9a4cbf.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Glass_Glass_02_MAT_8",
+      "center": [
+        0.0,
+        0.9707705,
+        -0.5364744999999999
+      ],
+      "size": [
+        2.108,
+        0.455321,
+        3.562787
+      ],
+      "appearance": {
+        "color": [
+          0.8000000715255737,
+          0.1326354742050171,
+          0.0
+        ],
+        "transparency": 0.24,
+        "finish": "Glass",
+        "maps": {}
+      },
+      "wheel": null,
+      "triangles": 504,
+      "geometryHash": "2d0de9f339946180343aaf9ce98c5ead97d15612130948be5d5b18688061b025",
+      "file": "meshes/2d0de9f339946180343aaf9ce98c5ead97d15612130948be5d5b18688061b025.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Mirror_MAT_9",
+      "center": [
+        -0.008781000000000039,
+        0.9231095,
+        0.10435400000000006
+      ],
+      "size": [
+        2.3879200000000003,
+        0.590261,
+        4.8381419999999995
+      ],
+      "appearance": {
+        "color": [
+          0.800000011920929,
+          0.800000011920929,
+          0.800000011920929
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-019.png",
+          "MetalnessMap": "textures/constant-255.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 2776,
+      "geometryHash": "d958e1c75c7766913c745aedf5bf3e50bca34c8a71dc01f3ae5e0b28c126cd5d",
+      "file": "meshes/d958e1c75c7766913c745aedf5bf3e50bca34c8a71dc01f3ae5e0b28c126cd5d.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Glass_Clear fluted headlamp lens_10",
+      "center": [
+        0.0,
+        0.742649,
+        2.3164865
+      ],
+      "size": [
+        1.945198,
+        0.2028939999999999,
+        0.426307
+      ],
+      "appearance": {
+        "color": [
+          0.9399999976158142,
+          0.9700000286102295,
+          1.0
+        ],
+        "transparency": 0.7,
+        "finish": "Glass",
+        "maps": {}
+      },
+      "wheel": null,
+      "triangles": 318,
+      "geometryHash": "1837c33462cc5675d9e1d2fa66b0b44403cff7b6212045da223d2bf24c664a9a",
+      "file": "meshes/1837c33462cc5675d9e1d2fa66b0b44403cff7b6212045da223d2bf24c664a9a.json",
+      "components": [
+        "Honda_Civic_Body"
+      ]
+    },
+    {
+      "name": "Addon energy_11",
+      "center": [
+        0.0,
+        0.38460150000000004,
+        0.001982499999999998
+      ],
+      "size": [
+        2.12522,
+        1.054681,
+        4.328419
+      ],
+      "appearance": {
+        "color": [
+          0.11999999731779099,
+          0.949999988079071,
+          0.5199999809265137
+        ],
+        "transparency": 0.0,
+        "finish": "Neon",
+        "maps": {}
+      },
+      "wheel": null,
+      "triangles": 6500,
+      "geometryHash": "7ff74c0deda88f9436daba47993a4e9a45f1e78de1602baa13f30da0918cb2bc",
+      "file": "meshes/7ff74c0deda88f9436daba47993a4e9a45f1e78de1602baa13f30da0918cb2bc.json",
+      "components": [
+        "Ghost wheel spoke",
+        "Ghost wheel spoke.001",
+        "Ghost wheel spoke.002",
+        "Ghost wheel spoke.003",
+        "Ghost wheel spoke.004",
+        "Ghost wheel spoke.005",
+        "Ghost wheel spoke.006",
+        "Ghost wheel spoke.007",
+        "Ghost wheel spoke.008",
+        "Ghost wheel spoke.009",
+        "Ghost wheel spoke.010",
+        "Ghost wheel spoke.011",
+        "Ghost wheel spoke.012",
+        "Ghost wheel spoke.013",
+        "Ghost wheel spoke.014",
+        "Ghost wheel spoke.015",
+        "Ghost wheel spoke.016",
+        "Ghost wheel spoke.017",
+        "Ghost wheel spoke.018",
+        "Ghost wheel spoke.019",
+        "Ghost wheel spoke.020",
+        "Ghost wheel spoke.021",
+        "Ghost wheel spoke.022",
+        "Ghost wheel spoke.023",
+        "Ghost wheel spoke.024",
+        "Ghost wheel spoke.025",
+        "Ghost wheel spoke.026",
+        "Ghost wheel spoke.027",
+        "Ghost wheel spoke.028",
+        "Ghost wheel spoke.029",
+        "Ghost wheel spoke.030",
+        "Ghost wheel spoke.031",
+        "Spectral sill accent",
+        "Spectral sill accent.001",
+        "Wraith wheel tire",
+        "Wraith wheel tire.001",
+        "Wraith wheel tire.002",
+        "Wraith wheel tire.003"
+      ]
+    },
+    {
+      "name": "Addon energy_12",
+      "center": [
+        0.0,
+        0.38460150000000004,
+        -0.0771170000000001
+      ],
+      "size": [
+        2.147272,
+        1.054681,
+        4.1702200000000005
+      ],
+      "appearance": {
+        "color": [
+          0.11999999731779099,
+          0.949999988079071,
+          0.5199999809265137
+        ],
+        "transparency": 0.0,
+        "finish": "Neon",
+        "maps": {}
+      },
+      "wheel": null,
+      "triangles": 4444,
+      "geometryHash": "0ad0297ab971b0dd1eb43208021a93c1f1454c59be7778ab489513b6a39454f1",
+      "file": "meshes/0ad0297ab971b0dd1eb43208021a93c1f1454c59be7778ab489513b6a39454f1.json",
+      "components": [
+        "Ghost wheel spoke",
+        "Ghost wheel spoke.001",
+        "Ghost wheel spoke.002",
+        "Ghost wheel spoke.003",
+        "Ghost wheel spoke.004",
+        "Ghost wheel spoke.005",
+        "Ghost wheel spoke.006",
+        "Ghost wheel spoke.007",
+        "Ghost wheel spoke.008",
+        "Ghost wheel spoke.009",
+        "Ghost wheel spoke.010",
+        "Ghost wheel spoke.011",
+        "Ghost wheel spoke.012",
+        "Ghost wheel spoke.013",
+        "Ghost wheel spoke.014",
+        "Ghost wheel spoke.015",
+        "Ghost wheel spoke.016",
+        "Ghost wheel spoke.017",
+        "Ghost wheel spoke.018",
+        "Ghost wheel spoke.019",
+        "Ghost wheel spoke.020",
+        "Ghost wheel spoke.021",
+        "Ghost wheel spoke.022",
+        "Ghost wheel spoke.023",
+        "Ghost wheel spoke.024",
+        "Ghost wheel spoke.025",
+        "Ghost wheel spoke.026",
+        "Ghost wheel spoke.027",
+        "Ghost wheel spoke.028",
+        "Ghost wheel spoke.029",
+        "Ghost wheel spoke.030",
+        "Ghost wheel spoke.031",
+        "Spectral sill accent",
+        "Spectral sill accent.001",
+        "Wraith wheel tire",
+        "Wraith wheel tire.001",
+        "Wraith wheel tire.002",
+        "Wraith wheel tire.003"
+      ]
+    },
+    {
+      "name": "Machined brass_13",
+      "center": [
+        0.0,
+        0.3846015,
+        0.001982499999999998
+      ],
+      "size": [
+        2.030062,
+        0.761273,
+        4.035011
+      ],
+      "appearance": {
+        "color": [
+          0.6499999761581421,
+          0.36000001430511475,
+          0.06499999761581421
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {
+          "RoughnessMap": "textures/constant-056.png",
+          "MetalnessMap": "textures/constant-204.png"
+        }
+      },
+      "wheel": null,
+      "triangles": 2304,
+      "geometryHash": "aba8424f652eedfc5d39e8c23c8c78828429c137cfc249abaf241d557d2d3b6f",
+      "file": "meshes/aba8424f652eedfc5d39e8c23c8c78828429c137cfc249abaf241d557d2d3b6f.json",
+      "components": [
+        "Wraith wheel inner rim",
+        "Wraith wheel inner rim.001",
+        "Wraith wheel inner rim.002",
+        "Wraith wheel inner rim.003"
+      ]
+    },
+    {
+      "name": "Clean carbon trim_14",
+      "center": [
+        0.0,
+        0.3846015,
+        0.001982499999999998
+      ],
+      "size": [
+        2.088214,
+        0.198249,
+        3.471987
+      ],
+      "appearance": {
+        "color": [
+          0.17,
+          0.18,
+          0.2
+        ],
+        "transparency": 0.0,
+        "finish": "SmoothPlastic",
+        "maps": {},
+        "variant": "AddonCarbonTwill"
+      },
+      "wheel": null,
+      "triangles": 368,
+      "geometryHash": "13c46df3dd2be38309ae83a593c23912727a11623545b5476d3971e6266a7a28",
+      "file": "meshes/13c46df3dd2be38309ae83a593c23912727a11623545b5476d3971e6266a7a28.json",
+      "components": [
+        "Wraith wheel hub",
+        "Wraith wheel hub.001",
+        "Wraith wheel hub.002",
+        "Wraith wheel hub.003"
+      ]
+    }
+  ],
+  "triangles": 52616,
+  "sourceTriangles": 168113,
+  "targetSize": [
+    2.4302159999999997,
+    1.833682,
+    5.2000139999999995
+  ],
+  "expectedWheels": 0,
+  "noseAxis": "+Z",
+  "source": "Wraith_Wheels.blend"
+}
