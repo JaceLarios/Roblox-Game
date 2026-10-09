@@ -1,117 +1,89 @@
 """Badge pictures for the Roblox badges (ServerStorage.Badges, docs/BADGES.md).
 
 python make_badges.py  -> one 512x512 PNG per badge here, plus badges-sheet.png.
-Built from the game's own model renders: the picture in a disc, a coloured
-ring and a short label. Roblox shows badge pictures as circles, so
-everything that matters stays inside the disc.
+Each picture is a scene of what you do to earn the badge (scenes/*.png,
+rendered by build_badges.py in Blender from the game's own models), set in a
+bolted scrap-metal ring with a banner in the game's font. Roblox shows badge
+pictures as circles, so everything that matters stays inside the disc.
 """
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 HERE = Path(__file__).resolve().parent
-ASSETS = HERE.parent
 SIZE = 512
-FONT = 'C:/Windows/Fonts/impact.ttf'
+DISC = 452                      # the scene's circle, inset in the ring
+_fonts = sorted((Path.home() / 'AppData/Local/Roblox/Versions').glob('*/content/fonts/FredokaOne-Regular.ttf'))
+FONT = str(_fonts[-1]) if _fonts else 'C:/Windows/Fonts/impact.ttf'
 
 
-def square(path, zoom=0.82, shift=(0, 0)):
-    im = Image.open(ASSETS / path).convert('RGB')
-    w, h = im.size
-    side = int(min(w, h) * zoom)
-    cx, cy = w // 2 + int(shift[0] * w), h // 2 + int(shift[1] * h)
-    return im.crop((cx - side // 2, cy - side // 2, cx + side // 2, cy + side // 2))
+def shade(c, k):
+    return tuple(max(0, min(255, int(v * k))) for v in c[:3])
 
 
-def grid(paths, n):
-    cell = 512 // n
-    out = Image.new('RGB', (cell * n, cell * n), (30, 26, 44))
-    for i, p in enumerate(paths[:n * n]):
-        out.paste(square(p, 0.9).resize((cell, cell), Image.LANCZOS), ((i % n) * cell, (i // n) * cell))
-    return out
+def bolt(d, x, y, r, ring):
+    """A hex bolt head: the yard's scrap, and the game's Bolts."""
+    import math
+    pts = [(x + r * math.cos(math.pi / 6 + i * math.pi / 3), y + r * math.sin(math.pi / 6 + i * math.pi / 3)) for i in range(6)]
+    d.polygon([(px + 1.5, py + 2) for px, py in pts], fill=shade(ring, .3))
+    d.polygon(pts, fill=(196, 202, 212), outline=(70, 74, 84), width=2)
+    d.ellipse((x - r * .45, y - r * .45, x + r * .45, y + r * .45), fill=(150, 156, 168), outline=(90, 94, 104), width=1)
 
 
-def badge(name, picture, ring, label, tint=None):
+def badge(name, ring, label):
+    import math
     canvas = Image.new('RGBA', (SIZE, SIZE), (0, 0, 0, 0))
-    disc = picture.resize((452, 452), Image.LANCZOS).convert('RGB')
-    if tint:
-        disc = Image.blend(disc, Image.new('RGB', disc.size, tint[0]), tint[1])
-    mask = Image.new('L', disc.size, 0)
-    ImageDraw.Draw(mask).ellipse((0, 0, 451, 451), fill=255)
-    canvas.paste(disc, (30, 30), mask)
+    scene = Image.open(HERE / 'scenes' / f'{name}.png').convert('RGB').resize((DISC, DISC), Image.LANCZOS)
+    mask = Image.new('L', (DISC, DISC), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, DISC - 1, DISC - 1), fill=255)
+    off = (SIZE - DISC) // 2
+    canvas.paste(scene, (off, off), mask)
+    # an inner shadow so the scene sits inside the ring
+    shadow = Image.new('L', (SIZE, SIZE), 0)
+    ImageDraw.Draw(shadow).ellipse((off - 6, off - 6, SIZE - off + 6, SIZE - off + 6), outline=150, width=16)
+    shadow = shadow.filter(ImageFilter.GaussianBlur(7))
+    clip = Image.new('L', (SIZE, SIZE), 0)
+    ImageDraw.Draw(clip).ellipse((off, off, SIZE - off - 1, SIZE - off - 1), fill=255)
+    from PIL import ImageChops
+    canvas.paste(Image.new('RGBA', (SIZE, SIZE), (0, 0, 0, 255)), (0, 0), ImageChops.multiply(shadow, clip))
     d = ImageDraw.Draw(canvas)
-    dark = tuple(int(c * .45) for c in ring)
-    d.ellipse((14, 14, 497, 497), outline=dark, width=30)
-    d.ellipse((20, 20, 491, 491), outline=ring, width=20)
-    d.ellipse((38, 38, 473, 473), outline=(255, 255, 255, 120), width=3)
-    font = ImageFont.truetype(FONT, 64 if len(label) <= 8 else 52)
+    dark, light = shade(ring, .42), shade(ring, 1.25)
+    d.ellipse((6, 6, SIZE - 7, SIZE - 7), outline=dark, width=30)
+    d.ellipse((12, 12, SIZE - 13, SIZE - 13), outline=ring, width=20)
+    d.arc((14, 14, SIZE - 15, SIZE - 15), 200, 340, fill=light, width=6)
+    d.ellipse((off - 2, off - 2, SIZE - off + 1, SIZE - off + 1), outline=dark, width=4)
+    for i in range(12):
+        a = math.radians(i * 30 + 15)
+        bolt(d, 256 + math.cos(a) * 228, 256 + math.sin(a) * 228, 9, ring)
+    # the banner
+    font = ImageFont.truetype(FONT, 58 if len(label) <= 7 else 50 if len(label) <= 9 else 42)
     tw = d.textlength(label, font=font)
-    box = (256 - tw / 2 - 26, 372, 256 + tw / 2 + 26, 452)
-    d.rounded_rectangle(box, radius=22, fill=ring, outline=dark, width=6)
-    d.text((256, 410), label, font=font, fill=(255, 255, 255), anchor='mm', stroke_width=4, stroke_fill=dark)
+    x0, x1, y0, y1 = 256 - tw / 2 - 30, 256 + tw / 2 + 30, 386, 456
+    for side in (-1, 1):            # tails tucked behind
+        tx = x0 if side < 0 else x1
+        tail = [(tx - side * 10, y0 + 14), (tx + side * 34, y0 + 14), (tx + side * 20, (y0 + y1) / 2 + 7), (tx + side * 34, y1 + 2), (tx - side * 10, y1 + 2)]
+        d.polygon(tail, fill=dark)
+    d.rounded_rectangle((x0, y0 + 4, x1, y1 + 4), radius=20, fill=shade(ring, .25))
+    d.rounded_rectangle((x0, y0, x1, y1), radius=20, fill=ring, outline=dark, width=5)
+    d.rounded_rectangle((x0 + 8, y0 + 7, x1 - 8, y0 + 22), radius=8, fill=light)
+    d.text((256, (y0 + y1) / 2 + 1), label, font=font, fill=(255, 255, 255), anchor='mm', stroke_width=5, stroke_fill=dark)
     canvas.save(HERE / f'{name}.png')
     return canvas
 
 
-def silhouette(path):
-    im = square(path)
-    grey = ImageOps.grayscale(im)
-    return Image.merge('RGB', [grey.point(lambda v: 18 if v < 150 else 70)] * 3)
-
-
-def with_mark(picture, mark, colour):
-    picture = picture.copy().resize((452, 452))
-    d = ImageDraw.Draw(picture)
-    font = ImageFont.truetype(FONT, 230)
-    d.text((226, 190), mark, font=font, fill=colour, anchor='mm', stroke_width=8, stroke_fill=(20, 16, 28))
-    return picture
-
-
-def checker(picture):
-    """The car cut out of its plain render backdrop, over a chequered flag."""
-    picture = picture.copy().resize((452, 452))
-    flag = Image.new('RGB', (452, 452), (255, 255, 255))
-    d = ImageDraw.Draw(flag)
-    for y in range(0, 452, 38):
-        for x in range(0, 452, 38):
-            if (x // 38 + y // 38) % 2: d.rectangle((x, y, x + 37, y + 37), fill=(24, 24, 30))
-    # The backdrop is a soft grey gradient: anything close to the colour at
-    # its own height (sampled at the left edge) is backdrop.
-    px = picture.load()
-    mask = Image.new('L', picture.size, 0)
-    mp = mask.load()
-    for y in range(452):
-        bg = px[2, y]
-        for x in range(452):
-            c = px[x, y]
-            if sum(abs(c[i] - bg[i]) for i in range(3)) > 36: mp[x, y] = 255
-    from PIL import ImageFilter
-    mask = mask.filter(ImageFilter.MedianFilter(5)).filter(ImageFilter.GaussianBlur(1))
-    flag.paste(picture, (0, 0), mask)
-    return flag
-
-
-BUILDS = ['remaining-fusions/Scrapyard_God-front.png', 'remaining-fusions/Hover_Hulk-front.png',
-          'remaining-fusions/Sky_Marshal-front.png', 'remaining-fusions/Junk_Mashup-front.png',
-          'remaining-fusions/Afterburner_GT-front.png', 'remaining-fusions/Blown_Charger-front.png',
-          'remaining-fusions/Riot_Rig-front.png', 'remaining-fusions/Mangled_Overlord-front.png',
-          'remaining-fusions/Rotor_Rebel-front.png']
-GHOSTS = ['phantom-builds/Wisp_Kart.png', 'phantom-builds/Banshee_Muscle.png',
-          'phantom-builds/Specter_Hauler.png', 'phantom-builds/Wraith_Crusher.png']
-
 made = [
-    badge('welcome', square('base-cars/Rusted_Sedan.png'), (62, 196, 200), 'WELCOME'),
-    badge('firstFusion', square('remaining-fusions/Junk_Mashup-front.png'), (240, 140, 50), 'FUSED!'),
-    badge('firstGhost', square('phantom-builds/Wisp_Kart.png'), (90, 220, 170), 'GHOST'),
-    badge('secretCar', with_mark(silhouette('base-cars/Monster_Truck.png'), '?', (255, 205, 60)), (230, 175, 40), 'SECRET'),
-    badge('firstRebirth', square('base-cars/Muscle_Car.png'), (150, 90, 230), 'REBIRTH', tint=((150, 90, 230), .18)),
-    badge('maxRebirth', square('warp-drive-batch/Starcrusher.png'), (255, 190, 40), 'MAX', tint=((255, 200, 60), .12)),
-    badge('raceFinish', checker(square('remaining-fusions/Afterburner_GT-front.png')), (220, 60, 60), 'FINISH'),
-    badge('collector', grid(BUILDS, 2), (70, 140, 240), '25'),
-    badge('masterBuilder', grid(BUILDS, 3), (255, 190, 40), 'MASTER'),
-    badge('ghostCollector', grid(GHOSTS, 2), (150, 90, 230), 'SPECTRAL', tint=((150, 255, 210), .12)),
+    badge('welcome', (62, 196, 200), 'WELCOME'),
+    badge('firstFusion', (245, 130, 40), 'FUSED!'),
+    badge('firstGhost', (70, 210, 160), 'GHOST RIDER'),
+    badge('secretCar', (230, 172, 40), 'SECRET'),
+    badge('firstRebirth', (150, 90, 230), 'REBIRTH'),
+    badge('maxRebirth', (245, 185, 40), 'MAX x4'),
+    badge('raceFinish', (225, 65, 55), 'FINISHED!'),
+    badge('collector', (70, 140, 240), '25 BUILDS'),
+    badge('masterBuilder', (245, 185, 40), 'MASTER'),
+    badge('ghostCollector', (130, 90, 220), 'SPECTRAL'),
 ]
 sheet = Image.new('RGBA', (SIZE * 5, SIZE * 2), (28, 24, 40, 255))
 for i, im in enumerate(made):
     sheet.alpha_composite(im, ((i % 5) * SIZE, (i // 5) * SIZE))
 sheet.convert('RGB').save(HERE / 'badges-sheet.png')
-print('made', len(made))
+print('made', len(made), 'with', FONT)
