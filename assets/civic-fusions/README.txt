@@ -1,8 +1,9 @@
 CIVIC BASE AND ADDON VARIANTS
-2026-10-08
+Updated 2026-10-09
 
 The approved rusty base and 31 restored variants are backed up here as native
-Blender scenes with packed textures. They have not been installed in Roblox.
+Blender scenes with packed textures. All 32 are now installed in Studio place
+94136201094216, ReplicatedStorage.ItemModels (Civic_20261009_v1).
 
 APPROVED MODELS
 source/Honda-Civic-Loose-Bumper-v4.blend: weathered base with the hanging front
@@ -23,8 +24,12 @@ Main d36f6e3 changed Phantoms into an event layer on any car, retained through
 later mechanical fusions. These 15 authored Civic Phantom variants are retained
 as optional base-car/Index concepts. They are not 15 new mandatory fuse recipes.
 Do not restore the obsolete per-Phantom recipe design to import this collection.
-The Civic is not yet registered among FusionRecipes' seven base cars. Working
-labels in this folder are not approved runtime IDs or item values.
+The Civic is now the eighth base car. Runtime names are Civic, Civic + <addon>
+for the 16 mechanical builds, and <ghost> Civic for the 15 Index/base-car looks.
+Common base value 12, weight 12, multiplier 1.18, shift -1 fit between Dirt Bike
+and Golf Cart; existing relative spawn weights are preserved (total now 100).
+The game's current event-layer design is preserved, including Phantoms carried
+through later mechanical upgrades. Named Phantom builds are not extra recipes.
 
 REBUILD
 Use Blender 5.2.2 (authoring version), from a complete repository checkout:
@@ -46,17 +51,25 @@ v2/validate.py checks all 31 restored bodies, expected addons and scene bounds.
 v2/check-rear-exhausts.py checks the tall outlets and genuine bumper deletion,
 then renders the rear detail view. JSON reports record their results.
 
-ROBLOX IMPORT STILL REQUIRED
-Optimize geometry and bake the Blender materials to Roblox-supported textures.
-Native scenes are detailed authoring assets, not a measured in-game mesh budget.
-Export visible model geometry from every addon collection; omit the preview
-floor, lights and cameras. Source fronts point along Blender -Y; convert to
-Roblox +Z and standardize scale. Keep separate wheels and their pivots/radii.
-Preserve named Glass parts/materials so the race seat goes inside the cabin.
-Confirm runtime names, prices and recipes; check Phantom mount positions and
-VehicleAddonEffects offsets. Glow in a render is not dynamic in-game VFX.
-Test hotbar hold, conveyor, pads, fusion, seat placement and races after import.
-Studio has not been modified by this backup/review pass.
+ROBLOX IMPORT AND RECOVERY
+roblox/README.txt describes the completed import, recovery and test evidence.
+All meshes face +Z. The 32 templates contain 882 parts / 471 unique meshes;
+52,616-77,634 triangles per model. Geometry is shared by asset ID. Wheels have
+their existing pivots/radii; Hover Fans and Wraith Civic intentionally have none.
+The approved Blender scenes remain unchanged. Rust and paint colors are baked
+to diffuse atlases; glass, chrome, neon and existing carbon/detail variants are
+used in Studio. Authored PBR maps are retained but are not all active in Roblox.
+The explicit DriverCabin part attribute keeps addon glass out of race seating.
+
+All 32 passed viewport/world, wheels, conveyor fit, resize, race construction,
+hotbar equip, earning-pad placement and unplacement checks. Live pickup/delivery,
+fusion, earning, Phantom retention and four driving cases also passed. Driving
+used simulated VehicleSeat input with the actual game physics; native keyboard
+input did not register through the test tool. All 32 were visually checked in
+the Edit viewport. Full multiplayer/mobile performance was not measured.
+Tests used isolated data with saves/leaderboard writes disabled. All seven
+temporary source overrides were restored and Studio returned to Edit mode.
+This installs into the open Studio game; no live-place publish was performed.
 
 PROVENANCE
 source/source-record.json preserves the downloaded Civic archive name and hash.

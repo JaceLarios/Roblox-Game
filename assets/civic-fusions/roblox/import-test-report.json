@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-09",
+  "placeId": 94136201094216,
+  "revision": "Civic_20261009_v1",
+  "installedModels": 32,
+  "meshParts": 882,
+  "uniqueMeshes": 471,
+  "triangleRange": [
+    52616,
+    77634
+  ],
+  "allModelLifecyclePassed": 32,
+  "allModelHotbarPlaceUnplacePassed": 32,
+  "liveExamples": [
+    "conveyor spawn and motion",
+    "pickup and home delivery",
+    "Straight Pipes fusion and pad income",
+    "Phantom application",
+    "Phantom retained after mechanical upgrade"
+  ],
+  "raceDriving": {
+    "Civic": {
+      "maximumStudsPerSecond": 57.31,
+      "forwardDistanceStuds": 261.93,
+      "accelerates": true,
+      "steers": true,
+      "brakes": true
+    },
+    "Civic + Twin Turbo": {
+      "maximumStudsPerSecond": 78.11,
+      "forwardDistanceStuds": 368.76,
+      "accelerates": true,
+      "steers": true,
+      "brakes": true
+    },
+    "Civic + Hover Fans": {
+      "maximumStudsPerSecond": 96.1,
+      "forwardDistanceStuds": 466.82,
+      "accelerates": true,
+      "steers": true,
+      "brakes": true
+    },
+    "{Wisp} Civic + Twin Turbo": {
+      "maximumStudsPerSecond": 78.11,
+      "forwardDistanceStuds": 368.86,
+      "accelerates": true,
+      "steers": true,
+      "brakes": true
+    }
+  },
+  "inputMethod": "Client Heartbeat injects VehicleSeat throttle/steer; unchanged RaceDrive and RaceService run actual physics. Native test key inputs did not register; RenderStepped emitted zero callbacks in this Studio session.",
+  "temporaryQAOverridesRestored": true,
+  "publishedLiveGame": false,
+  "materialNotes": "Baked diffuse TextureID with native Metal/Glass/Neon and existing detail/carbon variants. Authored normal/roughness/metalness references retained as attributes; new SurfaceAppearance maps are not active because one uploaded metalness map was rejected and PBR instances rendered gray.",
+  "remainingVerification": [
+    "Hands-on driving: native virtual key input did not register through the test tool. Actual physics was verified with simulated VehicleSeat inputs in four races.",
+    "Full multiplayer/mobile/load performance not measured."
+  ],
+  "editVisualModelsChecked": 32,
+  "restoreRoundTripModelsChecked": 32,
+  "cloudSaveStatus": "Save to Roblox was selected in Studio; no completion confirmation was available. Installed Edit state and local restore snapshot are verified."
+}
