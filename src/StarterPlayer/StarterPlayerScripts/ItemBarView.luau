@@ -9,6 +9,8 @@
 	its number key. The Bat and the Speed Coil show their own icons. The
 	equipped slot is lit, and the name of the item held (or hovered) sits
 	above the bar. More items than fit turn into pages, with arrows.
+	Made about a quarter smaller on 2026-10-13 (the user: "make the hotbar
+	UI smaller"): SLOT and PHONE_SLOT below.
 
 	Restyle freely; keep View.Create(gui) returning Render(slots, held,
 	page, pages, heldCaption) and the onClick / onPage hooks.
@@ -21,6 +23,10 @@ local ItemVisuals = require(ReplicatedStorage:WaitForChild("ItemVisuals"))
 local View = {}
 
 local INK = Color3.fromRGB(8, 43, 77)
+-- Slot sizes, in pixels: on a computer and on a phone.
+local SLOT, PHONE_SLOT = 50, 40
+local ARROW_WIDTH = 24
+local GAP = 5
 local SLOT_DARK = Color3.fromRGB(22, 30, 50)
 local HELD = Color3.fromRGB(255, 214, 80)
 
@@ -66,7 +72,7 @@ function View.Create(gui)
 
 	local holder = Garage.New("Frame", gui, "ItemBar", {
 		AnchorPoint = Vector2.new(.5, 1), Position = UDim2.new(.5, 0, 1, -8),
-		Size = UDim2.fromOffset(100, 74), BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(100, SLOT + 8), BackgroundTransparency = 1,
 	})
 	local row = Garage.New("Frame", holder, "Slots", {
 		AnchorPoint = Vector2.new(.5, 1), Position = UDim2.new(.5, 0, 1, 0),
@@ -77,34 +83,34 @@ function View.Create(gui)
 	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 	layout.SortOrder = Enum.SortOrder.LayoutOrder
-	layout.Padding = UDim.new(0, 6)
+	layout.Padding = UDim.new(0, GAP)
 	layout.Parent = row
 
 	-- The held (or hovered) item's name, above the bar.
-	local caption = Garage.Text(holder, "HeldName", "", UDim2.new(.5, 0, 0, -34), UDim2.fromOffset(320, 28), 22, Color3.new(1, 1, 1))
+	local caption = Garage.Text(holder, "HeldName", "", UDim2.new(.5, 0, 0, -27), UDim2.fromOffset(260, 22), 18, Color3.new(1, 1, 1))
 	caption.AnchorPoint = Vector2.new(.5, 0)
 	caption.RichText = true
 	caption.TextScaled = true
-	textStroke(caption, 2.5)
+	textStroke(caption, 2)
 
 	local function arrow(name, text, order, delta)
 		local b = Garage.New("TextButton", row, name, {
-			Text = text, TextSize = 26, Font = Enum.Font.FredokaOne, TextColor3 = Color3.new(1, 1, 1),
+			Text = text, TextSize = 20, Font = Enum.Font.FredokaOne, TextColor3 = Color3.new(1, 1, 1),
 			BackgroundColor3 = SLOT_DARK, BackgroundTransparency = .15, AutoButtonColor = true,
-			Size = UDim2.fromOffset(30, 66), LayoutOrder = order, Visible = false,
+			Size = UDim2.fromOffset(ARROW_WIDTH, SLOT), LayoutOrder = order, Visible = false,
 		})
-		corner(b, 10) outline(b, Color3.fromRGB(130, 244, 255), 2) textStroke(b)
+		corner(b, 8) outline(b, Color3.fromRGB(130, 244, 255), 2) textStroke(b)
 		b.Activated:Connect(function() if api.onPage then api.onPage(delta) end end)
 		return b
 	end
 	local back = arrow("PagePrev", "<", -1, -1)
 	local nextPage = arrow("PageNext", ">", 1000, 1)
-	local pageLabel = Garage.Text(holder, "Page", "", UDim2.new(1, 0, 0, -20), UDim2.fromOffset(60, 18), 15, Color3.new(1, 1, 1))
+	local pageLabel = Garage.Text(holder, "Page", "", UDim2.new(1, 0, 0, -17), UDim2.fromOffset(50, 15), 13, Color3.new(1, 1, 1))
 	pageLabel.AnchorPoint = Vector2.new(1, 0)
 	textStroke(pageLabel, 1.5)
 
 	local frames = {} -- [tool] = { frame, stroke, itemName, tint }
-	local slotSize = 66
+	local slotSize = SLOT
 	local heldName, hoverName = "", nil
 	local function showCaption() caption.Text = hoverName or heldName end
 
@@ -113,17 +119,17 @@ function View.Create(gui)
 			Text = "", AutoButtonColor = false, BackgroundColor3 = SLOT_DARK, BackgroundTransparency = .2,
 			Size = UDim2.fromOffset(slotSize, slotSize),
 		})
-		corner(frame, 12)
-		local stroke = outline(frame, slot.color, 2.5)
+		corner(frame, 10)
+		local stroke = outline(frame, slot.color, 2)
 		if slot.itemName then
 			modelView(frame, slot.itemName, slot.tint)
 		elseif slot.art then
 			Garage.Art(frame, slot.art, UDim2.fromScale(.12, .1), UDim2.fromScale(.76, .76)).ZIndex = 2
 		else
-			local t = Garage.Text(frame, "Name", slot.name, UDim2.fromOffset(4, 4), UDim2.new(1, -8, 1, -8), 14, Color3.new(1, 1, 1))
+			local t = Garage.Text(frame, "Name", slot.name, UDim2.fromOffset(3, 3), UDim2.new(1, -6, 1, -6), 12, Color3.new(1, 1, 1))
 			t.TextScaled = true textStroke(t, 1.5)
 		end
-		local key = Garage.Text(frame, "Key", "", UDim2.fromOffset(5, 2), UDim2.fromOffset(20, 18), 15, Color3.new(1, 1, 1))
+		local key = Garage.Text(frame, "Key", "", UDim2.fromOffset(4, 1), UDim2.fromOffset(16, 15), 13, Color3.new(1, 1, 1))
 		key.TextXAlignment = Enum.TextXAlignment.Left key.ZIndex = 5 textStroke(key, 1.5)
 		frame.Activated:Connect(function() if api.onClick then api.onClick(slot.tool) end end)
 		frame.MouseEnter:Connect(function() hoverName = slot.caption showCaption() end)
@@ -136,7 +142,7 @@ function View.Create(gui)
 	-- heldCaption its name (rich text), whichever page it is on.
 	function api.Render(slots, held, page, pages, heldCaption)
 		phone = Garage.IsPhone(gui.AbsoluteSize)
-		slotSize = phone and 52 or 66
+		slotSize = phone and PHONE_SLOT or SLOT
 		local keep = {}
 		for order, slot in slots do
 			local entry = frames[slot.tool]
@@ -152,16 +158,16 @@ function View.Create(gui)
 			entry.key.Text = slot.key or ""
 			local isHeld = slot.tool == held
 			entry.stroke.Color = isHeld and HELD or slot.color
-			entry.stroke.Thickness = isHeld and 4 or 2.5
+			entry.stroke.Thickness = isHeld and 3 or 2
 			entry.frame.BackgroundTransparency = isHeld and 0 or .2
 		end
 		for tool, entry in frames do
 			if not keep[tool] then entry.frame:Destroy() frames[tool] = nil end
 		end
 		local count = #slots + (pages > 1 and 2 or 0)
-		holder.Size = UDim2.fromOffset(count * (slotSize + 6) + (pages > 1 and -2 * (slotSize - 30) or 0), slotSize + 8)
+		holder.Size = UDim2.fromOffset(count * (slotSize + GAP) + (pages > 1 and -2 * (slotSize - ARROW_WIDTH) or 0), slotSize + 8)
 		back.Visible, nextPage.Visible = pages > 1, pages > 1
-		back.Size, nextPage.Size = UDim2.fromOffset(30, slotSize), UDim2.fromOffset(30, slotSize)
+		back.Size, nextPage.Size = UDim2.fromOffset(ARROW_WIDTH, slotSize), UDim2.fromOffset(ARROW_WIDTH, slotSize)
 		pageLabel.Text = pages > 1 and string.format("%d/%d", page, pages) or ""
 		heldName = heldCaption or ""
 		showCaption()

@@ -24,8 +24,11 @@ knockback.OnClientEvent:Connect(function(velocity)
 	root.AssemblyLinearVelocity = velocity
 	-- A tumble as you go.
 	root.AssemblyAngularVelocity = Vector3.new(math.random(-8, 8), math.random(-4, 4), math.random(-8, 8))
+	-- Only if still tumbling: by now a race may have sat you in your car,
+	-- and getting up then would throw you out of the seat.
 	task.delay(1.2, function()
-		if humanoid.Parent and humanoid.Health > 0 then
+		if humanoid.Parent and humanoid.Health > 0 and not humanoid.SeatPart
+			and humanoid:GetState() == Enum.HumanoidStateType.Physics then
 			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
 		end
 	end)

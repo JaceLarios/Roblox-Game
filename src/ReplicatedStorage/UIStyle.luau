@@ -83,10 +83,11 @@ end
 local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
 local controlsAway = false
+local keepControls = false -- set while racing (Style.KeepTouchControls)
 local function setControls(menuOpen)
 	if not UserInputService.TouchEnabled or menuOpen == controlsAway then return end
 	controlsAway = menuOpen
-	GuiService.TouchControlsEnabled = not menuOpen
+	GuiService.TouchControlsEnabled = keepControls or not menuOpen
 	local player = game:GetService("Players").LocalPlayer
 	if player then
 		player:SetAttribute("MenuOpen", menuOpen)
@@ -103,6 +104,20 @@ end
 function Style.Navigation(holder)
 	table.insert(navigation,holder)
 	updateNavigation()
+end
+-- While racing the thumbstick stays out whatever menus are open: a menu
+-- left open as a race began used to hide it, and the car could not be
+-- driven on a phone (2026-10-13). RaceWarsUI turns this on for a race.
+function Style.KeepTouchControls(keep)
+	keep = keep == true
+	if keep == keepControls then return end
+	keepControls = keep
+	if keep then
+		if UserInputService.TouchEnabled then GuiService.TouchControlsEnabled = true end
+	else
+		controlsAway = not controlsAway -- so setControls applies the menus' state again
+		updateNavigation()
+	end
 end
 -- Whether any menu is open, for HUD pieces that should get out of its way.
 function Style.ModalOpen()

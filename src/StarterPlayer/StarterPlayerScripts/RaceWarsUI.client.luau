@@ -23,6 +23,7 @@ local RunService = game:GetService("RunService")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 
 local RaceConfig = require(ReplicatedStorage:WaitForChild("RaceConfig"))
+local UIStyle = require(ReplicatedStorage:WaitForChild("UIStyle"))
 local View = require(script.Parent:WaitForChild("RaceWarsView"))
 
 local player = Players.LocalPlayer
@@ -142,6 +143,9 @@ end
 eventRemote.OnClientEvent:Connect(function(event)
 	if type(event) ~= "table" then return end
 	local kind = event.kind
+	if kind ~= "countdown" and kind ~= "go" then
+		UIStyle.KeepTouchControls(false)
+	end
 	if kind == "arrived" then
 		racing = false
 		View.HideHud()
@@ -159,6 +163,8 @@ eventRemote.OnClientEvent:Connect(function(event)
 		racing = true
 		topSpeed = event.topSpeed or 0
 		View.HidePicker()
+		-- A phone's thumbstick stays out for the race, menus or not.
+		UIStyle.KeepTouchControls(true)
 		View.ShowHud(#RaceConfig.Levels)
 		View.Countdown(event.seconds or 3)
 	elseif kind == "caught" then

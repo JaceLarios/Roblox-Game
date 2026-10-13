@@ -39,7 +39,7 @@ local FINISH_DEPTH = 160
 
 local FOLDER_NAME = "RaceWars"
 -- Bump when the geometry changes, so a stale build is replaced.
-local VERSION = 5 -- 5: dressed walls, scenery off the walls (2026-10-07)
+local VERSION = 6 -- 6: a clear start, no garage kiosk (the Race Workshop replaced it) (2026-10-13)
 
 -- White and light grey squares, tinted per level (assets/race-wars).
 local CHECKER = "rbxassetid://126970654411709"
@@ -77,29 +77,57 @@ function Track.LobbySpawn()
 	return CFrame.lookAt(Track.PointAt(-110, 0, 4), Track.PointAt(0, 0, 4))
 end
 
--- Where the "furthest race" leaderboard stands in the lobby (built by
--- CentralLeaderboards): across from the Race Garage kiosk, on the floor,
--- turned to face players arriving at the lobby spawn.
+-- Where things stand in the lobby, each on the floor and turned to face
+-- the players in it. The lobby spawn is at -110 down the middle; the left
+-- side (negative offsets) has the Phantom Garage at the front and the Race
+-- Workshop further back, the right side the Bolt Shop at the front, then
+-- the "furthest race" board and the podium of the top three.
+local function facing(distance, offset, towardDistance, towardOffset)
+	local position = Track.PointAt(distance, offset, 0)
+	local toward = Track.PointAt(towardDistance, towardOffset, 0)
+	return CFrame.lookAt(position, toward)
+end
+
+-- The "furthest race" leaderboard (built by CentralLeaderboards). Its
+-- CFrame looks away from the lobby spawn: the board's face is its back.
 function Track.LeaderboardFrame()
 	local position = Track.PointAt(-80, 70, 0)
 	local spawn = Track.PointAt(-110, 0, 0)
 	return CFrame.lookAt(position, position + (position - spawn) * Vector3.new(1, 0, 1))
 end
 
--- The starting grid, filled from the middle of the track outward: the
--- first racer starts dead centre, the next either side of them, and so on,
--- PER_ROW to a row, with later rows lined up behind. Cars never collide
--- with each other, so a crowd past the last row just shares its places.
-local GRID_FRONT = 58
-local GRID_BACK = 30
-local GRID_SPACING = 18
-local PER_ROW = 7
-function Track.GridFrame(place)
-	local row = (place - 1) // PER_ROW
-	local slot = (place - 1) % PER_ROW
-	local offset = math.ceil(slot / 2) * GRID_SPACING * (slot % 2 == 1 and -1 or 1)
-	local distance = math.max(GRID_FRONT - row * 18, GRID_BACK)
-	return CFrame.new(Track.PointAt(distance, offset, 0)) * Track.Heading
+-- The Bolt Shop (ServerStorage.BoltShop): the Phantom Garage's twin, on
+-- the right of the line-up box, looking at the lobby spawn.
+function Track.BoltShopFrame()
+	return facing(-34, 84, -110, 0)
+end
+
+-- The Race Workshop (ServerStorage.RaceWorkshop), where you pick the car
+-- you race: against the left wall, open toward the middle of the lobby.
+function Track.WorkshopFrame()
+	return facing(-100, -88, -96, 0)
+end
+
+-- The podium of the three furthest racers (ServerStorage.RacePodium):
+-- against the right wall behind the board, facing the middle.
+function Track.PodiumFrame()
+	return facing(-118, 82, -104, 0)
+end
+
+-- The starting grid: everyone side by side in one line across the track
+-- (user, 2026-10-13: "i want everyone to spawn in a line at the start"),
+-- spread evenly over the middle of it, the first to line up on the left.
+-- Cars never collide with each other, so a big crowd simply sits closer
+-- together. Level 1 keeps everything off the track for its first
+-- CLEAR_START studs, so nobody starts inside a tree.
+local GRID_LINE = 56
+local GRID_SPACING = 20
+local CLEAR_START = 200
+function Track.GridFrame(place, count)
+	count = math.max(count or place, place)
+	local spacing = math.min(GRID_SPACING, (Track.WIDTH - 24) / math.max(count - 1, 1))
+	local offset = (place - (count + 1) / 2) * spacing
+	return CFrame.new(Track.PointAt(GRID_LINE, offset, 0)) * Track.Heading
 end
 
 -- Where the monster waits before it runs: on the track just past the
@@ -491,7 +519,7 @@ local function buildLevel(root, index, level)
 	end
 
 	-- Level 1 gives you a clear run off the grid to get up to speed.
-	local first, last = start + (index == 1 and 160 or 80), start + length - 60
+	local first, last = start + (index == 1 and CLEAR_START or 80), start + length - 60
 	local rows = 7 + index * 2
 	local spacing = (last - first) / rows
 	local GAP = 30
@@ -535,7 +563,10 @@ local function buildLevel(root, index, level)
 			local isTree = tree and (not rock or rng:NextNumber() < 0.75)
 			local width = isTree and rng:NextNumber(22, 30) or rng:NextNumber(14, 20)
 			local offset = side * rng:NextNumber(half * 0.3, half * 0.55)
-			placeProp(folder, isTree and tree or rock, isTree and "tree" or "rock", distance, offset, width, rng)
+			-- Never over the starting line (a tree stood on two grid spots).
+			if index > 1 or distance - width >= CLEAR_START then
+				placeProp(folder, isTree and tree or rock, isTree and "tree" or "rock", distance, offset, width, rng)
+			end
 		end
 	end
 
@@ -674,36 +705,8 @@ local function buildLobby(root)
 	boardLine("Headline", 0.06, 0.56, rgb(255, 255, 255))
 	boardLine("Detail", 0.62, 0.32, rgb(255, 204, 60))
 
-	-- The garage kiosk, where you pick a car and start a race.
-	local kiosk = part(folder, {
-		Name = "RaceGarage",
-		Size = Vector3.new(14, 10, 8),
-		CFrame = CFrame.new(Track.PointAt(-80, -70, 5)) * Track.Heading * CFrame.Angles(0, math.rad(-35), 0),
-		Color = rgb(40, 40, 46),
-	})
-	local awning = part(folder, {
-		Name = "GarageAwning",
-		Size = Vector3.new(16, 1, 10),
-		CFrame = kiosk.CFrame * CFrame.new(0, 5.5, 1),
-		Color = rgb(214, 44, 44),
-	})
-	awning.CanCollide = false
-	local kioskSign = part(folder, {
-		Name = "GarageSign",
-		Size = Vector3.new(14, 3, 0.4),
-		CFrame = kiosk.CFrame * CFrame.new(0, 7.8, 3.9),
-		Color = rgb(24, 24, 28),
-	})
-	kioskSign.CanCollide = false
-	sign(kioskSign, "GARAGE", rgb(255, 255, 255), rgb(24, 24, 28))
-	local pick = Instance.new("ProximityPrompt")
-	pick.Name = "ChooseCar"
-	pick.ActionText = "Choose Car"
-	pick.ObjectText = "Race Garage"
-	pick.HoldDuration = 0
-	pick.MaxActivationDistance = 14
-	pick.RequiresLineOfSight = false
-	pick.Parent = kiosk
+	-- Picking your car is at the Race Workshop now (ServerStorage.RaceWorkshop,
+	-- 2026-10-13), which replaced the garage kiosk that stood here.
 
 	-- The way home.
 	local exit = part(folder, {
@@ -795,11 +798,14 @@ function Track.SetBoard(headline, detail)
 	gui.Detail.Text = detail
 end
 
--- The lobby's two prompts, for RaceService to connect.
+-- The lobby's prompts, for RaceService to connect: none for choosing a car
+-- any more (the Race Workshop has it, and RaceWarsUI listens for it by
+-- name), then the way home.
 function Track.Prompts()
 	local root = workspace:FindFirstChild(FOLDER_NAME)
 	local lobby = root and root:FindFirstChild("Lobby")
-	return lobby and lobby.RaceGarage.ChooseCar, lobby and lobby.RaceExit.GoHome
+	local exit = lobby and lobby:FindFirstChild("RaceExit")
+	return nil, exit and exit:FindFirstChild("GoHome")
 end
 
 return Track

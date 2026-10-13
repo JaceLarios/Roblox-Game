@@ -6,10 +6,15 @@
 	countdown, and everyone in the box when it runs out races together.
 	Only one race runs at a time: while one is on, the box still fills up,
 	but the countdown waits until every racer in it is done. Each
-	racer gets a drivable copy of the car they picked in the Race Garage
-	(RaceWarsUI; their fastest car if they never picked), set on the
-	starting grid from the middle out, and drives it themselves (RaceDrive,
-	on their own client). Cars pass through each other.
+	racer gets a drivable copy of the car they picked at the Race Workshop
+	(RaceWarsUI; their fastest car if they never picked), set side by side
+	on the starting line, and drives it themselves (RaceDrive, on their own
+	client). Cars pass through each other.
+
+	A race must never get stuck: every racer is seated on their own (one
+	who cannot be does not stop the rest), anyone out of their seat during
+	the countdown is put back, PlotManager's hooks run in pcalls, and a race
+	that runs far too long is ended.
 
 	One monster chases the whole pack at the speed of whichever level it
 	is on (RaceConfig), always after the racer at the back: it sprints to
@@ -288,6 +293,9 @@ local function buildCar(player, itemName, stats, frame)
 	seat.CFrame = chassis.CFrame * seatOffset
 	seat.CollisionGroup = Track.CAR_GROUP
 	seat:SetAttribute("RaceSeat", true)
+	-- Whose car this is: RaceDrive finds and drives it by this, even if its
+	-- character never registered the seat (see RaceDrive).
+	seat:SetAttribute("DriverId", player.UserId)
 	seat:SetAttribute("TopSpeed", stats.topSpeed)
 	seat:SetAttribute("Accel", stats.accel)
 	seat:SetAttribute("TurnRate", stats.turnRate)
@@ -416,12 +424,18 @@ local function endRun(racer, outcome)
 	-- A finish counts as the whole track, whatever the last check read.
 	local reached = outcome == "finished" and #RaceConfig.Levels * RaceConfig.LEVEL_LENGTH or racer.distance
 	task.spawn(hooks.runOver, player, reached)
+	-- Everything PlotManager does from here is in a pcall: an error in one
+	-- of its hooks must never stop this run being tidied away, or the race
+	-- would never end and nobody on the server could race again.
 	-- Crossing the finish pays a bonus on top of the levels' bolts.
 	if outcome == "finished" and hooks.raceFinished then
-		racer.bolts += hooks.raceFinished(player) or 0
+		local ok, paid = pcall(hooks.raceFinished, player)
+		if ok and type(paid) == "number" then racer.bolts += paid end
 	end
 	if outcome == "finished" then
-		require(ServerStorage:WaitForChild("Badges")).Award(player, "raceFinish")
+		pcall(function()
+			require(ServerStorage:WaitForChild("Badges")).Award(player, "raceFinish")
+		end)
 	end
 	if outcome ~= "left" then
 		fire(player, { kind = outcome, cleared = racer.cleared, bolts = racer.bolts, place = racer.place, of = race.count })
@@ -431,9 +445,9 @@ local function endRun(racer, outcome)
 	if outcome == "finished" then
 		local car = ItemNames.Display(racer.itemName)
 		if race.count > 1 and racer.place == 1 then
-			hooks.broadcast(string.format("%s won the Race Wars race in a %s!", player.Name, car))
+			pcall(hooks.broadcast, string.format("%s won the Race Wars race in a %s!", player.Name, car))
 		else
-			hooks.broadcast(string.format("%s escaped the Race Wars monster in a %s!", player.Name, car))
+			pcall(hooks.broadcast, string.format("%s escaped the Race Wars monster in a %s!", player.Name, car))
 		end
 	end
 
@@ -469,12 +483,31 @@ local function endRun(racer, outcome)
 	checkOver(race)
 end
 
+-- Sits a racer in their car's seat (again, if they came out of it). A bat
+-- hit (PlotManager's flop) leaves a character platform-standing, which no
+-- seat holds, so that goes first.
+local function putInSeat(racer)
+	local humanoid, seat = racer.humanoid, racer.seat
+	local character = humanoid.Parent
+	if not (character and character == racer.player.Character and humanoid.Health > 0 and seat.Parent) then return end
+	if seat.Occupant == humanoid then return end
+	humanoid.PlatformStand = false
+	humanoid.Sit = false
+	AntiCheat.Allow(racer.player, 3)
+	character:PivotTo(seat.CFrame * CFrame.new(0, 3, 0))
+	seat:Sit(humanoid)
+end
+
 -- Puts one racer in their car on the grid, ready for the countdown.
-local function seatRacer(race, player, itemName, place)
+-- `place` is their spot on the starting line, of `count`.
+local function seatRacer(race, player, itemName, place, count)
 	local character = player.Character
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if not (humanoid and humanoid.Health > 0) then
+		error("no living character")
+	end
 	local stats = RaceConfig.CarStats(itemName)
-	local frame = Track.GridFrame(place)
+	local frame = Track.GridFrame(place, count)
 	local car, chassis, seat, driverScale = buildCar(player, itemName, stats, frame)
 	local distance, offset = Track.DistanceOf(chassis.Position)
 
@@ -500,15 +533,14 @@ local function seatRacer(race, player, itemName, place)
 	racers[player] = racer
 	table.insert(race.racers, racer)
 
+	humanoid.PlatformStand = false
 	humanoid.Sit = false
 	-- Shrunk to fit a low car (see driverSeat); tidy puts them back.
 	if driverScale < 1 then
 		racer.ownScale = character:GetScale()
 		character:ScaleTo(racer.ownScale * driverScale)
 	end
-	AntiCheat.Allow(player, 3)
-	character:PivotTo(seat.CFrame * CFrame.new(0, 3, 0))
-	seat:Sit(humanoid)
+	putInSeat(racer)
 	setRacingGroup(racer, true)
 	player:SetAttribute("RaceLevel", 1)
 	player:SetAttribute("RaceRacers", race.count)
@@ -549,6 +581,7 @@ local function startRace()
 		finished = 0,
 		out = 0,
 		state = "countdown",
+		startedAt = os.clock(),
 		monster = Monster.Create(),
 		monsterDistance = Track.MONSTER_START,
 		monsterOffset = 0,
@@ -557,8 +590,58 @@ local function startRace()
 	race.monster.Parent = liveFolder
 	monsters[race] = true
 	current = race
-	for place, entry in ipairs(entries) do
-		seatRacer(race, entry.player, entry.itemName, place)
+	-- Each racer on their own: one who cannot be put in a car (gone, dead,
+	-- a car that will not build) sits this one out instead of stopping the
+	-- race for everyone after them.
+	for _, entry in ipairs(entries) do
+		local ok, err = pcall(seatRacer, race, entry.player, entry.itemName, #race.racers + 1, #entries)
+		if not ok then
+			warn("[RaceService] Could not seat " .. entry.player.Name .. ": " .. tostring(err))
+			local racer = racers[entry.player]
+			if racer and racer.race == race then
+				racers[entry.player] = nil
+				local index = table.find(race.racers, racer)
+				if index then table.remove(race.racers, index) end
+				if racer.car then racer.car:Destroy() end
+			end
+			hooks.toast(entry.player, "Couldn't put you in your car — try the next race.")
+		end
+	end
+	race.count = #race.racers
+	for _, racer in ipairs(race.racers) do
+		racer.player:SetAttribute("RaceRacers", race.count)
+	end
+	if race.count == 0 then
+		race.state = "over"
+		current = nil
+		race.monster:Destroy()
+		return
+	end
+
+	-- Through the countdown, anyone who came out of their seat (or never got
+	-- in: a client that was still flying from a bat hit) is put back in.
+	task.spawn(function()
+		while race.state == "countdown" and os.clock() - race.startedAt < COUNTDOWN - 0.4 do
+			task.wait(0.5)
+			for _, racer in ipairs(race.racers) do
+				if racer.state == "countdown" then putInSeat(racer) end
+			end
+		end
+	end)
+
+	-- GO: the car is let go and handed to its driver's own client.
+	local function launch(racer)
+		racer.chassis.Anchored = false
+		-- Each car on its own: a car that cannot be handed to its driver
+		-- must not stop everyone after it getting "Go".
+		local ok, err = pcall(racer.chassis.SetNetworkOwner, racer.chassis, racer.player)
+		if not ok then
+			warn("[RaceService] Could not give " .. racer.player.Name .. " their car: " .. tostring(err))
+		end
+		racer.seat:SetAttribute("Go", true)
+		racer.state = "racing"
+		racer.checkedAt = os.clock()
+		fire(racer.player, { kind = "go" })
 	end
 
 	task.delay(COUNTDOWN, function()
@@ -567,24 +650,43 @@ local function startRace()
 		race.goAt = os.clock()
 		for _, racer in ipairs(race.racers) do
 			if racer.state == "countdown" then
-				if racer.seat.Occupant ~= racer.humanoid then
-					endRun(racer, "bailed")
+				if racer.seat.Occupant == racer.humanoid then
+					launch(racer)
 				else
-					racer.chassis.Anchored = false
-					-- Each car on its own: a car that cannot be handed to its
-					-- driver must not stop everyone after it getting "Go".
-					local ok, err = pcall(racer.chassis.SetNetworkOwner, racer.chassis, racer.player)
-					if not ok then
-						warn("[RaceService] Could not give " .. racer.player.Name .. " their car: " .. tostring(err))
-					end
-					racer.seat:SetAttribute("Go", true)
-					racer.state = "racing"
-					racer.checkedAt = os.clock()
-					fire(racer.player, { kind = "go" })
+					-- Out of the seat at GO: one more go at sitting them, and
+					-- a moment late off the line is still a race.
+					putInSeat(racer)
+					task.delay(0.6, function()
+						if racer.state ~= "countdown" then return end
+						if racer.seat.Parent and racer.seat.Occupant == racer.humanoid then
+							launch(racer)
+						else
+							endRun(racer, "bailed")
+						end
+					end)
 				end
 			end
 		end
 	end)
+end
+
+-- Ends a race that has gone wrong (an error, or one that has run far longer
+-- than any race can): everyone still in it bails out and the track frees
+-- up for the next one.
+local MAX_RACE_SECONDS = 240
+local function abortRace(race, why)
+	warn("[RaceService] Ending a stuck race: " .. tostring(why))
+	for _, racer in ipairs(race.racers) do
+		if racer.state ~= "out" then
+			pcall(endRun, racer, "bailed")
+		end
+	end
+	race.count = math.min(race.count, race.finished + race.out)
+	if race.state ~= "over" then
+		race.state = "over"
+		task.delay(2.5, function() race.monster:Destroy() end)
+	end
+	if current == race then current = nil end
 end
 
 -- One racer's progress: checked, then counted toward levels and the
@@ -617,10 +719,11 @@ local function stepRacer(racer, now)
 		racer.lastGood = chassis.CFrame
 	end
 
-	-- Every level cleared pays bolts, quietly: the race carries on.
+	-- Every level cleared pays bolts, quietly: the race carries on (whatever
+	-- the payout hook does: an error there must not stop the race).
 	while racer.level <= #RaceConfig.Levels and racer.distance >= racer.level * RaceConfig.LEVEL_LENGTH do
-		local paid = hooks.levelCleared(racer.player, racer.level)
-		if type(paid) == "number" then
+		local ok, paid = pcall(hooks.levelCleared, racer.player, racer.level)
+		if ok and type(paid) == "number" then
 			racer.bolts += paid
 		end
 		racer.cleared = racer.level
@@ -679,7 +782,16 @@ end
 RunService.Heartbeat:Connect(function(dt)
 	local race = current
 	if race and race.state == "racing" then
-		stepRace(race, dt, os.clock())
+		local ok, err = pcall(stepRace, race, dt, os.clock())
+		if not ok and not race.warned then
+			race.warned = true
+			warn("[RaceService] " .. tostring(err))
+		end
+	end
+	-- A race that has run far too long, or never got going, is ended so the
+	-- next one can start.
+	if race and race.state ~= "over" and os.clock() - race.startedAt > MAX_RACE_SECONDS then
+		abortRace(race, "ran for " .. MAX_RACE_SECONDS .. " seconds")
 	end
 
 	-- Drawn every frame while on screen, finished races included (the
@@ -762,22 +874,32 @@ end
 
 -- The countdown: it starts when someone is lined up and no race is on,
 -- is called off if the box empties, and starts the race when it runs out.
+-- Nothing in here may stop the loop: an error used to end it for good, and
+-- then that server never ran another race.
+local function tick()
+	local count = refreshQueue()
+	local now = workspace:GetServerTimeNow()
+	local startsAt = workspace:GetAttribute("RaceNextAt")
+	if current or count == 0 then
+		startsAt = nil
+	elseif not startsAt then
+		startsAt = now + RaceConfig.LINEUP_SECONDS
+	elseif now >= startsAt then
+		startsAt = nil
+		local ok, err = pcall(startRace)
+		if not ok then
+			warn("[RaceService] Could not start the race: " .. tostring(err))
+			if current then abortRace(current, err) end
+		end
+	end
+	setAttribute(workspace, "RaceNextAt", startsAt)
+	setAttribute(workspace, "RaceRunning", current ~= nil)
+	updateBoard(startsAt and startsAt - now, count)
+end
 task.spawn(function()
 	while true do
-		local count = refreshQueue()
-		local now = workspace:GetServerTimeNow()
-		local startsAt = workspace:GetAttribute("RaceNextAt")
-		if current or count == 0 then
-			startsAt = nil
-		elseif not startsAt then
-			startsAt = now + RaceConfig.LINEUP_SECONDS
-		elseif now >= startsAt then
-			startsAt = nil
-			startRace()
-		end
-		setAttribute(workspace, "RaceNextAt", startsAt)
-		setAttribute(workspace, "RaceRunning", current ~= nil)
-		updateBoard(startsAt and startsAt - now, count)
+		local ok, err = pcall(tick)
+		if not ok then warn("[RaceService] " .. tostring(err)) end
 		task.wait(0.25)
 	end
 end)

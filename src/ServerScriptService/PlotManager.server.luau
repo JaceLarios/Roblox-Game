@@ -951,6 +951,8 @@ require(script.Parent:WaitForChild("AntiCheat")).Start()
 -- And the "furthest race" board, in the Race Wars lobby.
 require(game.ServerStorage:WaitForChild("CentralLeaderboards")).Start(Leaderboard, PlaytimeLeaderboard,
 	RaceBoard, require(ServerStorage:WaitForChild("RaceTrack")).LeaderboardFrame())
+-- And the podium of the top three beside it: statues, refreshed every 3 minutes.
+require(ServerStorage:WaitForChild("RacePodium")).Start(RaceBoard)
 
 ------------------------------------------------------------------
 -- Per-player helpers
@@ -2088,6 +2090,8 @@ end
 local function swingBat(player)
 	local s = state[player]
 	if not s then return end
+	-- Not from a race car: a flop knocks a driver out of their seat.
+	if RaceWars.IsRacing(player) then return end
 	if s.carrying then
 		toast(player, "You cannot swing while carrying something.")
 		return
@@ -2108,7 +2112,10 @@ local function swingBat(player)
 	local forward = root.CFrame.LookVector
 
 	for _, other in ipairs(Players:GetPlayers()) do
-		if other ~= player then
+		-- Never anyone racing or sitting down: the flop throws them out of
+		-- the seat (a racer's car then "won't move", 2026-10-13).
+		local otherHumanoid = other.Character and other.Character:FindFirstChildOfClass("Humanoid")
+		if other ~= player and not RaceWars.IsRacing(other) and not (otherHumanoid and otherHumanoid.SeatPart) then
 			local otherRoot = playerRoot(other)
 			if otherRoot then
 				local offset = otherRoot.Position - root.Position
@@ -2747,34 +2754,55 @@ do
 		buyPhantomRemote.Parent = ReplicatedStorage
 	end
 	local STALL_REACH = 22
-	buyPhantomRemote.OnServerEvent:Connect(function(player, addonName)
+	-- Sells `addonName` for `price` bolts at the counter of the stall named
+	-- `stallName`, answering on `remote`. Shared by the Phantom Garage and
+	-- the Bolt Shop (ServerStorage.BoltShop: the shop addons for bolts,
+	-- 2026-10-13), which answer the same way.
+	local function sellForBolts(remote, player, addonName, price, stallName, boughtText)
 		local s = state[player]
-		if not s or type(addonName) ~= "string" then return end
-		local price = FusionRecipes.BoltPrice(addonName)
-		if not price then return end
-		local stall = workspace:FindFirstChild("PhantomGarage")
+		if not s or not price then return false end
+		local stall = workspace:FindFirstChild(stallName)
 		local counter = stall and stall:FindFirstChild("Counter")
 		local root = playerRoot(player)
 		if not (counter and root) or (root.Position - counter.Position).Magnitude > STALL_REACH then
-			buyPhantomRemote:FireClient(player, addonName, "away")
-			return
+			remote:FireClient(player, addonName, "away")
+			return false
 		end
 		if #s.inventory >= inventoryCapacity(s, player) then
-			buyPhantomRemote:FireClient(player, addonName, "full")
-			return
+			remote:FireClient(player, addonName, "full")
+			return false
 		end
 		local stats = player:FindFirstChild("leaderstats")
 		local bolts = stats and stats:FindFirstChild("Bolts")
 		if not bolts or bolts.Value < price then
-			buyPhantomRemote:FireClient(player, addonName, "bolts")
-			return
+			remote:FireClient(player, addonName, "bolts")
+			return false
 		end
 		bolts.Value -= price
 		table.insert(s.inventory, addonName)
 		playSound(root, "big")
-		toast(player, string.format("Bought %s — it's in your hotbar. Put it on any car at your Fusion Pad!", instanceTag(addonName)), true)
-		buyPhantomRemote:FireClient(player, addonName, "bought")
+		toast(player, string.format(boughtText, instanceTag(addonName)), true)
+		remote:FireClient(player, addonName, "bought")
 		pushUI(player)
+		return true
+	end
+	buyPhantomRemote.OnServerEvent:Connect(function(player, addonName)
+		if type(addonName) ~= "string" then return end
+		sellForBolts(buyPhantomRemote, player, addonName, FusionRecipes.BoltPrice(addonName), "PhantomGarage",
+			"Bought %s — it's in your hotbar. Put it on any car at your Fusion Pad!")
+	end)
+	local buyBoltAddonRemote = ReplicatedStorage:FindFirstChild("BuyBoltAddon")
+	if not buyBoltAddonRemote then
+		buyBoltAddonRemote = Instance.new("RemoteEvent")
+		buyBoltAddonRemote.Name = "BuyBoltAddon"
+		buyBoltAddonRemote.Parent = ReplicatedStorage
+	end
+	buyBoltAddonRemote.OnServerEvent:Connect(function(player, addonName)
+		if type(addonName) ~= "string" then return end
+		if sellForBolts(buyBoltAddonRemote, player, addonName, FusionRecipes.AddonBoltPrice(addonName), "BoltShop",
+			"Bought %s for bolts — it's in your hotbar. Fuse it onto a car at your Fusion Pad!") then
+			Quests.progress(player, "addon")
+		end
 	end)
 
 	-- Taking a Phantom off a ghost car, to make room for another event

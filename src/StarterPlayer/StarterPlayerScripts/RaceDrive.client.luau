@@ -37,40 +37,97 @@ local CRASH_SLACK = 12
 ------------------------------------------------------------------
 
 local driving = nil
+local drivingSeat = nil
+
+-- Jumping out of a race car ends your run, and a stray Space bar did it
+-- by accident, so there is no jumping while you drive.
+local jumpOff = nil -- the humanoid jumping is switched off on
+local function allowJump(humanoid, allowed)
+	if allowed then
+		if jumpOff and jumpOff.Parent then
+			jumpOff:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+		end
+		jumpOff = nil
+	elseif jumpOff ~= humanoid then
+		humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+		jumpOff = humanoid
+	end
+end
 
 local function stopDriving()
 	if driving then
 		driving:Disconnect()
 		driving = nil
 	end
+	drivingSeat = nil
+	allowJump(nil, true)
+end
+
+-- Whether you are in this race seat. Your character usually notices the
+-- seat itself (SeatPart), but on a busy server it can miss it (a bat hit
+-- had it tumbling, say) while the server has you sat and welded in: the
+-- seat's Occupant, which comes from the server, still says so, and the car
+-- must drive either way ("the car won't move", 2026-10-13).
+local function seated(humanoid, seat)
+	return seat.Parent ~= nil and (humanoid.SeatPart == seat or seat.Occupant == humanoid)
+end
+
+-- What the controls are asking for. The seat's throttle and steer, which
+-- the default controls fill in once your character has registered the
+-- seat, or else the controls' own move direction (keys, stick, thumbstick)
+-- read straight from Roblox's control module.
+local controls = nil
+task.spawn(function()
+	local ok, module = pcall(function()
+		local playerModule = player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule", 30)
+		return playerModule and require(playerModule):GetControls()
+	end)
+	if ok then controls = module end
+end)
+local function readInput(seat)
+	local throttle, steer = seat.ThrottleFloat, seat.SteerFloat
+	if throttle == 0 and steer == 0 and controls then
+		local ok, move = pcall(controls.GetMoveVector, controls)
+		if ok and typeof(move) == "Vector3" then
+			throttle = math.clamp(-move.Z, -1, 1)
+			steer = math.clamp(move.X, -1, 1)
+		end
+	end
+	return throttle, steer
 end
 
 local attempt = nil -- the latest drive() call; an older one still waiting gives way to it
 
 local function drive(humanoid, seat)
+	if drivingSeat == seat then return end
 	stopDriving()
 	local mine = {}
 	attempt = mine
+	drivingSeat = seat
 	local car = seat.Parent
 	-- Wait for the car's drive parts for as long as you are still in the
 	-- seat. Giving up after a few seconds (as this used to) left a car
 	-- whose parts reached this screen late (the place streams) sitting
 	-- still for the whole race.
 	local chassis, velocity, heading
-	while attempt == mine and humanoid.SeatPart == seat and seat.Parent do
+	while attempt == mine and seated(humanoid, seat) do
 		chassis = car and car:FindFirstChild("Chassis")
 		velocity = chassis and chassis:FindFirstChild("DriveVelocity")
 		heading = chassis and chassis:FindFirstChild("DriveHeading")
 		if velocity and heading then break end
 		task.wait(0.1)
 	end
-	if attempt ~= mine or humanoid.SeatPart ~= seat or not (velocity and heading) then return end
+	if attempt ~= mine or not seated(humanoid, seat) or not (velocity and heading) then
+		if attempt == mine then drivingSeat = nil end
+		return
+	end
+	allowJump(humanoid, false)
 
 	local speed = 0
 	local _, yaw = chassis.CFrame:ToOrientation()
 
 	driving = RunService.Heartbeat:Connect(function(dt)
-		if humanoid.SeatPart ~= seat or not seat.Parent then
+		if not seated(humanoid, seat) then
 			stopDriving()
 			return
 		end
@@ -83,7 +140,7 @@ local function drive(humanoid, seat)
 		local top = seat:GetAttribute("TopSpeed") or 50
 		local accel = seat:GetAttribute("Accel") or 40
 		local turnRate = seat:GetAttribute("TurnRate") or 1.8
-		local throttle, steer = seat.ThrottleFloat, seat.SteerFloat
+		local throttle, steer = readInput(seat)
 
 		-- Hitting something costs you your speed.
 		local actual = chassis.AssemblyLinearVelocity:Dot(chassis.CFrame.LookVector)
@@ -121,15 +178,33 @@ local function watchCharacter(character)
 	humanoid:GetPropertyChangedSignal("SeatPart"):Connect(function()
 		local seat = humanoid.SeatPart
 		if seat and seat:GetAttribute("RaceSeat") then
-			drive(humanoid, seat)
-		else
-			stopDriving()
+			task.spawn(drive, humanoid, seat)
 		end
 	end)
 end
 
 if player.Character then task.spawn(watchCharacter, player.Character) end
 player.CharacterAdded:Connect(watchCharacter)
+
+-- And your car found by its driver tag, a few times a second, in case your
+-- character never registered the seat at all (see seated above).
+task.spawn(function()
+	local live = workspace:WaitForChild("RaceWarsLive")
+	while true do
+		task.wait(0.25)
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		if humanoid and not drivingSeat then
+			for _, car in ipairs(live:GetChildren()) do
+				local seat = car:FindFirstChild("RaceSeat")
+				if seat and seat:GetAttribute("DriverId") == player.UserId and seated(humanoid, seat) then
+					task.spawn(drive, humanoid, seat)
+					break
+				end
+			end
+		end
+	end
+end)
 
 ------------------------------------------------------------------
 -- Fog
