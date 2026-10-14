@@ -100,7 +100,8 @@ function Gallery.Create(gui)
 	local data = {junkyard = {}, addons = {}}
 	local dimmer = make("Frame", gui, "IndexBackdrop", {
 		Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(),
-		BackgroundTransparency = .35, BorderSizePixel = 0, Visible = false,
+		-- Light, so the game shows behind the Index (all menus, 2026-10-13).
+		BackgroundTransparency = .8, BorderSizePixel = 0, Visible = false,
 		ZIndex = 9, Active = true,
 	})
 	local panel = make("Frame", gui, "IndexPanel", {Visible = false, ClipsDescendants = false})

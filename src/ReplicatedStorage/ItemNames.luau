@@ -1,6 +1,8 @@
 -- Player-facing names only. Stable item keys remain unchanged in saves and recipes.
 local ItemNames = {}
-local DISPLAY_NAMES = { ["Rusted Sedan"] = "Scrap Kart" }
+-- The Civic shows as the "Civi" (user, 2026-10-13: not a real car's name),
+-- builds and ghost versions too ("Civi + V8 Engine", "Wisp Civi").
+local DISPLAY_NAMES = { ["Rusted Sedan"] = "Scrap Kart", ["Civic"] = "Civi" }
 function ItemNames.Display(name)
 	if type(name) ~= "string" then return name end
 	-- Also handles mutation prefixes and formatted item messages.

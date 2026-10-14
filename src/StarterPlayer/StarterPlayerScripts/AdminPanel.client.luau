@@ -131,7 +131,6 @@ local function action(text, name)
 end
 action("Drop secret Legendary now", "legendary")
 action("Start next race now", "race")
-action("Scrap Rush now", "ScrapRush")
 action("Mutation Frenzy now", "MutationFrenzy")
 action("Drop a Secret car now", "SecretCar")
 action("Give me 100 bolts", "bolts")

@@ -479,27 +479,6 @@ function FusionRecipes.BoltPrice(name)
 	return item and item.phantom and item.bolts or nil
 end
 
--- The Bolt Shop in the Race Wars lobby (ServerStorage.BoltShop) sells the
--- shop addons for bolts as well as coins (user, 2026-10-13: "buy the
--- addons with the bolts you get from completing a race"), at the
--- expensive prices the user picked, so coins stay the main way to buy
--- them. Three a rarity, cheapest first, like the coin prices.
-local ADDON_BOLTS = {
-	["Nitrous Tank"] = 10, ["Straight Pipes"] = 12, ["Scrap Turbo"] = 14,
-	["Inline 4"] = 30, ["Rotary Engine"] = 35, ["Twin Turbo"] = 40,
-	["V6 Engine"] = 70, ["Supercharger"] = 80, ["Diesel Stack"] = 90,
-	["V8 Engine"] = 140, ["V12 Engine"] = 160, ["Hover Fans"] = 180,
-	["Jet Engine"] = 300, ["Rocket Booster"] = 340, ["Fusion Core"] = 380,
-}
-for _, item in ipairs(FusionRecipes.ShopAddons) do
-	assert(ADDON_BOLTS[item.name], "FusionRecipes: no Bolt Shop price for " .. item.name)
-end
-
--- What the Bolt Shop charges for a shop addon, or nil.
-function FusionRecipes.AddonBoltPrice(name)
-	return ADDON_BOLTS[name]
-end
-
 -- True for a Secret car (bare name).
 function FusionRecipes.IsSecretCar(name)
 	return secretByName[name] ~= nil

@@ -8,10 +8,10 @@
 	shop's remote, which checks everything again; its answer shows on the
 	thing's own button for a moment.
 
-	Two shops use it: the Phantom Garage (PhantomShop.client: the Phantom
-	addons) and the Bolt Shop (BoltShop.client: the shop addons). It was the
-	Phantom Garage's own script until the Bolt Shop came (2026-10-13), so
-	the two look alike; restyle here and both follow. Same look as the
+	The Phantom Garage uses it (PhantomShop.client: the Phantom addons), and
+	any later stall selling event addons for bolts can too. It was the
+	Phantom Garage's own script until a Bolt Shop shared it (2026-10-13,
+	taken out the same day: bolts only buy event addons). Same look as the
 	mechanic's shop (MechanicAddons.client).
 
 	Shop.Create(config):

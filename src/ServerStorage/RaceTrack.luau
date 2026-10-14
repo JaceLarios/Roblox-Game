@@ -39,7 +39,7 @@ local FINISH_DEPTH = 160
 
 local FOLDER_NAME = "RaceWars"
 -- Bump when the geometry changes, so a stale build is replaced.
-local VERSION = 6 -- 6: a clear start, no garage kiosk (the Race Workshop replaced it) (2026-10-13)
+local VERSION = 7 -- 7: obstacles in tidy lane rows, exit in the back corner (2026-10-13)
 
 -- White and light grey squares, tinted per level (assets/race-wars).
 local CHECKER = "rbxassetid://126970654411709"
@@ -72,16 +72,19 @@ function Track.InLobby(position)
 		and position.Y > Track.ORIGIN.Y - 10 and position.Y < Track.ORIGIN.Y + 40
 end
 
--- Where someone arriving in the lobby stands.
+-- Where someone arriving in the lobby stands: the middle of it (user,
+-- 2026-10-13), facing the start, the podium behind them.
+local SPAWN_DISTANCE = -80
 function Track.LobbySpawn()
-	return CFrame.lookAt(Track.PointAt(-110, 0, 4), Track.PointAt(0, 0, 4))
+	return CFrame.lookAt(Track.PointAt(SPAWN_DISTANCE, 0, 4), Track.PointAt(0, 0, 4))
 end
 
 -- Where things stand in the lobby, each on the floor and turned to face
--- the players in it. The lobby spawn is at -110 down the middle; the left
--- side (negative offsets) has the Phantom Garage at the front and the Race
--- Workshop further back, the right side the Bolt Shop at the front, then
--- the "furthest race" board and the podium of the top three.
+-- the players in it. The lobby spawn is in the middle (SPAWN_DISTANCE);
+-- the left side (negative offsets) has the Phantom Garage at the front and
+-- the Race Workshop further back, the right side the "furthest race"
+-- board, the back wall the podium of the top three in the middle and the
+-- way home in its right-hand corner.
 local function facing(distance, offset, towardDistance, towardOffset)
 	local position = Track.PointAt(distance, offset, 0)
 	local toward = Track.PointAt(towardDistance, towardOffset, 0)
@@ -96,22 +99,17 @@ function Track.LeaderboardFrame()
 	return CFrame.lookAt(position, position + (position - spawn) * Vector3.new(1, 0, 1))
 end
 
--- The Bolt Shop (ServerStorage.BoltShop): the Phantom Garage's twin, on
--- the right of the line-up box, looking at the lobby spawn.
-function Track.BoltShopFrame()
-	return facing(-34, 84, -110, 0)
-end
-
 -- The Race Workshop (ServerStorage.RaceWorkshop), where you pick the car
 -- you race: against the left wall, open toward the middle of the lobby.
 function Track.WorkshopFrame()
 	return facing(-100, -88, -96, 0)
 end
 
--- The podium of the three furthest racers (ServerStorage.RacePodium):
--- against the right wall behind the board, facing the middle.
+-- The podium of the three furthest racers (ServerStorage.RacePodium): in
+-- the middle of the back wall (user, 2026-10-13), facing down the lobby
+-- toward the start.
 function Track.PodiumFrame()
-	return facing(-118, 82, -104, 0)
+	return facing(-134, 0, 0, 0)
 end
 
 -- The starting grid: everyone side by side in one line across the track
@@ -258,6 +256,22 @@ end
 -- distance, an offset, a footprint width and a Random, and builds
 -- something solid about that wide. Only used where a theme has no props.
 ------------------------------------------------------------------
+
+-- The obstacle rows (see buildLevel): the track as LANES lanes, numbered
+-- left to right, and which of them each row fills. Taken in order, so the
+-- way through moves from side to side; "easy" for levels 1 and 2, "all"
+-- (the easy ones and harder ones) from level 3.
+local LANES = 5
+local ROW_SPACING = { 120, 105, 95, 85, 75 } -- studs between rows, by level
+local ROWS = {
+	easy = {
+		{ 1, 2 }, { 4, 5 }, { 2, 3 }, { 3, 4 }, { 1, 5 }, { 2, 4 },
+	},
+}
+ROWS.all = {
+	{ 1, 2 }, { 3, 4, 5 }, { 2, 4 }, { 1, 2, 3 }, { 4, 5 }, { 1, 3, 5 },
+	{ 2, 3 }, { 1, 2, 4, 5 }, { 3, 4 }, { 2, 3, 4 }, { 1, 5 }, { 1, 2, 3, 5 },
+}
 
 local OBSTACLES = {}
 
@@ -497,76 +511,43 @@ local function buildLevel(root, index, level)
 		})
 	end
 
-	-- Obstacles in rows, more of them each level: trees and rocks where the
-	-- theme has props, its part-built obstacles where it has none. Every row
-	-- leaves a gap at least GAP studs wide, so there is always a way through.
-	-- Fewer and bigger since 2026-10-05 (the track felt crowded and tight):
-	-- 9 to 17 rows a level instead of 15 to 27, one or two things a row
-	-- instead of up to four, each 18 to 26 studs across instead of 10 to 16.
+	-- Obstacles in tidy rows (user, 2026-10-13: the scattered layout "seems
+	-- very random and weird"). The track is five lanes; every row puts
+	-- something in some of them and leaves the rest open, following the
+	-- patterns in ROWS, so the open lanes swing from side to side and you
+	-- weave through. A row is all trees or all rocks, taking turns. Rows
+	-- come closer together every level, and the patterns with only one or
+	-- two lanes open start at level 3. Trees only stop a car at the trunk
+	-- (placeProp), so a tree lane can be squeezed past at its edges.
 	local tree = propTemplate(level.theme, "tree")
 	local rock = propTemplate(level.theme, "rock")
 	local fallback = OBSTACLES[theme.obstacle] or OBSTACLES.bush
 	local rng = Random.new(index * 7919)
-	local function obstacle(distance, offset, width)
-		local useTree = tree and (not rock or rng:NextNumber() < 0.4)
-		if useTree then
-			placeProp(folder, tree, "tree", distance, offset, width * 1.2, rng)
+	local lane = Track.WIDTH / LANES
+	local function obstacle(kind, distance, offset)
+		if kind == "tree" and tree then
+			placeProp(folder, tree, "tree", distance, offset, lane * 0.85, rng)
 		elseif rock then
-			placeProp(folder, rock, "rock", distance, offset, width, rng)
+			placeProp(folder, rock, "rock", distance, offset, lane * 0.7, rng)
+		elseif tree then
+			placeProp(folder, tree, "tree", distance, offset, lane * 0.85, rng)
 		else
-			fallback(folder, distance, offset, width, rng)
+			fallback(folder, distance, offset, lane * 0.75, rng)
 		end
 	end
-
 	-- Level 1 gives you a clear run off the grid to get up to speed.
-	local first, last = start + (index == 1 and CLEAR_START or 80), start + length - 60
-	local rows = 7 + index * 2
-	local spacing = (last - first) / rows
-	local GAP = 30
-	for row = 1, rows do
-		local distance = first + (row - 0.5) * spacing + rng:NextNumber(-spacing, spacing) * 0.25
-		local gapCentre = rng:NextNumber(-half + GAP / 2 + 6, half - GAP / 2 - 6)
-		local count = 1
-		if index > 1 and rng:NextNumber() < 0.5 then count += 1 end
-		local placed = {}
-		for _ = 1, count do
-			local width = rng:NextNumber(18, 26)
-			-- A few tries at a spot clear of the gap and of this row's others.
-			for _ = 1, 8 do
-				-- Never against a wall (it hides the walls' dressing).
-				local offset = rng:NextNumber(-half + width / 2 + 8, half - width / 2 - 8)
-				local clear = math.abs(offset - gapCentre) >= GAP / 2 + width / 2
-				for _, other in ipairs(placed) do
-					if math.abs(offset - other.offset) < (width + other.width) / 2 + 4 then
-						clear = false
-					end
-				end
-				if clear then
-					table.insert(placed, { offset = offset, width = width })
-					obstacle(distance, offset, width)
-					break
-				end
-			end
-		end
-	end
-
-	-- The scenery that lined both walls now stands out on the track, in
-	-- the middle half of it, one every 160 studs on alternating sides,
-	-- halfway between obstacle rows where it can (user, 2026-10-07: "move
-	-- all the objects off the wall and put them more in the middle"). It
-	-- hits like any other tree or rock.
-	if tree or rock then
-		local step = 160
-		for i = 0, math.floor(length / step) - 1 do
-			local side = i % 2 == 0 and -1 or 1
-			local distance = start + (i + 0.5) * step + rng:NextNumber(-10, 10)
-			local isTree = tree and (not rock or rng:NextNumber() < 0.75)
-			local width = isTree and rng:NextNumber(22, 30) or rng:NextNumber(14, 20)
-			local offset = side * rng:NextNumber(half * 0.3, half * 0.55)
-			-- Never over the starting line (a tree stood on two grid spots).
-			if index > 1 or distance - width >= CLEAR_START then
-				placeProp(folder, isTree and tree or rock, isTree and "tree" or "rock", distance, offset, width, rng)
-			end
+	local first, last = start + (index == 1 and CLEAR_START or 90), start + length - 70
+	local spacing = ROW_SPACING[index] or ROW_SPACING[#ROW_SPACING]
+	local rows = index < 3 and ROWS.easy or ROWS.all
+	local row = 0
+	for distance = first, last, spacing do
+		row += 1
+		-- (Level 1's first row leaves the middle open: the car drives off the
+		-- line on its own, straight ahead.)
+		local blocked = rows[(row + index * 2 + 1) % #rows + 1]
+		local kind = row % 2 == 0 and "rock" or "tree"
+		for _, n in ipairs(blocked) do
+			obstacle(kind, distance, (n - (LANES + 1) / 2) * lane)
 		end
 	end
 
@@ -708,11 +689,12 @@ local function buildLobby(root)
 	-- Picking your car is at the Race Workshop now (ServerStorage.RaceWorkshop,
 	-- 2026-10-13), which replaced the garage kiosk that stood here.
 
-	-- The way home.
+	-- The way home, in the back right-hand corner (the podium has the middle
+	-- of the back wall since 2026-10-13).
 	local exit = part(folder, {
 		Name = "RaceExit",
 		Size = Vector3.new(12, 14, 2),
-		CFrame = CFrame.new(Track.PointAt(-LOBBY_DEPTH + 4, 0, 7)) * Track.Heading,
+		CFrame = CFrame.new(Track.PointAt(-LOBBY_DEPTH + 4, 88, 7)) * Track.Heading,
 		Color = rgb(88, 206, 66),
 		Material = Enum.Material.Neon,
 		Transparency = 0.35,

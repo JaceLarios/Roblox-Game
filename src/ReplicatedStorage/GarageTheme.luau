@@ -5,6 +5,13 @@ local BLUE=Color3.fromRGB(15,151,229)
 local CYAN=Color3.fromRGB(130,244,255)
 local INK=Color3.fromRGB(8,43,77)
 local GOLD=Color3.fromRGB(255,199,47)
+-- Every menu is see-through (user, 2026-10-13: "make all UI transparent so
+-- i can see the game behind the pop up window"): its blue panel, the
+-- garage picture on it and its cards let the game show through, and no
+-- full-screen picture is put behind it any more.
+Theme.PANEL_TRANSPARENCY=.45
+Theme.ART_TRANSPARENCY=.86
+Theme.CARD_TRANSPARENCY=.5
 local function corner(o,r)
  local c=o:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
  c.CornerRadius=UDim.new(0,r) c.Parent=o
@@ -16,7 +23,7 @@ end
 function Theme.Inset(o)
  o:SetAttribute("Designed",true)
  o.BackgroundColor3=Color3.fromRGB(103,213,249)
- o.BackgroundTransparency=.35
+ o.BackgroundTransparency=Theme.CARD_TRANSPARENCY
  o.BorderSizePixel=0
  corner(o,18) stroke(o,CYAN,2)
 end
@@ -74,14 +81,14 @@ end
 function Theme.Shell(panel)
  if panel:GetAttribute("GarageShell") then return end
  panel:SetAttribute("GarageShell",true) panel:SetAttribute("Designed",true)
- panel.BackgroundColor3=BLUE panel.BackgroundTransparency=0 panel.BorderSizePixel=0
+ panel.BackgroundColor3=BLUE panel.BackgroundTransparency=Theme.PANEL_TRANSPARENCY panel.BorderSizePixel=0
  corner(panel,24) stroke(panel,INK,4)
  for _,old in panel:GetChildren() do if old:IsA("UIGradient") then old:Destroy() end end
  local background=Instance.new("ImageLabel")
  background.Name="GarageBackdrop" background:SetAttribute("GarageDecoration",true)
  background:SetAttribute("Designed",true) background.Size=UDim2.fromScale(1,1)
- background.BackgroundColor3=BLUE background.BackgroundTransparency=0
- background.Image=Theme.Background background.ImageTransparency=.36
+ background.BackgroundColor3=BLUE background.BackgroundTransparency=1
+ background.Image=Theme.Background background.ImageTransparency=Theme.ART_TRANSPARENCY
  background.ScaleType=Enum.ScaleType.Crop background.ZIndex=0
  corner(background,24) background.Parent=panel
  local rim=Instance.new("Frame") rim.Name="GarageRim"
@@ -310,7 +317,7 @@ end
 local oldShell=Theme.Shell
 function Theme.Shell(panel)
  oldShell(panel)
- local bar=Theme.New("Frame",panel,"GarageHeaderBar",{Position=UDim2.fromOffset(10,10),Size=UDim2.new(1,-20,0,76),BackgroundColor3=Color3.fromRGB(0,96,169),BorderSizePixel=0,ZIndex=0})
+ local bar=Theme.New("Frame",panel,"GarageHeaderBar",{Position=UDim2.fromOffset(10,10),Size=UDim2.new(1,-20,0,76),BackgroundColor3=Color3.fromRGB(0,96,169),BackgroundTransparency=.25,BorderSizePixel=0,ZIndex=0})
  corner(bar,17)
  local g=Theme.New("UIGradient",bar,"Shade",{Rotation=90,Color=ColorSequence.new(Color3.fromRGB(18,161,227),Color3.fromRGB(0,69,137))})
  local sg=panel:FindFirstAncestorOfClass("ScreenGui")
@@ -324,10 +331,10 @@ function Theme.Shell(panel)
   local function vis()
    local shown=panel.Visible local p=panel.Parent
    while p and p~=sg do if p:IsA("GuiObject") and not p.Visible then shown=false end p=p.Parent end
-   -- A menu marked SeeThrough has no backdrop: the game stays in view
-   -- round it (user, 2026-10-05, for Daily Rewards, Upgrades, Travel
-   -- and Trade).
-   bg.Visible=shown and not panel:GetAttribute("SeeThrough")
+   -- No menu has a backdrop now: the game stays in view round every one
+   -- (SeeThrough, user 2026-10-05, for Daily Rewards, Upgrades, Travel and
+   -- Trade; all of them since 2026-10-13).
+   bg.Visible=false
   end
   panel:GetPropertyChangedSignal("Visible"):Connect(vis)
   panel:GetAttributeChangedSignal("GarageShown"):Connect(vis)

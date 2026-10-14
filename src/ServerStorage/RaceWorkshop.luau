@@ -4,12 +4,13 @@
 	Where you pick the car you race (user, 2026-10-13: "go up to and switch
 	what car you'd want to drive in the race. Make it look like a small
 	workshop that the person is working in"). It replaced the plain garage
-	kiosk that stood in the lobby. A little open-front garage: concrete
-	floor, red walls, a tool wall, a workbench, tyres and an oil drum, a car
-	up on a two-post lift, and the race mechanic working on it.
+	kiosk that stood in the lobby. An open workshop (no walls since the
+	user asked, the same day): a concrete floor under a roof on four posts,
+	a tool rack, a workbench, tyres and an oil drum, a car up on a two-post
+	lift, and the race mechanic working on it.
 
-	The mechanic is his own character, not anyone's avatar (the user's own
-	avatar runs the Bolt Shop): an R15 figure in navy overalls, a white
+	The mechanic is his own character, not anyone's avatar: an R15 figure
+	in navy overalls, a white
 	shirt and a red cap, wrench in hand. RaceWorkshop.client sets him
 	working (bent over the car, ratcheting) on each player's screen. His
 	"Choose Race Car" prompt is named ChooseCar: RaceWarsUI opens the car
@@ -194,17 +195,17 @@ function Workshop.Build()
 	local base = Track.WorkshopFrame()
 	local function at(x, y, z) return base * CFrame.new(x, y, z) end
 
-	-- Floor, walls and roof.
+	-- Open on every side (user, 2026-10-13: "knock down all the walls"): a
+	-- concrete floor and a roof on four red corner posts.
 	part(model, "Floor", Vector3.new(24, 0.5, 18), at(0, 0.25, 0), CONCRETE, Enum.Material.Concrete)
-	part(model, "BackWall", Vector3.new(24, 14, 0.8), at(0, 7, 8.6), DARK, Enum.Material.Metal)
-	for _, x in ipairs({ -11.6, 11.6 }) do
-		part(model, "SideWall", Vector3.new(0.8, 14, 18), at(x, 7, 0), RED)
-		part(model, "SideStripe", Vector3.new(0.9, 0.8, 18.1), at(x, 9.5, 0), WHITE)
+	for _, x in ipairs({ -11.4, 11.4 }) do
+		for _, z in ipairs({ -8.4, 8.4 }) do
+			part(model, "RoofPost", Vector3.new(1, 13.9, 1), at(x, 7.45, z), RED, Enum.Material.Metal)
+		end
+		part(model, "RoofStripe", Vector3.new(0.4, 0.6, 19.2), at(x, 13.6, 0), WHITE)
 	end
 	part(model, "Roof", Vector3.new(25.6, 1, 19), at(0, 14.4, 0), DARK, Enum.Material.Metal)
-	-- The roller door, rolled up over the opening.
-	cylinder(model, "RollerDoor", 22.6, 1.8, at(0, 13, -8.3), Color3.fromRGB(150, 154, 160), Enum.Material.Metal)
-	-- Hazard stripes on the floor at the door.
+	-- Hazard stripes along the front edge of the floor.
 	for i = 0, 10 do
 		local stripe = part(model, "Hazard", Vector3.new(1, 0.06, 1.4), at(-10 + i * 2, 0.52, -8.2) * CFrame.Angles(0, math.rad(35), 0), YELLOW)
 		stripe.CanCollide = false
@@ -226,8 +227,11 @@ function Workshop.Build()
 	sub.CanCollide = false
 	signText(sub, "Pick your race car", WHITE, DARK, Enum.Font.FredokaOne)
 
-	-- The tool wall: a pegboard with tools hanging on it.
+	-- A tool rack at the back: a pegboard on two legs, tools hanging on it.
 	part(model, "Pegboard", Vector3.new(14, 6, 0.3), at(0, 8, 8.05), Color3.fromRGB(196, 164, 118), Enum.Material.WoodPlanks)
+	for _, x in ipairs({ -6.6, 6.6 }) do
+		part(model, "RackLeg", Vector3.new(0.5, 11, 0.5), at(x, 5.5, 8.3), DARK, Enum.Material.Metal)
+	end
 	for i = 0, 6 do
 		local x = -5.4 + i * 1.8
 		local long = i % 2 == 0

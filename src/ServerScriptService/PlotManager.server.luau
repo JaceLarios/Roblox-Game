@@ -751,6 +751,10 @@ for i = 1, PLOT_COUNT do
 		Parent = model,
 	})
 	local padLabel = makeLabel(pad, "FUSION PAD", 7, 260, nil, 55)
+	-- Its look (2026-10-13): a steel deck with two bays under an arch and
+	-- the fusion core (ServerStorage.FusionStation). The pad part itself
+	-- stays where and as big as it was.
+	require(ServerStorage:WaitForChild("FusionStation")).Build(pad)
 
 	local padPrompt = Instance.new("ProximityPrompt")
 	padPrompt.ActionText = "Fuse"
@@ -985,10 +989,11 @@ function Quests.context(player, s)
 end
 
 -- A quest's reward: its `minutes` times QUEST_SECONDS_PER_MINUTE seconds of
--- the player's pad income, so 30 to 60 seconds of it (never under
+-- the player's pad income, so 9 to 18 seconds of it (never under
 -- MIN_REWARD). It was the whole 3 to 6 minutes, which the user found far
--- too much (2026-10-07).
-Quests.SECONDS_PER_MINUTE = 10
+-- too much (2026-10-07), then 30 to 60 seconds with a 300-coin floor,
+-- still "way too much money per quest" (2026-10-13).
+Quests.SECONDS_PER_MINUTE = 3
 function Quests.reward(player, s, entry)
 	return math.max(Quests.lib.MIN_REWARD,
 		math.floor(Income.perSecond(player, s) * Quests.lib.Minutes(entry) * Quests.SECONDS_PER_MINUTE))
@@ -2755,9 +2760,9 @@ do
 	end
 	local STALL_REACH = 22
 	-- Sells `addonName` for `price` bolts at the counter of the stall named
-	-- `stallName`, answering on `remote`. Shared by the Phantom Garage and
-	-- the Bolt Shop (ServerStorage.BoltShop: the shop addons for bolts,
-	-- 2026-10-13), which answer the same way.
+	-- `stallName`, answering on `remote`. Bolts buy Phantoms (and future
+	-- event addons) only: the Bolt Shop that sold the shop addons for them
+	-- was taken out (2026-10-13, the user's call).
 	local function sellForBolts(remote, player, addonName, price, stallName, boughtText)
 		local s = state[player]
 		if not s or not price then return false end
@@ -2790,19 +2795,6 @@ do
 		if type(addonName) ~= "string" then return end
 		sellForBolts(buyPhantomRemote, player, addonName, FusionRecipes.BoltPrice(addonName), "PhantomGarage",
 			"Bought %s — it's in your hotbar. Put it on any car at your Fusion Pad!")
-	end)
-	local buyBoltAddonRemote = ReplicatedStorage:FindFirstChild("BuyBoltAddon")
-	if not buyBoltAddonRemote then
-		buyBoltAddonRemote = Instance.new("RemoteEvent")
-		buyBoltAddonRemote.Name = "BuyBoltAddon"
-		buyBoltAddonRemote.Parent = ReplicatedStorage
-	end
-	buyBoltAddonRemote.OnServerEvent:Connect(function(player, addonName)
-		if type(addonName) ~= "string" then return end
-		if sellForBolts(buyBoltAddonRemote, player, addonName, FusionRecipes.AddonBoltPrice(addonName), "BoltShop",
-			"Bought %s for bolts — it's in your hotbar. Fuse it onto a car at your Fusion Pad!") then
-			Quests.progress(player, "addon")
-		end
 	end)
 
 	-- Taking a Phantom off a ghost car, to make room for another event

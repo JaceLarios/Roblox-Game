@@ -3,8 +3,8 @@ local ItemNames = require(game:GetService("ReplicatedStorage"):WaitForChild("Ite
 	ScrapSpawner (Script, ServerScriptService) — Junkyard Fusion v1
 	Sends a random car out of the black box onto the yard's conveyor every
 	few seconds and moves everything riding it round the loop (YardConveyor
-	owns the belt itself). Also runs the yard's timed events: Scrap Rush
-	and Mutation Frenzy.
+	owns the belt itself). Also runs the yard's timed event, Mutation
+	Frenzy (Scrap Rush was taken out on 2026-10-13, the user's call).
 	Server-only on purpose: the server decides what spawns, never the client.
 --]]
 
@@ -79,12 +79,6 @@ local EVENT_FIRST_AFTER = 120
 local EVENT_GAP_MIN, EVENT_GAP_MAX = 240, 360
 local EVENT_WARNING = 10
 
--- Scrap Rush: cars come out of the box twice as fast for a minute, with
--- its own cap so a rush fills the belt without burying it.
-local RUSH_SECONDS = 60
-local RUSH_INTERVAL = 1.5
-local RUSH_MAX_ITEMS = 30
-
 -- Mutation Frenzy: a quarter of drops land already mutated, and every
 -- fusion rolls mutations at double odds (EventConfig's own multiplier).
 local FRENZY_SECONDS = 90
@@ -105,7 +99,6 @@ if not scrapFolder then
 	scrapFolder.Parent = workspace
 end
 
-local rushUntil = 0
 local frenzyUntil = 0
 
 local function announce(message)
@@ -405,7 +398,7 @@ end
 
 local function spawnScrap()
 	local now = os.clock()
-	local cap = now < rushUntil and RUSH_MAX_ITEMS or MAX_ITEMS
+	local cap = MAX_ITEMS
 	-- Respect the cap. Better to skip a car than lag the server. Only the
 	-- belt counts: a crane prize or something a player dropped should not
 	-- stop cars coming out of the box.
@@ -486,15 +479,6 @@ end)
 
 local runEvent = {}
 
-function runEvent.ScrapRush()
-	announce(string.format("<font color=\"#5ADC78\">SCRAP RUSH</font> in %d seconds — double drops incoming!", EVENT_WARNING))
-	task.wait(EVENT_WARNING)
-	rushUntil = os.clock() + RUSH_SECONDS
-	announce(string.format("<font color=\"#5ADC78\">SCRAP RUSH!</font> The conveyor is running twice as many cars for %d seconds!", RUSH_SECONDS))
-	task.wait(RUSH_SECONDS)
-	announce("The Scrap Rush is over.")
-end
-
 function runEvent.MutationFrenzy()
 	announce(string.format("<font color=\"#BE6EFF\">MUTATION FRENZY</font> in %d seconds!", EVENT_WARNING))
 	task.wait(EVENT_WARNING)
@@ -517,8 +501,9 @@ function runEvent.SecretCar()
 	ride(part, -math.max(part.Size.X, part.Size.Z) / 2)
 end
 
--- The Crane Drop was one of these until 2026-10-07 (the user removed it).
-local EVENT_ORDER = { "ScrapRush", "MutationFrenzy" }
+-- The Crane Drop was one of these until 2026-10-07 and Scrap Rush until
+-- 2026-10-13 (the user removed both).
+local EVENT_ORDER = { "MutationFrenzy" }
 local eventRunning = false
 local lastEvent = nil
 
@@ -546,6 +531,8 @@ task.spawn(function()
 				table.insert(choices, name)
 			end
 		end
+		-- With only one event, it simply comes round again.
+		if #choices == 0 then choices = EVENT_ORDER end
 		startEvent(choices[math.random(1, #choices)])
 		task.wait(math.random(EVENT_GAP_MIN, EVENT_GAP_MAX))
 	end
@@ -566,5 +553,5 @@ print("[ScrapSpawner] Running. A car leaves the black box every", SPAWN_INTERVAL
 
 while true do
 	spawnScrap()
-	task.wait(os.clock() < rushUntil and RUSH_INTERVAL or SPAWN_INTERVAL)
+	task.wait(SPAWN_INTERVAL)
 end

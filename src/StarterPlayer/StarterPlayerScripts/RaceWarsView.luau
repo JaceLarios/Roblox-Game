@@ -61,7 +61,7 @@ end
 ------------------------------------------------------------------
 
 local overlay = Garage.New("Frame", gui, "PickerOverlay", {
-	Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(), BackgroundTransparency = 0.6, Visible = false,
+	Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(), BackgroundTransparency = 0.8, Visible = false,
 })
 -- A menu like the others: opening it closes any other and hides the nav
 -- buttons, which would otherwise draw over it.
@@ -344,7 +344,8 @@ local function updateCluster(speed, topSpeed, rpm, gear)
 	tachNeedle.Rotation = dialAngle(shownRpm, RPM_DIAL_MAX)
 	topMark.Rotation = dialAngle(topSpeed, SPEED_DIAL_MAX)
 	speedDigits.Text = tostring(math.floor(math.max(speed, 0) + 0.5))
-	gearDigit.Text = speed < 0.5 and "N" or tostring(gear)
+	-- The car is in gear from the start (RaceDrive), never in neutral.
+	gearDigit.Text = tostring(gear)
 	local lit = math.clamp((shownRpm - 4800) / (6800 - 4800), 0, 1) * #SHIFT_COLOURS
 	local limiter = shownRpm > 6900 and math.floor(os.clock() * 12) % 2 == 0
 	for i, light in ipairs(shiftLights) do

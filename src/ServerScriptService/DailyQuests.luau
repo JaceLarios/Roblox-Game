@@ -20,7 +20,9 @@
 local DailyQuests = {}
 
 DailyQuests.PER_DAY = 3
-DailyQuests.MIN_REWARD = 300
+-- A quest pays at least this many coins (300 until 2026-10-13: too much
+-- for a new player, three Nitrous Tanks a quest).
+DailyQuests.MIN_REWARD = 50
 
 -- event: what PlotManager calls Record with; goals: one of these is picked
 -- as the target; minutes: the reward, in minutes of pad income; needs: a

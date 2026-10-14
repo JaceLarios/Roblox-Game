@@ -36,6 +36,11 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 			local top = bounds.Y < 480 and 4 or 110
 			local bottom = math.clamp(bounds.Y * .28, 88, 190)
 			local height = math.clamp(math.floor((bounds.Y - top - bottom - 12) / 4), 32, 58)
+			-- The left column (REWARDS, QUESTS) sits in the middle of the
+			-- screen's left edge (user, 2026-10-13).
+			if not right then
+				top = math.floor((bounds.Y - railRows.left * (height + 4)) / 2)
+			end
 			scale.Scale = 1
 			holder.Size = UDim2.fromOffset(70, height)
 			holder.Position = UDim2.new(right and 1 or 0, right and -76 or 6, 0, top + slot * (height + 4))
@@ -74,6 +79,13 @@ function NavButton.Create(gui, icon, caption, accentColor, position)
 		local fitLeft = (size.Y - 224 - leftTop) / railHeight(railRows.left)
 		local fitRight = (size.Y - 28 - rightTop) / railHeight(railRows.right)
 		local factor = math.clamp(math.min(fitLeft, fitRight), .3, 1.3)
+		-- The left rail (REWARDS, QUESTS) in the middle of the screen's
+		-- left edge (user, 2026-10-13: "move the quest and reward buttons
+		-- down to the middle of the left side"), never over the coin card.
+		if not right then
+			local rail = railHeight(railRows.left) * factor
+			top = math.clamp((size.Y - rail) / 2, leftTop, math.max(leftTop, size.Y - 224 - rail))
+		end
 		scale.Scale = factor
 		holder.Position = UDim2.new(right and 1 or 0, right and (-16-140*factor) or 16, 0, top+slot*156*factor)
 	end

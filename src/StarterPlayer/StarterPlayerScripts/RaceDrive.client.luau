@@ -2,11 +2,12 @@
 	RaceDrive (LocalScript, StarterPlayerScripts) — Junkyard Fusion
 
 	Drives your Race Wars car. RaceService builds the car and seats you in
-	it; this reads the seat's throttle and steer (the default controls
-	fill those in on every device) and turns them into speed and heading
-	on the car's drive constraints. Driving runs here, on your own client,
-	so the car answers the controls instantly; the server checks how far
-	it could really have got (see RaceService).
+	it; this reads what you ask for (see readInput: the seat, the keys, a
+	gamepad, your character's move direction) and turns it into speed and
+	heading on the car's drive constraints. The car is in gear from GO and
+	drives itself ahead: you steer, and hold back to brake. Driving runs
+	here, on your own client, so the car answers instantly; the server
+	checks how far it could really have got (see RaceService).
 
 	Also lifts the Junkyard's distance fog while you are in the Race Wars
 	area, so you can see down the track, and puts it back when you leave,
@@ -72,28 +73,62 @@ local function seated(humanoid, seat)
 	return seat.Parent ~= nil and (humanoid.SeatPart == seat or seat.Occupant == humanoid)
 end
 
--- What the controls are asking for. The seat's throttle and steer, which
--- the default controls fill in once your character has registered the
--- seat, or else the controls' own move direction (keys, stick, thumbstick)
--- read straight from Roblox's control module.
-local controls = nil
-task.spawn(function()
-	local ok, module = pcall(function()
-		local playerModule = player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule", 30)
-		return playerModule and require(playerModule):GetControls()
-	end)
-	if ok then controls = module end
-end)
-local function readInput(seat)
+-- What the driver is asking for, read here from every source there is,
+-- since none of them can be counted on alone. A VehicleSeat's ThrottleFloat
+-- and SteerFloat are filled in by Roblox's own controls, but only some
+-- players get the controls that do it: the place has no PlayerModule, and
+-- the built-in controls some clients run left the seat at zero, so the car
+-- never moved ("I can't even move when the race starts", 2026-10-13). So
+-- also the keys themselves (WASD and arrows), a gamepad's left stick and
+-- triggers, and the character's MoveDirection, which every control scheme
+-- sets, the touch thumbstick included.
+local UserInputService = game:GetService("UserInputService")
+local DEADZONE = 0.2
+local function keyAxis(positive, negative)
+	local value = 0
+	for _, key in ipairs(positive) do
+		if UserInputService:IsKeyDown(key) then value += 1 break end
+	end
+	for _, key in ipairs(negative) do
+		if UserInputService:IsKeyDown(key) then value -= 1 break end
+	end
+	return value
+end
+local AHEAD, BACK = { Enum.KeyCode.W, Enum.KeyCode.Up }, { Enum.KeyCode.S, Enum.KeyCode.Down }
+local RIGHT, LEFT = { Enum.KeyCode.D, Enum.KeyCode.Right }, { Enum.KeyCode.A, Enum.KeyCode.Left }
+
+-- The car is in gear from GO (user: "we need to start the race in gear"):
+-- it drives itself ahead flat out, and all the driver has to do is steer.
+-- Holding back (S, Down, the left trigger, the stick pulled back) brakes,
+-- then reverses.
+local function readInput(seat, humanoid, chassis)
 	local throttle, steer = seat.ThrottleFloat, seat.SteerFloat
-	if throttle == 0 and steer == 0 and controls then
-		local ok, move = pcall(controls.GetMoveVector, controls)
-		if ok and typeof(move) == "Vector3" then
-			throttle = math.clamp(-move.Z, -1, 1)
-			steer = math.clamp(move.X, -1, 1)
+	if steer == 0 then steer = keyAxis(RIGHT, LEFT) end
+	if throttle == 0 then throttle = keyAxis(AHEAD, BACK) end
+	if UserInputService.GamepadEnabled then
+		for _, state in ipairs(UserInputService:GetGamepadState(Enum.UserInputType.Gamepad1)) do
+			if state.KeyCode == Enum.KeyCode.Thumbstick1 then
+				if steer == 0 and math.abs(state.Position.X) > DEADZONE then steer = state.Position.X end
+				if throttle == 0 and math.abs(state.Position.Y) > DEADZONE then throttle = state.Position.Y end
+			elseif state.KeyCode == Enum.KeyCode.ButtonL2 and state.Position.Z > 0.3 and throttle == 0 then
+				throttle = -1
+			end
 		end
 	end
-	return throttle, steer
+	-- Any controls at all: the way the character is asked to move, turned
+	-- into the car's own frame (it is camera-relative, and the camera rides
+	-- behind the car).
+	if throttle == 0 and steer == 0 then
+		local move = humanoid.MoveDirection
+		if move.Magnitude > DEADZONE then
+			local inCar = chassis.CFrame:VectorToObjectSpace(move)
+			throttle = math.clamp(-inCar.Z, -1, 1)
+			steer = math.clamp(inCar.X, -1, 1)
+		end
+	end
+	-- In gear: never slower than full ahead unless holding back.
+	if throttle > -0.3 then throttle = 1 end
+	return throttle, math.clamp(steer, -1, 1)
 end
 
 local attempt = nil -- the latest drive() call; an older one still waiting gives way to it
@@ -140,7 +175,7 @@ local function drive(humanoid, seat)
 		local top = seat:GetAttribute("TopSpeed") or 50
 		local accel = seat:GetAttribute("Accel") or 40
 		local turnRate = seat:GetAttribute("TurnRate") or 1.8
-		local throttle, steer = readInput(seat)
+		local throttle, steer = readInput(seat, humanoid, chassis)
 
 		-- Hitting something costs you your speed.
 		local actual = chassis.AssemblyLinearVelocity:Dot(chassis.CFrame.LookVector)
